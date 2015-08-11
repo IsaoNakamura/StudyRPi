@@ -20,7 +20,7 @@ RPiGpioDrv::~RPiGpioDrv()
 }
 
 // 初期化
-int RPiGpioDrv::init(const int& RPiVer/*=2*/)
+int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 {
 	if(g_pGpio){
 		// 既に初期化済
@@ -29,9 +29,9 @@ int RPiGpioDrv::init(const int& RPiVer/*=2*/)
 	
 	//  レジスタブロックの物理アドレス
 	unsigned int register_base = 0x0;
-	if(RPiVer == 1){
+	if(RPiVer == RPI_VER_ONE){
 		register_base = GPIO_BASE_RPI_ONE;
-	}else if(RPiVer == 2){
+	}else if(RPiVer == RPI_VER_TWO){
 		register_base = GPIO_BASE_RPI_TWO;
 	}else{
 		printf("@RPiGpioDrv::init() RPi's Version(%d) is not supported\n",RPiVer);
@@ -61,16 +61,16 @@ int RPiGpioDrv::init(const int& RPiVer/*=2*/)
 
 	g_pGpio = (unsigned int *) gpio_map;
 
-	// 正常終了
+	// success.
 	return 0;
 }
 
-// ピンモードの設定
+// GPIOピンのモードの設定
 //		pin :	2,3,4,7,8,9,10,11,14,15,17,18,22,23,24,25,27,
 //				28,29,30,31
 //		mode:	GPIO_INPUT, GPIO_OUTPUT,
 //				GPIO_ALT0, GPIO_ALT1, GPIO_ALT2, GPIO_ALT3, GPIO_ALT4, GPIO_ALT5
-void int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
+int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 {
 	if(!g_pGpio){
 		return -1;
@@ -86,6 +86,9 @@ void int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 	unsigned int mask = ~(0x7 << ((pin % 10) * 3));
 	//  GPFSEL0/1の該当するFSEL(3bit)のみを書き換え
 	g_pGpio[index] = (g_pGpio[index] & mask) | ((mode & 0x7) << ((pin % 10) * 3));
+	
+	// success.
+	return 0;
 }
 
 //  ピンの出力を1(HighLevel:3.3V)/0(LowLevel:0.0V)に設定

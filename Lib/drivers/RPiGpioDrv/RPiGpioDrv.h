@@ -7,7 +7,11 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-//  ピン機能
+// RPi Version
+#define RPI_VER_ONE	(1)
+#define RPI_VER_TWO	(2)
+
+// GPIO-Pin Mode
 #define GPIO_INPUT	(0x0)	//  入力
 #define GPIO_OUTPUT	(0x1)	//  出力
 #define GPIO_ALT0	(0x4)
@@ -17,6 +21,9 @@
 #define GPIO_ALT4	(0x3)
 #define GPIO_ALT5	(0x2)
 
+#define GPIO_LV_LOW		(0)
+#define GPIO_LV_HIGH	(1)
+
 class RPiGpioDrv
 {
 private:
@@ -25,9 +32,9 @@ private:
 
 public:
 	// GPIO 初期化（最初に１度だけ呼び出すこと）
-	static int init(const int& RPiVer=2);
+	static int init(const int& RPiVer=RPI_VER_TWO);
 	
-	// ピンモードの設定
+	// GPIOピンのモードの設定
 	//		pin :	2,3,4,7,8,9,10,11,14,15,17,18,22,23,24,25,27,
 	//				28,29,30,31
 	//		mode:	GPIO_INPUT, GPIO_OUTPUT,
