@@ -29,13 +29,13 @@ int main(int argc, char* argv[])
 
 		// GPIO_Aを出力に設定
 		if( RPiGpioDrv::setPinMode(GPIO_A, GPIO_OUTPUT) != 0 ){
-			rintf("failed to RPiGpioDrv::setPinMode(GPIO_OUTPUT).\n");
+			printf("failed to RPiGpioDrv::setPinMode(GPIO_OUTPUT).\n");
 			throw 0;
 		}
 
 		// GPIO_Bを入力に設定
 		if( RPiGpioDrv::setPinMode(GPIO_B, GPIO_INPUT) != 0 ){
-			rintf("failed to RPiGpioDrv::setPinMode(GPIO_INPUT).\n");
+			printf("failed to RPiGpioDrv::setPinMode(GPIO_INPUT).\n");
 			throw 0;
 		}
 

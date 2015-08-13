@@ -1,15 +1,42 @@
-dualshockGPIO: dualshockGPIO.o RPiGpioDrv.o CJoystickDrv.o
-	g++ -Wall -O2 -o dualshockGPIO dualshockGPIO.o ../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.o ../../Lib/drivers/JoystickDrv/CJoystickDrv.o
+COMPILER = g++
+CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal
+LDFLAGS =
+LIBS =
+INCLUDE = -I../../Lib
+TARGET   = ./$(shell basename `readlink -f .`)
+OBJDIR = ../../Bin/obj
+ifeq "$(strip $(OBJDIR))" ""
+	OBJDIR = .
+endif
+SOURCES = $(wildcard *.cpp)
+OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
+DEPENDS  = $(OBJECTS:.o=.d)
 
-dualshockGPIO.o: dualshockGPIO.cpp
-	g++ -c dualshockGPIO.cpp
+LIBDIR = ../../Lib
+EXOBJS = $(OBJDIR)/RPiGpioDrv.o $(OBJDIR)/CJoystickDrv.o
 
-RPiGpioDrv.o: RPiGpioDrv.cpp
-	g++ -c ../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.cpp
+$(TARGET): $(OBJECTS) $(EXOBJS) $(LIBS)
+	$(COMPILER) -o $@ $^ $(LDFLAGS)
 
-CJoystickDrv.o: CJoystickDrv.cpp
-	g++ -c ../../Lib/drivers/JoystickDrv/CJoystickDrv.cpp
+$(OBJDIR)/%.o: %.cpp
+	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
+	$(MAKE) -C $(LIBDIR)/drivers/RPiGpioDrv
+	$(MAKE) -C $(LIBDIR)/drivers/JoystickDrv
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+.PHONY: subsystem
+subsystem:
+	$(MAKE) -C $(LIBDIR)/drivers/RPiGpioDrv
+	$(MAKE) -C $(LIBDIR)/drivers/JoystickDrv
+
+.PHONY: all
+all: clean subsystem $(TARGET)
 
 .PHONY: clean
 clean:
-	rm -f dualshockGPIO dualshockGPIO.o ../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.o ../../Lib/drivers/JoystickDrv/CJoystickDrv.o
+	rm -f $(OBJECTS) $(DEPENDS) $(TARGET)
+	@rmdir --ignore-fail-on-non-empty `readlink -f $(OBJDIR)`
+	$(MAKE) clean -C $(LIBDIR)/drivers/RPiGpioDrv
+	$(MAKE) clean -C $(LIBDIR)/drivers/JoystickDrv
+
+-include $(DEPENDS)

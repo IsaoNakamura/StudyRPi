@@ -96,7 +96,7 @@ int CJoystickDrv::connectJoystick()
 		ioctl( m_hJoy, JSIOCGNAME(80), &name_of_joystick );
 		m_pAxis = (int*)calloc(m_iNumAxis, sizeof( int ) );
 		m_pButton = (stButtonState*)calloc(m_iNumButton, sizeof( stButtonState ) );
-		printf("Joystick detected: %s\n\t%d buttons\n\n"
+		printf("Joystick detected: %s\n\t%d %d buttons\n\n"
 	 			, name_of_joystick
 				, m_iNumAxis
 				, m_iNumButton );
@@ -122,11 +122,7 @@ int CJoystickDrv::readJoystick()
 	int iRet = -1;
 	struct js_event js;
 
-	int readRet = read(m_hJoy, &js, sizeof(struct js_event));
-	//if(readRet==-1){
-	//	iRet = -1;
-	//	return iRet;
-	//}
+	read(m_hJoy, &js, sizeof(js_event));
 	switch( js.type & ~JS_EVENT_INIT)
 	{
 		case JS_EVENT_AXIS:
@@ -156,7 +152,7 @@ void CJoystickDrv::updateButtonState(const int btn_idx)
 			m_pButton[btn_idx].iCur = BUTTON_OFF;
 		}
 		else
-		{																	
+		{
 			m_pButton[btn_idx].iCur = BUTTON_ON;
 		}
 		m_pButton[btn_idx].iOld = BUTTON_ON;
