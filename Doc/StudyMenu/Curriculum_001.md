@@ -14,7 +14,8 @@
 * microSDカード
 * USBキーボード、USBマウス
 * モニタ、HDMIケーブル
-* USBmicroBケーブル、USB電源
+* USBmicroBケーブル、USB電源  
+
 ### 手順  
 * [001-1.SetUpRPi/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-1.SetUpRPi/Guidance.md)
 
@@ -24,7 +25,8 @@
 * USBキーボード、USBマウス
 * モニタ、HDMIケーブル
 * USBmicroBケーブル、USB電源
-* LANケーブル
+* LANケーブル  
+
 ### 手順  
 * [001-2.CtrlBySSH/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-2.CtrlBySSH/Guidance.md)
 
@@ -33,7 +35,8 @@
 * PC(Windows or MacOSX)
 * USBmicroBケーブル、USB電源
 * LANケーブル
-* ブレッドボード、ジャンパーワイヤ、LED、抵抗
+* ブレッドボード、ジャンパーワイヤ、LED、抵抗  
+
 ### 手順  
 * [001-3.FlashUsingGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-3.FlashUsingGPIO/Guidance.md)
 
