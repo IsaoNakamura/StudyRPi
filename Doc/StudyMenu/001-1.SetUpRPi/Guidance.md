@@ -23,7 +23,7 @@ USB電源につないだUSBmicroBケーブル
 2. モニタにダイアログが表示され、インストールするOSを聞いてくるのでひとまずRaspbianを選択する。  
 3. 処理が開始されSuccess的なダイアログが出れば完了。Bootが始まりConfiguration画面が表示される。  
 　
-### ~~3. OSの設定変更~~
+### 3. OSの設定変更
 最近のバージョンでは初期状態で有効になっている。  
 1. ~~「Expand Filesystem」を選択してOK。SDカードの領域が拡張される。~~  
 2. ~~「Advanced Options」⇒「SSH」を選択して、enableにする。SSHが有効になる。~~  
