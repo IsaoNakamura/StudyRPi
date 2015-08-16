@@ -8,7 +8,7 @@
 ## 手順
 ### 1. ワイヤリング。
 下図のようにGPIO端子と電子部品をブレッドボードに配線する。  
-![Wiring](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/Wiring/outputGPIO/RPi_outputGPIO_bread.png?raw=true)
+![Wiring](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/Wiring/RPi_WriteGPIO/RPi_WriteGPIO_bread.png?raw=true)
 
 ### 2. 以下のどれかの方法でLEDチカチカする。  
 [CASE 0: // コマンド実行でLEDチカチカ](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-3.WriteGPIO/CASE0-usingCmd/Guidance.md)  
