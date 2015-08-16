@@ -1,2 +1,2 @@
 # StudyRPi
-Library for a RaspberryPi study meeting.
+Application and Library for a RaspberryPi study meeting.
