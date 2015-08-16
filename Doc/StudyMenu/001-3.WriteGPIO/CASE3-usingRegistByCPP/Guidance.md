@@ -3,7 +3,7 @@
 1. RPi勉強会用GitHubリポジトリをクローン(チェックアウト)して、ディレクトリに侵入する。  
 ``git clone https://github.com/IsaoNakamura/StudyRPi/``  
 ``cd StudyRPi``  
-  既にクローンしていれば、``git fetch`` もしくは、 ``git pull`` する。
+  既にクローンしていれば、``git fetch`` もしくは、 ``git pull`` して最新状態にする。
 
 2. 以下のAPPを使用するので、このAPPのディレクトリに侵入する。  
 [StudyRPi/App/writeGPIO](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/App/writeGPIO)  
