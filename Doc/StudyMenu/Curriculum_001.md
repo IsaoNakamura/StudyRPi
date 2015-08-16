@@ -38,7 +38,7 @@
 * ブレッドボード、ジャンパーワイヤ、LED、抵抗  
 
 ### 手順  
-* [001-3.FlashUsingGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-3.FlashUsingGPIO/Guidance.md)
+* [001-3.WriteGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/wrkFirstPush/Doc/StudyMenu/001-3.WriteGPIO/Guidance.md)
 
 ## 4. 何やりたいか、みんなで考えよう
 ### いるもの
