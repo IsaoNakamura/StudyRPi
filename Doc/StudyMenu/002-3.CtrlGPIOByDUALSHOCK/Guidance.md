@@ -44,7 +44,7 @@ USB-Bluetooth接続ドングルとPS3コントローラのMACアドレスが表�
 
 ### 2. ワイヤリング。
 下図のようにGPIO端子と電子部品をブレッドボードに配線する。  
-![Wiring](https://github.com/IsaoNakamura/StudyRPi/Doc/Wiring/RPi_WriteGPIO/RPi_WriteGPIO_bread.png?raw=true)
+![Wiring](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_WriteGPIO/RPi_WriteGPIO_bread.png?raw=true)
 
 ### 3. RPi勉強会用GitHubリポジトリをクローン(チェックアウト)して、ディレクトリに侵入する。  
 ``git clone https://github.com/IsaoNakamura/StudyRPi/``  
@@ -52,7 +52,7 @@ USB-Bluetooth接続ドングルとPS3コントローラのMACアドレスが表�
   既にクローンしていれば、``git fetch`` もしくは、 ``git pull`` する。
 
 ### 4. 以下のAPPを使用するので、このAPPのディレクトリに侵入する。  
-[StudyRPi/App/dualshockGPIO](https://github.com/IsaoNakamura/StudyRPi/App/dualshockGPIO)  
+[StudyRPi/App/dualshockGPIO](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/dualshockGPIO)  
 ``cd App/dualshockGPIO`` 
 
 ### 5. コンパイルして実行ファイルを作成する。  

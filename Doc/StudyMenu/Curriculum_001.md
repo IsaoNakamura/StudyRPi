@@ -17,7 +17,7 @@
 * USBmicroBケーブル、USB電源  
 
 ### 手順  
-* [001-1.SetUpRPi/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/001-1.SetUpRPi/Guidance.md)
+* [001-1.SetUpRPi/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/001-1.SetUpRPi/Guidance.md)
 
 ## 2. SSHによるネットワーク経由操作
 ### いるもの
@@ -28,7 +28,7 @@
 * LANケーブル  
 
 ### 手順  
-* [001-2.CtrlBySSH/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/001-2.CtrlBySSH/Guidance.md)
+* [001-2.CtrlBySSH/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/001-2.CtrlBySSH/Guidance.md)
 
 ## 3. GPIO端子を用いたLEDチカチカ
 ### いるもの
@@ -38,7 +38,7 @@
 * ブレッドボード、ジャンパーワイヤ、LED、抵抗  
 
 ### 手順  
-* [001-3.WriteGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/001-3.WriteGPIO/Guidance.md)
+* [001-3.WriteGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/001-3.WriteGPIO/Guidance.md)
 
 ## 4. 何やりたいか、みんなで考えよう
 ### いるもの

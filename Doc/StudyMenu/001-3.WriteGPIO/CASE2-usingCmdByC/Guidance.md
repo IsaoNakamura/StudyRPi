@@ -11,7 +11,7 @@
 ``nano commandGPIO.c``
 
 3. 下記コードを記述する。  
-[commandGPIO.c](https://github.com/IsaoNakamura/StudyRPi/App/commandGPIO/commandGPIO.c)  
+[commandGPIO.c](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/commandGPIO/commandGPIO.c)  
 
 4. ソースコードを保存して、コードエディタを終了する。  
  nanoエディタであれば、ctrl+oが保存。ctrl+xが終了。

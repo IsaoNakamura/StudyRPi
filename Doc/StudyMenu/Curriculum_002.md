@@ -17,14 +17,14 @@
 * スイッチ  
 
 ### 手順  
-* [002-1.ReadGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/002-1.ReadGPIO/Guidance.md)
+* [002-1.ReadGPIO/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/002-1.ReadGPIO/Guidance.md)
 
 ## 2. RPiを操作PC経由でインターネットに接続
 ### 特別にいるもの
 * インターネット接続できるPC  
 
 ### 手順  
-* [002-2.AccessInetByBridge/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/002-2.AccessInetByBridge/Guidance.md)
+* [002-2.AccessInetByBridge/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/002-2.AccessInetByBridge/Guidance.md)
 
 ## 3. PS3コントローラを用いたLEDチカチカ
 ### 特別にいるもの
@@ -33,7 +33,7 @@
 * USBケーブル(A-miniBタイプ)
 
 ### 手順  
-* [002-3.CtrlGPIOByDUALSHOCK/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/Doc/StudyMenu/002-3.CtrlGPIOByDUALSHOCK/Guidance.md)
+* [002-3.CtrlGPIOByDUALSHOCK/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/002-3.CtrlGPIOByDUALSHOCK/Guidance.md)
 
 ## 4. 次何やりたいか、みんなで考えよう
 ### 特別にいるもの

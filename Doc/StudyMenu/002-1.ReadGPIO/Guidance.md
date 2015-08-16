@@ -5,7 +5,7 @@
 ## 手順
 ### 1. ワイヤリング。
 下図のようにGPIO端子と電子部品をブレッドボードに配線する。  
-![Wiring](https://github.com/IsaoNakamura/StudyRPi/Doc/Wiring/RPi_ReadGPIO/RPi_ReadGPIO_bread.png?raw=true)
+![Wiring](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_ReadGPIO/RPi_ReadGPIO_bread.png?raw=true)
 
 ### 2. RPi勉強会用GitHubリポジトリをクローン(チェックアウト)して、ディレクトリに侵入する。  
 ``git clone https://github.com/IsaoNakamura/StudyRPi/``  
@@ -13,7 +13,7 @@
   既にクローンしていれば、``git fetch`` もしくは、 ``git pull`` する。
 
 ### 3. 以下のAPPを使用するので、このAPPのディレクトリに侵入する。  
-[StudyRPi/App/readGPIO](https://github.com/IsaoNakamura/StudyRPi/App/readGPIO)  
+[StudyRPi/App/readGPIO](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/readGPIO)  
 ``cd App/readGPIO`` 
 
 ### 4. コンパイルして実行ファイルを作成する。  
