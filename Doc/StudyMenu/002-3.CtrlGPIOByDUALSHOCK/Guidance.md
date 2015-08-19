@@ -40,7 +40,11 @@ USB-Bluetooth接続ドングルとPS3コントローラのMACアドレスが表�
 ``sudo jstest /dev/input/js0``  
 11. 「sixad daemon」をRPi起動時に自動起動させておくには以下のコマンドを実行する。  
 ``sudo update-rc.d sixad defaults``  
-``sudo reboot`` 
+``sudo reboot``  
+自動起動設定した後の再起動後や、次回の起動からPSボタンを押しても接続しない場合がある。  
+その時は、以下のコマンドで「sixad daemon」を停止させてから、起動してもう一度接続するか試すこと。  
+``sudo sixad --stop``  
+``sudo sixad --start``  
 
 ### 2. ワイヤリング。
 下図のようにGPIO端子と電子部品をブレッドボードに配線する。  
