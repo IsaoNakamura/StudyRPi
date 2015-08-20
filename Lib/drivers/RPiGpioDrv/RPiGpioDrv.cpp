@@ -1,8 +1,12 @@
 #include "RPiGpioDrv.h"
 
 //  レジスタブロックの物理アドレス
-#define GPIO_BASE_RPI_ONE	(0x20200000)	// for RPi1
-#define GPIO_BASE_RPI_TWO	(0x3F200000)	// for RPi2
+#define PERI_BASE_RPI_ONE	(0x20000000)	// for RPi1(BCM2708)
+#define PERI_BASE_RPI_TWO	(0x3F000000)	// for RPi2(BCM2835)
+
+#define GPIO_BASE_OFFSET	(0x00200000)
+#define PWM_BASE_OFFSET		(0x0020C000)
+
 #define BLOCK_SIZE			(4096)
 
 #define GPIO_PIN_MAX		(31)
@@ -10,6 +14,7 @@
 
 // GPIOレジスタ (volatile:実メモリに必ずアクセス)
 static volatile unsigned int *g_pGpio = NULL;
+static volatile unsigned int *g_pPwm = NULL;
 
 RPiGpioDrv::RPiGpioDrv()
 {
@@ -22,47 +27,87 @@ RPiGpioDrv::~RPiGpioDrv()
 // 初期化
 int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 {
-	if(g_pGpio){
-		// 既に初期化済
-		return 0;
+	int iRet = -1;
+	int fd = -1;
+	try
+	{
+		//  レジスタブロックの物理アドレス
+		unsigned int gpio_base	= 0x0;
+		unsigned int pwd_base	= 0x0;
+		if(RPiVer == RPI_VER_ONE){
+			gpio_base	= PERI_BASE_RPI_ONE + GPIO_BASE_OFFSET;
+			pwd_base	= PERI_BASE_RPI_ONE + PWM_BASE_OFFSET;
+		}else if(RPiVer == RPI_VER_TWO){
+			gpio_base	= PERI_BASE_RPI_TWO + GPIO_BASE_OFFSET;
+			pwd_base	= PERI_BASE_RPI_TWO + PWM_BASE_OFFSET;
+		}else{
+			printf("@RPiGpioDrv::init() RPi's Version(%d) is not supported\n",RPiVer);
+			throw 0;
+		}
+
+		//  /dev/memを開く（要sudo）
+		fd = open("/dev/mem", O_RDWR | O_SYNC);
+		if(fd == -1) {
+			printf("@RPiGpioDrv::init() cannot open /dev/mem\n");
+			throw 0;
+		}
+
+		//  GPIO初期化
+		if(!g_pGpio){
+			//  mmap で GPIO（物理メモリ）を gpio_map（仮想メモリ）に紐づける
+			void *gpio_map = NULL;
+			gpio_map = mmap(	  NULL
+								, BLOCK_SIZE
+								, PROT_READ | PROT_WRITE
+								, MAP_SHARED
+								, fd
+								, gpio_base
+			);
+			if((int)gpio_map == -1){
+				printf("@RPiGpioDrv::init() cannot mmap GPIO\n");
+				throw 0;
+			}
+		
+			g_pGpio = (unsigned int *) gpio_map;
+		}
+		
+		// PWM初期化
+		if(!g_pPwm){
+			void *pwm_map = NULL;
+			pwm_map = mmap(	  NULL
+							, BLOCK_SIZE
+							, PROT_READ | PROT_WRITE
+							, MAP_SHARED
+							, fd
+							, pwd_base
+			);
+			if((int)pwm_map == -1){
+				printf("@RPiGpioDrv::init() cannot mmap PWM\n");
+				throw 0;
+			}
+			
+			g_pPwm = (unsigned int *) pwm_map;
+		}
+		
+		//  mmap()後はfdをクローズ
+		if(fd >= 0){
+			close(fd);
+		}
+		
+		// ここまでくれば正常
+		iRet = 0;
 	}
-	
-	//  レジスタブロックの物理アドレス
-	unsigned int register_base = 0x0;
-	if(RPiVer == RPI_VER_ONE){
-		register_base = GPIO_BASE_RPI_ONE;
-	}else if(RPiVer == RPI_VER_TWO){
-		register_base = GPIO_BASE_RPI_TWO;
-	}else{
-		printf("@RPiGpioDrv::init() RPi's Version(%d) is not supported\n",RPiVer);
-		return -1;
+	catch(...)
+	{
+		// ここに来たら異常
+		iRet = -1;
+		
+		if(fd >= 0){
+			close(fd);
+		}	
 	}
 
-	//  GPIO初期化
-	int fd;
-	void *gpio_map;
-	//  /dev/memを開く（要sudo）
-	fd = open("/dev/mem", O_RDWR | O_SYNC);
-	if(fd == -1) {
-		printf("@RPiGpioDrv::init() cannot open /dev/mem\n");
-		return -1;
-	}
-
-    //  mmap で GPIO（物理メモリ）を gpio_map（仮想メモリ）に紐づける
-	gpio_map = mmap(NULL, BLOCK_SIZE,
-                    PROT_READ | PROT_WRITE, MAP_SHARED,
-                    fd, register_base );
-	if((int) gpio_map == -1){
-		printf("@RPiGpioDrv::init() cannot mmap /dev/mem\n");
-		return -1;
-	}
-    //  mmap()後はfdをクローズ
-	close(fd);
-
-	g_pGpio = (unsigned int *) gpio_map;
-
-	// success.
-	return 0;
+	return iRet;
 }
 
 // GPIOピンのモードの設定
@@ -82,10 +127,11 @@ int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 		return -1;
 	}
 	//  レジスタ番号(index)と3bitマスクを生成
-	int index = pin / 10;
-	unsigned int mask = ~(0x7 << ((pin % 10) * 3));
+	int index = (int)(pin / 10);
+	int shift = ((pin % 10) * 3);
+	unsigned int mask = ~(0x7 << shift);
 	//  GPFSEL0/1の該当するFSEL(3bit)のみを書き換え
-	g_pGpio[index] = (g_pGpio[index] & mask) | ((mode & 0x7) << ((pin % 10) * 3));
+	g_pGpio[index] = (g_pGpio[index] & mask) | ((mode & 0x7) << shift);
 	
 	// success.
 	return 0;
