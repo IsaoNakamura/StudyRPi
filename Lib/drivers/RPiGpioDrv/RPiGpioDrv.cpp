@@ -33,13 +33,13 @@ int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 	{
 		//  レジスタブロックの物理アドレス
 		unsigned int gpio_base	= 0x0;
-		unsigned int pwd_base	= 0x0;
+		unsigned int pwm_base	= 0x0;
 		if(RPiVer == RPI_VER_ONE){
 			gpio_base	= PERI_BASE_RPI_ONE + GPIO_BASE_OFFSET;
-			pwd_base	= PERI_BASE_RPI_ONE + PWM_BASE_OFFSET;
+			pwm_base	= PERI_BASE_RPI_ONE + PWM_BASE_OFFSET;
 		}else if(RPiVer == RPI_VER_TWO){
 			gpio_base	= PERI_BASE_RPI_TWO + GPIO_BASE_OFFSET;
-			pwd_base	= PERI_BASE_RPI_TWO + PWM_BASE_OFFSET;
+			pwm_base	= PERI_BASE_RPI_TWO + PWM_BASE_OFFSET;
 		}else{
 			printf("@RPiGpioDrv::init() RPi's Version(%d) is not supported\n",RPiVer);
 			throw 0;
@@ -79,7 +79,7 @@ int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 							, PROT_READ | PROT_WRITE
 							, MAP_SHARED
 							, fd
-							, pwd_base
+							, pwm_base
 			);
 			if((int)pwm_map == -1){
 				printf("@RPiGpioDrv::init() cannot mmap PWM\n");
