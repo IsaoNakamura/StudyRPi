@@ -57,7 +57,7 @@ public:
 	// 19.2[MHz] / clock = 19.2[MHz] / 400 = 48[KHz]
 	// 最小角度にするには 48[KHz] * 0.5[ms] = 24 を設定する
 	// 最大角度にするには 48[KHz] * 2.4[ms] = 115 を設定する
-	static int writePwmGpio(const int& pin, const int& val)
+	static int writePwmGpio(const int& pin, const int& val);
 
 private:
 	// 指定したマイクロ秒が100より小さい場合は無理やりループして止める

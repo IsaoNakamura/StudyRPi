@@ -363,7 +363,7 @@ int RPiGpioDrv::setPwmClock(const int& clock)
 	}
 	
 	unsigned int pwm_control = 0;
-	clock &= 4095;
+	int dest_clock = clock & 4095;
 	
 	// preserve PWM_CONTROL
 	pwm_control = *(g_pPwm + PWM_CONTROL);
@@ -380,7 +380,7 @@ int RPiGpioDrv::setPwmClock(const int& clock)
 	}
 	
 	// Set Clock
-	*(g_pClock + PWMCLK_DIV)  = BCM_PASSWORD | (clock << 12);
+	*(g_pClock + PWMCLK_DIV)  = BCM_PASSWORD | (dest_clock << 12);
 	
 	// Start PWM clock
 	*(g_pClock + PWMCLK_CNTL) = BCM_PASSWORD | 0x11;
@@ -399,8 +399,8 @@ int RPiGpioDrv::writePwmGpio(const int& pin, const int& val)
 	}
 	
 	int port = 0;
-	pin = pin & 63;
-	port = gpioToPwmPort[pin];
+	int dest_pin = pin & 63;
+	port = gpioToPwmPort[dest_pin];
 	
 	*(g_pPwm + port) = val;
 	g_pPwm[port] = val;
@@ -431,7 +431,7 @@ void RPiGpioDrv::delayMicroSecForce(const unsigned int& msec)
 {
 	struct timeval stNow;
 	struct timeval stLen;
-	struct timeval tEnd;
+	struct timeval stEnd;
 
 	gettimeofday(&stNow, NULL);
 
