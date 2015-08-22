@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include <wiringPi/wiringPi.h>
+#include <wiringPi.h>
 
 #define EXEC_CNT	(10)
 #define DELAY_SEC	(1)
