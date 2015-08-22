@@ -15,8 +15,8 @@ DEPENDS  = $(OBJECTS:.o=.d)
 LIBDIR = ../../Lib
 EXOBJS = $(OBJDIR)/RPiGpioDrv.o $(OBJDIR)/CJoystickDrv.o
 
-$(TARGET): $(OBJECTS) $(EXOBJS) $(LIBS)
-	$(COMPILER) -o $@ $^ $(LDFLAGS)
+$(TARGET): $(OBJECTS) $(LIBS)
+	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
 
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
