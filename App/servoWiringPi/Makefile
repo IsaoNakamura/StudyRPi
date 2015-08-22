@@ -1,8 +1,8 @@
 COMPILER = g++
 CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal
-LDFLAGS =
-LIBS = -lwiringPi -lm
-INCLUDE = -I/usr/local/include
+LDFLAGS = -lwiringPi -lm
+LIBS =
+INCLUDE = -I../../Lib
 TARGET   = ./$(shell basename `readlink -f .`)
 OBJDIR = ../../Bin/obj
 ifeq "$(strip $(OBJDIR))" ""
@@ -15,12 +15,12 @@ DEPENDS  = $(OBJECTS:.o=.d)
 LIBDIR = ../../Lib
 EXOBJS =
 
-$(TARGET): $(OBJECTS) $(EXOBJS)
-	$(COMPILER)  $(INCLUDE) $(LIBS) -o $@ $^ $(LDFLAGS)
+$(TARGET): $(OBJECTS) $(LIBS)
+	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
 
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
-	$(COMPILER) $(CFLAGS) -o $@ -c $<
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 .PHONY: subsystem
 subsystem:
