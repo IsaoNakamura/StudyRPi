@@ -129,8 +129,8 @@ int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 		}
 
 		//  /dev/memを開く（要sudo）
-		fd = open("/dev/mem", O_RDWR | O_SYNC);
-		if(fd == -1) {
+		fd = open("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC );
+		if(fd < 0) {
 			printf("@RPiGpioDrv::init() cannot open /dev/mem\n");
 			throw 0;
 		}
@@ -242,6 +242,7 @@ int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 	}else if( mode == GPIO_PWM ){
 		unsigned char alt = gpioToPwmALT[pin];
 		if( alt == 0){
+			printf("this pin is not PwmALT.¥n");
 			return -1;
 		}
 		//  GPFSELの該当するFSEL(3bit)のみを書き換え
@@ -250,16 +251,19 @@ int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 		delayMicroSec(110);
 		
 		if(setPwmMode(PWM_MODE_BALANCED)!=0){
+			printf("failed to  setPwmMode(PWM_MODE_BALANCED).¥n");
 			return -1;
 		}
 		
 		// Default range of 1024
 		if(setPwmRange(1024)!=0){
+			printf("failed to  setPwmRange().¥n");
 			return -1;
 		}
 		
 		// 19.2 / 32 = 600KHz - Also starts the PWM
 		if(setPwmClock(32)!=0){
+			printf("failed to  setPwmClock().¥n");
 			return -1;
 		}
 		
@@ -413,13 +417,16 @@ int RPiGpioDrv::writePwmGpio(const int& pin, const int& val)
 void RPiGpioDrv::delayMicroSec(const unsigned int& msec)
 {
 	struct timespec delaytime;
+	unsigned int uSecs = msec % 1000000;
+	unsigned int wSecs = msec / 1000000 ;
+		
 	if (msec == 0){
 		return;
 	}else if(msec < 100){
 		delayMicroSecForce(msec);
 	}else{
-		delaytime.tv_sec	= 0 ;
-		delaytime.tv_nsec	= (long)(msec * 1000) ;
+		delaytime.tv_sec	= wSecs ;
+		delaytime.tv_nsec	= (long)(uSecs * 1000L) ;
 		nanosleep(&delaytime, NULL) ;
 	}
 	
