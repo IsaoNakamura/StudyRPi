@@ -36,14 +36,14 @@ int main(int argc, char* argv[])
 			
 			// Axis
 			int axis_idx = 0;
-			for(axis_idx=0; axis_idx<pJoystick->getNumAxis; axis_idx++){
+			for(axis_idx=0; axis_idx<pJoystick->getNumAxis(); axis_idx++){
 				int axis_stat = pJoystick->getAxisState(axis_idx);
 				printf("axis[%02d]:%d ",axis_idx,axis_stat);
 			}
 			
 			// Button
 			int btn_idx = 0;
-			for(btn_idx=0; btn_idx<pJoystick->getNumButton; btn_idx++){
+			for(btn_idx=0; btn_idx<pJoystick->getNumButton(); btn_idx++){
 				int btn_stat = pJoystick->getButtonState(btn_idx);
 				printf("btn[%02d]:%d ",btn_idx,btn_stat);
 			}
