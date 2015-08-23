@@ -45,11 +45,15 @@ private:
 	int m_hJoy;
 	int m_iNumAxis;
 	int m_iNumButton;
-	void updateButtonState(const int btn_idx);
+	void updateButtonState();
+public:
+	int getNumAxis() const { return m_iNumAxis; }
+	int getNumButton() const { return m_iNumButton; }
 public:
 	int connectJoystick();
 	int readJoystick();
-	int getButtonState(const int btn_idx);
+	int getButtonState(const int& btn_idx) const;
+	int getAxisState(const int& axis_idx) const;
 };
 
 #endif

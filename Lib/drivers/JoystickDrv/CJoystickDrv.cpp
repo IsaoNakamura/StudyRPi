@@ -54,7 +54,10 @@ void CJoystickDrv::destroy()
 		m_pButton = NULL;
 	}
 
-	close(m_hJoy);
+	if( m_hJoy >= 0 )
+	{
+		close(m_hJoy);
+	}
 
 	return;
 }
@@ -72,7 +75,8 @@ int CJoystickDrv::connectJoystick()
 	{
 		while(1)
 		{
-			if( ( m_hJoy = open( JOY_DEV, O_RDONLY) ) == -1 )
+			m_hJoy = open( JOY_DEV, O_RDONLY)
+			if( m_hJoy < 0 )
 			{
 				printf("Couldn't open joystick\n" );
 				retry_cnt++;
@@ -91,20 +95,38 @@ int CJoystickDrv::connectJoystick()
 				break;
 			}
 		}
+
 		ioctl( m_hJoy, JSIOCGAXES, &m_iNumAxis );
 		ioctl( m_hJoy, JSIOCGBUTTONS, &m_iNumButton );
 		ioctl( m_hJoy, JSIOCGNAME(80), &name_of_joystick );
+
 		m_pAxis = (int*)calloc(m_iNumAxis, sizeof( int ) );
+		if(!m_pAxis)
+		{
+			printf("failed to create m_pAxis¥n");
+			throw 0;
+		}
+
 		m_pButton = (stButtonState*)calloc(m_iNumButton, sizeof( stButtonState ) );
-		printf("Joystick detected: %s\n\t%d %d buttons\n\n"
+		{
+			printf("failed to create m_pButton¥n");
+			throw 0;
+		}
+		
+		printf("Joystick detected: %s\n\t%d axis\n\t%d buttons\n\n"
 	 			, name_of_joystick
 				, m_iNumAxis
 				, m_iNumButton );
+
 		fcntl( m_hJoy, F_SETFL, O_NONBLOCK );
 		for(i=0;i<m_iNumButton;i++)
 		{
 			m_pButton[i].iCur = BUTTON_OFF;
 			m_pButton[i].iOld = BUTTON_OFF;
+		}
+		for(i=0;i<m_iNumAxis;i++)
+		{
+			m_pAxis[i] = 0;
 		}
 
 		iRet=0;
@@ -112,6 +134,7 @@ int CJoystickDrv::connectJoystick()
 	catch(...)
 	{
 		iRet = -1;
+		this->destroy();
 	}
 
 	return iRet;
@@ -126,51 +149,83 @@ int CJoystickDrv::readJoystick()
 	switch( js.type & ~JS_EVENT_INIT)
 	{
 		case JS_EVENT_AXIS:
-			m_pAxis[js.number] = js.value;
+			if(m_pAxis)
+			{
+				m_pAxis[js.number] = js.value;
+			}
 			break;
 		case JS_EVENT_BUTTON:
-			m_pButton[js.number].pValue = js.value;
+			if(m_pButton)
+			{
+				m_pButton[js.number].pValue = js.value;
+			}
 			break;
 	}
-	int i=0;
-	for(i=0;i<m_iNumButton;i++)
-	{
-		this->updateButtonState(i);
-	}
+
+	// ボタン状態更新
+	updateButtonState();
 
 	iRet=0;
 
 	return iRet;
 }
 
-void CJoystickDrv::updateButtonState(const int btn_idx)
+void CJoystickDrv::updateButtonState()
 {
-	if(m_pButton[btn_idx].pValue == BUTTON_ON)
+	if(!m_pButton)
 	{
-		if(m_pButton[btn_idx].iOld == BUTTON_ON)
+		return;
+	}
+	
+	int btn_idx=0;
+	for(btn_idx=0;btn_idx<m_iNumButton;btn_idx++)
+	{
+		if(m_pButton[btn_idx].pValue == BUTTON_ON)
 		{
-			m_pButton[btn_idx].iCur = BUTTON_OFF;
+			if(m_pButton[btn_idx].iOld == BUTTON_ON)
+			{
+				m_pButton[btn_idx].iCur = BUTTON_OFF;
+			}
+			else
+			{
+				m_pButton[btn_idx].iCur = BUTTON_ON;
+			}
+			m_pButton[btn_idx].iOld = BUTTON_ON;
 		}
 		else
 		{
-			m_pButton[btn_idx].iCur = BUTTON_ON;
+			m_pButton[btn_idx].iCur = BUTTON_OFF;
+			m_pButton[btn_idx].iOld = BUTTON_OFF;
 		}
-		m_pButton[btn_idx].iOld = BUTTON_ON;
 	}
-	else
-	{
-		m_pButton[btn_idx].iCur = BUTTON_OFF;
-		m_pButton[btn_idx].iOld = BUTTON_OFF;
-	}
-	//m_pButton[btn_idx].iOld = m_pButton[btn_idx].iCur;
 }
 
-int CJoystickDrv::getButtonState(const int btn_idx)
+int CJoystickDrv::getButtonState(const int& btn_idx) const
 {
-	int iRetButtonState = BUTTON_OFF;
-	if(m_iNumButton >= btn_idx)
+	if(!m_pButton)
 	{
-		iRetButtonState = m_pButton[btn_idx].iCur;
+		return BUTTON_OFF;
 	}
-	return iRetButtonState;
+	
+	if( btn_idx >= m_iNumButton )
+	{
+		return BUTTON_OFF;
+	}
+	
+	return m_pButton[btn_idx].iCur;
+}
+
+int CJoystickDrv::getAxisState(const int& axis_idx) const
+{
+	if(!m_pAxis)
+	{
+		return 0;
+	}
+	
+	if( axis_idx >= m_iNumAxis )
+	{
+		return 0;
+	}
+	
+	return m_pAxis[axis_idx];
 }
