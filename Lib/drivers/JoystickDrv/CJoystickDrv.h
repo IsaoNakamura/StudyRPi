@@ -24,7 +24,7 @@
 
 struct stButtonState
 {
-	char pValue;
+	char cValue;
 	int iCur;
 	int iOld;
 };

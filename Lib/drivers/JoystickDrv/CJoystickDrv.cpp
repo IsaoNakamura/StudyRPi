@@ -158,7 +158,7 @@ int CJoystickDrv::readJoystick()
 		case JS_EVENT_BUTTON:
 			if(m_pButton)
 			{
-				m_pButton[js.number].pValue = js.value;
+				m_pButton[js.number].cValue = js.value;
 			}
 			break;
 	}
@@ -181,7 +181,7 @@ void CJoystickDrv::updateButtonState()
 	int btn_idx=0;
 	for(btn_idx=0;btn_idx<m_iNumButton;btn_idx++)
 	{
-		if(m_pButton[btn_idx].pValue == BUTTON_ON)
+		if(m_pButton[btn_idx].cValue == BUTTON_ON)
 		{
 			if(m_pButton[btn_idx].iOld == BUTTON_ON)
 			{
@@ -213,7 +213,7 @@ int CJoystickDrv::getButtonState(const int& btn_idx) const
 		return BUTTON_OFF;
 	}
 	
-	return m_pButton[btn_idx].iCur;
+	return m_pButton[btn_idx].cValue;
 }
 
 int CJoystickDrv::getAxisState(const int& axis_idx) const
