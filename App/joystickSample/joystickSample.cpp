@@ -34,6 +34,9 @@ int main(int argc, char* argv[])
 				throw 0;
 			}
 			
+			// clear console.
+			system("clear");
+			
 			// Axis
 			printf("axis:");
 			int axis_idx = 0;
