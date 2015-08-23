@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 		if(pJoystick->connectJoystick()!=0){
-			printf("failed to connectJoystick()¥n");
+			printf("failed to connectJoystick()\n");
 			throw 0;
 		}
 		printf("begin loop \n");
@@ -30,29 +30,38 @@ int main(int argc, char* argv[])
 		while(1){
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
-				printf("faile to readJoystick()¥n");
+				printf("faile to readJoystick()\n");
 				throw 0;
 			}
 			
 			// Axis
+			printf("axis:");
 			int axis_idx = 0;
 			for(axis_idx=0; axis_idx<pJoystick->getNumAxis(); axis_idx++){
 				int axis_stat = pJoystick->getAxisState(axis_idx);
-				printf("axis[%02d]:%d ",axis_idx,axis_stat);
+				printf("[%d]:%d ",axis_idx,axis_stat);
 			}
+			printf("\n");
 			
 			// Button
+			printf("btn:");
 			int btn_idx = 0;
 			for(btn_idx=0; btn_idx<pJoystick->getNumButton(); btn_idx++){
 				int btn_stat = pJoystick->getButtonState(btn_idx);
-				printf("btn[%02d]:%d ",btn_idx,btn_stat);
+				printf("[%d]:%d ",btn_idx,btn_stat);
 			}
-			printf("¥n");
+			printf("\n\n");
+			
+			//Maru
+			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
+				printf("pushed Maru-Button\n");
+				break;
+			}
 
 			i++;
 			sleep(0);
 		}
-		printf("end loop¥n");
+		printf("end loop\n");
 
 		if(pJoystick){
 			delete pJoystick;
@@ -61,7 +70,7 @@ int main(int argc, char* argv[])
 	}
 	catch(...)
 	{
-		printf("catch!! ¥n");
+		printf("catch!! \n");
 		iRet = -1;
 		if(pJoystick){
 			delete pJoystick;
