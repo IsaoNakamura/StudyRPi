@@ -78,7 +78,7 @@ int CJoystickDrv::connectJoystick()
 			m_hJoy = open( JOY_DEV, O_RDONLY);
 			if( m_hJoy < 0 )
 			{
-				printf("Couldn't open joystick\n" );
+				printf("Couldn't open joystick¥n" );
 				retry_cnt++;
 				if(retry_cnt > retry_max)
 				{
@@ -108,12 +108,13 @@ int CJoystickDrv::connectJoystick()
 		}
 
 		m_pButton = (stButtonState*)calloc(m_iNumButton, sizeof( stButtonState ) );
+		if(!m_pButton)
 		{
 			printf("failed to create m_pButton¥n");
 			throw 0;
 		}
 		
-		printf("Joystick detected: %s\n\t%d axis\n\t%d buttons\n\n"
+		printf("Joystick detected: %s¥n¥t%d axis¥n¥t%d buttons¥n¥n"
 	 			, name_of_joystick
 				, m_iNumAxis
 				, m_iNumButton );
