@@ -75,7 +75,7 @@ int CJoystickDrv::connectJoystick()
 	{
 		while(1)
 		{
-			m_hJoy = open( JOY_DEV, O_RDONLY)
+			m_hJoy = open( JOY_DEV, O_RDONLY);
 			if( m_hJoy < 0 )
 			{
 				printf("Couldn't open joystick\n" );
