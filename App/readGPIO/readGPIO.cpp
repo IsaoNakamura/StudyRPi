@@ -1,7 +1,9 @@
 /////////////////////////////////////////////
 // this main() is written by isao_nakamura //
 /////////////////////////////////////////////
-
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
 #include "../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.h"
 
 #define EXEC_CNT	(100)
