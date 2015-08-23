@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 		if(pJoystick->connectJoystick()!=0){
-			printf("failed to connectJoystick()\n");
+			printf("failed to connectJoystick()¥n");
 			throw 0;
 		}
 		printf("begin loop \n");
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 		while(1){
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
-				printf("faile to readJoystick()\n");
+				printf("faile to readJoystick()¥n");
 				throw 0;
 			}
 			
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 			i++;
 			sleep(0);
 		}
-		printf("end loop\n");
+		printf("end loop¥n");
 
 		if(pJoystick){
 			delete pJoystick;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	}
 	catch(...)
 	{
-		printf("catch!! \n");
+		printf("catch!! ¥n");
 		iRet = -1;
 		if(pJoystick){
 			delete pJoystick;
