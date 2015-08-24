@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 	{
 		// ready GPIO
 		if( wiringPiSetupGpio() == -1 ){
-			printf("failed to wiringPiSetupGpio()¥n");
+			printf("failed to wiringPiSetupGpio()\n");
 			return 1;
 		}
 
@@ -54,18 +54,30 @@ int main(int argc, char* argv[])
 			
 			// DUALSHOCK m_pAxis[23] roll値 中０度0 左９０度4000　右９０度 -4600
 			// servoMotor GWS park hpx min25 mid74 max123
+			const int axis_min = -4600;
+			const int axis_max = 4000;
+			const int axis_mid = 0;
+			const int servo_min = 25;
+			const int servo_max = 123;
+			const int servo_mid = (int)( (servo_max - servo_min) / 2 );
 			int roll = pJoystick->getAxisState(23);
-			int val = 74;
-			if(roll==0){ // 中間値
-				val = 74;
-			}else if(roll < 0){ // 右
-				double rate = (double)roll / (double)(-4600);
-				int delta = (int)( (double)( 74 - 25) * rate );
-				val = 74 - delta;
-			}else if(roll > 0){ // 左
-				double rate = (double)roll / (double)(4000);
-				int delta = (int)( (double)( 123 - 74 ) * rate );
-				val = 74 + delta;
+			int val = servo_mid;
+			if(roll==axis_mid){ // 中間値
+				val = servo_mid;
+			}else if(roll < axis_mid){ // 右
+				double rate = fabs( (double)roll / (double)(axis_min) );
+				int delta = (int)( (double)( servo_mid - servo_min) * rate );
+				val = servo_mid - delta;
+				if(val < servo_min){
+					val = servo_min;
+				}
+			}else if(roll > axis_mid){ // 左
+				double rate = fabs( (double)roll / (double)(axis_max) );
+				int delta = (int)( (double)( servo_max - servo_mid ) * rate );
+				val = servo_mid + delta;
+				if(val > servo_max){
+					val = servo_max;
+				}
 			}
 			pwmWrite(GPIO_NO, val);
 			
