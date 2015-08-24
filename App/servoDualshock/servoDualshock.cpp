@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include<math.h>
 
 #include <wiringPi.h>
 #include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
@@ -42,24 +43,25 @@ int main(int argc, char* argv[])
 			printf("failed to connectJoystick()\n");
 			throw 0;
 		}
-		printf("begin loop \n");
 
-		int i=0;
+		// DUALSHOCK m_pAxis[23] roll値 中０度0 左９０度4000　右９０度 -4600
+		const int axis_min = -4600;
+		const int axis_max = 4000;
+		const int axis_mid = 0;
+
+		// servoMotor GWS park hpx min25 mid74 max123
+		const int servo_min = 25;
+		const int servo_max = 123;
+		const int servo_mid = servo_min + (int)( (servo_max - servo_min) / 2 );
+
+		printf("begin loop \n");
 		while(1){
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
 				printf("faile to readJoystick()\n");
 				throw 0;
 			}
-			
-			// DUALSHOCK m_pAxis[23] roll値 中０度0 左９０度4000　右９０度 -4600
-			// servoMotor GWS park hpx min25 mid74 max123
-			const int axis_min = -4600;
-			const int axis_max = 4000;
-			const int axis_mid = 0;
-			const int servo_min = 25;
-			const int servo_max = 123;
-			const int servo_mid = (int)( (servo_max - servo_min) / 2 );
+
 			int roll = pJoystick->getAxisState(23);
 			int val = servo_mid;
 			if(roll==axis_mid){ // 中間値
@@ -87,7 +89,6 @@ int main(int argc, char* argv[])
 				break;
 			}
 
-			i++;
 			sleep(0);
 		}
 		printf("end loop\n");
