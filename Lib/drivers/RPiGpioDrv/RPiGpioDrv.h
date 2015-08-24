@@ -40,28 +40,33 @@ public:
 	static int getLevel(const int& pin, int& level);
 
 	// 指定したマイクロ秒(1秒=1000000マイクロ秒)待つ
-	static void delayMicroSec(const unsigned int& msec);
+	// danger!!
+	// static void delayMicroSec(const unsigned int& msec);
 	
 	// PWMモードを設定する
 	// サーボモーターで使用するときは PWM_MODE_MARKSPACE を使うこと
 	// LEDで使用するときは PWM_MODE_BALANCED を使うこと
-	static int setPwmMode(const int& mode);
+	// danger!!
+	// static int setPwmMode(const int& mode);
 	
 	// サーボモーターの仕様に合わせたrangeとclockを設定
 	// SG90型のサーボモーターならrange1024,clock=400らしい
-	static int setPwmRange(const unsigned int& range);
-	static int setPwmClock(const int& clock);
+	// danger!!
+	// static int setPwmRange(const unsigned int& range);
+	// static int setPwmClock(const int& clock);
 	
 	// サーボモータの回転角度パルス幅に合わせた値を設定する。
 	// SG90型のサーボモーターならパルス幅0.5～2.4[ms]なので、
 	// 19.2[MHz] / clock = 19.2[MHz] / 400 = 48[KHz]
 	// 最小角度にするには 48[KHz] * 0.5[ms] = 24 を設定する
 	// 最大角度にするには 48[KHz] * 2.4[ms] = 115 を設定する
-	static int writePwmGpio(const int& pin, const int& val);
+	// danger!!
+	// static int writePwmGpio(const int& pin, const int& val);
 
 private:
 	// 指定したマイクロ秒が100より小さい場合は無理やりループして止める
-	static void delayMicroSecForce(const unsigned int& msec);
+	// danger!!
+	// static void delayMicroSecForce(const unsigned int& msec);
 };
 
 #endif

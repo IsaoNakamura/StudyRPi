@@ -154,6 +154,7 @@ int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 			g_pGpio = (unsigned int *)gpio_map;
 		}
 		
+		/*
 		// PWM初期化
 		if(!g_pPwm){
 			void* pwm_map = NULL;
@@ -189,7 +190,7 @@ int RPiGpioDrv::init(const int& RPiVer/*=RPI_VER_TWO*/)
 			
 			g_pClock = (unsigned int *)clock_map;
 		}
-		
+		*/
 		//  mmap()後はfdをクローズ
 		if(fd >= 0){
 			close(fd);
@@ -240,6 +241,8 @@ int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 		g_pGpio[index] = (g_pGpio[index] & mask) | (FSEL_OUTPUT << shift);
 		
 	}else if( mode == GPIO_PWM ){
+		return -1;
+		/*
 		unsigned char alt = gpioToPwmALT[pin];
 		if( alt == 0){
 			printf("this pin is not PwmALT.¥n");
@@ -266,7 +269,7 @@ int RPiGpioDrv::setPinMode(const int& pin, const int& mode)
 			printf("failed to  setPwmClock().¥n");
 			return -1;
 		}
-		
+		*/
 	}else{
 		return -1;
 	}
@@ -322,6 +325,7 @@ int RPiGpioDrv::getLevel(const int& pin, int& level)
     return 0;
 }
 
+/*
 int RPiGpioDrv::setPwmMode(const int& mode)
 {
 	if(!g_pPwm){
@@ -339,7 +343,9 @@ int RPiGpioDrv::setPwmMode(const int& mode)
 	// success.
 	return 0;
 }
+*/
 
+/*
 int RPiGpioDrv::setPwmRange(const unsigned int& range)
 {
 	if(!g_pPwm){
@@ -355,7 +361,9 @@ int RPiGpioDrv::setPwmRange(const unsigned int& range)
 	// success.
 	return 0;
 }
+*/
 
+/*
 int RPiGpioDrv::setPwmClock(const int& clock)
 {
 	if(!g_pPwm){
@@ -395,7 +403,9 @@ int RPiGpioDrv::setPwmClock(const int& clock)
 	// success.
 	return 0;
 }
+*/
 
+/*
 int RPiGpioDrv::writePwmGpio(const int& pin, const int& val)
 {
 	if(!g_pPwm){
@@ -412,8 +422,10 @@ int RPiGpioDrv::writePwmGpio(const int& pin, const int& val)
 	// success.
 	return 0;
 }
+*/
 
 // 指定したマイクロ秒(1秒=1000000マイクロ秒)待つ
+/*
 void RPiGpioDrv::delayMicroSec(const unsigned int& msec)
 {
 	struct timespec delaytime;
@@ -432,8 +444,10 @@ void RPiGpioDrv::delayMicroSec(const unsigned int& msec)
 	
 	return;
 }
+*/
 
 // delayMicroSec()で指定したマイクロ秒が100より小さい場合は無理やりループして止める
+/*
 void RPiGpioDrv::delayMicroSecForce(const unsigned int& msec)
 {
 	struct timeval stNow;
@@ -452,3 +466,4 @@ void RPiGpioDrv::delayMicroSecForce(const unsigned int& msec)
 
 	return;
 }
+*/
