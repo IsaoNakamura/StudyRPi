@@ -11,9 +11,6 @@
 
 #define GPIO_NO		(18)
 
-#define GWS_PARK_MIN	(30)
-#define GWS_PARK_MAX	(110)
-
 int main(int argc, char* argv[])
 {
 	int iRet = 0;
@@ -50,8 +47,8 @@ int main(int argc, char* argv[])
 		const int axis_mid = 0;
 
 		// servoMotor GWS park hpx min25 mid74 max123
-		const int servo_min = 25;
-		const int servo_max = 123;
+		const int servo_min = 40;//25;
+		const int servo_max = 108;//123;
 		const int servo_mid = servo_min + (int)( (servo_max - servo_min) / 2 );
 
 		printf("begin loop \n");
