@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 			}
 			
 			// 取得した顔の位置情報に基づき、矩形描画を行う
-			cvRectangle(		  frame
+			cvRectangle(	  frame
 							, cvPoint(faceRect->x, faceRect->y)
 							, cvPoint(faceRect->x + faceRect->width, faceRect->y + faceRect->height)
 							, CV_RGB(255, 0 ,0)
