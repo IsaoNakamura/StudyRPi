@@ -13,6 +13,7 @@
 
 int main(int argc, char* argv[])
 {
+	printf("Press Maru-Button to Exit Process.\n");
 	int iRet = 0;
 
 	CJoystickDrv* pJoystick = NULL;
@@ -41,16 +42,17 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 
-		// DUALSHOCK m_pAxis[23] roll値 中０度0 左９０度4000　右９０度 -4600
-		const int axis_min = -4600;
-		const int axis_max = 4000;
+		// DUALSHOCK LeftJoystick(m_pAxis[0])
+		const int axis_min = -32767;
+		const int axis_max = 32767;
 		const int axis_mid = 0;
 
 		// servoMotor GWS park hpx min25 mid74 max123
-		const int servo_min = 40;//25;
-		const int servo_max = 108;//123;
-		const int servo_mid = servo_min + (int)( (servo_max - servo_min) / 2 );
+		const int servo_mid = 73;
+		const int servo_min = servo_mid - 15;
+		const int servo_max = servo_mid + 15;
 
+		pwmWrite(GPIO_NO, servo_mid);
 		printf("begin loop \n");
 		while(1){
 			// Joystickの状態を更新
@@ -59,19 +61,19 @@ int main(int argc, char* argv[])
 				throw 0;
 			}
 
-			int roll = pJoystick->getAxisState(23);
+			int roll = pJoystick->getAxisState(0);
 			int val = servo_mid;
 			if(roll==axis_mid){ // 中間値
 				val = servo_mid;
-			}else if(roll < axis_mid){ // 右
-				double rate = fabs( (double)roll / (double)(axis_min) );
+			}else if(roll > axis_mid){ // 右
+				double rate = fabs( (double)roll / (double)(axis_max) );
 				int delta = (int)( (double)( servo_mid - servo_min) * rate );
 				val = servo_mid - delta;
 				if(val < servo_min){
 					val = servo_min;
 				}
-			}else if(roll > axis_mid){ // 左
-				double rate = fabs( (double)roll / (double)(axis_max) );
+			}else if(roll < axis_mid){ // 左
+				double rate = fabs( (double)roll / (double)(axis_min) );
 				int delta = (int)( (double)( servo_max - servo_mid ) * rate );
 				val = servo_mid + delta;
 				if(val > servo_max){
@@ -90,6 +92,7 @@ int main(int argc, char* argv[])
 		}
 		printf("end loop\n");
 
+		pwmWrite(GPIO_NO, servo_mid);
 		if(pJoystick){
 			delete pJoystick;
 			pJoystick = NULL;
