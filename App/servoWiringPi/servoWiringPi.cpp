@@ -13,13 +13,14 @@
 #define GPIO_NO	(18)
 
 #define GWS_PARK_MIN	(30)
+#define GWS_PARK_MID	(73)
 #define GWS_PARK_MAX	(110)
 
 int main(int argc, char* argv[])
 {
 	
 	if( wiringPiSetupGpio() == -1 ){
-		printf("failed to wiringPiSetupGpio()¥n");
+		printf("failed to wiringPiSetupGpio()\n");
 		return 1;
 	}
 	
@@ -27,7 +28,8 @@ int main(int argc, char* argv[])
 	pwmSetMode(PWM_MODE_MS);
 	pwmSetClock(400);
 	pwmSetRange(1024);
-	
+
+	printf("Input '-1' to Next-Stage.\n");
 	while(1){
 		int num = 0;
 		std::cin >> num;
@@ -37,6 +39,9 @@ int main(int argc, char* argv[])
 		}
 		pwmWrite(GPIO_NO, num);
 	}
+
+	// Change to the Middle-Pos.
+	pwmWrite(GPIO_NO, GWS_PARK_MID);
 
 	// EXEC_CNT回ループしてONとOFFを繰り返す
 	int i=0;
@@ -56,6 +61,9 @@ int main(int argc, char* argv[])
 		// DELAY_SEC秒待つ
 		sleep(DELAY_SEC);
 	}
+
+	// Return to the Middle-Pos.
+	pwmWrite(GPIO_NO, GWS_PARK_MID);
 
 	return 0;
 }
