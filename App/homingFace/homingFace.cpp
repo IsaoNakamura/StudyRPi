@@ -9,8 +9,9 @@
 
 #include <wiringPi.h>
 
-#define GPIO_PITCH		(12)
-#define GPIO_YAW		(18)
+#define GPIO_YAW		(18)	// PWM-Channel0 is on gpios 12 or 18.
+#define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
+
 
 #include <cv.h>
 #include <highgui.h>
@@ -24,6 +25,92 @@
 CvSize minsiz ={0,0};
 
 #define DELAY_SEC	(1)
+
+// 水平・垂直画角を算出する
+int calcViewAngle
+(
+	double&			angle_horz,
+	double&			angle_vert,
+	const double&	sc_width,
+	const double&	sc_height,
+	const double&	angle_diagonal
+)
+{
+	// 返答領域の初期化
+	angle_horz = 0.0;
+	angle_vert = 0.0;
+	
+	// 入力値チェック
+	if( sc_width <= 1.0e-06){
+		return -1;
+	}
+	if( sc_height <= 1.0e-06){
+		return -1;
+	}
+	if( angle_diagonal <= 1.0e-06){
+		return -1;
+	}
+	
+	// d(対角線)
+	double sc_diagonal = sqrt( sc_width*sc_width + sc_height*sc_height);
+	if( sc_diagonal <= 1.0e-06){
+		return -1;
+	}
+	
+	// d比
+	double rate_width	= sc_width / sc_diagonal;
+	double rate_height	= sc_height / sc_diagonal;
+	
+	// 水平・垂直画角を算出する
+	angle_horz = angle_diagonal * rate_width;
+	angle_vert = angle_diagonal * rate_height;
+	
+	return 0;
+}
+
+// スクリーン座標からカメラのピッチ角とヨー角を算出する
+int calcScreenToCameraAngle
+(
+	double&			camera_pitch,
+	double&			camera_yaw,
+	const double&	src_u,
+	const double&	src_v,
+	const double&	sc_width,
+	const double&	sc_height,
+	const double&	angle_horz,
+	const double&	angle_vert
+)
+{
+	// 返答領域の初期化
+	camera_pitch = 0.0;
+	camera_yaw = 0.0;
+	
+	// 入力値チェック
+	if( src_u <= 1.0e-06){
+		return -1;
+	}
+	if( src_v <= 1.0e-06){
+		return -1;
+	}
+	if( sc_width <= 1.0e-06){
+		return -1;
+	}
+	if( sc_height <= 1.0e-06){
+		return -1;
+	}
+	if( angle_horz <= 1.0e-06){
+		return -1;
+	}
+	if( angle_vert <= 1.0e-06){
+		return -1;
+	}
+	
+	// カメラのピッチ角とヨー角を算出
+	camera_pitch = ( src_u / sc_width * angle_horz ) - ( angle_horz / 2.0 );
+	camera_yaw = (angle_vert / 2.0) - ( src_v / sc_height * angle_vert);
+	
+	return 0;
+}
 
 int main(int argc, char* argv[])
 {
