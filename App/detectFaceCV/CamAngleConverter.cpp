@@ -1,7 +1,4 @@
-// uv2py.cpp : コンソール アプリケーションのエントリ ポイントを定義します。
-//
-
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "CamAngleConverter.h"
 #include "math.h"
 
@@ -127,7 +124,7 @@ bool DF::IsValid(const int &param) {
 
 
 
-int _tmain(int argc, _TCHAR* argv[])
+int TEST_CamAngCnv()
 {
 	const int w = 1280;
 	const int h = 720;
@@ -150,6 +147,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		printf("%f,%f\n", p, y);
 	}
+	
+	
 	return 0;
 }
 
