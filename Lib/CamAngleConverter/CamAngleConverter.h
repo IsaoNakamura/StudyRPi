@@ -3,23 +3,6 @@
 
 namespace DF {
 
-	template<typename T>
-	struct XY {
-		T x;
-		T y;
-		XY() {};
-		XY(T _x, T _y) :x(_x), y(_y) {}
-		XY& operator=(const XY& r) {
-			x = r.x;
-			y = r.y;
-			return *this;
-		}
-		bool operator<(const XY& r) const {
-			if (x < r.x) { return true; }
-			return y < r.y;
-		}
-	};
-
 	class CamAngleConverter {
 	public:
 		CamAngleConverter(
@@ -52,7 +35,6 @@ namespace DF {
 		double    _angle_diagonal;
 		bool      _initialized;
 
-		std::map< XY<int>, XY<double> > _cache;
 	};
 
 	bool IsValid(const double& param);
@@ -65,5 +47,4 @@ namespace DF {
 		const int&    sc_height,
 		const double& angle_diagonal);
 		
-	int TEST_Simple_CamAngCnv();
 };

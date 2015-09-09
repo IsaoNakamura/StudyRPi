@@ -25,8 +25,6 @@ int DF::CamAngleConverter::Initialize(
 	const int&       sc_height,
 	const double&    angle_diagonal
 	) {
-
-	_cache.clear();
 	_initialized = false;
 	_sc_width = _sc_height = 0;
 	_angle_horz = _angle_vert = _angle_diagonal = 0.0;
@@ -61,12 +59,6 @@ int DF::CamAngleConverter::ScreenToCameraAngle
 		)
 {
 
-	if(_cache.find(XY<int>(src_u,src_v)) != _cache.end()) {
-		const XY<double>& py = _cache[XY<int>(src_u, src_v)];
-		camera_pitch = py.x;
-		camera_yaw   = py.y;
-		return 1;
-	}
 	// 返答領域の初期化 
 	camera_pitch = 0.0;
 	camera_yaw = 0.0;
@@ -82,8 +74,6 @@ int DF::CamAngleConverter::ScreenToCameraAngle
 	// カメラのピッチ角とヨー角を算出 
 	camera_pitch = (static_cast<double>(src_u) / _sc_width * _angle_horz) - (_angle_horz / 2.0);
 	camera_yaw = (_angle_vert / 2.0) - (static_cast<double>(src_v) / _sc_height * _angle_vert);
-
-	_cache.insert(std::make_pair(XY<int>(src_u, src_v), XY<double>(camera_pitch, camera_yaw)));
 
 	return 0;
 }
@@ -123,35 +113,5 @@ bool DF::IsValid(const double &param) {
 
 bool DF::IsValid(const int &param) {
 	return param > 0;
-}
-
-
-
-int DF::TEST_Simple_CamAngCnv()
-{
-	const int w = 1280;
-	const int h = 720;
-	const double ad = 60.0;
-
-	DF::CamAngleConverter camAngCvt(w, h, ad);
-
-	if (camAngCvt.Initialized()) {
-		double p, y;
-		camAngCvt.ScreenToCameraAngle(p, y, 0, 0);
-		printf("%f,%f\n", p, y);
-		camAngCvt.ScreenToCameraAngle(p, y, 1280 / 2, 720 / 2);
-		printf("%f,%f\n", p, y);
-		camAngCvt.ScreenToCameraAngle(p, y, 1280, 720);
-		printf("%f,%f\n", p, y);
-		camAngCvt.ScreenToCameraAngle(p, y, 500, 59);
-		printf("%f,%f\n", p, y);
-		if (camAngCvt.ScreenToCameraAngle(p, y, 1280 / 2, 720 / 2) == 1) {
-			printf("hit cache↓\n");
-		}
-		printf("%f,%f\n", p, y);
-	}
-	
-	
-	return 0;
 }
 
