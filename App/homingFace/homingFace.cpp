@@ -24,93 +24,10 @@
 
 CvSize minsiz ={0,0};
 
+#include "../../Lib/CamAngleConverter/CamAngleConverter.h"
+#define ANGLE_DIAGONAL	(60.0)
+
 #define DELAY_SEC	(1)
-
-// 水平・垂直画角を算出する
-int calcViewAngle
-(
-	double&			angle_horz,
-	double&			angle_vert,
-	const double&	sc_width,
-	const double&	sc_height,
-	const double&	angle_diagonal
-)
-{
-	// 返答領域の初期化
-	angle_horz = 0.0;
-	angle_vert = 0.0;
-	
-	// 入力値チェック
-	if( sc_width <= 1.0e-06){
-		return -1;
-	}
-	if( sc_height <= 1.0e-06){
-		return -1;
-	}
-	if( angle_diagonal <= 1.0e-06){
-		return -1;
-	}
-	
-	// d(対角線)
-	double sc_diagonal = sqrt( sc_width*sc_width + sc_height*sc_height);
-	if( sc_diagonal <= 1.0e-06){
-		return -1;
-	}
-	
-	// d比
-	double rate_width	= sc_width / sc_diagonal;
-	double rate_height	= sc_height / sc_diagonal;
-	
-	// 水平・垂直画角を算出する
-	angle_horz = angle_diagonal * rate_width;
-	angle_vert = angle_diagonal * rate_height;
-	
-	return 0;
-}
-
-// スクリーン座標からカメラのピッチ角とヨー角を算出する
-int calcScreenToCameraAngle
-(
-	double&			camera_pitch,
-	double&			camera_yaw,
-	const double&	src_u,
-	const double&	src_v,
-	const double&	sc_width,
-	const double&	sc_height,
-	const double&	angle_horz,
-	const double&	angle_vert
-)
-{
-	// 返答領域の初期化
-	camera_pitch = 0.0;
-	camera_yaw = 0.0;
-	
-	// 入力値チェック
-	if( src_u <= 1.0e-06){
-		return -1;
-	}
-	if( src_v <= 1.0e-06){
-		return -1;
-	}
-	if( sc_width <= 1.0e-06){
-		return -1;
-	}
-	if( sc_height <= 1.0e-06){
-		return -1;
-	}
-	if( angle_horz <= 1.0e-06){
-		return -1;
-	}
-	if( angle_vert <= 1.0e-06){
-		return -1;
-	}
-	
-	// カメラのピッチ角とヨー角を算出
-	camera_pitch = ( src_u / sc_width * angle_horz ) - ( angle_horz / 2.0 );
-	camera_yaw = (angle_vert / 2.0) - ( src_v / sc_height * angle_vert);
-	
-	return 0;
-}
 
 int main(int argc, char* argv[])
 {
@@ -135,6 +52,8 @@ int main(int argc, char* argv[])
 		const int servo_mid = 73;
 		const int servo_min = servo_mid - 15;
 		const int servo_max = servo_mid + 15;
+		const double servo_min_deg = 0.0;
+		const double servo_max_deg = 180.0;
 	
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
 		CvCapture* capture = NULL;
@@ -162,6 +81,16 @@ int main(int argc, char* argv[])
 		// サーボ角度を中間に設定
 		pwmWrite(GPIO_YAW, servo_mid);
 		pwmWrite(GPIO_PITCH, servo_mid);
+		
+		// スクリーン座標からカメラのピッチ角とヨー角を算出するオブジェクトを初期化
+		DF::CamAngleConverter camAngCvt(	static_cast<int>(WIN_WIDTH),
+											static_cast<int>(WIN_HEIGHT),
+											ANGLE_DIAGONAL					);
+		
+		if (camAngCvt.Initialized()) {
+			printf("failed to initialize CamAngleConverter.\n");
+			throw 0;
+		}
 	
 		while(1){
 			IplImage* frame = cvQueryFrame(capture);
@@ -205,55 +134,42 @@ int main(int argc, char* argv[])
 								, 0
 				);
 				
+				// 顔のスクリーン座標を算出
 				double face_x = faceRect->x + (faceRect->width / 2.0);
 				double face_y = faceRect->y + (faceRect->height / 2.0);
 				
-				int yaw		= servo_mid;
-				int pitch 	= servo_mid;
+				// スクリーン座標からカメラのピッチ・ヨー角を算出
+				double deg_yaw		= 0.0;
+				double deg_pitch	= 0.0;
+				if( camAngCvt.ScreenToCameraAngle(deg_pitch, deg_yaw, face_x, face_y) != 0 ){
+					continue;
+				}
+				
+				// 前回と同じピッチ・ヨー角ならスキップ
+				
+				
+				int servo_yaw	= servo_mid;
+				int servo_pitch	= servo_mid;
 				
 				// ヨー角用サーボ制御
-				if( face_x == WIN_WIDTH_HALF ){
-					// 中間値
-					yaw = servo_mid;
-				}else if( face_x < WIN_WIDTH_HALF){
-					double rate = fabs( face_x / WIN_WIDTH_HALF );
-					int delta = (int)( (double)( servo_mid - servo_min) * rate );
-					yaw = servo_mid - delta;
-					if(yaw < servo_min){
-						yaw = servo_min;
-					}
-				}else if( face_x > WIN_WIDTH_HALF){
-					double rate = fabs( (face_x - WIN_WIDTH_HALF) / WIN_WIDTH_HALF );
-					int delta = (int)( (double)( servo_max - servo_mid ) * rate );
-					yaw = servo_mid + delta;
-					if(yaw > servo_max){
-						yaw = servo_max;
-					}
+				if(servo_yaw > servo_max){
+					servo_yaw = servo_max;
+				}else if(servo_yaw < servo_min){
+					servo_yaw = servo_min;
 				}
 				
 				// ピッチ角用サーボ制御
-				if( face_y == WIN_HEIGHT_HALF ){
-					// 中間値
-					pitch = servo_mid;
-				}else if( face_y < WIN_HEIGHT_HALF){
-					double rate = fabs( face_y / WIN_HEIGHT_HALF );
-					int delta = (int)( (double)( servo_mid - servo_min) * rate );
-					pitch = servo_mid - delta;
-					if(pitch < servo_min){
-						pitch = servo_min;
-					}
-				}else if( face_y > WIN_HEIGHT_HALF){
-					double rate = fabs( (face_y - WIN_HEIGHT_HALF) / WIN_HEIGHT_HALF );
-					int delta = (int)( (double)( servo_max - servo_mid ) * rate );
-					pitch = servo_mid + delta;
-					if(pitch > servo_max){
-						pitch = servo_max;
-					}
+				if(servo_pitch > servo_max){
+					servo_pitch = servo_max;
+				}else if(servo_pitch < servo_min){
+					servo_pitch = servo_min;
 				}
 				
+				// 前回と同じサーボ値ならスキップ
+				
 				// サーボの角度設定
-				pwmWrite(GPIO_YAW, yaw);
-				pwmWrite(GPIO_PITCH, pitch);
+				pwmWrite(GPIO_YAW, servo_yaw);
+				pwmWrite(GPIO_PITCH, servo_pitch);
 			}
 			cvShowImage( DISP_WIN, frame);
 			char c = cvWaitKey(DELAY_SEC);
