@@ -148,6 +148,7 @@ int main(int argc, char* argv[])
 				if( camAngCvt.ScreenToCameraAngle(deg_pitch, deg_yaw, face_x, face_y) != 0 ){
 					continue;
 				}
+				printf("deg_yaw=%f deg_pitch=%f \n",deg_yaw,deg_pitch);
 				
 				// 前回と同じピッチ・ヨー角ならスキップ
 				
@@ -174,12 +175,14 @@ int main(int argc, char* argv[])
 				// 前回と同じサーボ値ならスキップ
 				if(servo_yaw!=_servo_yaw){
 					// サーボの角度設定
+					printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
 					pwmWrite(GPIO_YAW, servo_yaw);
 					// 前値保存
 					_servo_yaw = servo_yaw;
 				}
 				if(servo_pitch!=_servo_pitch){
 					// サーボの角度設定
+					printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
 					pwmWrite(GPIO_PITCH, servo_pitch);
 					// 前値保存
 					_servo_pitch = servo_pitch;
