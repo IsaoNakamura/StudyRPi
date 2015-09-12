@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 				if( camAngCvt.ScreenToCameraAngle(deg_pitch, deg_yaw, face_x, face_y) != 0 ){
 					continue;
 				}
-				printf("deg_yaw=%f deg_pitch=%f \n",deg_yaw,deg_pitch);
+				printf("face_x=%f fac_y=%f deg_yaw=%f deg_pitch=%f \n",face_x,face_y,deg_yaw,deg_pitch);
 				
 				// 前回と同じピッチ・ヨー角ならスキップ
 				
