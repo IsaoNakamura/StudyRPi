@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 											static_cast<int>(WIN_HEIGHT),
 											ANGLE_DIAGONAL					);
 		
-		if (camAngCvt.Initialized()) {
+		if (!camAngCvt.Initialized()) {
 			printf("failed to initialize CamAngleConverter.\n");
 			throw 0;
 		}
