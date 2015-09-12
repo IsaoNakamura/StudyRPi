@@ -13,17 +13,19 @@ OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 DEPENDS  = $(OBJECTS:.o=.d)
 
 LIBDIR = ../../Lib
-EXOBJS =
+EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
 $(TARGET): $(OBJECTS) $(LIBS)
 	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
 
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
+	$(MAKE) -C $(LIBDIR)/CamAngleConverter
 	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 .PHONY: subsystem
 subsystem:
+	$(MAKE) -C $(LIBDIR)/CamAngleConverter
 
 .PHONY: all
 all: clean subsystem $(TARGET)
@@ -32,5 +34,6 @@ all: clean subsystem $(TARGET)
 clean:
 	rm -f $(OBJECTS) $(DEPENDS) $(TARGET)
 	@rmdir --ignore-fail-on-non-empty `readlink -f $(OBJDIR)`
+	$(MAKE) clean -C $(LIBDIR)/CamAngleConverter
 
 -include $(DEPENDS)
