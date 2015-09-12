@@ -9,7 +9,7 @@
 
 #include <wiringPi.h>
 
-#define GPIO_YAW		(18)	// PWM-Channel0 is on gpios 12 or 18.
+#define GPIO_YAW		(12)	// PWM-Channel0 is on gpios 12 or 18.
 #define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
 
 
@@ -54,6 +54,7 @@ int main(int argc, char* argv[])
 		const int servo_max = servo_mid + 15;
 		const double servo_min_deg = 0.0;
 		const double servo_max_deg = 180.0;
+		const double ratio_deg = ( servo_max - servo_min ) / ( servo_max_deg - servo_min_deg );
 	
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
 		CvCapture* capture = NULL;
@@ -91,6 +92,9 @@ int main(int argc, char* argv[])
 			printf("failed to initialize CamAngleConverter.\n");
 			throw 0;
 		}
+		
+		int _servo_yaw		= servo_mid;
+		int _servo_pitch	= servo_mid;
 	
 		while(1){
 			IplImage* frame = cvQueryFrame(capture);
@@ -147,11 +151,12 @@ int main(int argc, char* argv[])
 				
 				// 前回と同じピッチ・ヨー角ならスキップ
 				
-				
-				int servo_yaw	= servo_mid;
-				int servo_pitch	= servo_mid;
+				// サーボ値を入れる変数　初期値は前回の結果
+				int servo_yaw	= _servo_yaw;
+				int servo_pitch	= _servo_pitch;
 				
 				// ヨー角用サーボ制御
+				servo_yaw = static_cast<int>(deg_yaw * ratio_deg);
 				if(servo_yaw > servo_max){
 					servo_yaw = servo_max;
 				}else if(servo_yaw < servo_min){
@@ -159,6 +164,7 @@ int main(int argc, char* argv[])
 				}
 				
 				// ピッチ角用サーボ制御
+				servo_pitch = static_cast<int>(deg_pitch * ratio_deg);
 				if(servo_pitch > servo_max){
 					servo_pitch = servo_max;
 				}else if(servo_pitch < servo_min){
@@ -166,10 +172,18 @@ int main(int argc, char* argv[])
 				}
 				
 				// 前回と同じサーボ値ならスキップ
-				
-				// サーボの角度設定
-				pwmWrite(GPIO_YAW, servo_yaw);
-				pwmWrite(GPIO_PITCH, servo_pitch);
+				if(servo_yaw!=_servo_yaw){
+					// サーボの角度設定
+					pwmWrite(GPIO_YAW, servo_yaw);
+					// 前値保存
+					_servo_yaw = servo_yaw;
+				}
+				if(servo_pitch!=_servo_pitch){
+					// サーボの角度設定
+					pwmWrite(GPIO_PITCH, servo_pitch);
+					// 前値保存
+					_servo_pitch = servo_pitch;
+				}
 			}
 			cvShowImage( DISP_WIN, frame);
 			char c = cvWaitKey(DELAY_SEC);
