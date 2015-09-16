@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 		timerclear(&stNow);
 		timerclear(&stLen);
 		timerclear(&stEnd);
-		unsigned int msec = 500;//3000;
+		unsigned int msec = 1000;//3000;
 		gettimeofday(&stNow, NULL);
 		stLen.tv_sec = msec / 1000;
 		stLen.tv_usec = msec % 1000;
