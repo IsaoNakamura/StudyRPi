@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 		timerclear(&stNow);
 		timerclear(&stLen);
 		timerclear(&stEnd);
-		unsigned int msec = 2000;//3000;
+		unsigned int msec = 500;//3000;
 		gettimeofday(&stNow, NULL);
 		stLen.tv_sec = msec / 1000;
 		stLen.tv_usec = msec % 1000;
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 
 				if(	   face_x >= (WIN_WIDTH_HALF - center_area_x) && face_x <= (WIN_WIDTH_HALF + center_area_x)
 					&& face_y >= (WIN_HEIGHT_HALF - center_area_y) && face_y <= (WIN_HEIGHT_HALF + center_area_y)	){
-					//printf("face is center.\n");
+					printf("face is center.\n");
 				}else{
 					// 顔がスクリーン中心らへんになければ処理を行う
 
@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 						if( camAngCvt.ScreenToCameraAngle(deg_yaw, deg_pitch, face_x, face_y) != 0 ){
 							continue;
 						}
-						//printf("face(%f,%f) deg_yaw=%f deg_pitch=%f \n",face_x,face_y,deg_yaw,deg_pitch);
+						printf("face(%f,%f) deg_yaw=%f deg_pitch=%f \n",face_x,face_y,deg_yaw,deg_pitch);
 
 						// サーボ値を入れる変数　初期値は前回の結果
 						int servo_yaw	= _servo_yaw;
@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
 						// 前回と同じサーボ値ならスキップ
 						if(servo_yaw!=_servo_yaw){
 							// サーボの角度設定
-							//printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
+							printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
 							pwmWrite(GPIO_YAW, servo_yaw);
 							isPwmWrite = true;
 							// 前値保存
@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 						}
 						if(servo_pitch!=_servo_pitch){
 							// サーボの角度設定
-							//printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
+							printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
 							pwmWrite(GPIO_PITCH, servo_pitch);
 							isPwmWrite = true;
 							// 前値保存
@@ -245,14 +245,18 @@ int main(int argc, char* argv[])
 
 						if( isPwmWrite ){
 							// サーボの値を設定したら現時刻から任意時間プラスして、サーボの角度設定しない終了時刻を更新
-							//printf("homing\n");
+							printf("homing\n");
 							timerclear(&stEnd);
 							timeradd(&stNow, &stLen, &stEnd);
 						}
 
-					} // if( timercmp(&stNow, &stEnd, >) )
+					}else{ // if( timercmp(&stNow, &stEnd, >) )
+						printf("wait.\n");
+					}
 				} // if(face_x ... ){}else
-			} // if( face->total > 0 )
+			}else{ // if( face->total > 0 )
+				printf("no detected face.\n");
+			}
 
 			// 画面表示更新
 			//cvShowImage( DISP_WIN, frame);
