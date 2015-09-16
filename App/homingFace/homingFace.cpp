@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
 	
-		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
+		//cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
 		CvCapture* capture = NULL;
 		if (argc > 1){
 			capture = cvCreateFileCapture( argv[1] );
@@ -151,6 +151,7 @@ int main(int argc, char* argv[])
 				}
 				center_area_x = faceRect->width / 2.0 * 0.6;//1.2;
 				center_area_y = faceRect->height / 2.0 * 0.6;//1.2;
+				/*
 				// スクリーン中心らへん矩形描画を行う
 				cvRectangle(	  frame
 								, cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
@@ -169,6 +170,7 @@ int main(int argc, char* argv[])
 								, CV_AA
 								, 0
 				);
+				*/
 
 				// 顔のスクリーン座標を算出
 				double face_x = faceRect->x + (faceRect->width / 2.0);
@@ -253,7 +255,7 @@ int main(int argc, char* argv[])
 			} // if( face->total > 0 )
 
 			// 画面表示更新
-			cvShowImage( DISP_WIN, frame);
+			//cvShowImage( DISP_WIN, frame);
 
 			// 負荷分散のためDelay
 			char c = cvWaitKey(DELAY_SEC);
