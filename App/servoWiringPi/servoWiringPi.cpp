@@ -13,8 +13,8 @@
 #define GPIO_NO	(18)
 
 #define GWS_PARK_MIN	(30)
-#define GWS_PARK_MID	(73)
-#define GWS_PARK_MAX	(110)
+#define GWS_PARK_MID	(76)
+#define GWS_PARK_MAX	(122)
 
 int main(int argc, char* argv[])
 {
