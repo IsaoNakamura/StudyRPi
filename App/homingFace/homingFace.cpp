@@ -95,9 +95,9 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 
-		struct timeval stNow;
-		struct timeval stLen;
-		struct timeval stEnd;
+		struct timeval stNow;	// 現時刻取得用
+		struct timeval stLen;	// 任意時間
+		struct timeval stEnd;	// 現時刻から任意時間経過した時刻
 		timerclear(&stNow);
 		timerclear(&stLen);
 		timerclear(&stEnd);
@@ -107,12 +107,15 @@ int main(int argc, char* argv[])
 		stLen.tv_usec = msec % 1000;
 		timeradd(&stNow, &stLen, &stEnd);
 
-
-		int _servo_yaw	= servo_mid;
+		// 前値保存用のサーボ角度
+		int _servo_yaw		= servo_mid;
 		int _servo_pitch	= servo_mid;
+
+		// スクリーン中心らへんの範囲
 		double center_area_x = 60.0;
 		double center_area_y = 60.0;
-		
+
+		// メインループ
 		while(1){
 			IplImage* frame = cvQueryFrame(capture);
 			if(!frame){
@@ -148,7 +151,7 @@ int main(int argc, char* argv[])
 				}
 				center_area_x = faceRect->width / 2.0 * 0.6;//1.2;
 				center_area_y = faceRect->height / 2.0 * 0.6;//1.2;
-				// Center's矩形描画を行う
+				// スクリーン中心らへん矩形描画を行う
 				cvRectangle(	  frame
 								, cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
 								, cvPoint( (WIN_WIDTH_HALF + center_area_y), (WIN_HEIGHT_HALF +center_area_y) )
@@ -170,13 +173,19 @@ int main(int argc, char* argv[])
 				// 顔のスクリーン座標を算出
 				double face_x = faceRect->x + (faceRect->width / 2.0);
 				double face_y = faceRect->y + (faceRect->height / 2.0);
-				if(	      face_x >= (WIN_WIDTH_HALF - center_area_x) && face_x <= (WIN_WIDTH_HALF + center_area_x)
+
+				if(	   face_x >= (WIN_WIDTH_HALF - center_area_x) && face_x <= (WIN_WIDTH_HALF + center_area_x)
 					&& face_y >= (WIN_HEIGHT_HALF - center_area_y) && face_y <= (WIN_HEIGHT_HALF + center_area_y)	){
 					//printf("face is center.\n");
 				}else{
+					// 顔がスクリーン中心らへんになければ処理を行う
+
+					// 現在時刻を取得
 					gettimeofday(&stNow, NULL);
-					if( timercmp(&stNow, &stEnd, >) )
-					{
+
+					if( timercmp(&stNow, &stEnd, >) ){
+						// 任意時間経てば処理を行う
+						
 						// スクリーン座標からカメラのピッチ・ヨー角を算出
 						double deg_yaw	= 0.0;
 						double deg_pitch	= 0.0;
@@ -184,15 +193,13 @@ int main(int argc, char* argv[])
 							continue;
 						}
 						//printf("face(%f,%f) deg_yaw=%f deg_pitch=%f \n",face_x,face_y,deg_yaw,deg_pitch);
-				
-						// 前回と同じピッチ・ヨー角ならスキップ
-				
+
 						// サーボ値を入れる変数　初期値は前回の結果
 						int servo_yaw	= _servo_yaw;
 						int servo_pitch	= _servo_pitch;
 				
 						// ヨー角用サーボ制御
-						//servo_yaw = servo_mid - static_cast<int>(deg_yaw / ratio_deg);
+						//servo_yaw = servo_mid - static_cast<int>(deg_yaw / ratio_deg); // カメラ固定だとこれでよい
 						servo_yaw = _servo_yaw  - static_cast<int>(deg_yaw / ratio_deg);
 						if(servo_yaw > servo_max){
 							printf("yaw is over max ######## \n");
@@ -204,7 +211,7 @@ int main(int argc, char* argv[])
 						//printf("face_x=%f deg_yaw=%f servo_yaw=%d \n",face_x,deg_yaw,servo_yaw);
 				
 						// ピッチ角用サーボ制御
-						//servo_pitch = servo_mid - static_cast<int>(deg_pitch / ratio_deg);
+						//servo_pitch = servo_mid - static_cast<int>(deg_pitch / ratio_deg); // カメラ固定だとこれでよい
 						servo_pitch = _servo_pitch - static_cast<int>(deg_pitch / ratio_deg);
 						if(servo_pitch > servo_max){
 							printf("pitch is over max ######## \n");
@@ -214,18 +221,14 @@ int main(int argc, char* argv[])
 							servo_pitch = servo_min;
 						}
 						//printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
+
+						bool isPwmWrite = false;
 						// 前回と同じサーボ値ならスキップ
-
-						if( servo_yaw!=_servo_yaw || servo_pitch!=_servo_pitch ){
-							//printf("homing\n");
-							timerclear(&stEnd);
-							timeradd(&stNow, &stLen, &stEnd);
-						}
-
 						if(servo_yaw!=_servo_yaw){
 							// サーボの角度設定
 							//printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
 							pwmWrite(GPIO_YAW, servo_yaw);
+							isPwmWrite = true;
 							// 前値保存
 							_servo_yaw = servo_yaw;
 						}
@@ -233,18 +236,31 @@ int main(int argc, char* argv[])
 							// サーボの角度設定
 							//printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
 							pwmWrite(GPIO_PITCH, servo_pitch);
+							isPwmWrite = true;
 							// 前値保存
 							_servo_pitch = servo_pitch;
 						}
-					}
-				}
-			}
-			//cvShowImage( DISP_WIN, frame);
+
+						if( isPwmWrite ){
+							// サーボの値を設定したら現時刻から任意時間プラスして、サーボの角度設定しない終了時刻を更新
+							//printf("homing\n");
+							timerclear(&stEnd);
+							timeradd(&stNow, &stLen, &stEnd);
+						}
+
+					} // if( timercmp(&stNow, &stEnd, >) )
+				} // if(face_x ... ){}else
+			} // if( face->total > 0 )
+
+			// 画面表示更新
+			cvShowImage( DISP_WIN, frame);
+
+			// 負荷分散のためDelay
 			char c = cvWaitKey(DELAY_SEC);
 			if( c==27 ){ // ESC-Key
 				break;
 			}
-		}
+		} // while(1)
 		
 		// サーボ角度を中間に設定
 		pwmWrite(GPIO_YAW, servo_mid);
