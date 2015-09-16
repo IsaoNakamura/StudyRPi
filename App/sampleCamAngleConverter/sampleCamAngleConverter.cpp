@@ -10,8 +10,8 @@
 int main(int argc, char* argv[])
 {
 	int iRet = 0;
-	const int w = 1280;
-	const int h = 720;
+	const int w = 320;
+	const int h = 240;
 	const double ad = 60.0;
 	
 	DF::CamAngleConverter camAngCvt(w, h, ad);
@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 		for( int sx = 0; sx < w;  ++sx ){
 			for( int sy = 0; sy < h; ++sy ){
 				double p, y;
-				int ret = camAngCvt.ScreenToCameraAngle(p, y, sx, sy);
-				printf("ret=[%d] screenXY[%d,%d] = pitch-yaw[%f,%f]\n", ret, sx, sy ,p, y);
+				int ret = camAngCvt.ScreenToCameraAngle(y, p, sx, sy);
+				printf("ret=[%d] screenXY[%d,%d] = yaw-pitch[%f,%f]\n", ret, sx, sy ,y,p);
 			}
 		}
 

@@ -14,8 +14,8 @@ namespace DF {
 		~CamAngleConverter() {}
 
 		int ScreenToCameraAngle(
-			double&       camera_pitch,
 			double&       camera_yaw,
+			double&       camera_pitch,
 			const int&    src_u,
 			const int&    src_v);
 
