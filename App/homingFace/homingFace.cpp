@@ -32,6 +32,15 @@ CvSize minsiz ={0,0};
 
 #define DELAY_SEC	(1)
 
+enum HomingStatus
+{
+	HOMING_NONE = 0,
+	HOMING_HOMING,
+	HOMING_DELAY.
+	HOMING_CENTER,
+	HOMING_KEEP
+};
+
 int main(int argc, char* argv[])
 {
 	printf("Press Esc-Key to Exit Process.\n");
@@ -118,9 +127,13 @@ int main(int argc, char* argv[])
 		// スクリーン中心らへんの範囲
 		double center_area_x = 60.0;
 		double center_area_y = 60.0;
+		
+		int homing_state = HOMING_NONE;
 
 		// メインループ
 		while(1){
+			int wrk_homing_state = HOMING_NONE;
+			
 			IplImage* frame = cvQueryFrame(capture);
 			if(!frame){
 				printf("failed to query frame.\n");
@@ -182,7 +195,7 @@ int main(int argc, char* argv[])
 
 				if(	   face_x >= (WIN_WIDTH_HALF - center_area_x) && face_x <= (WIN_WIDTH_HALF + center_area_x)
 					&& face_y >= (WIN_HEIGHT_HALF - center_area_y) && face_y <= (WIN_HEIGHT_HALF + center_area_y)	){
-					printf("[STATE] face is center.\n");
+					wrk_homing_state = HOMING_CENTER;
 				}else{
 					// 顔がスクリーン中心らへんになければ処理を行う
 
@@ -249,20 +262,44 @@ int main(int argc, char* argv[])
 
 						if( isPwmWrite ){
 							// サーボの値を設定したら現時刻から任意時間プラスして、サーボの角度設定しない終了時刻を更新
-							printf("[STATE] homing.\n");
 							timerclear(&stEnd);
 							timeradd(&stNow, &stLen, &stEnd);
+							wrk_homing_state = HOMING_HOMING;
 						}else{
-							printf("[STATE] keep.\n");
+							wrk_homing_state = HOMING_KEEP;
 						}
 
 					}else{ // if( timercmp(&stNow, &stEnd, >) )
-						printf("[STATE] wait.\n");
+						wrk_homing_state = HOMING_DELAY;
 					}
 				} // if(face_x ... ){}else
 			}else{ // if( face->total > 0 )
-				printf("[STATE] no detected face. shift to search mode.\n");
-				
+				wrk_homing_state = HOMING_NONE;
+			}
+			
+			// ホーミング状態を更新
+			if(homing_state != wrk_homing_state){
+				homing_state = wrk_homing_state;
+				switch( homing_state )
+				{
+				case HOMING_NONE:
+					printf("[STATE] no detected face.\n");
+					break;
+				case HOMING_HOMING:
+					printf("[STATE] homing.\n");
+					break;
+				case HOMING_DELAY:
+					printf("[STATE] delay.\n");
+					break;
+				case HOMING_CENTER:
+					printf("[STATE] face is center.\n");
+					break;
+				case HOMING_KEEP:
+					printf("[STATE] keep.\n");
+					break;
+				default:
+					break;
+				}
 			}
 
 #if ( USE_WIN > 0 )
