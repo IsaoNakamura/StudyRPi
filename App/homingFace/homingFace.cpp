@@ -21,7 +21,7 @@
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
-#define WIN_USE			(0)
+#define USE_WIN			(0)
 
 #include <sys/time.h>
 
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
 	
-#if ( WIN_USE > 0 )
+#if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
 #endif
 	
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 				}
 				center_area_x = faceRect->width / 2.0 * 0.6;//1.2;
 				center_area_y = faceRect->height / 2.0 * 0.6;//1.2;
-#if ( WIN_USE > 0 )
+#if ( USE_WIN > 0 )
 				// スクリーン中心らへん矩形描画を行う
 				cvRectangle(	  frame
 								, cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
@@ -265,9 +265,9 @@ int main(int argc, char* argv[])
 				
 			}
 
-#if ( WIN_USE > 0 )
+#if ( USE_WIN > 0 )
 			// 画面表示更新
-			//cvShowImage( DISP_WIN, frame);
+			cvShowImage( DISP_WIN, frame);
 #endif
 
 			// 負荷分散のためDelay
