@@ -12,6 +12,9 @@
 #define GPIO_YAW		(12)	// PWM-Channel0 is on gpios 12 or 18.
 #define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
 
+#define GPIO_EXIT		(23)
+#define GPIO_HALT		(22)
+
 
 #include <cv.h>
 #include <highgui.h>
@@ -61,6 +64,9 @@ int main(int argc, char* argv[])
 		pwmSetMode(PWM_MODE_MS);
 		pwmSetClock(400);
 		pwmSetRange(1024);
+		
+		pinMode(GPIO_EXIT, INPUT);
+		pinMode(GPIO_HALT, INPUT);
 		
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
@@ -348,6 +354,17 @@ int main(int argc, char* argv[])
 			// 負荷分散のためDelay
 			char c = cvWaitKey(DELAY_SEC);
 			if( c==27 ){ // ESC-Key
+				printf("exit program.");
+				break;
+			}
+			
+			if( digitalRead(GPIO_EXIT) == HIGH ){
+				printf("exit program.");
+				break;
+			}
+			if( digitalRead(GPIO_HALT) == HIGHT ){
+				printf("shutdown system.");
+				system("sudo halt");
 				break;
 			}
 		} // while(1)
