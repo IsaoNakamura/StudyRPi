@@ -21,6 +21,7 @@
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
+#define WIN_USE			(0)
 
 #include <sys/time.h>
 
@@ -58,7 +59,10 @@ int main(int argc, char* argv[])
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
 	
-		//cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
+#if ( WIN_USE > 0 )
+		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
+#endif
+	
 		CvCapture* capture = NULL;
 		if (argc > 1){
 			capture = cvCreateFileCapture( argv[1] );
@@ -151,7 +155,7 @@ int main(int argc, char* argv[])
 				}
 				center_area_x = faceRect->width / 2.0 * 0.6;//1.2;
 				center_area_y = faceRect->height / 2.0 * 0.6;//1.2;
-				/*
+#if ( WIN_USE > 0 )
 				// スクリーン中心らへん矩形描画を行う
 				cvRectangle(	  frame
 								, cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
@@ -170,7 +174,7 @@ int main(int argc, char* argv[])
 								, CV_AA
 								, 0
 				);
-				*/
+#endif
 
 				// 顔のスクリーン座標を算出
 				double face_x = faceRect->x + (faceRect->width / 2.0);
@@ -178,7 +182,7 @@ int main(int argc, char* argv[])
 
 				if(	   face_x >= (WIN_WIDTH_HALF - center_area_x) && face_x <= (WIN_WIDTH_HALF + center_area_x)
 					&& face_y >= (WIN_HEIGHT_HALF - center_area_y) && face_y <= (WIN_HEIGHT_HALF + center_area_y)	){
-					printf("face is center.\n");
+					printf("[STATE] face is center.\n");
 				}else{
 					// 顔がスクリーン中心らへんになければ処理を行う
 
@@ -245,21 +249,26 @@ int main(int argc, char* argv[])
 
 						if( isPwmWrite ){
 							// サーボの値を設定したら現時刻から任意時間プラスして、サーボの角度設定しない終了時刻を更新
-							printf("homing\n");
+							printf("[STATE] homing.\n");
 							timerclear(&stEnd);
 							timeradd(&stNow, &stLen, &stEnd);
+						}else{
+							printf("[STATE] keep.\n");
 						}
 
 					}else{ // if( timercmp(&stNow, &stEnd, >) )
-						printf("wait.\n");
+						printf("[STATE] wait.\n");
 					}
 				} // if(face_x ... ){}else
 			}else{ // if( face->total > 0 )
-				printf("no detected face.\n");
+				printf("[STATE] no detected face. shift to search mode.\n");
+				
 			}
 
+#if ( WIN_USE > 0 )
 			// 画面表示更新
 			//cvShowImage( DISP_WIN, frame);
+#endif
 
 			// 負荷分散のためDelay
 			char c = cvWaitKey(DELAY_SEC);
