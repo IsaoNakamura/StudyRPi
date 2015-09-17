@@ -30,6 +30,8 @@ CvSize minsiz ={0,0};
 #include "../../Lib/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
 
+#define USE_TALK	(1)
+
 #define DELAY_SEC	(1)
 
 enum HomingStatus
@@ -67,6 +69,11 @@ int main(int argc, char* argv[])
 		const double servo_min_deg = 0.0;
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
+		
+#if ( USE_TALK > 0 )
+		//イヤホンジャックからの音声出力
+		system("amixer cset numid=3 2");
+#endif
 	
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
@@ -119,6 +126,8 @@ int main(int argc, char* argv[])
 		stLen.tv_sec = msec / 1000;
 		stLen.tv_usec = msec % 1000;
 		timeradd(&stNow, &stLen, &stEnd);
+		
+		srand(stNow.tv_usec);
 
 		// 前値保存用のサーボ角度
 		int _servo_yaw		= servo_mid;
@@ -284,15 +293,44 @@ int main(int argc, char* argv[])
 				{
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
+#if ( USE_TALK > 0 )
+					system("~/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
+#endif
 					break;
 				case HOMING_HOMING:
 					printf("[STATE] homing.\n");
+#if ( USE_TALK > 0 )
+					system("~/aquestalkpi/AquesTalkPi \"あ\" | aplay");
+#endif
 					break;
 				case HOMING_DELAY:
 					printf("[STATE] delay.\n");
 					break;
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
+#if ( USE_TALK > 0 )
+					int talkType = rand() % 5;
+					switch( talkType )
+					{
+					case 0:
+						system("~/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
+						break;
+					case 1:
+						system("~/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
+						break;
+					case 2:
+						system("~/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
+						break;
+					case 3:
+						system("~/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
+						break;
+					case 4:
+						system("~/aquestalkpi/AquesTalkPi \"ふたりも　よろこんでおります\" | aplay");
+						break;
+					default:
+						break;
+					}	
+#endif
 					break;
 				case HOMING_KEEP:
 					printf("[STATE] keep.\n");
