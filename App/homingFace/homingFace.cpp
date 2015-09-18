@@ -24,7 +24,7 @@
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
-#define USE_WIN			(0)
+#define USE_WIN			(1)
 
 #include <sys/time.h>
 
@@ -41,7 +41,7 @@ enum HomingStatus
 {
 	HOMING_NONE = 0,
 	HOMING_HOMING,
-	HOMING_DELAY.
+	HOMING_DELAY,
 	HOMING_CENTER,
 	HOMING_KEEP
 };
@@ -75,10 +75,10 @@ int main(int argc, char* argv[])
 		const double servo_min_deg = 0.0;
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
-		
+
 #if ( USE_TALK > 0 )
 		//イヤホンジャックからの音声出力
-		system("amixer cset numid=3 2");
+		//system("amixer cset numid=3 1");
 #endif
 	
 #if ( USE_WIN > 0 )
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
 						if( camAngCvt.ScreenToCameraAngle(deg_yaw, deg_pitch, face_x, face_y) != 0 ){
 							continue;
 						}
-						printf("face(%f,%f) deg_yaw=%f deg_pitch=%f \n",face_x,face_y,deg_yaw,deg_pitch);
+						printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",face_x,face_y,deg_yaw,deg_pitch,_servo_yaw,_servo_pitch);
 
 						// サーボ値を入れる変数　初期値は前回の結果
 						int servo_yaw	= _servo_yaw;
@@ -295,18 +295,19 @@ int main(int argc, char* argv[])
 			// ホーミング状態を更新
 			if(homing_state != wrk_homing_state){
 				homing_state = wrk_homing_state;
+				int talkType = 0;
 				switch( homing_state )
 				{
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
-					system("~/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
+					system("/home/pi/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
 #endif
 					break;
 				case HOMING_HOMING:
 					printf("[STATE] homing.\n");
 #if ( USE_TALK > 0 )
-					system("~/aquestalkpi/AquesTalkPi \"あ\" | aplay");
+					//system("/home/pi/aquestalkpi/AquesTalkPi \"あ\" | aplay");
 #endif
 					break;
 				case HOMING_DELAY:
@@ -315,23 +316,23 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					int talkType = rand() % 5;
+					talkType = rand() % 5;
 					switch( talkType )
 					{
 					case 0:
-						system("~/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
 						break;
 					case 1:
-						system("~/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
 						break;
 					case 2:
-						system("~/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
 						break;
 					case 3:
-						system("~/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
 						break;
 					case 4:
-						system("~/aquestalkpi/AquesTalkPi \"ふたりも　よろこんでおります\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"ふたりも　よろこんでおります\" | aplay");
 						break;
 					default:
 						break;
@@ -362,7 +363,7 @@ int main(int argc, char* argv[])
 				printf("exit program.");
 				break;
 			}
-			if( digitalRead(GPIO_HALT) == HIGHT ){
+			if( digitalRead(GPIO_HALT) == HIGH ){
 				printf("shutdown system.");
 				system("sudo halt");
 				break;
