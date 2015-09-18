@@ -316,7 +316,7 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					talkType = rand() % 5;
+					talkType = rand() % 9;
 					switch( talkType )
 					{
 					case 0:
@@ -332,7 +332,19 @@ int main(int argc, char* argv[])
 						system("/home/pi/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
 						break;
 					case 4:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"ふたりも　よろこんでおります\" | aplay");
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"しゅうへいと りさも よろこんでおります\" | aplay");
+						break;
+					case 5:
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"やまをめざそう\" | aplay");
+						break;
+					case 6:
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"あなべる へ ようこそ\" | aplay");
+						break;
+					case 7:
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"なまえはかきましたか？\" | aplay");
+						break;
+					case 8:
+						system("/home/pi/aquestalkpi/AquesTalkPi  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
 						break;
 					default:
 						break;
