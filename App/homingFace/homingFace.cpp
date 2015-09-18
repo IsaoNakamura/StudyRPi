@@ -46,6 +46,49 @@ enum HomingStatus
 	HOMING_KEEP
 };
 
+bool talkVoice( const int& talkType)
+{
+	switch( talkType )
+	{
+	case 0:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
+		break;
+	case 1:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
+		break;
+	case 2:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
+		break;
+	case 3:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
+		break;
+	case 4:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"しゅうへいと りさも よろこんでおります\" | aplay");
+		break;
+	case 5:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"やまをめざそう\" | aplay");
+		break;
+	case 6:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"あなべる へ ようこそ\" | aplay");
+		break;
+	case 7:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"なまえはかきましたか？\" | aplay");
+		break;
+	case 8:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
+		break;
+	case 9:
+		system("/home/pi/aquestalkpi/AquesTalkPi  \"めがあいましたね うふ\" | aplay");
+		break;
+	case 10:
+		system("aplay /usr/share/sounds/alsa/Front_Center.wav");
+		break;
+	default:
+		break;
+	}
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
 	printf("Press Esc-Key to Exit Process.\n");
@@ -316,39 +359,8 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					talkType = rand() % 9;
-					switch( talkType )
-					{
-					case 0:
-						system("/home/pi/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
-						break;
-					case 1:
-						system("/home/pi/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
-						break;
-					case 2:
-						system("/home/pi/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
-						break;
-					case 3:
-						system("/home/pi/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
-						break;
-					case 4:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"しゅうへいと りさも よろこんでおります\" | aplay");
-						break;
-					case 5:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"やまをめざそう\" | aplay");
-						break;
-					case 6:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"あなべる へ ようこそ\" | aplay");
-						break;
-					case 7:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"なまえはかきましたか？\" | aplay");
-						break;
-					case 8:
-						system("/home/pi/aquestalkpi/AquesTalkPi  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
-						break;
-					default:
-						break;
-					}	
+					talkType = rand() % 10;
+					talkVoice(talkType);
 #endif
 					break;
 				case HOMING_KEEP:
