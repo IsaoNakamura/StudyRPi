@@ -351,20 +351,19 @@ int main(int argc, char* argv[])
 					nonface_cnt = 0;
 					int servo_yaw = servo_mid;
 					int servo_pitch = servo_mid;
-							// サーボの角度設定
-							printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
-							pwmWrite(GPIO_YAW, servo_yaw);
-							//isPwmWrite = true;
-							// 前値保存
-							_servo_yaw = servo_yaw;
+					// サーボの角度設定
+					printf("pwmWrite(GPIO_YAW, %d) for non-face. \n",servo_yaw);
+					pwmWrite(GPIO_YAW, servo_yaw);
+					//isPwmWrite = true;
+					// 前値保存
+					_servo_yaw = servo_yaw;
 
-
-							// サーボの角度設定
-							printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
-							pwmWrite(GPIO_PITCH, servo_pitch);
-							//isPwmWrite = true;
-							// 前値保存
-							_servo_pitch = servo_pitch;
+					// サーボの角度設定
+					printf("pwmWrite(GPIO_PITCH, %d) for non-face. \n",servo_pitch);
+					pwmWrite(GPIO_PITCH, servo_pitch);
+					//isPwmWrite = true;
+					// 前値保存
+					_servo_pitch = servo_pitch;
 				}
 			}
 			
