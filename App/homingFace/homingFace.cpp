@@ -24,7 +24,7 @@
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
-#define USE_WIN			(1)
+#define USE_WIN			(0)
 
 #include <sys/time.h>
 
