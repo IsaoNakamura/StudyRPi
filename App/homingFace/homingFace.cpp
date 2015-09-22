@@ -46,7 +46,7 @@ enum HomingStatus
 	HOMING_KEEP
 };
 
-bool talkVoice( const int& talkType)
+bool talkWelcome( const int& talkType)
 {
 	switch( talkType )
 	{
@@ -392,7 +392,7 @@ int main(int argc, char* argv[])
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
 					talkType = rand() % 10;
-					talkVoice(talkType);
+					talkWelcome(talkType);
 #endif
 					break;
 				case HOMING_KEEP:
