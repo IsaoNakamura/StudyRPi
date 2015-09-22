@@ -145,6 +145,9 @@ int main(int argc, char* argv[])
 		
 		int homing_state = HOMING_NONE;
 
+		int over_cnt = 0;
+		int nonface_cnt = 0;
+
 		// メインループ
 		while(1){
 			int wrk_homing_state = HOMING_NONE;
@@ -236,10 +239,11 @@ int main(int argc, char* argv[])
 						//servo_yaw = servo_mid - static_cast<int>(deg_yaw / ratio_deg); // カメラ固定だとこれでよい
 						servo_yaw = _servo_yaw  - static_cast<int>(deg_yaw / ratio_deg);
 						if(servo_yaw > servo_max){
-							printf("yaw is over max ######## \n");
-							servo_yaw = servo_max;
+							over_cnt++;
+							printf("yaw is over max. cnt=%d ######## \n", over_cnt);
 						}else if(servo_yaw < servo_min){
-							printf("yaw is under min ######## \n");
+							over_cnt++;
+							printf("yaw is under min. cnt=%d ######## \n",over_cnt);
 							servo_yaw = servo_min;
 						}
 						//printf("face_x=%f deg_yaw=%f servo_yaw=%d \n",face_x,deg_yaw,servo_yaw);
@@ -248,15 +252,24 @@ int main(int argc, char* argv[])
 						//servo_pitch = servo_mid - static_cast<int>(deg_pitch / ratio_deg); // カメラ固定だとこれでよい
 						servo_pitch = _servo_pitch - static_cast<int>(deg_pitch / ratio_deg);
 						if(servo_pitch > servo_max){
+							over_cnt++;
 							printf("pitch is over max ######## \n");
 							servo_pitch = servo_max;
 						}else if(servo_pitch < servo_min){
+							over_cnt++;
 							printf("pitch is under min ######## \n");
 							servo_pitch = servo_min;
 						}
 						//printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
 
 						bool isPwmWrite = false;
+						
+						if(over_cnt<10){
+							servo_yaw=servo_mid;
+							servo_pitch=servo_mid;
+							over_cnt = 0;
+						}
+
 						// 前回と同じサーボ値ならスキップ
 						if(servo_yaw!=_servo_yaw){
 							// サーボの角度設定
@@ -290,6 +303,26 @@ int main(int argc, char* argv[])
 				} // if(face_x ... ){}else
 			}else{ // if( face->total > 0 )
 				wrk_homing_state = HOMING_NONE;
+				nonface_cnt++;
+				if(nonface_cnt > 10){
+					nonface_cnt = 0;
+					int servo_yaw = servo_mid;
+					int servo_pitch = servo_mid;
+							// サーボの角度設定
+							printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
+							pwmWrite(GPIO_YAW, servo_yaw);
+							//isPwmWrite = true;
+							// 前値保存
+							_servo_yaw = servo_yaw;
+
+
+							// サーボの角度設定
+							printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
+							pwmWrite(GPIO_PITCH, servo_pitch);
+							//isPwmWrite = true;
+							// 前値保存
+							_servo_pitch = servo_pitch;
+				}
 			}
 			
 			// ホーミング状態を更新
