@@ -415,11 +415,11 @@ int main(int argc, char* argv[])
 				break;
 			}
 			
-			if( digitalRead(GPIO_EXIT) == HIGH ){
+			if( digitalRead(GPIO_EXIT) == LOW ){
 				printf("exit program.");
 				break;
 			}
-			if( digitalRead(GPIO_HALT) == HIGH ){
+			if( digitalRead(GPIO_HALT) == LOW ){
 				printf("shutdown system.");
 				system("sudo halt");
 				break;
