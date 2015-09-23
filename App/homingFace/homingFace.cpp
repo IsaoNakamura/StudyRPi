@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 
 						bool isPwmWrite = false;
 						
-						if(over_cnt<10){
+						if(over_cnt>10){
 							servo_yaw=servo_mid;
 							servo_pitch=servo_mid;
 							over_cnt = 0;
