@@ -1,4 +1,4 @@
 #!/bin/sh
 
-sudo ./homingFace
+sudo /home/pi/GitHub/StudyRPi/App/homingFace/homingFace
 
