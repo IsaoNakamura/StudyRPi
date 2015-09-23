@@ -190,17 +190,6 @@ int main(int argc, char* argv[])
 
 		int over_cnt = 0;
 		int nonface_cnt = 0;
-		
-		if( digitalRead(GPIO_EXIT) == HIGH){
-			printf("GPIO_EXIT(i) is HIGHT\n");
-		}else{
-			printf("GPIO_EXIT(i) is LOW\n");
-		}
-		if( digitalRead(GPIO_HALT) == HIGH){
-			printf("GPIO_HALT(i) is HIGHT\n");
-		}else{
-			printf("GPIO_HALT(i) is LOW\n");
-		}
 
 		// メインループ
 		while(1){
