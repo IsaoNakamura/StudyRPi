@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 		pwmSetRange(1024);
 		
 		pinMode(GPIO_EXIT, OUTPUT);
-		digitalWrite(GPIO_EXIT, 1);
+		digitalWrite(GPIO_EXIT, 0);
 		if( digitalRead(GPIO_EXIT) == HIGH){
 			printf("GPIO_EXIT(o) is HIGHT\n");
 		}else{
