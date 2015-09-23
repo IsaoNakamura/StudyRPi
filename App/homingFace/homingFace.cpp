@@ -12,8 +12,8 @@
 #define GPIO_YAW		(12)	// PWM-Channel0 is on gpios 12 or 18.
 #define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
 
-#define GPIO_EXIT		(23)
-#define GPIO_HALT		(22)
+#define GPIO_EXIT		(17)
+#define GPIO_HALT		(27)
 
 
 #include <cv.h>
@@ -426,11 +426,11 @@ int main(int argc, char* argv[])
 				break;
 			}
 			
-			if( digitalRead(GPIO_EXIT) == LOW ){
+			if( digitalRead(GPIO_EXIT) == 1 ){
 				printf("exit program.");
 				break;
 			}
-			if( digitalRead(GPIO_HALT) == LOW ){
+			if( digitalRead(GPIO_HALT) == 1 ){
 				printf("shutdown system.");
 				system("sudo halt");
 				break;
