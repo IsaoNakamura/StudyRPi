@@ -108,9 +108,34 @@ int main(int argc, char* argv[])
 		pwmSetClock(400);
 		pwmSetRange(1024);
 		
+		pinMode(GPIO_EXIT, OUTPUT);
+		digitalWrite(GPIO_EXIT, 1);
+		if( digitalRead(GPIO_EXIT) == HIGH){
+			printf("GPIO_EXIT(o) is HIGHT\n");
+		}else{
+			printf("GPIO_EXIT(o) is LOW\n");
+		}
+		pinMode(GPIO_HALT, OUTPUT);
+		digitalWrite(GPIO_HALT, 1);
+		if( digitalRead(GPIO_HALT) == HIGH){
+			printf("GPIO_HALT(o) is HIGHT\n");
+		}else{
+			printf("GPIO_HALT(o) is LOW\n");
+		}
+				
 		pinMode(GPIO_EXIT, INPUT);
+		if( digitalRead(GPIO_EXIT) == HIGH){
+			printf("GPIO_EXIT(i) is HIGHT\n");
+		}else{
+			printf("GPIO_EXIT(i) is LOW\n");
+		}
 		pinMode(GPIO_HALT, INPUT);
-		
+		if( digitalRead(GPIO_HALT) == HIGH){
+			printf("GPIO_HALT(i) is HIGHT\n");
+		}else{
+			printf("GPIO_HALT(i) is LOW\n");
+		}
+
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
 		const int servo_min = 36; //servo_mid - 30;
