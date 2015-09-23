@@ -108,6 +108,7 @@ int main(int argc, char* argv[])
 		pwmSetClock(400);
 		pwmSetRange(1024);
 		
+		/*
 		pinMode(GPIO_EXIT, OUTPUT);
 		digitalWrite(GPIO_EXIT, 0);
 		if( digitalRead(GPIO_EXIT) == HIGH){
@@ -122,6 +123,7 @@ int main(int argc, char* argv[])
 		}else{
 			printf("GPIO_HALT(o) is LOW\n");
 		}
+		*/
 				
 		pinMode(GPIO_EXIT, INPUT);
 		if( digitalRead(GPIO_EXIT) == HIGH){
