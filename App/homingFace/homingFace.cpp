@@ -27,7 +27,7 @@
 
 #define USE_WIN				(0)
 #define USE_TALK			(1)
-#define HOMING_DELAY_MSEC	(2000)
+#define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(10)
