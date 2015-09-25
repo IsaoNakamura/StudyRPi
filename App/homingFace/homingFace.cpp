@@ -24,7 +24,13 @@
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
-#define USE_WIN			(0)
+
+#define USE_WIN				(0)
+#define USE_TALK			(1)
+#define HOMING_DELAY_MSEC	(2000)
+#define CENTER_AREA_RATIO	(0.6)
+#define SERVO_OVER_MAX		(10)
+#define NONFACE_CNT_MAX		(10)
 
 #include <sys/time.h>
 
@@ -32,8 +38,6 @@ CvSize minsiz ={0,0};
 
 #include "../../Lib/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
-
-#define USE_TALK	(1)
 
 #define DELAY_SEC	(1)
 
@@ -45,6 +49,31 @@ enum HomingStatus
 	HOMING_CENTER,
 	HOMING_KEEP
 };
+
+bool talkReason( const int& talkType)
+{
+	switch( talkType )
+	{
+	case 0:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
+		break;
+	case 1:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"きょうは めでたい\" | aplay");
+		break;
+	case 2:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		break;
+	case 3:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"きんちょうしてきた\" | aplay");
+		break;
+	case 4:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
+		break;
+	default:
+		break;
+	}
+	return true;
+}
 
 bool talkWelcome( const int& talkType)
 {
@@ -81,7 +110,34 @@ bool talkWelcome( const int& talkType)
 		system("/home/pi/aquestalkpi/AquesTalkPi  \"めがあいましたね うふ\" | aplay");
 		break;
 	case 10:
-		system("aplay /usr/share/sounds/alsa/Front_Center.wav");
+		system("aplay /home/pi/shuheyVoice/00_7315651.wav");
+		break;
+	case 11:
+		system("aplay /home/pi/shuheyVoice/01-_7315652.wav");
+		break;
+	case 12:
+		system("aplay /home/pi/shuheyVoice/02-_7315653.wav");
+		break;
+	case 13:
+		system("aplay /home/pi/shuheyVoice/03-_7315654.wav");
+		break;
+	case 14:
+		system("aplay /home/pi/shuheyVoice/04-_7315655.wav");
+		break;
+	case 15:
+		system("aplay /home/pi/shuheyVoice/05-_7315656.wav");
+		break;
+	case 16:
+		system("aplay /home/pi/shuheyVoice/06-_7315657.wav");
+		break;
+	case 17:
+		system("aplay /home/pi/shuheyVoice/07-_7315658.wav");
+		break;
+	case 18:
+		system("aplay /home/pi/shuheyVoice/08-_7315659.wav");
+		break;
+	case 19:
+		system("aplay /home/pi/shuheyVoice/99-_7315651.wav");
 		break;
 	default:
 		break;
@@ -170,7 +226,7 @@ int main(int argc, char* argv[])
 		timerclear(&stNow);
 		timerclear(&stLen);
 		timerclear(&stEnd);
-		unsigned int msec = 1000;//3000;
+		unsigned int msec = HOMING_DELAY_MSEC;
 		gettimeofday(&stNow, NULL);
 		stLen.tv_sec = msec / 1000;
 		stLen.tv_usec = msec % 1000;
@@ -227,8 +283,8 @@ int main(int argc, char* argv[])
 					printf("failed to get Face-Rect.\n");
 					break;
 				}
-				center_area_x = faceRect->width / 2.0 * 0.6;//1.2;
-				center_area_y = faceRect->height / 2.0 * 0.6;//1.2;
+				center_area_x = faceRect->width / 2.0 * CENTER_AREA_RATIO;
+				center_area_y = faceRect->height / 2.0 * CENTER_AREA_RATIO;
 #if ( USE_WIN > 0 )
 				// スクリーン中心らへん矩形描画を行う
 				cvRectangle(	  frame
@@ -267,7 +323,7 @@ int main(int argc, char* argv[])
 						// 任意時間経てば処理を行う
 						
 						// スクリーン座標からカメラのピッチ・ヨー角を算出
-						double deg_yaw	= 0.0;
+						double deg_yaw		= 0.0;
 						double deg_pitch	= 0.0;
 						if( camAngCvt.ScreenToCameraAngle(deg_yaw, deg_pitch, face_x, face_y) != 0 ){
 							continue;
@@ -307,7 +363,8 @@ int main(int argc, char* argv[])
 
 						bool isPwmWrite = false;
 						
-						if(over_cnt>10){
+						// SERVO_OVER_MAXフレーム分の間、サーボ角度が最大が続くのであれば、サーボ角度を中間にもどす。
+						if( over_cnt > SERVO_OVER_MAX){
 							servo_yaw=servo_mid;
 							servo_pitch=servo_mid;
 							over_cnt = 0;
@@ -346,8 +403,9 @@ int main(int argc, char* argv[])
 				} // if(face_x ... ){}else
 			}else{ // if( face->total > 0 )
 				wrk_homing_state = HOMING_NONE;
+				// NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
 				nonface_cnt++;
-				if(nonface_cnt > 10){
+				if( nonface_cnt > NONFACE_CNT_MAX ){
 					nonface_cnt = 0;
 					int servo_yaw = servo_mid;
 					int servo_pitch = servo_mid;
@@ -376,7 +434,8 @@ int main(int argc, char* argv[])
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
-					system("/home/pi/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
+					talkType = rand() % 5;
+					talkReason(talkType);
 #endif
 					break;
 				case HOMING_HOMING:
@@ -391,7 +450,7 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					talkType = rand() % 10;
+					talkType = rand() % 20;
 					talkWelcome(talkType);
 #endif
 					break;
