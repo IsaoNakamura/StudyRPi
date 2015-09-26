@@ -57,40 +57,40 @@ bool talkReason( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"うれしなみだで　よくみえないや\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うれしなみだで　よくみえないや\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"きょうは めでたい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きょうは めでたい\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"きんちょうしてきた\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きんちょうしてきた\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"ペガサスあーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ペガサスあーーーーーーーい\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"うぉーーーく あーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うぉーーーく あーーーーーーーい\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"あいだっぷぅぅぅぅーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"あいだっぷぅぅぅぅーー\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"われむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"われむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 10:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"がれむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 11:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"でぇーーさーーん　でぇーじいー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"でぇーーさーーん　でぇーじいー\" | aplay");
 		break;
 	default:
 		break;
@@ -103,34 +103,34 @@ bool talkWelcome( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"うぇるかーむ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うぇるかーむ\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"ようこそおいでくださいました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ようこそおいでくださいました\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"ゆっくりしていってね\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ゆっくりしていってね\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"きてくれて ありがとう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きてくれて ありがとう\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"しゅうへいと りさも よろこんでおります\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"しゅうへいと りさも よろこんでおります\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"やまをめざそう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"やまをめざそう\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"あなべる へ ようこそ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"あなべる へ ようこそ\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"なまえはかきましたか？\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"なまえはかきましたか？\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi  \"めがあいましたね うふ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"めがあいましたね うふ\" | aplay");
 		break;
 	case 10:
 		system("aplay /home/pi/shuheyVoice/00_7315651.wav");
@@ -499,16 +499,16 @@ int main(int argc, char* argv[])
 			// 負荷分散のためDelay
 			char c = cvWaitKey(DELAY_SEC);
 			if( c==27 ){ // ESC-Key
-				printf("exit program.");
+				printf("exit program.\n");
 				break;
 			}
 			
 			if( digitalRead(GPIO_EXIT) == LOW ){
-				printf("exit program.");
+				printf("exit program.\n");
 				break;
 			}
 			if( digitalRead(GPIO_HALT) == LOW ){
-				printf("shutdown system.");
+				printf("shutdown system.\n");
 				system("sudo halt");
 				break;
 			}
