@@ -15,6 +15,8 @@
 #define GPIO_EXIT		(23)
 #define GPIO_HALT		(22)
 
+#define GPIO_MONOEYE	(4)
+
 
 #include <cv.h>
 #include <highgui.h>
@@ -187,6 +189,8 @@ int main(int argc, char* argv[])
 				
 		pinMode(GPIO_EXIT, INPUT);
 		pinMode(GPIO_HALT, INPUT);
+		
+		pinMode(GPIO_MONOEYE, OUTPUT);
 
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
@@ -455,8 +459,10 @@ int main(int argc, char* argv[])
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
+					digitalWrite(GPIO_MONOEYE,HIGH);
 					talkType = rand() % 12;
 					talkReason(talkType);
+					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
 					break;
 				case HOMING_HOMING:
@@ -471,8 +477,10 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
+					digitalWrite(GPIO_MONOEYE,HIGH);
 					talkType = rand() % 20;
 					talkWelcome(talkType);
+					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
 					break;
 				case HOMING_KEEP:
@@ -495,11 +503,11 @@ int main(int argc, char* argv[])
 				break;
 			}
 			
-			if( digitalRead(GPIO_EXIT) == HIGH ){
+			if( digitalRead(GPIO_EXIT) == LOW ){
 				printf("exit program.");
 				break;
 			}
-			if( digitalRead(GPIO_HALT) == HIGH ){
+			if( digitalRead(GPIO_HALT) == LOW ){
 				printf("shutdown system.");
 				system("sudo halt");
 				break;
