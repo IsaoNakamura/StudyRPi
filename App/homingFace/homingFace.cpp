@@ -69,6 +69,27 @@ bool talkReason( const int& talkType)
 	case 4:
 		system("/home/pi/aquestalkpi/AquesTalkPi \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
 		break;
+	case 5:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		break;
+	case 6:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"ペガサスあーーーーーーーい\" | aplay");
+		break;
+	case 7:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"うぉーーーく あーーーーーーーい\" | aplay");
+		break;
+	case 8:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"あいだっーーーーーーぷーー\" | aplay");
+		break;
+	case 9:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"われむぅぅぅぅーーーーーーー\" | aplay");
+		break;
+	case 10:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		break;
+	case 11:
+		system("/home/pi/aquestalkpi/AquesTalkPi \"でぇーーさーーん　でぇーじいー\" | aplay");
+		break;
 	default:
 		break;
 	}
@@ -434,7 +455,7 @@ int main(int argc, char* argv[])
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
-					talkType = rand() % 5;
+					talkType = rand() % 12;
 					talkReason(talkType);
 #endif
 					break;
