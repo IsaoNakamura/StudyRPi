@@ -81,7 +81,7 @@ bool talkReason( const int& talkType)
 		system("/home/pi/aquestalkpi/AquesTalkPi \"うぉーーーく あーーーーーーーい\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi \"あいだっーーーーーーぷーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi \"あいだっぷぅぅぅぅーー\" | aplay");
 		break;
 	case 9:
 		system("/home/pi/aquestalkpi/AquesTalkPi \"われむぅぅぅぅーーーーーーー\" | aplay");
