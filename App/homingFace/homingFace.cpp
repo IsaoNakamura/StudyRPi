@@ -56,6 +56,7 @@ enum HomingStatus
 #define TALK_REASON_NUM	(12)
 bool talkReason( const int& talkType)
 {
+	printf("called talkReason(%d)\n",talkType);
 	switch( talkType )
 	{
 	case 0:
@@ -100,9 +101,10 @@ bool talkReason( const int& talkType)
 	return true;
 }
 
-#define TALK_WELCOME_NUM	(23)
+#define TALK_WELCOME_NUM	(22)
 bool talkWelcome( const int& talkType)
 {
+	printf("called talkWelcome(%d)\n",talkType);
 	switch( talkType )
 	{
 	case 0:
@@ -135,43 +137,43 @@ bool talkWelcome( const int& talkType)
 	case 9:
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
 		break;
+	//case 10:
+	//	system("aplay /home/pi/shuheyVoice/00_7315651.wav");
+	//	break;
 	case 10:
-		system("aplay /home/pi/shuheyVoice/00_7315651.wav");
-		break;
-	case 11:
 		system("aplay /home/pi/shuheyVoice/01-_7315652.wav");
 		break;
-	case 12:
+	case 11:
 		system("aplay /home/pi/shuheyVoice/02-_7315653.wav");
 		break;
-	case 13:
+	case 12:
 		system("aplay /home/pi/shuheyVoice/03-_7315654.wav");
 		break;
-	case 14:
+	case 13:
 		system("aplay /home/pi/shuheyVoice/04-_7315655.wav");
 		break;
-	case 15:
+	case 14:
 		system("aplay /home/pi/shuheyVoice/05-_7315656.wav");
 		break;
-	case 16:
+	case 15:
 		system("aplay /home/pi/shuheyVoice/06-_7315657.wav");
 		break;
-	case 17:
+	case 16:
 		system("aplay /home/pi/shuheyVoice/07-_7315658.wav");
 		break;
-	case 18:
+	case 17:
 		system("aplay /home/pi/shuheyVoice/08-_7315659.wav");
 		break;
-	case 19:
+	case 18:
 		system("aplay /home/pi/shuheyVoice/99-_7315651.wav");
 		break;
-	case 20:
+	case 19:
 		system("aplay /home/pi/shuheyVoice/DouzoMinasama.wav");
 		break;
-	case 21:
+	case 20:
 		system("aplay /home/pi/shuheyVoice/Jitsuha.wav");
 		break;
-	case 22:
+	case 21:
 		system("aplay /home/pi/shuheyVoice/WelcomeSpeach.wav");
 		break;
 	default:
