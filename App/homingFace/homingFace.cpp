@@ -33,7 +33,7 @@
 #define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
-#define NONFACE_CNT_MAX		(50)
+#define NONFACE_CNT_MAX		(20)
 
 #include <sys/time.h>
 
@@ -322,6 +322,7 @@ int main(int argc, char* argv[])
 			int i=0;
 			//for(i = 0; i < face->total; i++) {
 			if( face->total > 0 ){
+				nonface_cnt = 0;
 				i=0; // 最初のひとつの顔だけ追尾ターゲットにする
 				
 				// 検出情報から顔の位置情報を取得
@@ -469,6 +470,12 @@ int main(int argc, char* argv[])
 					//isPwmWrite = true;
 					// 前値保存
 					_servo_pitch = servo_pitch;
+#if ( USE_TALK > 0 )
+					digitalWrite(GPIO_MONOEYE,HIGH);
+					talkType = rand() % TALK_REASON_NUM;
+					talkReason(talkType);
+					digitalWrite(GPIO_MONOEYE,LOW);
+#endif
 				}
 			}
 			
@@ -479,6 +486,7 @@ int main(int argc, char* argv[])
 				{
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
+/*
 #if ( USE_TALK > 0 )
 					if( homing_state != HOMING_DELAY ){
 						digitalWrite(GPIO_MONOEYE,HIGH);
@@ -487,6 +495,7 @@ int main(int argc, char* argv[])
 						digitalWrite(GPIO_MONOEYE,LOW);
 					}
 #endif
+*/
 					break;
 				case HOMING_HOMING:
 					printf("[STATE] homing.\n");
