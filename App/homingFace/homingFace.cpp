@@ -34,7 +34,7 @@
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(30)
-#define NONFACE_CNT_SILENT	(20)
+#define SILENT_CNT			(20)
 
 #include <sys/time.h>
 
@@ -296,6 +296,7 @@ int main(int argc, char* argv[])
 
 		int over_cnt = 0;
 		int nonface_cnt = 0;
+		int silent_cnt = 0;
 
 		// メインループ
 		while(1){
@@ -456,8 +457,10 @@ int main(int argc, char* argv[])
 				wrk_homing_state = HOMING_NONE;
 				// NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
 				nonface_cnt++;
+				silent_cnt++;
 #if ( USE_TALK > 0 )
-				if( nonface_cnt > NONFACE_CNT_SILENT ){
+				if( silent_cnt > SILENT_CNT ){
+					silent_cnt = 0;
 					digitalWrite(GPIO_MONOEYE,HIGH);
 					int talkType = rand() % TALK_REASON_NUM;
 					talkReason(talkType);
@@ -518,6 +521,7 @@ int main(int argc, char* argv[])
 					talkType = rand() % TALK_WELCOME_NUM;
 					talkWelcome(talkType);
 					digitalWrite(GPIO_MONOEYE,LOW);
+					silent_cnt = 0;
 #endif
 					break;
 				case HOMING_KEEP:
