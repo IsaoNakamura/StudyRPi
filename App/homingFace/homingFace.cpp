@@ -29,6 +29,7 @@
 
 #define USE_WIN				(0)
 #define USE_TALK			(1)
+#define USE_TALK_TEST		(1)
 #define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
@@ -183,6 +184,17 @@ int main(int argc, char* argv[])
 {
 #if ( USE_TALK > 0 )
 	system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど を きどうします\" | aplay");
+#endif
+
+#if ( USE_TALK_TEST > 0 )
+	int i=0;
+	for(i=0;i<TALK_REASON_NUM;i++){
+		talkReason(i);
+	}
+
+	for(i=0;i<TALK_WELCOME_NUM;i++){
+		talkWelcome(i);
+	}
 #endif
 
 	printf("Press Esc-Key to Exit Process.\n");
