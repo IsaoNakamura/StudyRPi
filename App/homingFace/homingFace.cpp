@@ -474,17 +474,18 @@ int main(int argc, char* argv[])
 			
 			// ホーミング状態を更新
 			if(homing_state != wrk_homing_state){
-				homing_state = wrk_homing_state;
 				int talkType = 0;
-				switch( homing_state )
+				switch( wrk_homing_state )
 				{
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
-					digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % TALK_REASON_NUM;
-					talkReason(talkType);
-					digitalWrite(GPIO_MONOEYE,LOW);
+					if( homing_state != HOMING_DELAY ){
+						digitalWrite(GPIO_MONOEYE,HIGH);
+						talkType = rand() % TALK_REASON_NUM;
+						talkReason(talkType);
+						digitalWrite(GPIO_MONOEYE,LOW);
+					}
 #endif
 					break;
 				case HOMING_HOMING:
@@ -511,6 +512,7 @@ int main(int argc, char* argv[])
 				default:
 					break;
 				}
+				homing_state = wrk_homing_state;
 			}
 
 #if ( USE_WIN > 0 )
