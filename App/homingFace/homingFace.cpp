@@ -162,6 +162,15 @@ bool talkWelcome( const int& talkType)
 	case 19:
 		system("aplay /home/pi/shuheyVoice/99-_7315651.wav");
 		break;
+	case 20:
+		system("aplay /home/pi/shuheyVoice/DouzoMinasama.wav");
+		break;
+	case 21:
+		system("aplay /home/pi/shuheyVoice/Jitsuha.wav");
+		break;
+	case 22:
+		system("aplay /home/pi/shuheyVoice/WelcomeSpeach.wav");
+		break;
 	default:
 		break;
 	}
@@ -477,7 +486,7 @@ int main(int argc, char* argv[])
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
 					digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % 20;
+					talkType = rand() % 23;
 					talkWelcome(talkType);
 					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
