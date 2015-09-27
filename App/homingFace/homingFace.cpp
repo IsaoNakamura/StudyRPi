@@ -34,7 +34,7 @@
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(30)
-#define NONFACE_CNT_SILENT	(15)
+#define NONFACE_CNT_SILENT	(20)
 
 #include <sys/time.h>
 
