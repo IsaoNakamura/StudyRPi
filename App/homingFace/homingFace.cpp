@@ -472,7 +472,7 @@ int main(int argc, char* argv[])
 					_servo_pitch = servo_pitch;
 #if ( USE_TALK > 0 )
 					digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % TALK_REASON_NUM;
+					int talkType = rand() % TALK_REASON_NUM;
 					talkReason(talkType);
 					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
