@@ -52,6 +52,7 @@ enum HomingStatus
 	HOMING_KEEP
 };
 
+#define TALK_REASON_NUM	(12)
 bool talkReason( const int& talkType)
 {
 	switch( talkType )
@@ -98,6 +99,7 @@ bool talkReason( const int& talkType)
 	return true;
 }
 
+#define TALK_WELCOME_NUM	(23)
 bool talkWelcome( const int& talkType)
 {
 	switch( talkType )
@@ -468,7 +470,7 @@ int main(int argc, char* argv[])
 					printf("[STATE] no detected face.\n");
 #if ( USE_TALK > 0 )
 					digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % 12;
+					talkType = rand() % TALK_REASON_NUM;
 					talkReason(talkType);
 					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
@@ -486,7 +488,7 @@ int main(int argc, char* argv[])
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
 					digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % 23;
+					talkType = rand() % TALK_WELCOME_NUM;
 					talkWelcome(talkType);
 					digitalWrite(GPIO_MONOEYE,LOW);
 #endif
