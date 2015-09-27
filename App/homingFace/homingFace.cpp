@@ -33,7 +33,8 @@
 #define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
-#define NONFACE_CNT_MAX		(20)
+#define NONFACE_CNT_MAX		(30)
+#define NONFACE_CNT_SILENT	(15)
 
 #include <sys/time.h>
 
@@ -455,6 +456,14 @@ int main(int argc, char* argv[])
 				wrk_homing_state = HOMING_NONE;
 				// NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
 				nonface_cnt++;
+#if ( USE_TALK > 0 )
+				if( nonface_cnt > NONFACE_CNT_SILENT ){
+					digitalWrite(GPIO_MONOEYE,HIGH);
+					int talkType = rand() % TALK_REASON_NUM;
+					talkReason(talkType);
+					digitalWrite(GPIO_MONOEYE,LOW);
+				}
+#endif
 				if( nonface_cnt > NONFACE_CNT_MAX ){
 					nonface_cnt = 0;
 					int servo_yaw = servo_mid;
@@ -472,12 +481,6 @@ int main(int argc, char* argv[])
 					//isPwmWrite = true;
 					// 前値保存
 					_servo_pitch = servo_pitch;
-#if ( USE_TALK > 0 )
-					digitalWrite(GPIO_MONOEYE,HIGH);
-					int talkType = rand() % TALK_REASON_NUM;
-					talkReason(talkType);
-					digitalWrite(GPIO_MONOEYE,LOW);
-#endif
 				}
 			}
 			
