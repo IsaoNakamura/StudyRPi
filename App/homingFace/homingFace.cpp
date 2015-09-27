@@ -33,7 +33,7 @@
 #define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.6)
 #define SERVO_OVER_MAX		(10)
-#define NONFACE_CNT_MAX		(10)
+#define NONFACE_CNT_MAX		(50)
 
 #include <sys/time.h>
 
@@ -59,40 +59,40 @@ bool talkReason( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うれしなみだで　よくみえないや\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うれしなみだで　よくみえないや\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きょうは めでたい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きょうは めでたい\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きんちょうしてきた\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きんちょうしてきた\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ペガサスあーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ペガサスあーーーーーーーい\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うぉーーーく あーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぉーーーく あーーーーーーーい\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"あいだっぷぅぅぅぅーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"あいだっぷぅぅぅぅーー\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"われむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"われむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 10:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"がれむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 11:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"でぇーーさーーん　でぇーじいー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"でぇーーさーーん　でぇーじいー\" | aplay");
 		break;
 	default:
 		break;
@@ -106,34 +106,34 @@ bool talkWelcome( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うぇるかーむ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぇるかーむ\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ようこそおいでくださいました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ようこそおいでくださいました\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ゆっくりしていってね\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ゆっくりしていってね\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きてくれて ありがとう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きてくれて ありがとう\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"しゅうへいと りさも よろこんでおります\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"しゅうへいと りさも よろこんでおります\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"やまをめざそう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"やまをめざそう\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"あなべる へ ようこそ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"あなべる へ ようこそ\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"なまえはかきましたか？\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"なまえはかきましたか？\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"めがあいましたね うふ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
 		break;
 	case 10:
 		system("aplay /home/pi/shuheyVoice/00_7315651.wav");
