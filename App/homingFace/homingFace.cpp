@@ -57,40 +57,40 @@ bool talkReason( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うれしなみだで　よくみえないや\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うれしなみだで　よくみえないや\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きょうは めでたい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きょうは めでたい\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きんちょうしてきた\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きんちょうしてきた\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ペガサスあーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ペガサスあーーーーーーーい\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うぉーーーく あーーーーーーーい\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うぉーーーく あーーーーーーーい\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"あいだっぷぅぅぅぅーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"あいだっぷぅぅぅぅーー\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"われむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"われむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 10:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"がれむぅぅぅぅーーーーーーー\" | aplay");
 		break;
 	case 11:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"でぇーーさーーん　でぇーじいー\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"でぇーーさーーん　でぇーじいー\" | aplay");
 		break;
 	default:
 		break;
@@ -103,34 +103,34 @@ bool talkWelcome( const int& talkType)
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"うぇるかーむ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"うぇるかーむ\" | aplay");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ようこそおいでくださいました\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ようこそおいでくださいました\" | aplay");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"ゆっくりしていってね\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ゆっくりしていってね\" | aplay");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80 \"きてくれて ありがとう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"きてくれて ありがとう\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"しゅうへいと りさも よろこんでおります\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"しゅうへいと りさも よろこんでおります\" | aplay");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"やまをめざそう\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"やまをめざそう\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"あなべる へ ようこそ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"あなべる へ ようこそ\" | aplay");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"なまえはかきましたか？\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"なまえはかきましたか？\" | aplay");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 80  \"めがあいましたね うふ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60  \"めがあいましたね うふ\" | aplay");
 		break;
 	case 10:
 		system("aplay /home/pi/shuheyVoice/00_7315651.wav");
@@ -170,6 +170,10 @@ bool talkWelcome( const int& talkType)
 
 int main(int argc, char* argv[])
 {
+#if ( USE_TALK > 0 )
+	system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど を きどうします\" | aplay");
+#endif
+
 	printf("Press Esc-Key to Exit Process.\n");
 	int iRet = -1;
 	
@@ -199,11 +203,6 @@ int main(int argc, char* argv[])
 		const double servo_min_deg = 0.0;
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
-
-#if ( USE_TALK > 0 )
-		//イヤホンジャックからの音声出力
-		//system("amixer cset numid=3 1");
-#endif
 	
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
@@ -500,14 +499,23 @@ int main(int argc, char* argv[])
 			char c = cvWaitKey(DELAY_SEC);
 			if( c==27 ){ // ESC-Key
 				printf("exit program.\n");
+#if ( USE_TALK > 0 )
+				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ぷろぐらむを しゅうりょう します\" | aplay");
+#endif
 				break;
 			}
 			
 			if( digitalRead(GPIO_EXIT) == LOW ){
 				printf("exit program.\n");
+#if ( USE_TALK > 0 )
+				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ぷろぐらむを しゅうりょう します\" | aplay");
+#endif
 				break;
 			}
 			if( digitalRead(GPIO_HALT) == LOW ){
+#if ( USE_TALK > 0 )
+				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しすてむを しゃっとだうん します\" | aplay");
+#endif
 				printf("shutdown system.\n");
 				system("sudo halt");
 				break;
@@ -526,12 +534,19 @@ int main(int argc, char* argv[])
 	
 		cvReleaseCapture(&capture);
 		cvDestroyWindow(DISP_WIN);
-	
+
+#if ( USE_TALK > 0 )
+	system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど は 正常に終了しました\" | aplay");
+#endif
+
 		// ここまでくれば成功
 		iRet = 0;
 	}
 	catch(...)
 	{
+#if ( USE_TALK > 0 )
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど に ちめいてきな エラーが 発生しました\" | aplay");
+#endif
 		iRet = -1;
 	}
 
