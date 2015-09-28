@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
 		digitalWrite(GPIO_MONOEYE,HIGH);
 
 		// servoMotor GWS park hpx min25 mid74 max123
-		const int servo_mid = 70;//76;
+		const int servo_mid = 76;
 		const int servo_min = 36; //servo_mid - 30;
 		const int servo_max = 122; //servo_mid + 30;
 		const double servo_min_deg = 0.0;
