@@ -15,7 +15,7 @@
 #define GPIO_EXIT		(23)
 #define GPIO_HALT		(22)
 
-#define GPIO_MONOEYE	(17)
+#define GPIO_MONOEYE	(16)
 
 
 #include <cv.h>
@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
 		pinMode(GPIO_HALT, INPUT);
 		
 		pinMode(GPIO_MONOEYE, OUTPUT);
-		digitalWrite(GPIO_MONOEYE,HIGH);
+		//digitalWrite(GPIO_MONOEYE,HIGH);
 
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
@@ -465,7 +465,7 @@ int main(int argc, char* argv[])
 					digitalWrite(GPIO_MONOEYE,HIGH);
 					int talkType = rand() % TALK_REASON_NUM;
 					talkReason(talkType);
-					//digitalWrite(GPIO_MONOEYE,LOW);
+					digitalWrite(GPIO_MONOEYE,LOW);
 				}
 #endif
 				if( nonface_cnt > NONFACE_CNT_MAX ){
@@ -521,7 +521,7 @@ int main(int argc, char* argv[])
 					digitalWrite(GPIO_MONOEYE,HIGH);
 					talkType = rand() % TALK_WELCOME_NUM;
 					talkWelcome(talkType);
-					//digitalWrite(GPIO_MONOEYE,LOW);
+					digitalWrite(GPIO_MONOEYE,LOW);
 					silent_cnt = 0;
 #endif
 					break;
