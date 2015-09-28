@@ -8,7 +8,7 @@
 
 #define EXEC_CNT	(10)
 #define DELAY_SEC	(1)
-#define GPIO_NO		(16)
+#define GPIO_NO		(17)
 
 int main(int argc, char* argv[])
 {

@@ -15,7 +15,7 @@
 #define GPIO_EXIT		(23)
 #define GPIO_HALT		(22)
 
-#define GPIO_MONOEYE	(16)
+#define GPIO_MONOEYE	(17)
 
 
 #include <cv.h>
