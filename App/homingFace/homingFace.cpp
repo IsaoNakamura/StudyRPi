@@ -512,7 +512,11 @@ int main(int argc, char* argv[])
 				case HOMING_HOMING:
 					printf("[STATE] homing.\n");
 #if ( USE_TALK > 0 )
-					//system("/home/pi/aquestalkpi/AquesTalkPi \"あ\" | aplay");
+					//digitalWrite(GPIO_MONOEYE,HIGH);
+					talkType = rand() % TALK_WELCOME_NUM;
+					talkWelcome(talkType);
+					//digitalWrite(GPIO_MONOEYE,LOW);
+					silent_cnt = 0;
 #endif
 					break;
 				case HOMING_DELAY:
@@ -521,11 +525,11 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					//digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % TALK_WELCOME_NUM;
-					talkWelcome(talkType);
-					//digitalWrite(GPIO_MONOEYE,LOW);
-					silent_cnt = 0;
+					////digitalWrite(GPIO_MONOEYE,HIGH);
+					//talkType = rand() % TALK_WELCOME_NUM;
+					//talkWelcome(talkType);
+					////digitalWrite(GPIO_MONOEYE,LOW);
+					//silent_cnt = 0;
 #endif
 					break;
 				case HOMING_KEEP:
