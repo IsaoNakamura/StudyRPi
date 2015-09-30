@@ -231,8 +231,8 @@ int main(int argc, char* argv[])
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
 		
-		const int pitch_limit_max = servo_max - 20;
-		const int pitch_limit_min = servo_min + 20;
+		const int pitch_limit_max = servo_max - 22;
+		const int pitch_limit_min = servo_min + 34;
 	
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
