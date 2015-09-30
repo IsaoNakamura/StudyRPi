@@ -15,7 +15,7 @@
 #define GPIO_EXIT		(23)
 #define GPIO_HALT		(22)
 
-#define GPIO_MONOEYE	(16)
+//#define GPIO_MONOEYE	(16)
 
 
 #include <cv.h>
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 		pinMode(GPIO_EXIT, INPUT);
 		pinMode(GPIO_HALT, INPUT);
 		
-		pinMode(GPIO_MONOEYE, OUTPUT);
+		//pinMode(GPIO_MONOEYE, OUTPUT);
 		//digitalWrite(GPIO_MONOEYE,HIGH);
 
 		// servoMotor GWS park hpx min25 mid74 max123
@@ -230,6 +230,9 @@ int main(int argc, char* argv[])
 		const double servo_min_deg = 0.0;
 		const double servo_max_deg = 180.0;
 		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
+		
+		const int pitch_limit_max = servo_max + 5;
+		const int pitch_limit_min = servo_min - 5;
 	
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
@@ -403,14 +406,14 @@ int main(int argc, char* argv[])
 						// ピッチ角用サーボ制御
 						//servo_pitch = servo_mid - static_cast<int>(deg_pitch / ratio_deg); // カメラ固定だとこれでよい
 						servo_pitch = _servo_pitch - static_cast<int>(deg_pitch / ratio_deg);
-						if(servo_pitch > servo_max){
+						if(servo_pitch > pitch_limit_max){
 							over_cnt++;
 							printf("pitch is over max ######## \n");
-							servo_pitch = servo_max;
-						}else if(servo_pitch < servo_min){
+							servo_pitch = pitch_limit_max;
+						}else if(servo_pitch < pitch_limit_min){
 							over_cnt++;
 							printf("pitch is under min ######## \n");
-							servo_pitch = servo_min;
+							servo_pitch = pitch_limit_min;
 						}
 						//printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
 
@@ -462,10 +465,10 @@ int main(int argc, char* argv[])
 #if ( USE_TALK > 0 )
 				if( silent_cnt > SILENT_CNT ){
 					silent_cnt = 0;
-					digitalWrite(GPIO_MONOEYE,HIGH);
+					//digitalWrite(GPIO_MONOEYE,HIGH);
 					int talkType = rand() % TALK_REASON_NUM;
 					talkReason(talkType);
-					digitalWrite(GPIO_MONOEYE,LOW);
+					//digitalWrite(GPIO_MONOEYE,LOW);
 				}
 #endif
 				if( nonface_cnt > NONFACE_CNT_MAX ){
@@ -518,10 +521,10 @@ int main(int argc, char* argv[])
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
 #if ( USE_TALK > 0 )
-					digitalWrite(GPIO_MONOEYE,HIGH);
+					//digitalWrite(GPIO_MONOEYE,HIGH);
 					talkType = rand() % TALK_WELCOME_NUM;
 					talkWelcome(talkType);
-					digitalWrite(GPIO_MONOEYE,LOW);
+					//digitalWrite(GPIO_MONOEYE,LOW);
 					silent_cnt = 0;
 #endif
 					break;
