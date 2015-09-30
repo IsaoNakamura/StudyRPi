@@ -31,10 +31,10 @@
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
 #define HOMING_DELAY_MSEC	(3000)
-#define CENTER_AREA_RATIO	(0.6)
+#define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
-#define NONFACE_CNT_MAX		(30)
-#define SILENT_CNT			(20)
+#define NONFACE_CNT_MAX		(50)
+#define SILENT_CNT			(30)
 
 #include <sys/time.h>
 
