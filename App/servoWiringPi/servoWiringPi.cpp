@@ -10,9 +10,9 @@
 
 #define EXEC_CNT	(10)
 #define DELAY_SEC	(1)
-#define GPIO_NO	(18)
+#define GPIO_NO	(13)
 
-#define GWS_PARK_MIN	(30)
+#define GWS_PARK_MIN	(36)
 #define GWS_PARK_MID	(76)
 #define GWS_PARK_MAX	(122)
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 		}
 		pwmWrite(GPIO_NO, num);
 	}
-
+/*
 	// Change to the Middle-Pos.
 	pwmWrite(GPIO_NO, GWS_PARK_MID);
 
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 		// DELAY_SEC秒待つ
 		sleep(DELAY_SEC);
 	}
-
+*/
 	// Return to the Middle-Pos.
 	pwmWrite(GPIO_NO, GWS_PARK_MID);
 
