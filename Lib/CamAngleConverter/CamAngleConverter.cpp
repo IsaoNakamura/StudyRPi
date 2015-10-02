@@ -52,8 +52,8 @@ int DF::CamAngleConverter::Initialize(
 // スクリーン座標からカメラのピッチ角とヨー角を算出する 
 int DF::CamAngleConverter::ScreenToCameraAngle
 	(
-		double&       camera_pitch,
 		double&       camera_yaw,
+		double&       camera_pitch,
 		const int&    src_u,
 		const int&    src_v
 		)
@@ -72,8 +72,8 @@ int DF::CamAngleConverter::ScreenToCameraAngle
 	}
 
 	// カメラのピッチ角とヨー角を算出 
-	camera_pitch = (static_cast<double>(src_u) / _sc_width * _angle_horz) - (_angle_horz / 2.0);
-	camera_yaw = (_angle_vert / 2.0) - (static_cast<double>(src_v) / _sc_height * _angle_vert);
+	camera_yaw = (static_cast<double>(src_u) / _sc_width * _angle_horz) - (_angle_horz / 2.0);
+	camera_pitch = (_angle_vert / 2.0) - (static_cast<double>(src_v) / _sc_height * _angle_vert);
 
 	return 0;
 }
