@@ -51,9 +51,12 @@ CServoDrv* CServoDrv::createInstance(	const int& gpioPin,
 	pObj->m_valueMax		= valueMax;
 	pObj->m_movementRange	= movementRange;
 	
-	if(! pObj->calcRatioDeg2Value() ){
+	if(! calcRatioDeg2Value(	m_ratioDeg2Value,
+								m_valueMin,
+								m_valueMax,
+								m_movementRange	) ){
 		delete pObj;
-		return NULL;
+		return NULL;						
 	}
 	
 	return pObj;
@@ -77,20 +80,22 @@ void CServoDrv::destroy()
 	return;
 }
 
-bool CServoDrv::calcRatioDeg2Value()
-{
-	if(m_valueMax <= m_valueMin){
+bool CServoDrv::calcRatioDeg2Value(	double&		ratioDeg2Value,
+									const int&	valueMin,
+									const int&	valueMax,
+									const int&	movementRange	){
+	// 返答領域を初期化
+	ratioDeg2Value = 0;
+	
+	// 入力値チェック
+	int deltaValue = valueMax - valueMin;
+	if(deltaValue <= 0){
 		return false;
 	}
-	
-	int deltaValue = m_valueMax - m_valueMin;
-	if(deltaValue==0){
-		return false;
-	}
-	
-	m_ratioDeg2Value = m_movementRange / static_cast<double>(deltaValue);
-	
-	return true;
+
+	ratioDeg2Value = movementRange / static_cast<double>(deltaValue);
+
+	return true;								
 }
 
 
