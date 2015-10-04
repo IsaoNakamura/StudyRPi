@@ -16,7 +16,8 @@ private:
 	void destroy();
 
 private:
-	bool calcRatioDeg2Value();
+	static bool calcRatioDeg2Value(	double&		ratioDeg2Value,
+
 private:
 	// need for initialized
 	int	m_gpioPin;
