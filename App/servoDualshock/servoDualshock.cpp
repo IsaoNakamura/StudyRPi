@@ -9,7 +9,9 @@
 #include <wiringPi.h>
 #include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
 
-#define GPIO_NO		(18)
+// PWM-Channel0 is on gpios 12 or 18.
+// PWM-Channel1 is on gpios 13 or 19.
+#define GPIO_NO		(12)
 
 int main(int argc, char* argv[])
 {
