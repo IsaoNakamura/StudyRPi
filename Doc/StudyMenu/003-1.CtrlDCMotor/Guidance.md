@@ -3,6 +3,9 @@
 * DCモーター
 * DC電源(例:電池+電池ボックス)
 * パイポーラトランジスタ(NPN型)
+* PS3コントローラ(DUALSHOCK3 or SIXAXIS)
+* USB-Bluetooth接続ドングル
+* USBケーブル(A-miniBタイプ)
 
 ## 手順
 ### 1. ワイヤリング。
@@ -17,7 +20,7 @@
 ### 3. RPi勉強会用GitHubリポジトリをクローン(チェックアウト)して、ディレクトリに侵入する。  
 ``git clone https://github.com/IsaoNakamura/StudyRPi/``  
 ``cd StudyRPi``  
-  既にクローンしていれば、``git fetch`` もしくは、 ``git pull`` する。
+  既にクローンしていれば、``git pull`` する。
 
 ### 4. 以下のAPPを使用するので、このAPPのディレクトリに侵入する。  
 [StudyRPi/App/dualshockGPIO](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/dualshockGPIO)  

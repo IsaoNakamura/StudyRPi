@@ -15,6 +15,9 @@
 * DCモーター
 * DC電源(例:電池+電池ボックス)
 * パイポーラトランジスタ(NPN型)
+* PS3コントローラ(DUALSHOCK3 or SIXAXIS)
+* USB-Bluetooth接続ドングル
+* USBケーブル(A-miniBタイプ)
 
 ### 手順  
 * [003-1.CtrlDCMotor/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/003-1.CtrlDCMotor/Guidance.md)
