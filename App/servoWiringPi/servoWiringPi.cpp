@@ -59,12 +59,12 @@ int main(int argc, char* argv[])
 	for(i=0; i<EXEC_CNT; i++){
 		if( (i%2) == 0 ){
 			// 偶数の場合
-			// GPIO18をMAXにする。
+			// GPIO_NOをMAXにする。
 			pwmWrite(GPIO_NO, SERVO_MAX);
 			printf("pwm is Max\n");
 		}else{ 
 			// 奇数の場合
-			// GPIO18をMINにする。
+			// GPIO_NOをMINにする。
 			pwmWrite(GPIO_NO, SERVO_MIN);
 			printf("pwm is Min\n");
 		}
