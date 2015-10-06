@@ -21,12 +21,12 @@
   既にクローンしていれば、``git pull`` する。
 
 ### 4. 以下のAPPを使用するので、このAPPのディレクトリに侵入する。  
-[StudyRPi/App/servoDualShock](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/servoDualShock)  
-``cd App/servoDualShock`` 
+[StudyRPi/App/servoDualshock](https://github.com/IsaoNakamura/StudyRPi/blob/master/App/servoDualshock)  
+``cd App/servoDualshock`` 
 
 ### 5. コンパイルして実行ファイルを作成する。  
 ``make``  
 
 ### 6. 管理者権限で実行ファイルを実行する。  
-``sudo ./servoDualShock``  
+``sudo ./servoDualshock``  
 PS3コントローラの左ジョイスティックの傾きに応じてサーボモータのホーンが回転すれば成功！！  
