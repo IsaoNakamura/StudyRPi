@@ -49,7 +49,7 @@ int DF::CamAngleConverter::Initialize(
 }
 
 
-// ƒXƒNƒŠ[ƒ“À•W‚©‚çƒJƒƒ‰‚Ìƒsƒbƒ`Šp‚Æƒˆ[Šp‚ğZo‚·‚é 
+// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã®ãƒ”ãƒƒãƒè§’ã¨ãƒ¨ãƒ¼è§’ã‚’ç®—å‡ºã™ã‚‹ 
 int DF::CamAngleConverter::ScreenToCameraAngle
 	(
 		double&       camera_yaw,
@@ -59,11 +59,11 @@ int DF::CamAngleConverter::ScreenToCameraAngle
 		)
 {
 
-	// •Ô“š—Ìˆæ‚Ì‰Šú‰» 
+	// è¿”ç­”é ˜åŸŸã®åˆæœŸåŒ– 
 	camera_pitch = 0.0;
 	camera_yaw = 0.0;
 
-	// “ü—Í’lƒ`ƒFƒbƒN 
+	// å…¥åŠ›å€¤ãƒã‚§ãƒƒã‚¯
 	if (src_u < 0 && _sc_width < src_u) {
 		return -1;
 	}
@@ -71,14 +71,14 @@ int DF::CamAngleConverter::ScreenToCameraAngle
 		return -1;
 	}
 
-	// ƒJƒƒ‰‚Ìƒsƒbƒ`Šp‚Æƒˆ[Šp‚ğZo 
+	// ã‚«ãƒ¡ãƒ©ã®ãƒ”ãƒƒãƒè§’ã¨ãƒ¨ãƒ¼è§’ã‚’ç®—å‡º 
 	camera_yaw = (static_cast<double>(src_u) / _sc_width * _angle_horz) - (_angle_horz / 2.0);
 	camera_pitch = (_angle_vert / 2.0) - (static_cast<double>(src_v) / _sc_height * _angle_vert);
 
 	return 0;
 }
 
-// …•½E‚’¼‰æŠp‚ğZo‚·‚é 
+// æ°´å¹³ãƒ»å‚ç›´ç”»è§’ã‚’ç®—å‡ºã™ã‚‹ 
 int DF::MakeViewAngle(
 	double&       angle_horz,
 	double&       angle_vert,
@@ -86,21 +86,21 @@ int DF::MakeViewAngle(
 	const int&    sc_height,
 	const double& angle_diagonal) {
 
-	// •Ô“š—Ìˆæ‚Ì‰Šú‰» 
+	// è¿”ç­”é ˜åŸŸã®åˆæœŸåŒ– 
 	angle_horz = 0.0;
 	angle_vert = 0.0;
 
-	// d(‘ÎŠpü) 
+	// d(å¯¾è§’ç·š) 
 	double sc_diagonal = sqrt(sc_width*sc_width + sc_height*sc_height);
 	if (sc_diagonal <= 1.0e-06) {
 		return -1;
 	}
 
-	// d”ä 
+	// dæ¯” 
 	double rate_width = sc_width / sc_diagonal;
 	double rate_height = sc_height / sc_diagonal;
 
-	// …•½E‚’¼‰æŠp‚ğZo‚·‚é 
+	// æ°´å¹³ãƒ»å‚ç›´ç”»è§’ã‚’ç®—å‡ºã™ã‚‹
 	angle_horz = angle_diagonal * rate_width;
 	angle_vert = angle_diagonal * rate_height;
 
