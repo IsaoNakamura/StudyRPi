@@ -83,7 +83,8 @@ void CServoDrv::destroy()
 bool CServoDrv::calcRatioDeg2Value(	double&		ratioDeg2Value,
 									const int&	valueMin,
 									const int&	valueMax,
-									const int&	movementRange	){
+									const int&	movementRange	) const
+{
 	// 返答領域を初期化
 	ratioDeg2Value = 0;
 	
@@ -98,4 +99,34 @@ bool CServoDrv::calcRatioDeg2Value(	double&		ratioDeg2Value,
 	return true;								
 }
 
+bool CServoDrv::convDeg2Value(	int&			servo_value,
+								const double&	deg,
+								const double&	ratioDeg2Value	) const
+{
+	return true;
+}
 
+bool CServoDrv::setAngleDeg(const double& deg)
+{
+	return true;
+}
+
+bool CServoDrv::setAngleDegOffset(const double& deg_offset)
+{
+	return true;
+}
+
+bool CServoDrv::resetAngle()
+{
+	return true;
+}
+
+double CServoDrv::getAngleDeg() const
+{
+	return 0.0;
+}
+
+int CServoDrv::getAngleValue() const
+{
+	return 0;
+}
