@@ -17,6 +17,24 @@ private:
 
 private:
 	static bool calcRatioDeg2Value(	double&		ratioDeg2Value,
+									const int&	valueMin,
+									const int&	valueMax,
+									const int&	movementRange	) const;
+
+	static bool convDeg2Value(	int&			servo_value,
+								const double&	deg,
+								const double&	ratioDeg2Value	) const;
+
+public:
+	bool setAngleDeg(const double& deg);
+	bool setAngleDegOffset(const double& deg_offset);
+	bool resetAngle();
+	bool setMidAngleValue(const int& val);
+	bool setMidAngleDeg(const double& deg);
+
+
+	double	getAngleDeg() const;
+	int		getAngleValue() const;
 
 private:
 	// need for initialized
