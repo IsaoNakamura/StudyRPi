@@ -35,6 +35,11 @@ public:
 
 	double	getAngleDeg() const;
 	int		getAngleValue() const;
+	
+	bool flushServo();
+	bool refleshServo();
+	bool writeAngleDeg(const double& deg);
+	bool writeAngleDegOffset(const double& deg_offset);
 
 private:
 	// need for initialized
@@ -45,10 +50,13 @@ private:
 	// spec of servoMotor
 	int		m_valueMin;
 	int		m_valueMax;
+	int		m_valueMid;
 	double	m_movementRange;	// 可動範囲(例：180度)
 	int		m_valueMinLimit;
 	int		m_valueMaxLimit;	
 	double	m_ratioDeg2Value;
+	
+	int		m_valueCur;
 };
 
 #endif
