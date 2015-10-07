@@ -32,22 +32,24 @@ public:
 	bool setAngleDeg(const double& deg);
 	bool setAngleDegOffset(const double& deg_offset);
 
-	bool writeAngleDeg(const double& deg);
-	bool writeAngleDegOffset(const double& deg_offset);
-	
 	bool setAngleValue(const int& val);
 	bool setAngleValueOffset(const int& val);
 
 	bool flushServo();
-	
-	bool setMidAngleValue(const int& val);
-	bool setMidAngleDeg(const double& deg);
 
-	double	getAngleDeg() const;
-	int		getAngleValue() const;
+	bool writeAngleDeg(const double& deg);
+	bool writeAngleDegOffset(const double& deg_offset);
 	
 	void resetAngle();
 	void refleshServo();
+
+	double	getAngleDeg() const;
+	int		getAngleValue() const;
+
+	bool setMidAngleValue(const int& val);
+	
+	bool setLimitAngleDeg(const double& deg_min, const double& deg_max);
+	bool setLimitAngleValue(const int& valueMin, const int& valueMax);
 
 private:
 	// need for initialized
