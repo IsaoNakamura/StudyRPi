@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "../../Lib/CamAngleConverter/CamAngleConverter.h"
+#include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
 
 int main(int argc, char* argv[])
 {

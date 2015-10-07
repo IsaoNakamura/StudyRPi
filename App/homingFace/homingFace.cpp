@@ -40,7 +40,7 @@
 
 CvSize minsiz ={0,0};
 
-#include "../../Lib/CamAngleConverter/CamAngleConverter.h"
+#include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
 
 #define DELAY_SEC	(1)

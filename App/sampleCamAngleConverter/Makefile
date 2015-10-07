@@ -20,12 +20,12 @@ $(TARGET): $(OBJECTS) $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
-	$(MAKE) -C $(LIBDIR)/CamAngleConverter
+	$(MAKE) -C $(LIBDIR)/utilities/CamAngleConverter
 	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 .PHONY: subsystem
 subsystem:
-	$(MAKE) -C $(LIBDIR)/CamAngleConverter
+	$(MAKE) -C $(LIBDIR)/utilities/CamAngleConverter
 
 .PHONY: all
 all: clean subsystem $(TARGET)
@@ -34,6 +34,6 @@ all: clean subsystem $(TARGET)
 clean:
 	rm -f $(OBJECTS) $(DEPENDS) $(TARGET)
 	@rmdir --ignore-fail-on-non-empty `readlink -f $(OBJDIR)`
-	$(MAKE) clean -C $(LIBDIR)/CamAngleConverter
+	$(MAKE) clean -C $(LIBDIR)/utilities/CamAngleConverter
 
 -include $(DEPENDS)

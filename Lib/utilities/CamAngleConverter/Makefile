@@ -4,7 +4,7 @@ CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equ
 LDFLAGS =
 LIBS =
 INCLUDE =
-OBJDIR = ../../Bin/obj
+OBJDIR = ../../../Bin/obj
 ifeq "$(strip $(OBJDIR))" ""
   OBJDIR = .
 endif
