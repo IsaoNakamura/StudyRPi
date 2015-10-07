@@ -134,29 +134,42 @@ bool CServoDrv::setAngleDeg(const double& deg)
 	if( !CServoDrv::convDeg2Value(dest_value, deg, m_ratioDeg2Value)){
 		return false;
 	}
-	m_valueCur = dest_value;
+	setAngleValue(dest_value);
 	return true;
 }
 
 bool CServoDrv::setAngleDegOffset(const double& deg_offset)
 {
 	int dest_value = 0;
-	if( !CServoDrv::convDeg2Value(deg_offset, deg, m_ratioDeg2Value)){
+	if( !CServoDrv::convDeg2Value(dest_value, deg_offset, m_ratioDeg2Value)){
 		return false;
 	}
-	m_valueCur += dest_value;
+	setAngleValueOffset(dest_value);
 	return true;
 }
 
-bool CServoDrv::setMidAngleValue(const int& val)
+bool CServoDrv::setAngleValue(const int& val)
 {
-	if( val <= m_valueMin ){
+	if(val < m_valueMin){
 		return false;
 	}
-	if( val >= m_valueMax ){
+	if(val > m_valueMax){
 		return false;
 	}
-	m_valueMid = val;
+	m_valueCur = val;
+	return true;
+}
+
+bool CServoDrv::setAngleValueOffset(const int& val)
+{
+	int valueWrk = m_valueCur + val;
+	return setAngleValue(valueWrk);
+}
+
+bool CServoDrv::flushServo()
+{
+	// using WiringPi
+	pwmWrite(m_gpioPin, m_valueCur);
 	return true;
 }
 
@@ -178,25 +191,6 @@ bool CServoDrv::writeAngleDegOffset(const double& deg_offset)
 	return true;
 }
 
-double CServoDrv::getAngleDeg() const
-{
-	double retDeg = static_cast<int>(m_valueCur) * m_ratioDeg2Value;
-	convValue2Deg(retDeg, m_valueCur, m_ratioDeg2Value);
-	return retDeg;
-}
-
-int CServoDrv::getAngleValue() const
-{
-	return m_valueCur;
-}
-
-bool CServoDrv::flushServo()
-{
-	// using WiringPi
-	pwmWrite(m_gpioPin, m_valueCur);
-	return true;
-}
-
 void CServoDrv::resetAngle()
 {
 	m_valueCur = m_valueMid
@@ -208,4 +202,38 @@ void CServoDrv::refleshServo()
 	resetAngle();
 	flushServo();
 	return;
+}
+
+double CServoDrv::getAngleDeg() const
+{
+	double retDeg = 0.0;
+	convValue2Deg(retDeg, m_valueCur, m_ratioDeg2Value);
+	return retDeg;
+}
+
+int CServoDrv::getAngleValue() const
+{
+	return m_valueCur;
+}
+
+bool CServoDrv::setMidAngleValue(const int& val)
+{
+	if( val <= m_valueMin ){
+		return false;
+	}
+	if( val >= m_valueMax ){
+		return false;
+	}
+	m_valueMid = val;
+	return true;
+}
+
+bool CServoDrv::setLimitAngleDeg(const double& deg_min, const double& deg_max)
+{
+	return true;
+}
+
+bool CServoDrv::setLimitAngleValue(const int& valueMin, const int' valueMax)
+{
+	return true;
 }
