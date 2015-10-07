@@ -76,7 +76,7 @@ void CServoDrv::init()
 	m_valueMinLimit		= m_valueMin;
 	m_valueMaxLimit		= m_valueMax;
 	m_ratioDeg2Value	= 1.0;
-	m_valueCur		= -1;
+	m_valueCur			= -1;
 }
 
 void CServoDrv::destroy()
@@ -108,13 +108,24 @@ bool CServoDrv::convDeg2Value(	int&			servo_value,
 								const double&	ratioDeg2Value	) const
 {
 	// 返答領域の初期化
-	servo_value = m_valueMid;
+	servo_value = 0;
 	
 	if( fabs(ratioDeg2Value) <= 1.0e-6 ){
 		return false;
 	}
 	servo_value = static_cast<int>(deg / ratioDeg2Value);
 	return true;
+}
+
+void CServoDrv::convValue2Deg(	double&			deg,
+								const int&		servo_value,
+								const double&	ratioDeg2Value	) const
+{
+	// 返答領域の初期化
+	deg = 0.0;
+	
+	double deg = static_cast<int>(servo_value) * ratioDeg2Value;
+	return;
 }
 
 bool CServoDrv::setAngleDeg(const double& deg)
@@ -129,12 +140,11 @@ bool CServoDrv::setAngleDeg(const double& deg)
 
 bool CServoDrv::setAngleDegOffset(const double& deg_offset)
 {
-	return true;
-}
-
-bool CServoDrv::resetAngle()
-{
-	m_valueCur = m_valueMid
+	int dest_value = 0;
+	if( !CServoDrv::convDeg2Value(deg_offset, deg, m_ratioDeg2Value)){
+		return false;
+	}
+	m_valueCur += dest_value;
 	return true;
 }
 
@@ -150,9 +160,29 @@ bool CServoDrv::setMidAngleValue(const int& val)
 	return true;
 }
 
+bool CServoDrv::writeAngleDeg(const double& deg)
+{
+	if(! setAngleDeg(deg) ){
+		return false;
+	}
+	flushServo();
+	return true;
+}
+
+bool CServoDrv::writeAngleDegOffset(const double& deg_offset)
+{
+	if(! setAngleDegOffset(deg_offset) ){
+		return false;
+	}
+	flushServo();
+	return true;
+}
+
 double CServoDrv::getAngleDeg() const
 {
-	return 0.0;
+	double retDeg = static_cast<int>(m_valueCur) * m_ratioDeg2Value;
+	convValue2Deg(retDeg, m_valueCur, m_ratioDeg2Value);
+	return retDeg;
 }
 
 int CServoDrv::getAngleValue() const
@@ -167,19 +197,15 @@ bool CServoDrv::flushServo()
 	return true;
 }
 
-bool CServoDrv::refleshServo()
+void CServoDrv::resetAngle()
 {
-	// using WiringPi
-	pwmWrite(m_gpioPin, m_valueMid);
-	return true;
+	m_valueCur = m_valueMid
+	return;
 }
 
-bool CServoDrv::writeAngleDeg(const double& deg)
+void CServoDrv::refleshServo()
 {
-	return true;
-}
-
-bool CServoDrv::writeAngleDegOffset(const double& deg_offset)
-{
-	return true;
+	resetAngle();
+	flushServo();
+	return;
 }
