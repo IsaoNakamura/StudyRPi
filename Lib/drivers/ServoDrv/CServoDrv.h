@@ -25,21 +25,29 @@ private:
 								const double&	deg,
 								const double&	ratioDeg2Value	) const;
 
+	static void convValue2Deg(	double&			deg,
+								const int&		servo_value,
+								const double&	ratioDeg2Value	) const;
 public:
 	bool setAngleDeg(const double& deg);
 	bool setAngleDegOffset(const double& deg_offset);
-	bool resetAngle();
+
+	bool writeAngleDeg(const double& deg);
+	bool writeAngleDegOffset(const double& deg_offset);
+	
+	bool setAngleValue(const int& val);
+	bool setAngleValueOffset(const int& val);
+
+	bool flushServo();
+	
 	bool setMidAngleValue(const int& val);
 	bool setMidAngleDeg(const double& deg);
-
 
 	double	getAngleDeg() const;
 	int		getAngleValue() const;
 	
-	bool flushServo();
-	bool refleshServo();
-	bool writeAngleDeg(const double& deg);
-	bool writeAngleDegOffset(const double& deg_offset);
+	void resetAngle();
+	void refleshServo();
 
 private:
 	// need for initialized
