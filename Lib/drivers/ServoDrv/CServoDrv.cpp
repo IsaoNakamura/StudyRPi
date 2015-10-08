@@ -49,18 +49,20 @@ CServoDrv* CServoDrv::createInstance(	const int& gpioPin,
 	pObj->m_gpioPin			= gpioPin;
 	pObj->m_valueMin		= valueMin;
 	pObj->m_valueMax		= valueMax;
+	pObj->m_valueMinLimit	= valueMin;
+	pObj->m_valueMaxLimit	= valueMax;
 	pObj->m_valueMid		= valueMin + (valueMax - valueMin)/2;
 	pObj->m_movementRange	= movementRange;
 	pObj->m_valueCur		= m_valueMid;
 	
-	if(! calcRatioDeg2Value(	m_ratioDeg2Value,
-								m_valueMin,
-								m_valueMax,
-								m_movementRange	) ){
+	if(! calcRatioDeg2Value(	pObj->m_ratioDeg2Value,
+								pObj->m_valueMin,
+								pObj->m_valueMax,
+								pObj->m_movementRange	) ){
 		delete pObj;
 		return NULL;						
 	}
-	
+
 	return pObj;
 }
 
@@ -150,13 +152,14 @@ bool CServoDrv::setAngleDegOffset(const double& deg_offset)
 
 bool CServoDrv::setAngleValue(const int& val)
 {
-	if(val < m_valueMin){
-		return false;
+	int valueWrk = val;
+	if(valueWrk < m_valueMinLimit){
+		valueWrk = m_valueMinLimit;
 	}
-	if(val > m_valueMax){
-		return false;
+	else if(valueWrk > m_valueMaxLimit){
+		valueWrk = m_valueMaxLimit
 	}
-	m_valueCur = val;
+	m_valueCur = valueWrk;
 	return true;
 }
 
@@ -168,6 +171,9 @@ bool CServoDrv::setAngleValueOffset(const int& val)
 
 bool CServoDrv::flushServo()
 {
+	if(m_valueCur < 0){
+		return false;
+	}
 	// using WiringPi
 	pwmWrite(m_gpioPin, m_valueCur);
 	return true;
@@ -228,12 +234,28 @@ bool CServoDrv::setMidAngleValue(const int& val)
 	return true;
 }
 
-bool CServoDrv::setLimitAngleDeg(const double& deg_min, const double& deg_max)
+bool CServoDrv::setLimitAngleDeg(const double& degMinLimit, const double& degMaxLimit)
 {
-	return true;
+	int valueMinLimit = 0;
+	int valueMaxLimit = 0;
+	if( !CServoDrv::convDeg2Value(valueMinLimit, degMinLimit, m_ratioDeg2Value)){
+		return false;
+	}
+	if( !CServoDrv::convDeg2Value(valueMaxLimit, degMaxLimit, m_ratioDeg2Value)){
+		return false;
+	}
+	return setLimitAngleValue(valueMinLimit,valueMaxLimit);
 }
 
-bool CServoDrv::setLimitAngleValue(const int& valueMin, const int' valueMax)
+bool CServoDrv::setLimitAngleValue(const int& valueMinLimit, const int& valueMaxLimit)
 {
+	if(valueMinLimit < m_valueMin || valueMinLimit > m_valueMax){
+		returm false;
+	}
+	if(valueMaxLimit > m_valueMax || valueMaxLimit < m_valueMin){
+		return false;
+	}
+	m_valueMinLimit = valueMinLimit;
+	m_valueMaxLimit = valueMaxLimit;
 	return true;
 }
