@@ -28,14 +28,15 @@ private:
 	static void convValue2Deg(	double&			deg,
 								const int&		servo_value,
 								const double&	ratioDeg2Value	) const;
+private:
+	bool flushServo();
+
 public:
 	bool setAngleDeg(const double& deg);
 	bool setAngleDegOffset(const double& deg_offset);
 
 	bool setAngleValue(const int& val);
 	bool setAngleValueOffset(const int& val);
-
-	bool flushServo();
 
 	bool writeAngleDeg(const double& deg);
 	bool writeAngleDegOffset(const double& deg_offset);
@@ -48,8 +49,8 @@ public:
 
 	bool setMidAngleValue(const int& val);
 	
-	bool setLimitAngleDeg(const double& deg_min, const double& deg_max);
-	bool setLimitAngleValue(const int& valueMin, const int& valueMax);
+	bool setLimitAngleDeg(const double& degMinLimit, const double& degMaxLimit);
+	bool setLimitAngleValue(const int& valueMinLimit, const int& valueMaxLimit);
 
 private:
 	// need for initialized
