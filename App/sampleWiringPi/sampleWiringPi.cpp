@@ -21,16 +21,10 @@ int main(int argc, char* argv[])
 	}
 	
 	// GPIO_A を出力に設定
-	if( pinMode(GPIO_A, OUTPUT) == -1 ){
-		printf("failed to pinMode(OUTPUT).\n");
-		return -1;
-	}
+	pinMode(GPIO_A, OUTPUT);
 
 	// GPIO_Bを入力に設定
-	if( pinMode(GPIO_B, INPUT) == -1 ){
-		printf("failed to pinMode(INPUT).\n");
-		return -1;
-	}
+	pinMode(GPIO_B, INPUT);
 
 	// EXEC_CNT分処理を繰り返す
 	int i=0;
