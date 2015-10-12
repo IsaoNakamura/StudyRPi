@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
 					printf("failed to setOutLevel(GPIO_LV_HIGH).\n");
 					throw 0;
 				}
+				usleep(DELAY_USEC);
 			}
 
 			//Right
@@ -81,6 +82,7 @@ int main(int argc, char* argv[])
 					printf("failed to setOutLevel(GPIO_LV_LOW).\n");
 					throw 0;
 				}
+				usleep(DELAY_USEC);
 			}
 
 			//Up
@@ -103,7 +105,6 @@ int main(int argc, char* argv[])
 			}
 
 			i++;
-			//usleep(DELAY_USEC);
 			sleep(0);
 		}
 		printf("end loop\n");
