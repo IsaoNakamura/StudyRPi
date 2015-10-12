@@ -12,6 +12,7 @@
 // PWM-Channel0 is on gpios 12 or 18.
 // PWM-Channel1 is on gpios 13 or 19.
 #define GPIO_NO		(12)
+#define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
 
 #define DEF_PWM_CLOCK	(400)
 #define DEF_PWM_RANGE	(1024)
@@ -68,6 +69,7 @@ int main(int argc, char* argv[])
 
 		pwmWrite(GPIO_NO, servo_mid);
 		printf("begin loop \n");
+		int pre_val = servo_mid;
 		while(1){
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
@@ -94,7 +96,11 @@ int main(int argc, char* argv[])
 					val = servo_max;
 				}
 			}
-			pwmWrite(GPIO_NO, val);
+			if( pre_val != val ){
+				pwmWrite(GPIO_NO, val);
+				usleep(DELAY_USEC);
+				pre_val = val;
+			}
 			
 			//Maru
 			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
