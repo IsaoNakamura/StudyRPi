@@ -9,7 +9,23 @@
 #include <wiringPi.h>
 #include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
 
-#define GPIO_NO		(18)
+// PWM-Channel0 is on gpios 12 or 18.
+// PWM-Channel1 is on gpios 13 or 19.
+#define GPIO_NO		(12)
+
+#define DEF_PWM_CLOCK	(400)
+#define DEF_PWM_RANGE	(1024)
+
+#define DUALSHOCK_ANALOG_VAL_MAX	( 32767)
+#define DUALSHOCK_ANALOG_VAL_MID	(     0)
+#define DUALSHOCK_ANALOG_VAL_MIN	(-32767)
+
+#define DUALSHOCK_ANALOG_LEFT	(0)
+
+// for TowerPro SG90
+#define SERVO_MIN	(24)
+#define SERVO_MID	(69)
+#define SERVO_MAX	(115)
 
 int main(int argc, char* argv[])
 {
@@ -29,8 +45,8 @@ int main(int argc, char* argv[])
 		// ready PWM
 		pinMode(GPIO_NO, PWM_OUTPUT);
 		pwmSetMode(PWM_MODE_MS);
-		pwmSetClock(400);
-		pwmSetRange(1024);
+		pwmSetClock(DEF_PWM_CLOCK);
+		pwmSetRange(DEF_PWM_RANGE);
 	
 		// ready Joystick
 		pJoystick = CJoystickDrv::createInstance();
@@ -42,18 +58,18 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 
-		// DUALSHOCK LeftJoystick(m_pAxis[0])
-		const int axis_min = -32767;
-		const int axis_max = 32767;
-		const int axis_mid = 0;
+		const int axis_min = DUALSHOCK_ANALOG_VAL_MIN;
+		const int axis_max = DUALSHOCK_ANALOG_VAL_MAX;
+		const int axis_mid = DUALSHOCK_ANALOG_VAL_MID;
 
-		// servoMotor GWS park hpx min25 mid74 max123
-		const int servo_mid = 73;
-		const int servo_min = servo_mid - 15;
-		const int servo_max = servo_mid + 15;
+		const int servo_min = SERVO_MIN;
+		const int servo_max = SERVO_MAX;
+		const int servo_mid = SERVO_MID;
 
 		pwmWrite(GPIO_NO, servo_mid);
 		printf("begin loop \n");
+		int pre_val = servo_mid;
+		
 		while(1){
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
@@ -63,36 +79,41 @@ int main(int argc, char* argv[])
 
 			int roll = pJoystick->getAxisState(0);
 			int val = servo_mid;
+			//printf("roll=%d\n",roll);
+			
 			if(roll==axis_mid){ // 中間値
 				val = servo_mid;
 			}else if(roll > axis_mid){ // 右
 				double rate = fabs( (double)roll / (double)(axis_max) );
-				int delta = (int)( (double)( servo_mid - servo_min) * rate );
-				val = servo_mid - delta;
-				if(val < servo_min){
-					val = servo_min;
-				}
-			}else if(roll < axis_mid){ // 左
-				double rate = fabs( (double)roll / (double)(axis_min) );
 				int delta = (int)( (double)( servo_max - servo_mid ) * rate );
 				val = servo_mid + delta;
 				if(val > servo_max){
 					val = servo_max;
 				}
+			}else if(roll < axis_mid){ // 左
+				double rate = fabs( (double)roll / (double)(axis_min) );
+				int delta = (int)( (double)( servo_mid - servo_min) * rate );
+				val = servo_mid - delta;
+				if(val < servo_min){
+					val = servo_min;
+				}
+				
 			}
-			pwmWrite(GPIO_NO, val);
+			
+			if( pre_val != val ){
+				pwmWrite(GPIO_NO, val);
+				usleep(100000);
+				pre_val = val;
+			}
 			
 			//Maru
 			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
 				printf("pushed Maru-Button\n");
 				break;
 			}
-
-			sleep(0);
 		}
+		
 		printf("end loop\n");
-
-		pwmWrite(GPIO_NO, servo_mid);
 		if(pJoystick){
 			delete pJoystick;
 			pJoystick = NULL;
