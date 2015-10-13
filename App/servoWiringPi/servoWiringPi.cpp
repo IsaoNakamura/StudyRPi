@@ -42,10 +42,10 @@ int main(int argc, char* argv[])
 			break;
 		}
 		if( num < SERVO_MIN ){
-			printf("%d is under min. \n",num)
+			printf("%d is under min. \n",num);
 			num = SERVO_MIN;
 		}else if( num > SERVO_MAX ){
-			printf("%d is over max. \n",num)
+			printf("%d is over max. \n",num);
 			num = SERVO_MAX;
 		}
 		pwmWrite(GPIO_NO, num);
