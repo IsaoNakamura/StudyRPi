@@ -11,6 +11,8 @@
 #define GPIO_PWM_CH1_0	(13)
 #define GPIO_PWM_CH1_1	(19)
 
+#define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
+
 CServoDrv::CServoDrv()
 {
 	this->init();
@@ -176,6 +178,7 @@ bool CServoDrv::flushServo()
 	}
 	// using WiringPi
 	pwmWrite(m_gpioPin, m_valueCur);
+	usleep(DELAY_USEC);
 	return true;
 }
 
@@ -250,7 +253,7 @@ bool CServoDrv::setLimitAngleDeg(const double& degMinLimit, const double& degMax
 bool CServoDrv::setLimitAngleValue(const int& valueMinLimit, const int& valueMaxLimit)
 {
 	if(valueMinLimit < m_valueMin || valueMinLimit > m_valueMax){
-		returm false;
+		return false;
 	}
 	if(valueMaxLimit > m_valueMax || valueMaxLimit < m_valueMin){
 		return false;
