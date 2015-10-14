@@ -19,15 +19,15 @@ private:
 	static bool calcRatioDeg2Value(	double&		ratioDeg2Value,
 									const int&	valueMin,
 									const int&	valueMax,
-									const int&	movementRange	) const;
+									const int&	movementRange	);
 
 	static bool convDeg2Value(	int&			servo_value,
 								const double&	deg,
-								const double&	ratioDeg2Value	) const;
+								const double&	ratioDeg2Value	);
 
 	static void convValue2Deg(	double&			deg,
 								const int&		servo_value,
-								const double&	ratioDeg2Value	) const;
+								const double&	ratioDeg2Value	);
 private:
 	bool flushServo();
 

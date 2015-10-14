@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "CServoDrv.h"
 
+#include <wiringPi.h>
 #define DEF_PWM_CLOCK	(400);
 #define DEF_PWM_RANGE	(1024);
 
@@ -55,7 +57,7 @@ CServoDrv* CServoDrv::createInstance(	const int& gpioPin,
 	pObj->m_valueMaxLimit	= valueMax;
 	pObj->m_valueMid		= valueMin + (valueMax - valueMin)/2;
 	pObj->m_movementRange	= movementRange;
-	pObj->m_valueCur		= m_valueMid;
+	pObj->m_valueCur		= pObj->m_valueMid;
 	
 	if(! calcRatioDeg2Value(	pObj->m_ratioDeg2Value,
 								pObj->m_valueMin,
@@ -91,7 +93,7 @@ void CServoDrv::destroy()
 bool CServoDrv::calcRatioDeg2Value(	double&		ratioDeg2Value,
 									const int&	valueMin,
 									const int&	valueMax,
-									const int&	movementRange	) const
+									const int&	movementRange	)
 {
 	// 返答領域を初期化
 	ratioDeg2Value = 0;
@@ -109,12 +111,12 @@ bool CServoDrv::calcRatioDeg2Value(	double&		ratioDeg2Value,
 
 bool CServoDrv::convDeg2Value(	int&			servo_value,
 								const double&	deg,
-								const double&	ratioDeg2Value	) const
+								const double&	ratioDeg2Value	)
 {
 	// 返答領域の初期化
 	servo_value = 0;
 	
-	if( fabs(ratioDeg2Value) <= 1.0e-6 ){
+	if( ratioDeg2Value <= 1.0e-6 ){ // need fabs?
 		return false;
 	}
 	servo_value = static_cast<int>(deg / ratioDeg2Value);
@@ -123,12 +125,12 @@ bool CServoDrv::convDeg2Value(	int&			servo_value,
 
 void CServoDrv::convValue2Deg(	double&			deg,
 								const int&		servo_value,
-								const double&	ratioDeg2Value	) const
+								const double&	ratioDeg2Value	)
 {
 	// 返答領域の初期化
 	deg = 0.0;
 	
-	double deg = static_cast<int>(servo_value) * ratioDeg2Value;
+	deg = static_cast<double>(servo_value) * ratioDeg2Value;
 	return;
 }
 
@@ -159,7 +161,7 @@ bool CServoDrv::setAngleValue(const int& val)
 		valueWrk = m_valueMinLimit;
 	}
 	else if(valueWrk > m_valueMaxLimit){
-		valueWrk = m_valueMaxLimit
+		valueWrk = m_valueMaxLimit;
 	}
 	m_valueCur = valueWrk;
 	return true;
@@ -202,7 +204,7 @@ bool CServoDrv::writeAngleDegOffset(const double& deg_offset)
 
 void CServoDrv::resetAngle()
 {
-	m_valueCur = m_valueMid
+	m_valueCur = m_valueMid;
 	return;
 }
 
