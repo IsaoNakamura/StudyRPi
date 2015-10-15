@@ -5,8 +5,8 @@
 #include "CServoDrv.h"
 
 #include <wiringPi.h>
-#define DEF_PWM_CLOCK	(400);
-#define DEF_PWM_RANGE	(1024);
+#define DEF_PWM_CLOCK	(400)
+#define DEF_PWM_RANGE	(1024)
 
 #define GPIO_PWM_CH0_0	(12)
 #define GPIO_PWM_CH0_1	(18)

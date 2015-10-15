@@ -6,10 +6,10 @@
 #include<unistd.h>
 #include "../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.h"
 
-#define EXEC_CNT	(100)
+#define EXEC_CNT	(300)
 #define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
 #define GPIO_A		(17)
-#define GPIO_B		(18)
+#define GPIO_B		(23)
 
 int main(int argc, char* argv[])
 {
