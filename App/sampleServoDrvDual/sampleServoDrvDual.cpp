@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
 	printf("Press Maru-Button to Exit Process.\n");
 	int iRet = 0;
 
+	CJoystickDrv* pJoystick = NULL;
 	CServoDrv* pServoYaw	= NULL;
 	CServoDrv* pServoPitch	= NULL;
 
@@ -40,6 +41,16 @@ int main(int argc, char* argv[])
 		const int servo_min = SERVO_MIN;
 		const int servo_max = SERVO_MAX;
 		const int servo_range = SERVO_RANGE;
+		
+		// ready Joystick
+		pJoystick = CJoystickDrv::createInstance();
+		if(!pJoystick){
+			throw 0;
+		}
+		if(pJoystick->connectJoystick()!=0){
+			printf("failed to connectJoystick()\n");
+			throw 0;
+		}
 		
 		// ready GPIO
 		if( wiringPiSetupGpio() == -1 ){
