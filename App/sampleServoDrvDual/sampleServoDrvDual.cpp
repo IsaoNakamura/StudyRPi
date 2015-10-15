@@ -36,7 +36,6 @@ int main(int argc, char* argv[])
 		const int axis_max = 32767;
 		const int axis_mid = 0;
 
-
 		const int servo_mid = SERVO_MID;
 		const int servo_min = SERVO_MIN;
 		const int servo_max = SERVO_MAX;
@@ -79,35 +78,35 @@ int main(int argc, char* argv[])
 				throw 0;
 			}
 
-			int joy_yaw = pJoystick->getAxisState(STICK_LEFT_X);
-			int joy_pitch = pJoystick->getAxisState(STICK_RIGHT_Y);
+			int joy_yaw		= pJoystick->getAxisState(STICK_LEFT_X);
+			int joy_pitch	= pJoystick->getAxisState(STICK_RIGHT_Y);
 			
-			int val_yaw = servo_mid;
-			int val_pitch = servo_mid;
+			int val_yaw		= servo_mid;
+			int val_pitch	= servo_mid;
 			
 			if(joy_yaw==axis_mid){ // 中間値
 				val_yaw = servo_mid;
 			}else if(joy_yaw > axis_mid){ // 右
-				double rate = fabs( (double)joy_yaw / (double)(axis_max) );
-				int delta = (int)( (double)( servo_mid - servo_min) * rate );
+				double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
+				int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 				val_yaw = servo_mid - delta;
 
 			}else if(joy_yaw < axis_mid){ // 左
-				double rate = fabs( (double)joy_yaw / (double)(axis_min) );
-				int delta = (int)( (double)( servo_max - servo_mid ) * rate );
+				double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
+				int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 				val_yaw = servo_mid + delta;
 			}
 			
 			if(joy_pitch==axis_mid){ // 中間値
 				val_pitch = servo_mid;
 			}else if(joy_pitch > axis_mid){ // 右
-				double rate = fabs( (double)joy_pitch / (double)(axis_max) );
-				int delta = (int)( (double)( servo_mid - servo_min) * rate );
+				double ratio = fabs( (double)joy_pitch / (double)(axis_max) );
+				int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 				val_pitch = servo_mid - delta;
 
 			}else if(joy_pitch < axis_mid){ // 左
-				double rate = fabs( (double)joy_pitch / (double)(axis_min) );
-				int delta = (int)( (double)( servo_max - servo_mid ) * rate );
+				double ratio = fabs( (double)joy_pitch / (double)(axis_min) );
+				int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 				val_pitch = servo_mid + delta;
 			}
 			
