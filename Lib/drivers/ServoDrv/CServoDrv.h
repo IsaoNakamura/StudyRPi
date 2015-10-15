@@ -68,6 +68,7 @@ private:
 	double	m_ratioDeg2Value;
 	
 	int		m_valueCur;
+	int		m_valuePre;
 };
 
 #endif
