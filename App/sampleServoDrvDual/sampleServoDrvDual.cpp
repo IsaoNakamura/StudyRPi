@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <wiringPi.h>
+#include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
 #include "../../Lib/drivers/ServoDrv/CServoDrv.h"
 
 #define GPIO_YAW	(18)
