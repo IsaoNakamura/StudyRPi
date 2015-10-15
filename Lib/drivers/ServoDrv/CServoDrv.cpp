@@ -66,7 +66,13 @@ CServoDrv* CServoDrv::createInstance(	const int& gpioPin,
 		delete pObj;
 		return NULL;						
 	}
-
+	
+	// using WiringPi.
+	pinMode(pObj->m_gpioPin, PWM_OUTPUT);
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetClock(DEF_PWM_CLOCK);
+	pwmSetRange(DEF_PWM_RANGE);
+		
 	return pObj;
 }
 
