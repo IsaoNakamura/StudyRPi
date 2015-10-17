@@ -194,7 +194,8 @@ bool CServoDrv::flushServo()
 	// using WiringPi
 	pwmWrite(m_gpioPin, m_valueCur);
 	//usleep(DELAY_USEC);
-	delay(DELAY_MSEC); //msec
+	//delay(DELAY_MSEC); //msec
+	usleep(0);
 	m_valuePre = m_valueCur;
 	return true;
 }
