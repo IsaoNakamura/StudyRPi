@@ -13,8 +13,8 @@
 #define GPIO_PWM_CH1_0	(13)
 #define GPIO_PWM_CH1_1	(19)
 
-#define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
-#define DELAY_MSEC	(100)
+#define DELAY_USEC	(0)	// 100000usec = 100msec = 0.1sec
+#define DELAY_MSEC	(0)
 
 CServoDrv::CServoDrv()
 {
@@ -194,9 +194,7 @@ bool CServoDrv::flushServo()
 	// using WiringPi
 	//printf("pwmWrite(pin=%d,val=%d)\n",m_gpioPin,m_valueCur);
 	pwmWrite(m_gpioPin, m_valueCur);
-	//usleep(DELAY_USEC);
-	//delay(DELAY_MSEC); //msec
-	usleep(0);
+	usleep(DELAY_USEC); // delay(DELAY_MSEC);
 	m_valuePre = m_valueCur;
 	return true;
 }
