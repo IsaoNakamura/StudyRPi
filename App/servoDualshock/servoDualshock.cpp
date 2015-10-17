@@ -12,7 +12,7 @@
 // PWM-Channel0 is on gpios 12 or 18.
 // PWM-Channel1 is on gpios 13 or 19.
 #define GPIO_NO		(12)
-#define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
+#define DELAY_USEC	(0)	// 100000usec = 100msec = 0.1sec
 
 #define DEF_PWM_CLOCK	(400)
 #define DEF_PWM_RANGE	(1024)

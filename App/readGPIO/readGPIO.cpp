@@ -7,7 +7,7 @@
 #include "../../Lib/drivers/RPiGpioDrv/RPiGpioDrv.h"
 
 #define EXEC_CNT	(100)
-#define DELAY_USEC	(100000)	// 100000usec = 100msec = 0.1sec
+#define DELAY_USEC	(0)	// 100000usec = 100msec = 0.1sec
 #define GPIO_A		(17)
 #define GPIO_B		(18)
 
