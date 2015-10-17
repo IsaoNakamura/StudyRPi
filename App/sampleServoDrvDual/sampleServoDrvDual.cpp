@@ -68,6 +68,10 @@ int main(int argc, char* argv[])
 			printf("failed to create pServoYaw\n");
 			throw 0;
 		}
+		if(!pServoYaw->setLimitAngleValue(servo_mid-15,servo_max+15)){
+			printf("failed to setLimitAngleValue pServoYaw\n");
+			throw 0;
+		}
 
 		pServoPitch = CServoDrv::createInstance(	GPIO_PITCH,
 													servo_min,
@@ -75,6 +79,10 @@ int main(int argc, char* argv[])
 													servo_range	);
 		if(!pServoPitch){
 			printf("failed to create pServoPitch\n");
+			throw 0;
+		}
+		if(!pServoPitch->setLimitAngleValue(servo_mid-15,servo_max+15)){
+			printf("failed to setLimitAngleValue pServoPitch\n");
 			throw 0;
 		}
 
