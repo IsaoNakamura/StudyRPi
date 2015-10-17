@@ -26,6 +26,16 @@ CServoDrv::~CServoDrv()
 	this->destroy();
 }
 
+bool CServoDrv::setupGpio()
+{
+	// ready GPIO. using WiringPi.
+	if( wiringPiSetupGpio() == -1 ){
+		printf("failed to wiringPiSetupGpio()\n");
+		return false;
+	}
+	return true;
+}
+
 CServoDrv* CServoDrv::createInstance(	const int& gpioPin,
 										const int& valueMin,
 										const int& valueMax,

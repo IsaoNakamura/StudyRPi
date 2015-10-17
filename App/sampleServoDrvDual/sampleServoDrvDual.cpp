@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
 		}
 		
 		// ready GPIO
-		if( wiringPiSetupGpio() == -1 ){
-			printf("failed to wiringPiSetupGpio()\n");
+		if(! CServoDrv::setupGpio() ){
+			printf("failed to CServoDrv::setupGpio()\n");
 			return 1;
 		}
 	

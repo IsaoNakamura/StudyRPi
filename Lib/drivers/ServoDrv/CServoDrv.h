@@ -6,6 +6,7 @@ class CServoDrv
 private:
 	CServoDrv();
 public:
+	static bool setupGpio();
 	static CServoDrv* createInstance(	const int& gpioPin,
 										const int& valueMin,
 										const int& valueMax,
