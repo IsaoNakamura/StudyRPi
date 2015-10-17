@@ -132,8 +132,8 @@ int main(int argc, char* argv[])
 			
 			// Write PWM.
 			printf("val_yaw=%d,val_pitch=%d\n",val_yaw,val_pitch);
-			pServoYaw->writeAngleDeg(val_yaw);
-			pServoPitch->writeAngleDeg(val_pitch);
+			pServoYaw->writeAngleValue(val_yaw);
+			pServoPitch->writeAngleValue(val_pitch);
 			
 			//Maru
 			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
