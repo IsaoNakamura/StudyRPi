@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
 			}
 			
 			// Write PWM.
+			printf("val_yaw=%d,val_pitch=%d\n",val_yaw,val_pitch);
 			pServoYaw->writeAngleDeg(val_yaw);
 			pServoPitch->writeAngleDeg(val_pitch);
 			
