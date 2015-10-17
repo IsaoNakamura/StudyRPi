@@ -72,6 +72,10 @@ int main(int argc, char* argv[])
 			printf("failed to setLimitAngleValue pServoYaw\n");
 			throw 0;
 		}
+		if(!pServoYaw->setMidAngleValue(servo_mid)){
+			printf("failed to setLimitAngleValue() pServoYaw\n");
+			throw 0;
+		}
 
 		pServoPitch = CServoDrv::createInstance(	GPIO_PITCH,
 													servo_min,
@@ -83,6 +87,10 @@ int main(int argc, char* argv[])
 		}
 		if(!pServoPitch->setLimitAngleValue(servo_mid-15,servo_mid+15)){
 			printf("failed to setLimitAngleValue pServoPitch\n");
+			throw 0;
+		}
+		if(!pServoPitch->setMidAngleValue(servo_mid)){
+			printf("failed to setLimitAngleValue() pServoPitch\n");
 			throw 0;
 		}
 
@@ -131,7 +139,7 @@ int main(int argc, char* argv[])
 			}
 			
 			// Write PWM.
-			printf("val_yaw=%d,val_pitch=%d\n",val_yaw,val_pitch);
+			//printf("val_yaw=%d,val_pitch=%d\n",val_yaw,val_pitch);
 			pServoYaw->writeAngleValue(val_yaw);
 			pServoPitch->writeAngleValue(val_pitch);
 			
