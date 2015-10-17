@@ -192,7 +192,7 @@ bool CServoDrv::flushServo()
 	}
 
 	// using WiringPi
-	printf("pwmWrite(pin=%d,val=%d)\n",m_gpioPin,m_valueCur);
+	//printf("pwmWrite(pin=%d,val=%d)\n",m_gpioPin,m_valueCur);
 	pwmWrite(m_gpioPin, m_valueCur);
 	//usleep(DELAY_USEC);
 	//delay(DELAY_MSEC); //msec
