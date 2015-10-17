@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 			printf("failed to create pServoYaw\n");
 			throw 0;
 		}
-		if(!pServoYaw->setLimitAngleValue(servo_mid-15,servo_max+15)){
+		if(!pServoYaw->setLimitAngleValue(servo_mid-15,servo_mid+15)){
 			printf("failed to setLimitAngleValue pServoYaw\n");
 			throw 0;
 		}
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 			printf("failed to create pServoPitch\n");
 			throw 0;
 		}
-		if(!pServoPitch->setLimitAngleValue(servo_mid-15,servo_max+15)){
+		if(!pServoPitch->setLimitAngleValue(servo_mid-15,servo_mid+15)){
 			printf("failed to setLimitAngleValue pServoPitch\n");
 			throw 0;
 		}
