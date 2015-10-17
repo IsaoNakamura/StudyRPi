@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 			}
 
 			int joy_yaw		= pJoystick->getAxisState(STICK_LEFT_X);
-			int joy_pitch	= pJoystick->getAxisState(STICK_RIGHT_Y);
+			int joy_pitch	= pJoystick->getAxisState(STICK_LEFT_Y);
 			
 			int val_yaw		= servo_mid;
 			int val_pitch	= servo_mid;
