@@ -10,8 +10,8 @@
 #include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
 #include "../../Lib/drivers/ServoDrv/CServoDrv.h"
 
-#define GPIO_YAW	(18)
-#define GPIO_PITCH	(19)
+#define GPIO_YAW	(12)
+#define GPIO_PITCH	(13)
 #define SERVO_MIN	(36)
 #define SERVO_MID	(76)
 #define SERVO_MAX	(122)
