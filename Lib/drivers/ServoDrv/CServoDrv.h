@@ -36,10 +36,12 @@ public:
 	bool setAngleDegOffset(const double& deg_offset);
 
 	bool setAngleValue(const int& val);
-	bool setAngleValueOffset(const int& val);
+	bool setAngleValueOffset(const int& val_offset);
 
 	bool writeAngleDeg(const double& deg);
 	bool writeAngleDegOffset(const double& deg_offset);
+	bool writeAngleValue(const int& val);
+	bool writeAngleValueOffset(const int& val_offset);
 	
 	void resetAngle();
 	void refleshServo();

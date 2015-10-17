@@ -218,6 +218,24 @@ bool CServoDrv::writeAngleDegOffset(const double& deg_offset)
 	return true;
 }
 
+bool CServoDrv::writeAngleValue(const int& val)
+{
+	if(! setAngleValue(val) ){
+		return false;
+	}
+	flushServo();
+	return true;
+}
+
+bool CServoDrv::writeAngleValueOffset(const int& val_offset)
+{
+	if(! setAngleValueOffset(val_offset) ){
+		return false;
+	}
+	flushServo();
+	return true;
+}
+
 void CServoDrv::resetAngle()
 {
 	m_valueCur = m_valueMid;
