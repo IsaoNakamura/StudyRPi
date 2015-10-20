@@ -22,7 +22,7 @@
 * USBケーブル(A-miniBタイプ)
 
 ### 手順  
-* [005-1.CtrlDualServo.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/005-1.CtrlDualServo/Guidance.md)
+* [005-1.CtrlDualServo/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/005-1.CtrlDualServo/Guidance.md)
 
 ## 2. OpenCVインストール
 ### 特別にいるもの
@@ -33,14 +33,14 @@
 
 ## 3. OpenCVを用いた顔認識
 ### 特別にいるもの
-* UVC対応USBカメラ(動作確認済カメラ：Logicool)もしくはRaspberryPi専用カメラ
+* UVC対応USBカメラ(動作確認済カメラ：Logicool C270)もしくはRaspberryPi専用カメラ
 
 ### 手順  
 * [005-3.DetectFaceByOpenCV/Guidance.md](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/005-3.DetectFaceByOpenCV/Guidance.md)
 
 ## 4. OpenCVとサーボモータを用いた顔追従
 ### 特別にいるもの
-* UVC対応USBカメラ(動作確認済カメラ：Logicool)もしくはRaspberryPi専用カメラ
+* UVC対応USBカメラ(動作確認済カメラ：Logicool C270)もしくはRaspberryPi専用カメラ
 * SG90用2軸アングルFPVカメラマウント
 * サーボモータ×2(TowerPro社製SG90を推奨)
 * PS3コントローラ(DUALSHOCK3 or SIXAXIS)
