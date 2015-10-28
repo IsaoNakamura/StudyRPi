@@ -28,13 +28,10 @@
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
 
 #define USE_WIN				(0)
-#define USE_TALK			(1)
-#define USE_TALK_TEST		(0)
 #define HOMING_DELAY_MSEC	(3000)
 #define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
-#define SILENT_CNT			(30)
 
 #include <sys/time.h>
 
@@ -43,7 +40,7 @@ CvSize minsiz ={0,0};
 #include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
 
-#define DELAY_SEC	(1)
+#define DELAY_MSEC	(1)
 
 enum HomingStatus
 {
@@ -54,152 +51,8 @@ enum HomingStatus
 	HOMING_KEEP
 };
 
-#define TALK_REASON_NUM	(12)
-bool talkReason( const int& talkType)
-{
-	printf("called talkReason(%d)\n",talkType);
-	switch( talkType )
-	{
-	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うれしなみだで　よくみえないや\" | aplay");
-		break;
-	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きょうは めでたい\" | aplay");
-		break;
-	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
-		break;
-	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きんちょうしてきた\" | aplay");
-		break;
-	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"しゅーへいくん うまく しゃべれるかな?\" | aplay");
-		break;
-	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
-		break;
-	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ペガサスあーーーーーーーい\" | aplay");
-		break;
-	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぉーーーく あーーーーーーーい\" | aplay");
-		break;
-	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"あいだっぷぅぅぅぅーー\" | aplay");
-		break;
-	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"われむぅぅぅぅーーーーーーー\" | aplay");
-		break;
-	case 10:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"がれむぅぅぅぅーーーーーーー\" | aplay");
-		break;
-	case 11:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"でぇーーさーーん　でぇーじいー\" | aplay");
-		break;
-	default:
-		break;
-	}
-	return true;
-}
-
-#define TALK_WELCOME_NUM	(22)
-bool talkWelcome( const int& talkType)
-{
-	printf("called talkWelcome(%d)\n",talkType);
-	switch( talkType )
-	{
-	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぇるかーむ\" | aplay");
-		break;
-	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ようこそおいでくださいました\" | aplay");
-		break;
-	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ゆっくりしていってね\" | aplay");
-		break;
-	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きてくれて ありがとう\" | aplay");
-		break;
-	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"しゅうへいと りさも よろこんでおります\" | aplay");
-		break;
-	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"やまをめざそう\" | aplay");
-		break;
-	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"あなべる へ ようこそ\" | aplay");
-		break;
-	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"なまえはかきましたか？\" | aplay");
-		break;
-	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
-		break;
-	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
-		break;
-	//case 10:
-	//	system("aplay /home/pi/shuheyVoice/00_7315651.wav");
-	//	break;
-	case 10:
-		system("aplay /home/pi/shuheyVoice/01-_7315652.wav");
-		break;
-	case 11:
-		system("aplay /home/pi/shuheyVoice/02-_7315653.wav");
-		break;
-	case 12:
-		system("aplay /home/pi/shuheyVoice/03-_7315654.wav");
-		break;
-	case 13:
-		system("aplay /home/pi/shuheyVoice/04-_7315655.wav");
-		break;
-	case 14:
-		system("aplay /home/pi/shuheyVoice/05-_7315656.wav");
-		break;
-	case 15:
-		system("aplay /home/pi/shuheyVoice/06-_7315657.wav");
-		break;
-	case 16:
-		system("aplay /home/pi/shuheyVoice/07-_7315658.wav");
-		break;
-	case 17:
-		system("aplay /home/pi/shuheyVoice/08-_7315659.wav");
-		break;
-	case 18:
-		system("aplay /home/pi/shuheyVoice/99-_7315651.wav");
-		break;
-	case 19:
-		system("aplay /home/pi/shuheyVoice/DouzoMinasama.wav");
-		break;
-	case 20:
-		system("aplay /home/pi/shuheyVoice/Jitsuha.wav");
-		break;
-	case 21:
-		system("aplay /home/pi/shuheyVoice/WelcomeSpeach.wav");
-		break;
-	default:
-		break;
-	}
-	return true;
-}
-
 int main(int argc, char* argv[])
 {
-#if ( USE_TALK > 0 )
-	system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど を きどうします\" | aplay");
-#endif
-
-#if ( USE_TALK_TEST > 0 )
-	int i=0;
-	for(i=0;i<TALK_REASON_NUM;i++){
-		talkReason(i);
-	}
-
-	for(i=0;i<TALK_WELCOME_NUM;i++){
-		talkWelcome(i);
-	}
-#endif
-
 	printf("Press Esc-Key to Exit Process.\n");
 	int iRet = -1;
 	
@@ -219,9 +72,6 @@ int main(int argc, char* argv[])
 				
 		pinMode(GPIO_EXIT, INPUT);
 		pinMode(GPIO_HALT, INPUT);
-		
-		//pinMode(GPIO_MONOEYE, OUTPUT);
-		//digitalWrite(GPIO_MONOEYE,HIGH);
 
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
@@ -285,8 +135,6 @@ int main(int argc, char* argv[])
 		stLen.tv_sec = msec / 1000;
 		stLen.tv_usec = msec % 1000;
 		timeradd(&stNow, &stLen, &stEnd);
-		
-		srand(stNow.tv_usec);
 
 		// 前値保存用のサーボ角度
 		int _servo_yaw		= servo_mid;
@@ -300,7 +148,7 @@ int main(int argc, char* argv[])
 
 		int over_cnt = 0;
 		int nonface_cnt = 0;
-		int silent_cnt = 0;
+
 
 		// メインループ
 		while(1){
@@ -461,16 +309,7 @@ int main(int argc, char* argv[])
 				wrk_homing_state = HOMING_NONE;
 				// NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
 				nonface_cnt++;
-				silent_cnt++;
-#if ( USE_TALK > 0 )
-				if( silent_cnt > SILENT_CNT ){
-					silent_cnt = 0;
-					//digitalWrite(GPIO_MONOEYE,HIGH);
-					int talkType = rand() % TALK_REASON_NUM;
-					talkReason(talkType);
-					//digitalWrite(GPIO_MONOEYE,LOW);
-				}
-#endif
+
 				if( nonface_cnt > NONFACE_CNT_MAX ){
 					nonface_cnt = 0;
 					int servo_yaw = servo_mid;
@@ -493,44 +332,19 @@ int main(int argc, char* argv[])
 			
 			// ホーミング状態を更新
 			if(homing_state != wrk_homing_state){
-				int talkType = 0;
 				switch( wrk_homing_state )
 				{
 				case HOMING_NONE:
 					printf("[STATE] no detected face.\n");
-/*
-#if ( USE_TALK > 0 )
-					if( homing_state != HOMING_DELAY ){
-						digitalWrite(GPIO_MONOEYE,HIGH);
-						talkType = rand() % TALK_REASON_NUM;
-						talkReason(talkType);
-						digitalWrite(GPIO_MONOEYE,LOW);
-					}
-#endif
-*/
 					break;
 				case HOMING_HOMING:
 					printf("[STATE] homing.\n");
-#if ( USE_TALK > 0 )
-					//digitalWrite(GPIO_MONOEYE,HIGH);
-					talkType = rand() % TALK_WELCOME_NUM;
-					talkWelcome(talkType);
-					//digitalWrite(GPIO_MONOEYE,LOW);
-					silent_cnt = 0;
-#endif
 					break;
 				case HOMING_DELAY:
 					printf("[STATE] delay.\n");
 					break;
 				case HOMING_CENTER:
 					printf("[STATE] face is center.\n");
-#if ( USE_TALK > 0 )
-					////digitalWrite(GPIO_MONOEYE,HIGH);
-					//talkType = rand() % TALK_WELCOME_NUM;
-					//talkWelcome(talkType);
-					////digitalWrite(GPIO_MONOEYE,LOW);
-					//silent_cnt = 0;
-#endif
 					break;
 				case HOMING_KEEP:
 					printf("[STATE] keep.\n");
@@ -547,26 +361,17 @@ int main(int argc, char* argv[])
 #endif
 
 			// 負荷分散のためDelay
-			char c = cvWaitKey(DELAY_SEC);
+			char c = cvWaitKey(DELAY_MSEC);
 			if( c==27 ){ // ESC-Key
 				printf("exit program.\n");
-#if ( USE_TALK > 0 )
-				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ぷろぐらむを しゅうりょう します\" | aplay");
-#endif
 				break;
 			}
 			
 			if( digitalRead(GPIO_EXIT) == LOW ){
 				printf("exit program.\n");
-#if ( USE_TALK > 0 )
-				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ぷろぐらむを しゅうりょう します\" | aplay");
-#endif
 				break;
 			}
 			if( digitalRead(GPIO_HALT) == LOW ){
-#if ( USE_TALK > 0 )
-				system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しすてむを しゃっとだうん します\" | aplay");
-#endif
 				printf("shutdown system.\n");
 				system("sudo halt");
 				break;
@@ -586,18 +391,11 @@ int main(int argc, char* argv[])
 		cvReleaseCapture(&capture);
 		cvDestroyWindow(DISP_WIN);
 
-#if ( USE_TALK > 0 )
-	system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど は 正常に終了しました\" | aplay");
-#endif
-
 		// ここまでくれば成功
 		iRet = 0;
 	}
 	catch(...)
 	{
-#if ( USE_TALK > 0 )
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しゅうへいどろいど に ちめいてきな エラーが 発生しました\" | aplay");
-#endif
 		iRet = -1;
 	}
 
