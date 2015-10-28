@@ -13,7 +13,6 @@
 #define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
 
 #define GPIO_EXIT		(23)
-#define GPIO_HALT		(22)
 
 //#define GPIO_MONOEYE	(16)
 
@@ -71,7 +70,6 @@ int main(int argc, char* argv[])
 		pwmSetRange(1024);
 				
 		pinMode(GPIO_EXIT, INPUT);
-		pinMode(GPIO_HALT, INPUT);
 
 		// servoMotor GWS park hpx min25 mid74 max123
 		const int servo_mid = 76;
@@ -369,11 +367,6 @@ int main(int argc, char* argv[])
 			
 			if( digitalRead(GPIO_EXIT) == LOW ){
 				printf("exit program.\n");
-				break;
-			}
-			if( digitalRead(GPIO_HALT) == LOW ){
-				printf("shutdown system.\n");
-				system("sudo halt");
 				break;
 			}
 		} // while(1)
