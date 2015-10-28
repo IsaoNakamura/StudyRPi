@@ -15,7 +15,7 @@
 #define	WIN_HEIGHT	(240.0)
 CvSize minsiz ={0,0};
 
-#define DELAY_SEC	(1)
+#define DELAY_MSEC	(1)
 
 int main(int argc, char* argv[])
 {
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 			);
 		}
 		cvShowImage( DISP_WIN, frame);
-		char c = cvWaitKey(DELAY_SEC);
+		char c = cvWaitKey(DELAY_MSEC);
 		if( c==27 ){ // ESC-Key
 			break;
 		}
