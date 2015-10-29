@@ -21,11 +21,13 @@ $(TARGET): $(OBJECTS) $(LIBS)
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
 	$(MAKE) -C $(LIBDIR)/utilities/CamAngleConverter
+	$(MAKE) -C $(LIBDIR)/drivers/ServoDrv
 	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 .PHONY: subsystem
 subsystem:
 	$(MAKE) -C $(LIBDIR)/utilities/CamAngleConverter
+	$(MAKE) -C $(LIBDIR)/drivers/ServoDrv
 
 .PHONY: all
 all: clean subsystem $(TARGET)
@@ -35,5 +37,6 @@ clean:
 	rm -f $(OBJECTS) $(DEPENDS) $(TARGET)
 	@rmdir --ignore-fail-on-non-empty `readlink -f $(OBJDIR)`
 	$(MAKE) clean -C $(LIBDIR)/utilities/CamAngleConverter
+	$(MAKE) clean -C $(LIBDIR)/drivers/ServoDrv
 
 -include $(DEPENDS)

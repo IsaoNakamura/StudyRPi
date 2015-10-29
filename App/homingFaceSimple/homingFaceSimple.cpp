@@ -8,14 +8,17 @@
 #include <math.h>
 
 #include <wiringPi.h>
+#include "../../Lib/drivers/ServoDrv/CServoDrv.h"
 
 #define GPIO_YAW		(12)	// PWM-Channel0 is on gpios 12 or 18.
 #define GPIO_PITCH		(13)	// PWM-Channel1 is on gpios 13 or 19.
 
 #define GPIO_EXIT		(23)
 
-//#define GPIO_MONOEYE	(16)
-
+#define SERVO_MIN	(36)
+#define SERVO_MID	(76)
+#define SERVO_MAX	(122)
+#define SERVO_RANGE	(180)
 
 #include <cv.h>
 #include <highgui.h>
@@ -27,9 +30,8 @@
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
 
 #define USE_WIN				(0)
-#define HOMING_DELAY_MSEC	(3000)
-#define CENTER_AREA_RATIO	(0.8)
-#define SERVO_OVER_MAX		(10)
+#define HOMING_DELAY_MSEC	(500)
+#define CENTER_AREA_RATIO	(0.4)
 #define NONFACE_CNT_MAX		(50)
 
 #include <sys/time.h>
@@ -54,33 +56,68 @@ int main(int argc, char* argv[])
 {
 	printf("Press Esc-Key to Exit Process.\n");
 	int iRet = -1;
-	
+
+	CServoDrv* pServoYaw	= NULL;
+	CServoDrv* pServoPitch	= NULL;
+
 	try
 	{
 		// ready GPIO
-		if( wiringPiSetupGpio() == -1 ){
-			printf("failed to wiringPiSetupGpio()\n");
-			throw 0;
+		if(! CServoDrv::setupGpio() ){
+			printf("failed to CServoDrv::setupGpio()\n");
+			return 1;
 		}
-		// ready PWM
-		pinMode(GPIO_PITCH, PWM_OUTPUT);
-		pinMode(GPIO_YAW, PWM_OUTPUT);
-		pwmSetMode(PWM_MODE_MS);
-		pwmSetClock(400);
-		pwmSetRange(1024);
 				
 		pinMode(GPIO_EXIT, INPUT);
 
-		// servoMotor GWS park hpx min25 mid74 max123
-		const int servo_mid = 76;
-		const int servo_min = 36; //servo_mid - 30;
-		const int servo_max = 122; //servo_mid + 30;
-		const double servo_min_deg = 0.0;
-		const double servo_max_deg = 180.0;
-		const double ratio_deg = ( servo_max_deg - servo_min_deg ) / ( servo_max - servo_min );
+		const int servo_mid = SERVO_MID;
+		const int servo_min = SERVO_MIN;
+		const int servo_max = SERVO_MAX;
+		const int servo_range = SERVO_RANGE;
 		
-		const int pitch_limit_max = servo_max - 22;
-		const int pitch_limit_min = servo_min + 34;
+		const int yaw_limit_max = servo_mid + 15;//91
+		const int yaw_limit_min = servo_mid - 15;//61
+		const int pitch_limit_max = servo_max - 22;//100
+		const int pitch_limit_min = servo_min + 34;//70
+
+		// ready Servo-Obj
+		pServoYaw = CServoDrv::createInstance(	GPIO_YAW,
+												servo_min,
+												servo_max,
+												servo_range	);
+		if(!pServoYaw){
+			printf("failed to create pServoYaw\n");
+			throw 0;
+		}
+		if(!pServoYaw->setLimitAngleValue(yaw_limit_min,yaw_limit_max)){
+			printf("failed to setLimitAngleValue pServoYaw\n");
+			throw 0;
+		}
+		if(!pServoYaw->setMidAngleValue(servo_mid)){
+			printf("failed to setLimitAngleValue() pServoYaw\n");
+			throw 0;
+		}
+
+		pServoPitch = CServoDrv::createInstance(	GPIO_PITCH,
+													servo_min,
+													servo_max,
+													servo_range	);
+		if(!pServoPitch){
+			printf("failed to create pServoPitch\n");
+			throw 0;
+		}
+		if(!pServoPitch->setLimitAngleValue(pitch_limit_min,pitch_limit_max)){
+			printf("failed to setLimitAngleValue pServoPitch\n");
+			throw 0;
+		}
+		if(!pServoPitch->setMidAngleValue(servo_mid)){
+			printf("failed to setLimitAngleValue() pServoPitch\n");
+			throw 0;
+		}
+		
+		// reflesh Servo-Angle.
+		pServoYaw->refleshServo();
+		pServoPitch->refleshServo();
 	
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
@@ -108,10 +145,6 @@ int main(int argc, char* argv[])
 		// 検出に必要なメモリストレージを用意する
 		CvMemStorage* cvMStr = cvCreateMemStorage(0);
 		
-		// サーボ角度を中間に設定
-		pwmWrite(GPIO_YAW, servo_mid);
-		pwmWrite(GPIO_PITCH, servo_mid);
-		
 		// スクリーン座標からカメラのピッチ角とヨー角を算出するオブジェクトを初期化
 		DF::CamAngleConverter camAngCvt(	static_cast<int>(WIN_WIDTH),
 											static_cast<int>(WIN_HEIGHT),
@@ -134,19 +167,13 @@ int main(int argc, char* argv[])
 		stLen.tv_usec = msec % 1000;
 		timeradd(&stNow, &stLen, &stEnd);
 
-		// 前値保存用のサーボ角度
-		int _servo_yaw		= servo_mid;
-		int _servo_pitch	= servo_mid;
-
 		// スクリーン中心らへんの範囲
 		double center_area_x = 60.0;
 		double center_area_y = 60.0;
 		
 		int homing_state = HOMING_NONE;
 
-		int over_cnt = 0;
 		int nonface_cnt = 0;
-
 
 		// メインループ
 		while(1){
@@ -230,64 +257,15 @@ int main(int argc, char* argv[])
 						if( camAngCvt.ScreenToCameraAngle(deg_yaw, deg_pitch, face_x, face_y) != 0 ){
 							continue;
 						}
-						printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",face_x,face_y,deg_yaw,deg_pitch,_servo_yaw,_servo_pitch);
-
-						// サーボ値を入れる変数　初期値は前回の結果
-						int servo_yaw	= _servo_yaw;
-						int servo_pitch	= _servo_pitch;
-				
-						// ヨー角用サーボ制御
-						//servo_yaw = servo_mid - static_cast<int>(deg_yaw / ratio_deg); // カメラ固定だとこれでよい
-						servo_yaw = _servo_yaw  - static_cast<int>(deg_yaw / ratio_deg);
-						if(servo_yaw > servo_max){
-							over_cnt++;
-							printf("yaw is over max. cnt=%d ######## \n", over_cnt);
-						}else if(servo_yaw < servo_min){
-							over_cnt++;
-							printf("yaw is under min. cnt=%d ######## \n",over_cnt);
-							servo_yaw = servo_min;
-						}
-						//printf("face_x=%f deg_yaw=%f servo_yaw=%d \n",face_x,deg_yaw,servo_yaw);
-				
-						// ピッチ角用サーボ制御
-						//servo_pitch = servo_mid - static_cast<int>(deg_pitch / ratio_deg); // カメラ固定だとこれでよい
-						servo_pitch = _servo_pitch - static_cast<int>(deg_pitch / ratio_deg);
-						if(servo_pitch > pitch_limit_max){
-							over_cnt++;
-							printf("pitch is over max ######## \n");
-							servo_pitch = pitch_limit_max;
-						}else if(servo_pitch < pitch_limit_min){
-							over_cnt++;
-							printf("pitch is under min ######## \n");
-							servo_pitch = pitch_limit_min;
-						}
-						//printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
 
 						bool isPwmWrite = false;
 						
-						// SERVO_OVER_MAXフレーム分の間、サーボ角度が最大が続くのであれば、サーボ角度を中間にもどす。
-						if( over_cnt > SERVO_OVER_MAX){
-							servo_yaw=servo_mid;
-							servo_pitch=servo_mid;
-							over_cnt = 0;
-						}
-
-						// 前回と同じサーボ値ならスキップ
-						if(servo_yaw!=_servo_yaw){
-							// サーボの角度設定
-							printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
-							pwmWrite(GPIO_YAW, servo_yaw);
+						// write to Servo.
+						bool bIsWriteYaw = pServoYaw->writeAngleDegOffset(deg_yaw * -1.0)
+						bool bIsWritePitch = pServoPitch->writeAngleDegOffset(deg_pitch * -1.0);
+						
+						if(bIsWriteYaw || bIsWritePitch){
 							isPwmWrite = true;
-							// 前値保存
-							_servo_yaw = servo_yaw;
-						}
-						if(servo_pitch!=_servo_pitch){
-							// サーボの角度設定
-							printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
-							pwmWrite(GPIO_PITCH, servo_pitch);
-							isPwmWrite = true;
-							// 前値保存
-							_servo_pitch = servo_pitch;
 						}
 
 						if( isPwmWrite ){
@@ -310,21 +288,13 @@ int main(int argc, char* argv[])
 
 				if( nonface_cnt > NONFACE_CNT_MAX ){
 					nonface_cnt = 0;
-					int servo_yaw = servo_mid;
-					int servo_pitch = servo_mid;
-					// サーボの角度設定
-					printf("pwmWrite(GPIO_YAW, %d) for non-face. \n",servo_yaw);
-					pwmWrite(GPIO_YAW, servo_yaw);
-					//isPwmWrite = true;
-					// 前値保存
-					_servo_yaw = servo_yaw;
 
 					// サーボの角度設定
-					printf("pwmWrite(GPIO_PITCH, %d) for non-face. \n",servo_pitch);
-					pwmWrite(GPIO_PITCH, servo_pitch);
-					//isPwmWrite = true;
-					// 前値保存
-					_servo_pitch = servo_pitch;
+					printf("reflesh Servo-Angle for non-face. \n");
+					// reflesh Servo-Angle.
+					pServoYaw->refleshServo();
+					pServoPitch->refleshServo();
+
 				}
 			}
 			
@@ -371,9 +341,17 @@ int main(int argc, char* argv[])
 			}
 		} // while(1)
 		
-		// サーボ角度を中間に設定
-		pwmWrite(GPIO_YAW, servo_mid);
-		pwmWrite(GPIO_PITCH, servo_mid);
+		// reflesh Servo-Angle.
+		pServoYaw->refleshServo();
+		pServoPitch->refleshServo();
+		if(pServoYaw){
+			delete pServoYaw;
+			pServoYaw = NULL;
+		}
+		if(pServoPitch){
+			delete pServoPitch;
+			pServoPitch = NULL;
+		}
 	
 		// 用意したメモリストレージを解放
 		cvReleaseMemStorage(&cvMStr);
@@ -390,6 +368,14 @@ int main(int argc, char* argv[])
 	catch(...)
 	{
 		iRet = -1;
+		if(pServoYaw){
+			delete pServoYaw;
+			pServoYaw = NULL;
+		}
+		if(pServoPitch){
+			delete pServoPitch;
+			pServoPitch = NULL;
+		}
 	}
 
 	return iRet;
