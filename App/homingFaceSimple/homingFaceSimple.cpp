@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
 						bool isPwmWrite = false;
 						
 						// write to Servo.
-						bool bIsWriteYaw = pServoYaw->writeAngleDegOffset(deg_yaw * -1.0)
+						bool bIsWriteYaw = pServoYaw->writeAngleDegOffset(deg_yaw * -1.0);
 						bool bIsWritePitch = pServoPitch->writeAngleDegOffset(deg_pitch * -1.0);
 						
 						if(bIsWriteYaw || bIsWritePitch){
