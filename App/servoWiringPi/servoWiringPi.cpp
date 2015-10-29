@@ -54,6 +54,7 @@ int main(int argc, char* argv[])
 	// Change to the Middle-Pos.
 	pwmWrite(GPIO_NO, SERVO_MID);
 
+#if 0
 	// EXEC_CNT回ループしてONとOFFを繰り返す
 	int i=0;
 	for(i=0; i<EXEC_CNT; i++){
@@ -75,6 +76,7 @@ int main(int argc, char* argv[])
 
 	// Return to the Middle-Pos.
 	pwmWrite(GPIO_NO, SERVO_MID);
+#endif
 
 	return 0;
 }
