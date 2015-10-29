@@ -63,9 +63,9 @@ int main(int argc, char* argv[])
 		const int axis_max = DUALSHOCK_ANALOG_VAL_MAX;
 		const int axis_mid = DUALSHOCK_ANALOG_VAL_MID;
 
-		const int servo_min = SERVO_MIN;
-		const int servo_max = SERVO_MAX;
 		const int servo_mid = SERVO_MID;
+		const int servo_max = SERVO_MID + 15;
+		const int servo_min = SERVO_MID - 15;
 
 		pwmWrite(GPIO_NO, servo_mid);
 		printf("begin loop \n");
@@ -97,8 +97,9 @@ int main(int argc, char* argv[])
 				}
 			}
 			if( pre_val != val ){
+				printf("axis=%d, servo_val=%d\n",roll,val);
 				pwmWrite(GPIO_NO, val);
-				usleep(DELAY_USEC);
+				usleep(0);//usleep(DELAY_USEC);
 				pre_val = val;
 			}
 			

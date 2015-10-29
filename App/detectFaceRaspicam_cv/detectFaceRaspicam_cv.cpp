@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "RaspiCamCV.h"
+
 #include <cv.h>
 #include <highgui.h>
 
@@ -21,22 +23,34 @@ int main(int argc, char* argv[])
 {
 	printf("Press Esc-Key to Exit Process.\n");
 
-	cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
-	CvCapture* capture = NULL;
-	if (argc > 1){
-		capture = cvCreateFileCapture( argv[1] );
-	}else{
-		capture = cvCreateCameraCapture( -1 );
-		if(!capture){
-			printf("failed to create capture\n");
-			return -1;
-		}
-		// キャプチャサイズを設定する．
-		double w = WIN_WIDTH;
-		double h = WIN_HEIGHT;
-		cvSetCaptureProperty (capture, CV_CAP_PROP_FRAME_WIDTH, w);
-		cvSetCaptureProperty (capture, CV_CAP_PROP_FRAME_HEIGHT, h);
+	RASPIVID_CONFIG * config = new RASPIVID_CONFIG();
+	if(!config){
+		printf("failed to create RASPIDVID_CONFIG.\n");
+		return -1;
 	}
+	config->width=static_cast<int>(WIN_WIDTH);
+	config->height=static_cast<int>(WIN_HEIGHT);
+	config->bitrate=0;	// zero: leave as default
+	config->framerate=0;
+	config->monochrome=0;
+
+	cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
+	RaspiCamCvCapture* capture = NULL;
+
+	capture = raspiCamCvCreateCameraCapture2( 0, config );
+	if(config){
+		delete config;
+		config = NULL;
+	}
+	if(!capture){
+		printf("failed to create capture\n");
+		return -1;
+	}
+	// キャプチャサイズを設定する．
+	double w = WIN_WIDTH;
+	double h = WIN_HEIGHT;
+	raspiCamCvSetCaptureProperty (capture, RPI_CAP_PROP_FRAME_WIDTH, w);
+	raspiCamCvSetCaptureProperty (capture, RPI_CAP_PROP_FRAME_HEIGHT, h);
 
 	// 正面顔検出器の読み込み
 	CvHaarClassifierCascade* cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
@@ -45,7 +59,7 @@ int main(int argc, char* argv[])
 	CvMemStorage* cvMStr = cvCreateMemStorage(0);
 
 	while(1){
-		IplImage* frame = cvQueryFrame(capture);
+		IplImage* frame = raspiCamCvQueryFrame(capture);
 		if(!frame){
 			printf("failed to query frame.\n");
 			break;
@@ -89,6 +103,7 @@ int main(int argc, char* argv[])
 		if( c==27 ){ // ESC-Key
 			break;
 		}
+		sleep(0);
 	}
 
 	// 用意したメモリストレージを解放
@@ -97,7 +112,7 @@ int main(int argc, char* argv[])
 	// カスケード識別器の解放
 	cvReleaseHaarClassifierCascade(&cvHCC);
 
-	cvReleaseCapture(&capture);
+	raspiCamCvReleaseCapture(&capture);
 	cvDestroyWindow(DISP_WIN);
 
 	return 0;
