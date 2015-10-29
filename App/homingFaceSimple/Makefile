@@ -13,7 +13,7 @@ OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 DEPENDS  = $(OBJECTS:.o=.d)
 
 LIBDIR = ../../Lib
-EXOBJS = $(OBJDIR)/CamAngleConverter.o
+EXOBJS = $(OBJDIR)/CamAngleConverter.o $(OBJDIR)/CServoDrv.o 
 
 $(TARGET): $(OBJECTS) $(LIBS)
 	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
