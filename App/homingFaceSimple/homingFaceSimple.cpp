@@ -29,7 +29,7 @@
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
 
-#define USE_WIN				(0)
+#define USE_WIN				(1)
 #define HOMING_DELAY_MSEC	(500)
 #define CENTER_AREA_RATIO	(0.4)
 #define NONFACE_CNT_MAX		(50)
