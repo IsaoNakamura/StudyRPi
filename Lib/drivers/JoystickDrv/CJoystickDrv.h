@@ -62,8 +62,8 @@ public:
 	int getButtonState(const int& btn_idx) const;
 	int getAxisState(const int& axis_idx) const;
 public:
-	int isChangedAxis(const int& axis_idx, const bool& reset=true);
-	int isChangedButton(const int& btn_idx, const bool& reset=true);
+	int isChangedAxis(const int& axis_idx, const bool& rstChgFlg=true);
+	int isChangedButton(const int& btn_idx, const bool& rstChgFlg=true);
 };
 
 #endif

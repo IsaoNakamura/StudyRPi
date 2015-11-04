@@ -160,6 +160,7 @@ int CJoystickDrv::readJoystick()
 					m_pAxis[js.number].isChanged = true;				
 				}
 			}
+			break;
 		case JS_EVENT_BUTTON:
 			if(m_pButton)
 			{
@@ -168,6 +169,7 @@ int CJoystickDrv::readJoystick()
 					m_pButton[js.number].isChanged = true;
 				}
 			}
+			break;
 		default:
 			break;
 	}
@@ -240,7 +242,7 @@ int CJoystickDrv::getAxisState(const int& axis_idx) const
 	return m_pAxis[axis_idx].iValue;
 }
 
-int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& reset/*=true*/) const
+int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& rstChgFlg/*=true*/) const
 {
 	if(!m_pButton)
 	{
@@ -255,15 +257,15 @@ int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& reset/*=true*/
 	int iRet = 0;
 	if(m_pButton[btn_idx].isChanged){
 		iRet = 1;
-	}
-	if(reset){
-		m_pButton[btn_idx].isChanged = false;
+		if(rstChgFlg){
+			m_pButton[btn_idx].isChanged = false;
+		}
 	}
 	
 	return iRet;
 }
 
-int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& reset/*=true*/) const
+int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& rstChgFlg/*=true*/) const
 {
 	if(!m_pAxis)
 	{
@@ -278,9 +280,9 @@ int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& reset/*=true*/)
 	int iRet = 0;
 	if(m_pAxis[axis_idx].isChanged){
 		iRet = 1;
-	}
-	if(reset){
-		m_pAxis[axis_idx].isChanged = false;
+		if(rstChgFlg){
+			m_pAxis[axis_idx].isChanged = false;
+		}
 	}
 	
 	return iRet;
