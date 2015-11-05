@@ -5,7 +5,7 @@
 
 ## 手順
 ### 1. funduiroにピンヘッダを半田付けする。
-1. funduiroにピン数に合わせたピンヘッダをブレッドボードに差し込む。 
+1. funduiroにピン数に合わせたピンヘッダをブレッドボードに差し込む。  
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkCtrlArduino/Doc/StudyMenu/usingFunduiroProMini/00_setPin.JPG?raw=true) 
 2. ピンヘッダをfunduiroに半田付けする。  
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkCtrlArduino/Doc/StudyMenu/usingFunduiroProMini/01_setBoard.JPG?raw=true) 
