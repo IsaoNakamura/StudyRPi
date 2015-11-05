@@ -24,9 +24,16 @@
 
 struct stButtonState
 {
+	bool isChanged;
 	char cValue;
 	int iCur;
 	int iOld;
+};
+
+struct stAxisState
+{
+	bool isChanged;
+	int iValue;
 };
 
 class CJoystickDrv
@@ -40,8 +47,8 @@ private:
 	void init();
 	void destroy();
 private:
-	int* m_pAxis;
-	stButtonState* m_pButton;
+	stAxisState*	m_pAxis;
+	stButtonState*	m_pButton;
 	int m_hJoy;
 	int m_iNumAxis;
 	int m_iNumButton;
@@ -54,6 +61,9 @@ public:
 	int readJoystick();
 	int getButtonState(const int& btn_idx) const;
 	int getAxisState(const int& axis_idx) const;
+public:
+	int isChangedAxis(const int& axis_idx, const bool& rstChgFlg=true);
+	int isChangedButton(const int& btn_idx, const bool& rstChgFlg=true);
 };
 
 #endif

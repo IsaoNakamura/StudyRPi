@@ -28,32 +28,57 @@ int main(int argc, char* argv[])
 
 		int i=0;
 		while(1){
+			bool isFistClear = true;
+			
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
 				printf("faile to readJoystick()\n");
 				throw 0;
 			}
 			
-			// clear console.
-			system("clear");
-			
 			// Axis
-			printf("axis:");
 			int axis_idx = 0;
+			bool isFirstAxis = true;
 			for(axis_idx=0; axis_idx<pJoystick->getNumAxis(); axis_idx++){
-				int axis_stat = pJoystick->getAxisState(axis_idx);
-				printf("[%d]:%d ",axis_idx,axis_stat);
+				if( pJoystick->isChangedAxis(axis_idx)==1 ){
+					if(isFistClear){
+						isFirstClear = false;
+						// clear console.
+						system("clear");
+					}
+					if(isFirstAxis){
+						isFirstAxis = false;
+						printf("axis:");
+					}
+					int axis_stat = pJoystick->getAxisState(axis_idx);
+					printf("[%d]:%d ",axis_idx,axis_stat);
+				}
 			}
-			printf("\n");
+			if(!isFirstAxis){
+				printf("\n");
+			}
 			
 			// Button
-			printf("btn:");
 			int btn_idx = 0;
+			bool isFirstBtn = true;
 			for(btn_idx=0; btn_idx<pJoystick->getNumButton(); btn_idx++){
-				int btn_stat = pJoystick->getButtonState(btn_idx);
-				printf("[%d]:%d ",btn_idx,btn_stat);
+				if( pJoystick->isChangedButton(btn_idx)==1 ){
+					if(isFistClear){
+						isFirstClear = false;
+						// clear console.
+						system("clear");
+					}
+					if(isFirstBtn){
+						isFirstBtn = false;
+						printf("btn:");
+					}
+					int btn_stat = pJoystick->getButtonState(btn_idx);
+					printf("[%d]:%d ",btn_idx,btn_stat);
+				}
 			}
-			printf("\n\n");
+			if(!isFirstBtn){
+				printf("\n\n");
+			}
 			
 			//Maru
 			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){

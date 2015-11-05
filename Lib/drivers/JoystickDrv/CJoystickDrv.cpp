@@ -100,7 +100,7 @@ int CJoystickDrv::connectJoystick()
 		ioctl( m_hJoy, JSIOCGBUTTONS, &m_iNumButton );
 		ioctl( m_hJoy, JSIOCGNAME(80), &name_of_joystick );
 
-		m_pAxis = (int*)calloc(m_iNumAxis, sizeof( int ) );
+		m_pAxis = (stAxisState*)calloc(m_iNumAxis, sizeof( stAxisState ) );
 		if(!m_pAxis)
 		{
 			printf("failed to create m_pAxis\n");
@@ -122,12 +122,15 @@ int CJoystickDrv::connectJoystick()
 		fcntl( m_hJoy, F_SETFL, O_NONBLOCK );
 		for(i=0;i<m_iNumButton;i++)
 		{
+			m_pButton[i].cValue = 0;
 			m_pButton[i].iCur = BUTTON_OFF;
 			m_pButton[i].iOld = BUTTON_OFF;
+			m_pButton[i].isChanged = false;
 		}
 		for(i=0;i<m_iNumAxis;i++)
 		{
-			m_pAxis[i] = 0;
+			m_pAxis[i].iValue = 0;
+			m_pAxis[i].isChanged = false;
 		}
 
 		iRet=0;
@@ -152,14 +155,22 @@ int CJoystickDrv::readJoystick()
 		case JS_EVENT_AXIS:
 			if(m_pAxis)
 			{
-				m_pAxis[js.number] = js.value;
+				if(m_pAxis[js.numbler].iValue != js.value){
+					m_pAxis[js.number].iValue = js.value;
+					m_pAxis[js.number].isChanged = true;				
+				}
 			}
 			break;
 		case JS_EVENT_BUTTON:
 			if(m_pButton)
 			{
-				m_pButton[js.number].cValue = js.value;
+				if(m_pButton[js.numbler].cValue != js.value){
+					m_pButton[js.number].cValue = js.value;
+					m_pButton[js.number].isChanged = true;
+				}
 			}
+			break;
+		default:
 			break;
 	}
 
@@ -205,12 +216,12 @@ int CJoystickDrv::getButtonState(const int& btn_idx) const
 {
 	if(!m_pButton)
 	{
-		return BUTTON_OFF;
+		return -1;
 	}
 	
 	if( btn_idx >= m_iNumButton )
 	{
-		return BUTTON_OFF;
+		return -1;
 	}
 	
 	return m_pButton[btn_idx].cValue;
@@ -220,13 +231,59 @@ int CJoystickDrv::getAxisState(const int& axis_idx) const
 {
 	if(!m_pAxis)
 	{
-		return 0;
+		return -1;
 	}
 	
 	if( axis_idx >= m_iNumAxis )
 	{
-		return 0;
+		return -1;
 	}
 	
-	return m_pAxis[axis_idx];
+	return m_pAxis[axis_idx].iValue;
+}
+
+int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& rstChgFlg/*=true*/) const
+{
+	if(!m_pButton)
+	{
+		return -1;
+	}
+	
+	if( btn_idx >= m_iNumButton )
+	{
+		return -1;
+	}
+	
+	int iRet = 0;
+	if(m_pButton[btn_idx].isChanged){
+		iRet = 1;
+		if(rstChgFlg){
+			m_pButton[btn_idx].isChanged = false;
+		}
+	}
+	
+	return iRet;
+}
+
+int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& rstChgFlg/*=true*/) const
+{
+	if(!m_pAxis)
+	{
+		return -1;
+	}
+	
+	if( axis_idx >= m_iNumAxis )
+	{
+		return -1;
+	}
+	
+	int iRet = 0;
+	if(m_pAxis[axis_idx].isChanged){
+		iRet = 1;
+		if(rstChgFlg){
+			m_pAxis[axis_idx].isChanged = false;
+		}
+	}
+	
+	return iRet;
 }
