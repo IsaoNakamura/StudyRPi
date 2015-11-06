@@ -17,9 +17,6 @@
 
 #include <termios.h>
 #include <strings.h>
-//#include <sys/stat.h>
-//#include <sys/types.h>
-//#include <unistd.h>
 
 #define _USE_USB (1)
 #if _USE_USB
@@ -32,13 +29,13 @@
 
 CXBeeDrv::CXBeeDrv() {
 	// TODO 自動生成されたコンストラクター・スタブ
-	_initInstance();
+	init();
 
 }
 
 CXBeeDrv::~CXBeeDrv() {
 	// TODO Auto-generated destructor stub
-	_destroyInstance();
+	destroy();
 }
 
 CXBeeDrv* CXBeeDrv::createInstance()
@@ -52,7 +49,7 @@ CXBeeDrv* CXBeeDrv::createInstance()
 			throw 0;
 		}
 
-		if(pObj->_startInstance()!=0)
+		if(pObj->startInstance()!=0)
 		{
 			throw 0;
 		}
@@ -70,7 +67,7 @@ CXBeeDrv* CXBeeDrv::createInstance()
 }
 
 
-void CXBeeDrv::_initInstance()
+void CXBeeDrv::init()
 {
 	m_fd = 0;
 	m_address = 0;
@@ -78,7 +75,7 @@ void CXBeeDrv::_initInstance()
 	return;
 }
 
-void CXBeeDrv::_destroyInstance()
+void CXBeeDrv::destroy()
 {
 	if( m_fd > 0 )
 	{
@@ -87,16 +84,16 @@ void CXBeeDrv::_destroyInstance()
 	return;
 }
 
-int CXBeeDrv::_startInstance()
+int CXBeeDrv::startInstance()
 {
-	printf("@CXBeeDrv::_startInstance() start\n");
+	printf("@CXBeeDrv::startInstance() start\n");
 	int iRet = -1;
 	try
 	{
 		m_fd = open(SERIAL_PORT, O_RDWR );
 		if( m_fd < 0 )
 		{
-			printf("@CXBeeDrv::_startInstance() failed to open SERIAL_PORT \n");
+			printf("@CXBeeDrv::startInstance() failed to open SERIAL_PORT \n");
 			throw 0;
 		}
 
@@ -104,7 +101,7 @@ int CXBeeDrv::_startInstance()
 		struct termios newtio;
 		if( ioctl(m_fd, TCGETS, &oldtio) < 0 )
 		{
-			printf("@CXBeeDrv::_startInstance() failed to ioctl(TCGETS) \n");
+			printf("@CXBeeDrv::startInstance() failed to ioctl(TCGETS) \n");
 			throw 0;
 		}
 		bzero(&newtio, sizeof(newtio) );
@@ -115,7 +112,7 @@ int CXBeeDrv::_startInstance()
 		newtio.c_lflag = ICANON;
 		if( ioctl(m_fd, TCSETS, &newtio) < 0 )
 		{
-			printf("@CXBeeDrv::_startInstance() failed to ioctl(TCSETS) \n");
+			printf("@CXBeeDrv::startInstance() failed to ioctl(TCSETS) \n");
 			throw 0;
 		}
 
@@ -127,6 +124,58 @@ int CXBeeDrv::_startInstance()
 		{
 			close(m_fd);
 		}
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CXBeeDrv::receiveData(unsigned char* receiveBuf, int& bufNum)
+{
+	int iRet = -1;
+	try
+	{
+		if(!receiveBuf){
+			throw 0;
+		}
+		if( bufNum <= 0){
+			throw 0;
+		}
+		
+		if (read(m_fd, readBuf, bufNum) != bufNum){
+			printf("@CXBeeDrv::receiveData() Error read from serial\n");
+			throw 0;
+		}
+			
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CXBeeDrv::sendData(const unsigned char* sendBuf, const int& bufNum)
+{
+	int iRet = -1;
+	try
+	{
+		if(!sendBuf){
+			throw 0;
+		}
+		if( bufNum <= 0){
+			throw 0;
+		}
+		
+		if (write(m_fd, sendBuf, bufNum) != bufNum){
+			printf("@CXBeeDrv::sendData() Error write to serial\n");
+			throw 0;
+		}
+		
+		iRet = 0;
+	}
+	catch(...)
+	{
 		iRet = -1;
 	}
 	return iRet;
@@ -170,43 +219,31 @@ int CXBeeDrv::mainLoop()
 		}
 		sendBuf[25] = 0xFF - (sum & 0xFF);	// Check-Sum
 		if (write(m_fd, sendBuf, 26) != 26){
-			printf("@CXBeeDrv::_startInstance() Error write to serial\n");
+			printf("@CXBeeDrv::mainLoop() Error write to serial\n");
 		}
 
 		unsigned int loopCnt = 0;
 		while(1)
 		{
-			/*
-			unsigned char writeBuf[2] = {0};
-			if (write(m_fd, writeBuf, 2) != 2){
-				printf("@CXBeeDrv::_startInstance() Error write to serial\n");
-			}
-			printf("@CXBeeDrv::_startInstance() Success write to serial\n");
-			*/
-
-			printf("@CXBeeDrv::_startInstance() Start read from serial\n");
+			printf("@CXBeeDrv::mainLoop() Start read from serial\n");
 			unsigned char readBuf[1] = {0};
 			if (read(m_fd, readBuf, 1) != 1){
-				printf("@CXBeeDrv::_startInstance() Error read from serial\n");
+				printf("@CXBeeDrv::mainLoop() Error read from serial\n");
 				continue;
 			}
-			printf("@CXBeeDrv::_startInstance() Success read from serial %d\n",readBuf[0]);
+			printf("@CXBeeDrv::mainLoop() Success read from serial %d\n",readBuf[0]);
 
 			if(readBuf[0] == 0x7E )
 			{
-				printf("@CXBeeDrv::_startInstance() Success read start-byte \n");
+				printf("@CXBeeDrv::mainLoop() Success read start-byte \n");
 			}
-
-			//
-
-			//
 
 			loopCnt++;
 			usleep(10*1000);//10ms待つ
 
 			if(loopCnt>100)
 			{
-				printf("@CXBeeDrv::_startInstance() send-loop breakl\n");
+				printf("@CXBeeDrv::mainLoop() send-loop breakl\n");
 				break;
 			}
 		}

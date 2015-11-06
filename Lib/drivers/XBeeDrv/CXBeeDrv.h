@@ -16,10 +16,14 @@ public:
 public:
 	static CXBeeDrv* createInstance();
 	int mainLoop();
+public:
+	int receiveData(unsigned char* receiveBuf, int& bufNum);
+	int sendData(const unsigned char* sendBuf, const int& bufNum);
+
 private:
-	void _initInstance();
-	void _destroyInstance();
-	int _startInstance();
+	void init();
+	void destroy();
+	int startInstance();
 private:
 	int m_fd;
 	int m_address;
