@@ -141,7 +141,7 @@ int CXBeeDrv::receiveData(unsigned char* receiveBuf, int& bufNum)
 			throw 0;
 		}
 		
-		if (read(m_fd, readBuf, bufNum) != bufNum){
+		if (read(m_fd, receiveBuf, bufNum) != bufNum){
 			printf("@CXBeeDrv::receiveData() Error read from serial\n");
 			throw 0;
 		}
