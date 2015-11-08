@@ -187,20 +187,20 @@ int CXBeeDrv::mainLoop()
 	try
 	{
 		unsigned char sendBuf[26] = {0};
-		sendBuf[0] = 0x7E;	// 開始デリミタ
-		sendBuf[1] = 0x00;	// MSB1
-		sendBuf[2] = 0x22;	// LSB2
-		sendBuf[3] = 0x10;	// FrameType :TX要求(ZigBee送信要求)
-		sendBuf[4] = 0x01;	// FrameID
-		sendBuf[5] = 0x00;	// 64bit Address start
-		sendBuf[6] = 0x13;	//  top
-		sendBuf[7] = 0xA2;
-		sendBuf[8] = 0x00;
-		sendBuf[9] = 0x40;	//  bottom
+		sendBuf[0]	= 0x7E;	// 開始デリミタ
+		sendBuf[1]	= 0x00;	// MSB1
+		sendBuf[2]	= 0x22;	// LSB2
+		sendBuf[3]	= 0x10;	// FrameType :TX要求(ZigBee送信要求)
+		sendBuf[4]	= 0x01;	// FrameID
+		sendBuf[5]	= 0x00;	// 64bit Address start
+		sendBuf[6]	= 0x13;	//  top
+		sendBuf[7]	= 0xA2;
+		sendBuf[8]	= 0x00;
+		sendBuf[9]	= 0x40;	//  bottom
 		sendBuf[10] = 0xB7;
 		sendBuf[11] = 0x70;
 		sendBuf[12] = 0x80;	// 64bit Address end
-		sendBuf[13] = 0xFF; 	// 16bit Address start
+		sendBuf[13] = 0xFF; // 16bit Address start
 		sendBuf[14] = 0xFE;	// 16bit Address end
 		sendBuf[15] = 0x00;	// Broadcast Range
 		sendBuf[16] = 0x00;	// Option
