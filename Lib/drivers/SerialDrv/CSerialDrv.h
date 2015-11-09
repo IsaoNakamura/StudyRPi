@@ -35,8 +35,8 @@ public:
 private:
 	void init();
 	void destroy();
-	int startInstance(	const char*	serialPort=DEF_SERIAL_PORT,
-						const int&	baudrate=DEF_SERIAL_BAUDRATE	);
+	int startInstance(	const char*	serialPort
+						const int&	baudrate	);
 private:
 	int m_fd;
 	int m_address;
