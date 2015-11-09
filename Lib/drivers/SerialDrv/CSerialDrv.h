@@ -27,7 +27,7 @@ public:
 										const int&	baudrate=DEF_SERIAL_BAUDRATE	);
 private:
 	static bool convBaurate(unsigned long& cfalg_baudrate, const int& baudrate);
-;
+
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
 	int sendData(const unsigned char* sendBuf, const int& bufNum);

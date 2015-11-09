@@ -97,7 +97,6 @@ void CSerialDrv::destroy()
 int CSerialDrv::startInstance(	const char*	serialPort,
 								const int&	baudrate	)
 {
-	printf("@CSerialDrv::startInstance() start\n");
 	int iRet = -1;
 	try
 	{
