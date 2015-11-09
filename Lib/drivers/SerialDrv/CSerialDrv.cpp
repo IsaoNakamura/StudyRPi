@@ -58,7 +58,7 @@ CSerialDrv* CSerialDrv::createInstance(	const char*	serialPort/*=DEF_SERIAL_PORT
 	return pObj;
 }
 
-bool CSerialDrv::convBaurate(char& cfalg_baudrate, const int& baudrate)
+bool CSerialDrv::convBaurate(unsigned long& cfalg_baudrate, const int& baudrate)
 {
 	switch(baudrate)
 	{
@@ -101,7 +101,7 @@ int CSerialDrv::startInstance(	const char*	serialPort,
 	int iRet = -1;
 	try
 	{
-		char cfalg_baudrate = B115200;
+		unsigned long cfalg_baudrate = B115200;
 		if(! CSerialDrv::convBaurate(cfalg_baudrate, baudrate)){
 			throw 0;
 		}

@@ -26,7 +26,7 @@ public:
 	static CSerialDrv* createInstance(	const char*	serialPort=DEF_SERIAL_PORT,
 										const int&	baudrate=DEF_SERIAL_BAUDRATE	);
 private:
-	static bool convBaurate(char& cfalg_baudrate, const int& baudrate);
+	static bool convBaurate(unsigned long& cfalg_baudrate, const int& baudrate);
 ;
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
@@ -35,7 +35,7 @@ public:
 private:
 	void init();
 	void destroy();
-	int startInstance	const char*	serialPort=DEF_SERIAL_PORT,
+	int startInstance(	const char*	serialPort=DEF_SERIAL_PORT,
 						const int&	baudrate=DEF_SERIAL_BAUDRATE	);
 private:
 	int m_fd;
