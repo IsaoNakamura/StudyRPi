@@ -10,12 +10,12 @@
 
 #define _USE_USB (1)
 #if _USE_USB
-#define SERIAL_PORT "/dev/ttyUSB0"
+#define DEF_SERIAL_PORT "/dev/ttyUSB0"
 #else
-#define SERIAL_PORT "/dev/ttyAMA0"
+#define DEF_SERIAL_PORT "/dev/ttyAMA0"
 #endif //_USE_USB
 
-#define SERIAL_BAUDRATE  B115200
+#define DEF_SERIAL_BAUDRATE  (115200)
 
 class CSerialDrv {
 private:
@@ -23,8 +23,10 @@ private:
 public:
 	virtual ~CSerialDrv();
 public:
-	static CSerialDrv* createInstance(	const char*				serialPort=SERIAL_PORT,
-										const unsigned char&	baudrate=SERIAL_BAUDRATE	);
+	static CSerialDrv* createInstance(	const char*	serialPort=DEF_SERIAL_PORT,
+										const int&	baudrate=DEF_SERIAL_BAUDRATE	);
+private:
+	static bool convBaurate(char& cfalg_baudrate, const int& baudrate);
 ;
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
@@ -33,8 +35,8 @@ public:
 private:
 	void init();
 	void destroy();
-	int startInstance(	const char*				serialPort,
-						const unsigned char&	baudrate	);
+	int startInstance	const char*	serialPort=DEF_SERIAL_PORT,
+						const int&	baudrate=DEF_SERIAL_BAUDRATE	);
 private:
 	int m_fd;
 	int m_address;

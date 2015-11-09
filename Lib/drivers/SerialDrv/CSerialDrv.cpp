@@ -29,8 +29,8 @@ CSerialDrv::~CSerialDrv() {
 	destroy();
 }
 
-CSerialDrv* CSerialDrv::createInstance(	const char*				serialPort/*=SERIAL_PORT*/,
-										const unsigned char&	baudrate/*=SERIAL_BAUDRATE*/	)
+CSerialDrv* CSerialDrv::createInstance(	const char*	serialPort/*=DEF_SERIAL_PORT*/,
+										const int&	baudrate/*=DEF_SERIAL_BAUDRATE*/		)
 {
 	CSerialDrv* pObj = NULL;
 	try
@@ -58,6 +58,24 @@ CSerialDrv* CSerialDrv::createInstance(	const char*				serialPort/*=SERIAL_PORT*
 	return pObj;
 }
 
+bool CSerialDrv::convBaurate(char& cfalg_baudrate, const int& baudrate)
+{
+	switch(baudrate)
+	{
+	case 9600:
+		cfalg_baudrate = B9600;
+		break;
+	case 115200:
+		cfalg_baudrate = B115200;
+		break;
+	default:
+		printf("@CSerialDrv::convBaurate() baudrate(%d) is not supported.\n",baudrate);
+		throw 0;
+		break;
+	}
+	return true;
+}
+
 
 void CSerialDrv::init()
 {
@@ -76,13 +94,18 @@ void CSerialDrv::destroy()
 	return;
 }
 
-int CSerialDrv::startInstance(	const char*				serialPort,
-								const unsigned char&	baudrate	)
+int CSerialDrv::startInstance(	const char*	serialPort,
+								const int&	baudrate	)
 {
 	printf("@CSerialDrv::startInstance() start\n");
 	int iRet = -1;
 	try
 	{
+		char cfalg_baudrate = B115200;
+		if(! CSerialDrv::convBaurate(cfalg_baudrate, baudrate)){
+			throw 0;
+		}
+
 		if(!serialPort){
 			printf("@CSerialDrv::startInstance() serialPort is NULL\n");
 			throw 0;
@@ -103,7 +126,7 @@ int CSerialDrv::startInstance(	const char*				serialPort,
 		}
 		bzero(&newtio, sizeof(newtio) );
 		newtio = oldtio;
-		newtio.c_cflag = ( baudrate | CS8 | CLOCAL | CREAD );
+		newtio.c_cflag = ( cfalg_baudrate | CS8 | CLOCAL | CREAD );
 		newtio.c_iflag = ( IGNPAR );
 		newtio.c_oflag = 0;
 		newtio.c_lflag = ICANON;
