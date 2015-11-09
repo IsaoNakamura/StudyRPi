@@ -8,13 +8,16 @@
 #ifndef CXBEEDRV_H_
 #define CXBEEDRV_H_
 
+class CSerialDrv;
+
 class CXBeeDrv {
 private:
 	CXBeeDrv();
 public:
 	virtual ~CXBeeDrv();
 public:
-	static CXBeeDrv* createInstance();
+	static CXBeeDrv* createInstance(	const char*	serialPort=DEF_SERIAL_PORT,
+										const int&	baudrate=DEF_SERIAL_BAUDRATE	);
 	int mainLoop();
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
@@ -23,10 +26,10 @@ public:
 private:
 	void init();
 	void destroy();
-	int startInstance();
+	int startInstance(	const char*	serialPort
+						const int&	baudrate	);
 private:
-	int m_fd;
-	int m_address;
+	CSerialDrv* m_pSerial;
 };
 
 #endif /* CXBEEDRV_H_ */

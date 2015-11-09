@@ -38,7 +38,8 @@ CXBeeDrv::~CXBeeDrv() {
 	destroy();
 }
 
-CXBeeDrv* CXBeeDrv::createInstance()
+CXBeeDrv* CXBeeDrv::createInstance(	const char*	serialPort/*=DEF_SERIAL_PORT*/,
+									const int&	baudrate/*=DEF_SERIAL_BAUDRATE*/)
 {
 	CXBeeDrv* pObj = NULL;
 	try
@@ -49,7 +50,7 @@ CXBeeDrv* CXBeeDrv::createInstance()
 			throw 0;
 		}
 
-		if(pObj->startInstance()!=0)
+		if(pObj->startInstance(serialPort, baudrate)!=0)
 		{
 			throw 0;
 		}
@@ -69,50 +70,28 @@ CXBeeDrv* CXBeeDrv::createInstance()
 
 void CXBeeDrv::init()
 {
-	m_fd = 0;
-	m_address = 0;
-
+	m_pSerial = NULL;
 	return;
 }
 
 void CXBeeDrv::destroy()
 {
-	if( m_fd > 0 )
-	{
-		close(m_fd);
+	if(m_pSerial){
+		delete m_pSerial;
+		m_pSerial = NULL;
 	}
 	return;
 }
 
-int CXBeeDrv::startInstance()
+
+int CXBeeDrv::startInstance(	const char*	serialPort,
+								const int&	baudrate	)
 {
-	printf("@CXBeeDrv::startInstance() start\n");
 	int iRet = -1;
 	try
 	{
-		m_fd = open(SERIAL_PORT, O_RDWR );
-		if( m_fd < 0 )
-		{
-			printf("@CXBeeDrv::startInstance() failed to open SERIAL_PORT \n");
-			throw 0;
-		}
-
-		struct termios oldtio;
-		struct termios newtio;
-		if( ioctl(m_fd, TCGETS, &oldtio) < 0 )
-		{
-			printf("@CXBeeDrv::startInstance() failed to ioctl(TCGETS) \n");
-			throw 0;
-		}
-		bzero(&newtio, sizeof(newtio) );
-		newtio = oldtio;
-		newtio.c_cflag = ( BAUDRATE | CS8 | CLOCAL | CREAD );
-		newtio.c_iflag = ( IGNPAR );
-		newtio.c_oflag = 0;
-		newtio.c_lflag = ICANON;
-		if( ioctl(m_fd, TCSETS, &newtio) < 0 )
-		{
-			printf("@CXBeeDrv::startInstance() failed to ioctl(TCSETS) \n");
+		m_pSerial = CSerialDrv::createInstance(serialPort, baudrate);
+		if(!m_pSerial){
 			throw 0;
 		}
 
