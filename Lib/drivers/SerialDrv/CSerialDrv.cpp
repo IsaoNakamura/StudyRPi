@@ -18,13 +18,6 @@
 #include <termios.h>
 #include <strings.h>
 
-#define _USE_USB (1)
-#if _USE_USB
-#define SERIAL_PORT "/dev/ttyUSB0"
-#else
-#define SERIAL_PORT "/dev/ttyAMA0"
-#endif //_USE_USB
-
 #define BAUDRATE  B115200
 
 CSerialDrv::CSerialDrv() {
@@ -38,7 +31,8 @@ CSerialDrv::~CSerialDrv() {
 	destroy();
 }
 
-CSerialDrv* CSerialDrv::createInstance()
+CSerialDrv* CSerialDrv::createInstance(	const char*				serialPort/*=SERIAL_PORT*/,
+										const unsigned char&	baudrate/*=BAUDRATE*/	)
 {
 	CSerialDrv* pObj = NULL;
 	try
@@ -49,7 +43,7 @@ CSerialDrv* CSerialDrv::createInstance()
 			throw 0;
 		}
 
-		if(pObj->startInstance()!=0)
+		if(pObj->startInstance(serialPort, baudrate)!=0)
 		{
 			throw 0;
 		}
@@ -84,13 +78,18 @@ void CSerialDrv::destroy()
 	return;
 }
 
-int CSerialDrv::startInstance()
+int CSerialDrv::startInstance(	const char*				serialPort,
+								const unsigned char&	baudrate	)
 {
 	printf("@CSerialDrv::startInstance() start\n");
 	int iRet = -1;
 	try
 	{
-		m_fd = open(SERIAL_PORT, O_RDWR );
+		if(!serialPort){
+			printf("@CSerialDrv::startInstance() serialPort is NULL\n");
+			throw 0;
+		}
+		m_fd = open(serialPort, O_RDWR );
 		if( m_fd < 0 )
 		{
 			printf("@CSerialDrv::startInstance() failed to open SERIAL_PORT \n");
@@ -106,7 +105,7 @@ int CSerialDrv::startInstance()
 		}
 		bzero(&newtio, sizeof(newtio) );
 		newtio = oldtio;
-		newtio.c_cflag = ( BAUDRATE | CS8 | CLOCAL | CREAD );
+		newtio.c_cflag = ( baudrate | CS8 | CLOCAL | CREAD );
 		newtio.c_iflag = ( IGNPAR );
 		newtio.c_oflag = 0;
 		newtio.c_lflag = ICANON;
