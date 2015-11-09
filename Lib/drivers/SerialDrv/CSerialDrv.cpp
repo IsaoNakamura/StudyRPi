@@ -18,8 +18,6 @@
 #include <termios.h>
 #include <strings.h>
 
-#define BAUDRATE  B115200
-
 CSerialDrv::CSerialDrv() {
 	// TODO 自動生成されたコンストラクター・スタブ
 	init();
@@ -32,7 +30,7 @@ CSerialDrv::~CSerialDrv() {
 }
 
 CSerialDrv* CSerialDrv::createInstance(	const char*				serialPort/*=SERIAL_PORT*/,
-										const unsigned char&	baudrate/*=BAUDRATE*/	)
+										const unsigned char&	baudrate/*=SERIAL_BAUDRATE*/	)
 {
 	CSerialDrv* pObj = NULL;
 	try

@@ -15,6 +15,8 @@
 #define SERIAL_PORT "/dev/ttyAMA0"
 #endif //_USE_USB
 
+#define SERIAL_BAUDRATE  B115200
+
 class CSerialDrv {
 private:
 	CSerialDrv();
@@ -22,7 +24,7 @@ public:
 	virtual ~CSerialDrv();
 public:
 	static CSerialDrv* createInstance(	const char*				serialPort=SERIAL_PORT,
-										const unsigned char&	baudrate=BAUDRATE	);
+										const unsigned char&	baudrate=SERIAL_BAUDRATE	);
 ;
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
