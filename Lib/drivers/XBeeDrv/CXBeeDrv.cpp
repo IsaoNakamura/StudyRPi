@@ -6,6 +6,8 @@
  */
 
 #include "CXBeeDrv.h"
+#include "../SerialDrv/CSerialDrv.h"
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -18,15 +20,6 @@
 #include <termios.h>
 #include <strings.h>
 
-#define _USE_USB (1)
-#if _USE_USB
-#define SERIAL_PORT "/dev/ttyUSB0"
-#else
-#define SERIAL_PORT "/dev/ttyAMA0"
-#endif //_USE_USB
-
-#define BAUDRATE  B115200
-
 CXBeeDrv::CXBeeDrv() {
 	// TODO 自動生成されたコンストラクター・スタブ
 	init();
@@ -38,8 +31,8 @@ CXBeeDrv::~CXBeeDrv() {
 	destroy();
 }
 
-CXBeeDrv* CXBeeDrv::createInstance(	const char*	serialPort/*=DEF_SERIAL_PORT*/,
-									const int&	baudrate/*=DEF_SERIAL_BAUDRATE*/)
+CXBeeDrv* CXBeeDrv::createInstance(	const char*	serialPort,
+									const int&	baudrate)
 {
 	CXBeeDrv* pObj = NULL;
 	try
@@ -99,9 +92,10 @@ int CXBeeDrv::startInstance(	const char*	serialPort,
 	}
 	catch(...)
 	{
-		if( m_fd > 0 )
+		if(m_pSerial)
 		{
-			close(m_fd);
+			delete m_pSerial;
+			m_pSerial = NULL;
 		}
 		iRet = -1;
 	}
@@ -113,15 +107,11 @@ int CXBeeDrv::receiveData(unsigned char* receiveBuf, int& bufNum)
 	int iRet = -1;
 	try
 	{
-		if(!receiveBuf){
+		if(!m_pSerial){
 			throw 0;
 		}
-		if( bufNum <= 0){
-			throw 0;
-		}
-		
-		if (read(m_fd, receiveBuf, bufNum) != bufNum){
-			printf("@CXBeeDrv::receiveData() Error read from serial\n");
+
+		if( m_pSerial->receiveData(receiveBuf, bufNum) != 0 ){
 			throw 0;
 		}
 			
@@ -139,15 +129,11 @@ int CXBeeDrv::sendData(const unsigned char* sendBuf, const int& bufNum)
 	int iRet = -1;
 	try
 	{
-		if(!sendBuf){
+		if(!m_pSerial){
 			throw 0;
 		}
-		if( bufNum <= 0){
-			throw 0;
-		}
-		
-		if (write(m_fd, sendBuf, bufNum) != bufNum){
-			printf("@CXBeeDrv::sendData() Error write to serial\n");
+
+		if( m_pSerial->sendData(sendBuf, bufNum) != 0 ){
 			throw 0;
 		}
 		
@@ -197,7 +183,7 @@ int CXBeeDrv::mainLoop()
 			sum = sum + sendBuf[i];
 		}
 		sendBuf[25] = 0xFF - (sum & 0xFF);	// Check-Sum
-		if (write(m_fd, sendBuf, 26) != 26){
+		if(m_pSerial->sendDat(sendBuf, 26) != 0){
 			printf("@CXBeeDrv::mainLoop() Error write to serial\n");
 		}
 
@@ -206,7 +192,7 @@ int CXBeeDrv::mainLoop()
 		{
 			printf("@CXBeeDrv::mainLoop() Start read from serial\n");
 			unsigned char readBuf[1] = {0};
-			if (read(m_fd, readBuf, 1) != 1){
+			if(m_pSerial->receiveData(readBuf, 1) != 0){
 				printf("@CXBeeDrv::mainLoop() Error read from serial\n");
 				continue;
 			}

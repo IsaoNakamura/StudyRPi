@@ -16,8 +16,8 @@ private:
 public:
 	virtual ~CXBeeDrv();
 public:
-	static CXBeeDrv* createInstance(	const char*	serialPort=DEF_SERIAL_PORT,
-										const int&	baudrate=DEF_SERIAL_BAUDRATE	);
+	static CXBeeDrv* createInstance(	const char*	serialPort,
+										const int&	baudrate	);
 	int mainLoop();
 public:
 	int receiveData(unsigned char* receiveBuf, int& bufNum);
