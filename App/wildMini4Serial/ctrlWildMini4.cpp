@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if(isChanged){
+				printf("val_yaw=%d, val_accel=%d\n",val_yaw,val_accel);
 				unsigned char sendBuf[4] = {0};
 				sendBuf[0]	= 0x7E;	// 開始デリミタ
 				sendBuf[1]	= 0x00;	// FrameType
