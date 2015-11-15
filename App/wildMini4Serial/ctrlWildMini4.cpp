@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if(isChanged){
-				unsigned char sendBuf[4]
+				unsigned char sendBuf[4] = {0};
 				sendBuf[0]	= 0x7E;	// 開始デリミタ
 				sendBuf[1]	= 0x00;	// FrameType
 				sendBuf[2]	= static_cast<unsigned char>(val_yaw);	// ヨー角度
