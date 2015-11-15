@@ -23,7 +23,7 @@ void loop() {
     }else{
       digitalWrite(9, HIGH);
     }
-    delay(10);
+    // delay(10);
   }
 }
 
