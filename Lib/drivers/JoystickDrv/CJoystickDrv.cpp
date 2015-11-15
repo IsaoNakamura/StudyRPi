@@ -242,7 +242,7 @@ int CJoystickDrv::getAxisState(const int& axis_idx) const
 	return m_pAxis[axis_idx].iValue;
 }
 
-int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& rstChgFlg/*=true*/) const
+int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& rstChgFlg/*=true*/)
 {
 	if(!m_pButton)
 	{
@@ -265,7 +265,7 @@ int CJoystickDrv::isChangedButton(const int& btn_idx, const bool& rstChgFlg/*=tr
 	return iRet;
 }
 
-int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& rstChgFlg/*=true*/) const
+int CJoystickDrv::isChangedAxis(const int& axis_idx, const bool& rstChgFlg/*=true*/)
 {
 	if(!m_pAxis)
 	{
