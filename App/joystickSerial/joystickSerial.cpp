@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
 			int joy_yaw		= pJoystick->getAxisState(DUALSHOCK_ANALOG_LEFT_X);
 
 			unsigned char sendBuf[1] = {0};
+			/*
 			if(joy_yaw==axis_mid){ // 中間値
 			}else if(joy_yaw > axis_mid){ // 右
 				sendBuf[0] = 0x30;
@@ -76,7 +77,24 @@ int main(int argc, char* argv[])
 					throw 0;
 				}
 			}
-			
+			*/
+			if(pJoystick->getButtonState(JOY_SANKAKU) == BUTTON_ON){
+				sendBuf[0] = 0x30;
+				printf("sendBuf=0x%x, pushed Sankaku-Button\n\n",sendBuf[0]);
+				if( pSerial->sendData(sendBuf, 1) != 0 ){
+					throw 0;
+				}
+				break;
+			}
+			if(pJoystick->getButtonState(JOY_SHIKAKU) == BUTTON_ON){
+				sendBuf[0] = 0x31;
+				printf("sendBuf=0x%x, pushed Shikaku-Button\n\n",sendBuf[0]);
+				if( pSerial->sendData(sendBuf, 1) != 0 ){
+					throw 0;
+				}
+				break;
+			}
+				
 			//Maru
 			if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
 				printf("pushed Maru-Button\n");
