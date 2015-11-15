@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "../../Lib/drivers/JoystickDrv/CJoystickDrv.h"
-#include "../../Lib/drivers/ServoDrv/CSerialDrv.h"
+#include "../../Lib/drivers/SerialDrv/CSerialDrv.h"
 
 #define DUALSHOCK_ANALOG_VAL_MAX	( 32767)
 #define DUALSHOCK_ANALOG_VAL_MID	(     0)
