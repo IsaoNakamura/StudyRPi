@@ -84,7 +84,6 @@ int main(int argc, char* argv[])
 				if( pSerial->sendData(sendBuf, 1) != 0 ){
 					throw 0;
 				}
-				break;
 			}
 			if(pJoystick->getButtonState(JOY_SHIKAKU) == BUTTON_ON){
 				sendBuf[0] = 0x31;
@@ -92,7 +91,6 @@ int main(int argc, char* argv[])
 				if( pSerial->sendData(sendBuf, 1) != 0 ){
 					throw 0;
 				}
-				break;
 			}
 				
 			//Maru
