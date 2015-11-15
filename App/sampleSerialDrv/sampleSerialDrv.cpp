@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 			unsigned char sendBuf[1] = {0};
 			std::cin >> sendBuf;
 			std::cout << sendBuf << std::endl;
+			printf("sendBuf=0x%x\n",sendBuf[0]);
 			
 			if( pSerial->sendData(sendBuf, 1) != 0 ){
 				throw 0;

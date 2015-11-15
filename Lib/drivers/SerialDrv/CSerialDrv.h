@@ -15,7 +15,7 @@
 #define DEF_SERIAL_PORT "/dev/ttyAMA0"
 #endif //_USE_USB
 
-#define DEF_SERIAL_BAUDRATE  (115200)
+#define DEF_SERIAL_BAUDRATE  (9600)
 
 class CSerialDrv {
 private:
