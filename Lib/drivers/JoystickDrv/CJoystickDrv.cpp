@@ -155,7 +155,7 @@ int CJoystickDrv::readJoystick()
 		case JS_EVENT_AXIS:
 			if(m_pAxis)
 			{
-				if(m_pAxis[js.numbler].iValue != js.value){
+				if(m_pAxis[js.number].iValue != js.value){
 					m_pAxis[js.number].iValue = js.value;
 					m_pAxis[js.number].isChanged = true;				
 				}
@@ -164,7 +164,7 @@ int CJoystickDrv::readJoystick()
 		case JS_EVENT_BUTTON:
 			if(m_pButton)
 			{
-				if(m_pButton[js.numbler].cValue != js.value){
+				if(m_pButton[js.number].cValue != js.value){
 					m_pButton[js.number].cValue = js.value;
 					m_pButton[js.number].isChanged = true;
 				}
