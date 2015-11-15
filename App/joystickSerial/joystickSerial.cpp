@@ -78,18 +78,22 @@ int main(int argc, char* argv[])
 				}
 			}
 			*/
-			if(pJoystick->getButtonState(JOY_SANKAKU) == BUTTON_ON){
-				sendBuf[0] = 0x30;
-				printf("sendBuf=0x%x, pushed Sankaku-Button\n\n",sendBuf[0]);
-				if( pSerial->sendData(sendBuf, 1) != 0 ){
-					throw 0;
+			if( pJoystick->isChangedButton(JOY_SANKAKU)==1 ){
+				if(pJoystick->getButtonState(JOY_SANKAKU) == BUTTON_ON){
+					sendBuf[0] = 0x30;
+					printf("sendBuf=0x%x, pushed Sankaku-Button\n\n",sendBuf[0]);
+					if( pSerial->sendData(sendBuf, 1) != 0 ){
+						throw 0;
+					}
 				}
 			}
-			if(pJoystick->getButtonState(JOY_SHIKAKU) == BUTTON_ON){
-				sendBuf[0] = 0x31;
-				printf("sendBuf=0x%x, pushed Shikaku-Button\n\n",sendBuf[0]);
-				if( pSerial->sendData(sendBuf, 1) != 0 ){
-					throw 0;
+			if( pJoystick->isChangedButton(JOY_SHIKAKU)==1 ){
+				if(pJoystick->getButtonState(JOY_SHIKAKU) == BUTTON_ON){
+					sendBuf[0] = 0x31;
+					printf("sendBuf=0x%x, pushed Shikaku-Button\n\n",sendBuf[0]);
+					if( pSerial->sendData(sendBuf, 1) != 0 ){
+						throw 0;
+					}
 				}
 			}
 				
