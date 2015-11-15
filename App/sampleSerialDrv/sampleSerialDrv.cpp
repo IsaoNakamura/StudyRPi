@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 {
 	int iRet = -1;
 	
-	printf("Input '0' to Exit.\n");
+	printf("Input '2' to Exit.\n");
 	
 	CSerialDrv* pSerial = NULL;
 	
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 				throw 0;
 			}
 			
-			if(sendBuf[0]==0){
+			if(sendBuf[0]==0x32){
 				break;
 			}
 		}
