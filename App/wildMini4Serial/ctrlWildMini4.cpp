@@ -79,11 +79,16 @@ int main(int argc, char* argv[])
 					double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
 					int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 					val_yaw = servo_mid - delta;
-	
+					if(80>val_yaw){
+						val_yaw = 80;
+					}
 				}else if(joy_yaw < axis_mid){ // 左
 					double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
 					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 					val_yaw = servo_mid + delta;
+					if(100<val_yaw){
+						val_yaw = 100;
+					}
 				}
 				isChanged = true;
 			}
@@ -96,7 +101,6 @@ int main(int argc, char* argv[])
 					double ratio = fabs( (double)joy_accel / (double)(axis_max) );
 					int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 					val_accel = servo_mid - delta;
-	
 				}else if(joy_accel < axis_mid){ // 左
 					double ratio = fabs( (double)joy_accel / (double)(axis_min) );
 					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
