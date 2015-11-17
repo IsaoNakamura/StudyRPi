@@ -58,6 +58,9 @@ int main(int argc, char* argv[])
 			printf("failed to create pSerial\n");
 			throw 0;
 		}
+		
+		int val_yaw_pre		= -1;
+		int val_accel_pre	= -1;
 	
 		printf("begin loop \n");
 		while(1){
@@ -90,7 +93,11 @@ int main(int argc, char* argv[])
 					//	val_yaw = 105;
 					//}
 				}
-				isChanged = true;
+				
+				if(val_yaw_pre != val_yaw){
+					isChanged = true;
+					val_yaw_pre = val_yaw;
+				}
 			}
 			
 			if( pJoystick->isChangedAxis(DUALSHOCK_ANALOG_RIGHT_Y)==1 ){
@@ -106,7 +113,10 @@ int main(int argc, char* argv[])
 					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 					val_accel = servo_mid + delta;
 				}
-				isChanged = true;
+				if(val_accel_pre != val_accel){
+					isChanged = true;
+					val_accel_pre = val_accel;
+				}
 			}
 			
 			if(isChanged){
