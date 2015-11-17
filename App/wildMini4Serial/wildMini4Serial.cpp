@@ -22,6 +22,38 @@
 #define DUALSHOCK_ANALOG_RIGHT_X	(2)
 #define DUALSHOCK_ANALOG_RIGHT_Y	(3)
 
+bool sendMotorParam(	CSerialDrv* pSerial,
+						const int& val_yaw,
+						const int& val_accel	)
+{
+	
+	if(!pSerial){
+		printf("pSerial is NULL @sendMotorParam\n");
+		return false;
+	}
+	if(val_yaw < 0){
+		printf("val_yaw is under Zero @sendMotorParam\n");
+		return false;
+	}
+	if(val_accel < 0){
+		printf("val_accel is under Zero @sendMotorParam\n");
+		return false;
+	}
+
+	unsigned char sendBuf[4] = {0};
+	sendBuf[0]	= 0x7E;	// 開始デリミタ
+	sendBuf[1]	= 0x00;	// FrameType
+	sendBuf[2]	= static_cast<unsigned char>(val_yaw);	// ヨー角度
+	sendBuf[3]	= static_cast<unsigned char>(val_accel);	// 速度
+	
+	if( pSerial->sendData(sendBuf, 4) != 0 ){
+		printf("failed to sendData() @sendMotorParam\n");
+		return false;
+	}
+	
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
 	printf("Press Maru-Button to Exit Process.\n");
@@ -120,14 +152,8 @@ int main(int argc, char* argv[])
 			}
 			
 			if(isChanged){
-
-				unsigned char sendBuf[4] = {0};
-				sendBuf[0]	= 0x7E;	// 開始デリミタ
-				sendBuf[1]	= 0x00;	// FrameType
-				sendBuf[2]	= static_cast<unsigned char>(val_yaw);	// ヨー角度
-				sendBuf[3]	= static_cast<unsigned char>(val_accel);	// 速度
-				
-				if( pSerial->sendData(sendBuf, 4) != 0 ){
+				if(! sendMotorParam( pSerial, val_yaw, val_accel)){
+					printf("failed to sendMotorParam()\n");
 					throw 0;
 				}
 				printf("val_yaw=%d(0x%x), val_accel=%d(0x%x)\n",val_yaw,sendBuf[2],val_accel,sendBuf[3]);
