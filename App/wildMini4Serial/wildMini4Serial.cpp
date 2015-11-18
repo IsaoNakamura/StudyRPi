@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 					printf("failed to sendMotorParam()\n");
 					throw 0;
 				}
-				printf("val_yaw=%d(0x%x), val_accel=%d(0x%x)\n",val_yaw,sendBuf[2],val_accel,sendBuf[3]);
+				printf("val_yaw=%d, val_accel=%d\n",val_yaw,val_accel);
 			}
 			
 			//Maru for Exit-Loop.
