@@ -7,7 +7,7 @@
 
 #define SERIAL_BAUDRATE          9600
 #define SERIAL_DELIMITER         0x7E
-#define SERIAL_FRAMETYPE_MOTOR   0x0
+#define SERIAL_FRAMETYPE_MOTOR   0x00
 #define SERIAL_NUM               3
 #define SERIAL_IDX_TYPE          0
 #define SERIAL_IDX_YAW           1
@@ -42,7 +42,7 @@ void loop() {
         readBuf[i] = Serial.read();
       }
       
-      if( readBuf[SERIAL_IDX_YAW] == SERIAL_FRAMETYPE_MOTOR ){
+      if( readBuf[SERIAL_IDX_TYPE] == SERIAL_FRAMETYPE_MOTOR ){
         // FrameType is Motor-Parameter
 
         // Ctrl Servo-Motor
