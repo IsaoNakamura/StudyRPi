@@ -12,6 +12,7 @@
 #define SERVO_DEG_MIN	(0)
 #define SERVO_DEG_MID	(90)
 #define SERVO_DEG_MAX	(180)
+#define SERVO_DEG_CLEARANCE (25)
 
 #define DUALSHOCK_ANALOG_VAL_MAX	( 32767)
 #define DUALSHOCK_ANALOG_VAL_MID	(     0)
@@ -120,16 +121,16 @@ int main(int argc, char* argv[])
 					double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
 					int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 					val_yaw = servo_mid - delta;
-					//if(75>val_yaw){
-					//	val_yaw = 75;
-					//}
+					if((servo_mid-SERVO_DEG_CLEARANCE)>val_yaw){
+						val_yaw = (servo_mid-SERVO_DEG_CLEARANCE);
+					}
 				}else if(joy_yaw < axis_mid){ // 左
 					double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
 					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 					val_yaw = servo_mid + delta;
-					//if(105<val_yaw){
-					//	val_yaw = 105;
-					//}
+					if( (servo_mid+SERVO_DEG_CLEARANCE)<val_yaw){
+						val_yaw = (servo_mid+SERVO_DEG_CLEARANCE);
+					}
 				}
 				
 				if(val_yaw_pre != val_yaw){
