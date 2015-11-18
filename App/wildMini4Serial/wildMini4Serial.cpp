@@ -91,8 +91,14 @@ int main(int argc, char* argv[])
 			throw 0;
 		}
 		
-		int val_yaw_pre		= -1;
-		int val_accel_pre	= -1;
+		// Init Motor-Param.
+		if(! sendMotorParam( pSerial, servo_mid, servo_mid)){
+			printf("failed to sendMotorParam()\n");
+			throw 0;
+		}
+
+		int val_yaw_pre		= servo_mid;
+		int val_accel_pre	= servo_mid;
 	
 		printf("begin loop \n");
 		while(1){
@@ -159,7 +165,7 @@ int main(int argc, char* argv[])
 				printf("val_yaw=%d(0x%x), val_accel=%d(0x%x)\n",val_yaw,sendBuf[2],val_accel,sendBuf[3]);
 			}
 			
-			//Maru
+			//Maru for Exit-Loop.
 			if( pJoystick->isChangedButton(JOY_MARU)==1 ){
 				if(pJoystick->getButtonState(JOY_MARU) == BUTTON_ON){
 					printf("pushed Maru-Button\n");
@@ -170,6 +176,12 @@ int main(int argc, char* argv[])
 			sleep(0);
 		}
 		printf("end loop\n");
+		
+		// Reset Motor-Param.
+		if(! sendMotorParam( pSerial, servo_mid, servo_mid)){
+			printf("failed to sendMotorParam()\n");
+			throw 0;
+		}
 		
 		if(pSerial){
 			delete pSerial;
