@@ -109,8 +109,8 @@ int main(int argc, char* argv[])
 				throw 0;
 			}
 			
-			int val_yaw		= servo_mid;
-			int val_accel	= servo_mid;
+			int val_yaw		= val_yaw_pre;
+			int val_accel	= val_accel_pre;
 			bool isChanged = false;
 			
 			if( pJoystick->isChangedAxis(DUALSHOCK_ANALOG_LEFT_X)==1 ){
