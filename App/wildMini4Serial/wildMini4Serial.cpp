@@ -54,6 +54,28 @@ bool sendMotorParam(	CSerialDrv* pSerial,
 	
 	return true;
 }
+bool convertAxisToServoDeg(	int&		dst_servo,
+							const int&	src_axis,
+							const int&	axis_min,
+							const int&	axis_mid,
+							const int&	axis_max,
+							const int&	servo_min,
+							const int&	servo_mid,
+							const int&	servo_max	)
+{
+	if(joy_yaw==axis_mid){ // 中間値
+		dst_servo = servo_mid;
+	}else if(joy_yaw > axis_mid){ // 右
+		double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
+		int delta = (int)( (double)( servo_mid - servo_min) * ratio );
+		dst_servo = servo_mid - delta;
+	}else if(joy_yaw < axis_mid){ // 左
+		double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
+		int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
+		dst_servo = servo_mid + delta;
+	}
+	return true;
+}
 
 int main(int argc, char* argv[])
 {
@@ -115,22 +137,20 @@ int main(int argc, char* argv[])
 			
 			if( pJoystick->isChangedAxis(DUALSHOCK_ANALOG_LEFT_X)==1 ){
 				int joy_yaw		= pJoystick->getAxisState(DUALSHOCK_ANALOG_LEFT_X);
-				if(joy_yaw==axis_mid){ // 中間値
-					val_yaw = servo_mid;
-				}else if(joy_yaw > axis_mid){ // 右
-					double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
-					int delta = (int)( (double)( servo_mid - servo_min) * ratio );
-					val_yaw = servo_mid - delta;
-					if((servo_mid-SERVO_DEG_CLEARANCE)>val_yaw){
-						val_yaw = (servo_mid-SERVO_DEG_CLEARANCE);
-					}
-				}else if(joy_yaw < axis_mid){ // 左
-					double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
-					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
-					val_yaw = servo_mid + delta;
-					if( (servo_mid+SERVO_DEG_CLEARANCE)<val_yaw){
-						val_yaw = (servo_mid+SERVO_DEG_CLEARANCE);
-					}
+				if(! convertAxisToServoDeg(	val_yaw,
+											joy_yaw,
+											axis_min,
+											axis_mid,
+											axis_max,
+											servo_min,
+											servo_mid,
+											servo_max ) ){
+					throw 0;					
+				}
+				if((servo_mid-SERVO_DEG_CLEARANCE)>val_yaw){
+					val_yaw = (servo_mid-SERVO_DEG_CLEARANCE);
+				}else if( (servo_mid+SERVO_DEG_CLEARANCE)<val_yaw){
+					val_yaw = (servo_mid+SERVO_DEG_CLEARANCE);
 				}
 				
 				if(val_yaw_pre != val_yaw){
@@ -141,16 +161,15 @@ int main(int argc, char* argv[])
 			
 			if( pJoystick->isChangedAxis(DUALSHOCK_ANALOG_RIGHT_Y)==1 ){
 				int joy_accel	= pJoystick->getAxisState(DUALSHOCK_ANALOG_RIGHT_Y);
-				if(joy_accel==axis_mid){ // 中間値
-					val_accel = servo_mid;
-				}else if(joy_accel > axis_mid){ // 右
-					double ratio = fabs( (double)joy_accel / (double)(axis_max) );
-					int delta = (int)( (double)( servo_mid - servo_min) * ratio );
-					val_accel = servo_mid - delta;
-				}else if(joy_accel < axis_mid){ // 左
-					double ratio = fabs( (double)joy_accel / (double)(axis_min) );
-					int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
-					val_accel = servo_mid + delta;
+				if(! convertAxisToServoDeg(	val_accel,
+											joy_accel,
+											axis_min,
+											axis_mid,
+											axis_max,
+											servo_min,
+											servo_mid,
+											servo_max ) ){
+					throw 0;					
 				}
 				if(val_accel_pre != val_accel){
 					isChanged = true;
