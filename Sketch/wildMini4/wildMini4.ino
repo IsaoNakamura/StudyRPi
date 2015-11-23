@@ -1,7 +1,7 @@
 #include <Servo.h>
 
 #define PIN_SERVO   3
-#define PIN_ACCEL   4
+#define PIN_ACCEL   5
 #define PIN_FORWARD 8
 #define PIN_BACK    9
 
@@ -70,7 +70,7 @@ void loop() {
             // BACK
             digitalWrite(PIN_FORWARD, LOW);
             digitalWrite(PIN_BACK, HIGH);
-            int writeValue = 255 - (255 * (90 - readBuf[SERIAL_IDX_ACCEL]) / 90);
+            int writeValue = 255 * (90 - readBuf[SERIAL_IDX_ACCEL]) / 90;
             analogWrite(PIN_ACCEL, writeValue);
   
           }
