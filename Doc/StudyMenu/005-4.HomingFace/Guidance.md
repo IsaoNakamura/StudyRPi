@@ -9,7 +9,7 @@
 USBカメラをRaspberryPiに接続する。  
 下図のようにGPIO端子と電子部品を配線する。  
 ![Bread](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo_bread.png?raw=true)  
-![Circuit](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo?raw=true)  
+![Circuit](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo_circuit.png?raw=true)  
 
 ### 2. RPi勉強会用GitHubリポジトリをクローン(チェックアウト)して、ディレクトリに侵入する。  
 ``git clone https://github.com/IsaoNakamura/StudyRPi/``  

@@ -19,7 +19,7 @@ FPVカメラマウントには説明書などは入っていない。(少なく�
 ### 2. ワイヤリング。
 下図のようにGPIO端子と電子部品を配線する。  
 ![Bread](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo_bread.png?raw=true)  
-![Circuit](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo?raw=true)  
+![Circuit](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/Wiring/RPi_CtrlDualServo/RPi_CtrlDualServo_circuit.png?raw=true)  
 
 ### 3. RPiとPS3コントローラを接続しておく。
 手順は以下を参考にする。  
