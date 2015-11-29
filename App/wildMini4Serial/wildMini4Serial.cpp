@@ -63,14 +63,14 @@ bool convertAxisToServoDeg(	int&		dst_servo,
 							const int&	servo_mid,
 							const int&	servo_max	)
 {
-	if(joy_yaw==axis_mid){ // 中間値
+	if(src_axis==axis_mid){ // 中間値
 		dst_servo = servo_mid;
-	}else if(joy_yaw > axis_mid){ // 右
-		double ratio = fabs( (double)joy_yaw / (double)(axis_max) );
+	}else if(src_axis > axis_mid){ // 右
+		double ratio = fabs( (double)src_axis / (double)(axis_max) );
 		int delta = (int)( (double)( servo_mid - servo_min) * ratio );
 		dst_servo = servo_mid - delta;
-	}else if(joy_yaw < axis_mid){ // 左
-		double ratio = fabs( (double)joy_yaw / (double)(axis_min) );
+	}else if(src_axis < axis_mid){ // 左
+		double ratio = fabs( (double)src_axis / (double)(axis_min) );
 		int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
 		dst_servo = servo_mid + delta;
 	}
