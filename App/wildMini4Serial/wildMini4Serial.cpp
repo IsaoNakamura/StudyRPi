@@ -61,18 +61,33 @@ bool convertAxisToServoDeg(	int&		dst_servo,
 							const int&	axis_max,
 							const int&	servo_min,
 							const int&	servo_mid,
-							const int&	servo_max	)
+							const int&	servo_max,
+							const bool&	isReverse=false	)
 {
 	if(src_axis==axis_mid){ // 中間値
 		dst_servo = servo_mid;
 	}else if(src_axis > axis_mid){ // 右
 		double ratio = fabs( (double)src_axis / (double)(axis_max) );
-		int delta = (int)( (double)( servo_mid - servo_min) * ratio );
-		dst_servo = servo_mid - delta;
+		
+		if(isReverse){
+			int delta = (int)( (double)( servo_mid - servo_min) * ratio );
+			dst_servo = servo_mid - delta;
+		}else{
+			int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
+			dst_servo = servo_mid + delta;
+		}
+		
 	}else if(src_axis < axis_mid){ // 左
 		double ratio = fabs( (double)src_axis / (double)(axis_min) );
-		int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
-		dst_servo = servo_mid + delta;
+		
+		if(isReverse){
+			int delta = (int)( (double)( servo_max - servo_mid ) * ratio );
+			dst_servo = servo_mid + delta;
+		}else{
+			int delta = (int)( (double)( servo_mid - servo_min) * ratio );
+			dst_servo = servo_mid - delta;
+		}
+		
 	}
 	return true;
 }
@@ -144,7 +159,8 @@ int main(int argc, char* argv[])
 											axis_max,
 											servo_min,
 											servo_mid,
-											servo_max ) ){
+											servo_max,
+											true		) ){
 					throw 0;					
 				}
 				if((servo_mid-SERVO_DEG_CLEARANCE)>val_yaw){
@@ -168,7 +184,8 @@ int main(int argc, char* argv[])
 											axis_max,
 											servo_min,
 											servo_mid,
-											servo_max ) ){
+											servo_max,
+											true		 ) ){
 					throw 0;					
 				}
 				if(val_accel_pre != val_accel){
