@@ -16,7 +16,7 @@
 #define SRC_MID	(     0)
 #define SRC_MAX	( 32767)
 
-#define LOOP_STRIDE (1)
+#define LOOP_STRIDE (363)
 
 int main(int argc, char* argv[])
 {
