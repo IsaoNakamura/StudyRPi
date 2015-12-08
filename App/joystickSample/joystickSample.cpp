@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
 		int i=0;
 		while(1){
-			bool isFistClear = true;
+			bool isFirstClear = true;
 			
 			// Joystickの状態を更新
 			if( pJoystick->readJoystick()!=0 ){
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 			bool isFirstAxis = true;
 			for(axis_idx=0; axis_idx<pJoystick->getNumAxis(); axis_idx++){
 				if( pJoystick->isChangedAxis(axis_idx)==1 ){
-					if(isFistClear){
+					if(isFirstClear){
 						isFirstClear = false;
 						// clear console.
 						system("clear");
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 			bool isFirstBtn = true;
 			for(btn_idx=0; btn_idx<pJoystick->getNumButton(); btn_idx++){
 				if( pJoystick->isChangedButton(btn_idx)==1 ){
-					if(isFistClear){
+					if(isFirstClear){
 						isFirstClear = false;
 						// clear console.
 						system("clear");
