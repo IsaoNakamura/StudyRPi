@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
 											servo_min,
 											servo_mid,
 											servo_max,
-											true		) ){
+											false		) ){
 					throw 0;					
 				}
 				if((servo_mid-SERVO_DEG_CLEARANCE)>val_yaw){
