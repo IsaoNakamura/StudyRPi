@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 					throw 0;					
 				}
 				printf("src_val=%d, dst_val=%d, dst_val_rvs=%d\n", SRC_MAX, dst_val, dst_val_rvs);
-				isOutMid = true;
+				isOutMax = true;
 			}
 		}
 	}
