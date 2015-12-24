@@ -26,7 +26,7 @@ CI2cOledDrv::~CI2cOledDrv() {
 	this->destroyInstance();
 }
 
-CI2cOledDrv* CI2cOledDrv::createInstance(int fd, int address)
+CI2cOledDrv* CI2cOledDrv::createInstance(int fd, int address/*=OLDE_ADDRESS*/)
 {
 	CI2cOledDrv* pObj = NULL;
 

@@ -59,7 +59,7 @@ private:
 	int m_address;
 
 public:
-	static CI2cOledDrv* createInstance(int fd, int address);
+	static CI2cOledDrv* createInstance(int fd, int address=OLDE_ADDRESS);
 
 private:
 	void initInstance();
