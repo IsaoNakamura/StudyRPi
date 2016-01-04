@@ -23,8 +23,6 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		
-		
 		// I2CポートをRead/Write属性でオープン。
 		int fd = open(I2C_PORT, O_RDWR);
 		if ( fd < 0 ){
@@ -45,6 +43,8 @@ int main(int argc, char* argv[])
 		
 		pOled->writeString("TEST");
 		
+		sleep(3);
+		
 		if(pOled){
 			delete pOled;
 			pOled = NULL;
@@ -53,13 +53,20 @@ int main(int argc, char* argv[])
 		if(fd >= 0){
 			close(fd);
 		}
-		
-		
 	}
 	catch(...)
 	{
 		printf("catch!! \n");
 		iRet = -1;
+		
+		if(pOled){
+			delete pOled;
+			pOled = NULL;
+		}
+		
+		if(fd >= 0){
+			close(fd);
+		}
 	}
 
 	return iRet;
