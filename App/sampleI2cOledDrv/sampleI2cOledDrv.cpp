@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include <iostream>
 
 // for I2C
 #include <linux/i2c-dev.h>
@@ -40,10 +41,33 @@ int main(int argc, char* argv[])
 		if( pOled->useDevice() != 0 ){
 			throw 0;
 		}
+		pOled->writeString("Stanby OK!!");
+		sleep(1);
+
+		pOled->clearDisplay();
+		pOled->writeString("Input '#' to Exist.");
+		printf("Input '#' to Exist.\n");
 		
-		pOled->writeString("TEST");
+		bool isFirst = true;
+		while(1){
+			unsigned char sendBuf = 0;
+			std::cin >> sendBuf;
+			std::cout << sendBuf << std::endl;
+			if(isFirst){
+				isFirst = false;
+				pOled->clearDisplay();
+			}
+			if(sendBuf == '#'){
+				pOled->clearDisplay();
+				break;
+			}
+			pOled->writeChar(sendBuf);
+			sleep(0);
+		}
 		
-		sleep(3);
+		pOled->writeString("Bye-bye!!");
+		sleep(1);
+		pOled->displayOFF();
 		
 		if(pOled){
 			delete pOled;
