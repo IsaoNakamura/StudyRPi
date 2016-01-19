@@ -59,7 +59,7 @@ private:
 	int m_address;
 
 public:
-	static CI2cOledDrv* createInstance(int fd, int address=OLDE_ADDRESS);
+	static CI2cOledDrv* createInstance(const int& fd,const int& address=OLDE_ADDRESS);
 
 private:
 	void initInstance();
@@ -71,15 +71,15 @@ public:
 	void initDisplay();
 	void startDisplay();
 	void clearDisplay();
-	void writeData(unsigned char rs, unsigned char data);
-	void setCursor(unsigned char col, unsigned char row);
-	void setPageAddress(unsigned char startPage, unsigned char endPage);
-	void setColumnAddress(unsigned char startCol, unsigned char endCol);
-	void setMemoryAdressingMode(unsigned char mode);
-	void setCOMPinsHardConfig( unsigned char mode);
-	void writeDataArg2(unsigned char rs, unsigned char cmd, unsigned char arg);
-	void writeChar(unsigned char chr);
-	void writeString(unsigned char* str);
+	void writeData(const char& rs, const char& data);
+	void setCursor(const char& col, const char& row);
+	void setPageAddress(const char& startPage, const char& endPage);
+	void setColumnAddress(const char& startCol, const char& endCol);
+	void setMemoryAdressingMode(const char& mode);
+	void setCOMPinsHardConfig(const char& mode);
+	void writeDataArg2(const char& rs, const char& cmd, const char& arg);
+	void writeChar(const char& chr);
+	void writeString(const char* str);
 	void displayON();
 	void displayOFF();
 	void writeTetrisBlock();

@@ -26,7 +26,7 @@ CI2cOledDrv::~CI2cOledDrv() {
 	this->destroyInstance();
 }
 
-CI2cOledDrv* CI2cOledDrv::createInstance(int fd, int address/*=OLDE_ADDRESS*/)
+CI2cOledDrv* CI2cOledDrv::createInstance(const int& fd, const int& address/*=OLDE_ADDRESS*/)
 {
 	CI2cOledDrv* pObj = NULL;
 
@@ -159,7 +159,7 @@ void CI2cOledDrv::clearDisplay()
 	//{
 	//	writeDataChar(' ',m_fd);
 	//}
-	unsigned char buf[OLDE_COLS*8*OLDE_PAGES+1];
+	char buf[OLDE_COLS*8*OLDE_PAGES+1];
 	buf[0]=OLED_RS_DATA;
 	for(i=1;i<OLDE_COLS*8*OLDE_PAGES+1;i++)
 	{
@@ -171,11 +171,11 @@ void CI2cOledDrv::clearDisplay()
 	}
 }
 
-void CI2cOledDrv::writeChar(unsigned char chr)
+void CI2cOledDrv::writeChar(const char& chr)
 {
 	int i=0;
-	unsigned char buf[9];
-	const unsigned char char_index = chr - 0x20;
+	char buf[9];
+	const char char_index = chr - 0x20;
 
 	buf[0]=OLED_RS_DATA;
 
@@ -191,7 +191,7 @@ void CI2cOledDrv::writeChar(unsigned char chr)
 	return;
 }
 
-void CI2cOledDrv::writeString(unsigned char* str)
+void CI2cOledDrv::writeString(const char* str)
 {
 	int i;
     for(i = 0; i < OLDE_COLS*OLDE_PAGES; i++)
@@ -211,9 +211,9 @@ void CI2cOledDrv::writeString(unsigned char* str)
 	}
 }
 
-void CI2cOledDrv::writeDataArg2(unsigned char rs, unsigned char cmd, unsigned char arg)
+void CI2cOledDrv::writeDataArg2(const char& rs, const char& cmd, const char& arg)
 {
-	unsigned char buf[3];
+	char buf[3];
 	//this->ctlIO();
 	buf[0]=OLED_RS_CMD;
 	buf[1]=cmd;
@@ -225,9 +225,9 @@ void CI2cOledDrv::writeDataArg2(unsigned char rs, unsigned char cmd, unsigned ch
 	return;
 }
 
-void CI2cOledDrv::setCOMPinsHardConfig( unsigned char mode)
+void CI2cOledDrv::setCOMPinsHardConfig( const char& mode)
 {
-	unsigned char buf[3];
+	char buf[3];
 	//this->ctlIO();
 	buf[0]=OLED_RS_CMD;
 	buf[1]=0xda;
@@ -239,9 +239,9 @@ void CI2cOledDrv::setCOMPinsHardConfig( unsigned char mode)
 	return;
 }
 
-void CI2cOledDrv::setPageAddress(unsigned char startPage, unsigned char endPage)
+void CI2cOledDrv::setPageAddress(const char& startPage, const char& endPage)
 {
-	unsigned char buf[4];
+	char buf[4];
 	//this->ctlIO();
 	buf[0]=OLED_RS_CMD;
 	buf[1]=CMD_SET_PAGE_ADDRESS;
@@ -254,9 +254,9 @@ void CI2cOledDrv::setPageAddress(unsigned char startPage, unsigned char endPage)
 	return;
 }
 
-void CI2cOledDrv::setColumnAddress(unsigned char startCol, unsigned char endCol)
+void CI2cOledDrv::setColumnAddress(const char& startCol, const char& endCol)
 {
-	unsigned char buf[4];
+	char buf[4];
 
 	//this->ctlIO();
 
@@ -271,9 +271,9 @@ void CI2cOledDrv::setColumnAddress(unsigned char startCol, unsigned char endCol)
 	return;
 }
 
-void CI2cOledDrv::setMemoryAdressingMode(unsigned char mode)
+void CI2cOledDrv::setMemoryAdressingMode(const char& mode)
 {
-	unsigned char buf[3];
+	char buf[3];
 
 	//this->ctlIO();
 
@@ -287,9 +287,9 @@ void CI2cOledDrv::setMemoryAdressingMode(unsigned char mode)
 	return;
 }
 
-void CI2cOledDrv::writeData(unsigned char rs, unsigned char data)
+void CI2cOledDrv::writeData(const char& rs, const char& data)
 {
-    unsigned char buf[2];
+    char buf[2];
 
     //this->ctlIO();
 
@@ -308,7 +308,7 @@ void CI2cOledDrv::writeData(unsigned char rs, unsigned char data)
     }
 }
 
-void CI2cOledDrv::setCursor(unsigned char col, unsigned char row)
+void CI2cOledDrv::setCursor(const char& col, const char& row)
 {
 	writeData(OLED_RS_CMD, 0xB0 + row);
 	writeData(OLED_RS_CMD, 0x00 + (8*col & 0x0F));
@@ -348,7 +348,7 @@ int CI2cOledDrv::useDevice()
 }
 void CI2cOledDrv::writeTetrisBlock()
 {
-	unsigned char buf[9];
+	char buf[9];
 
 	//1block
 	buf[0]=OLED_RS_DATA;
@@ -370,7 +370,7 @@ void CI2cOledDrv::writeTetrisBlock()
 
 void CI2cOledDrv::writeTetrisWall()
 {
-	unsigned char buf[9];
+	char buf[9];
 
 	//1block
 	buf[0]=OLED_RS_DATA;
