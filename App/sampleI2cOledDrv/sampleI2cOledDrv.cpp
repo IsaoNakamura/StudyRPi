@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 		// ready Oled
 		pOled = CI2cOledDrv::createInstance(fd);
 		if(!pOled){
-			printf("failed to CI2cOledDrv::createInstance(fd=%d,address=%d)¥n");
+			printf("failed to CI2cOledDrv::createInstance(fd=%d)¥n",fd);
 			throw 0;
 		}
 		
