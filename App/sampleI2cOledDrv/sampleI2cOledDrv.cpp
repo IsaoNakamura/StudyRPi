@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 		
 		bool isFirst = true;
 		while(1){
-			unsigned char sendBuf = 0;
+			char sendBuf = 0;
 			std::cin >> sendBuf;
 			std::cout << sendBuf << std::endl;
 			if(isFirst){
