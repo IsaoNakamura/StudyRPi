@@ -175,7 +175,7 @@ void CI2cOledDrv::writeChar(const char& chr)
 {
 	int i=0;
 	char buf[9];
-	const char char_index = chr - 0x20;
+	const int char_index = static_cast<int>(chr - 0x20);
 
 	buf[0]=OLED_RS_DATA;
 
