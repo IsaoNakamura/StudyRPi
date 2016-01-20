@@ -19,13 +19,14 @@
 int main(int argc, char* argv[])
 {
 	int iRet = 0;
-	
+
+	int fd = -1;
 	CI2cOledDrv* pOled = NULL;
 
 	try
 	{
 		// I2CポートをRead/Write属性でオープン。
-		int fd = open(I2C_PORT, O_RDWR);
+		fd = open(I2C_PORT, O_RDWR);
 		if ( fd < 0 ){
 			printf("failed to open i2c port\n");
 			throw 0;
