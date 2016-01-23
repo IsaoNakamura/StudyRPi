@@ -50,7 +50,6 @@ int main(int argc, char* argv[])
 		printf("Input '#' to Exit.\n");
 		
 		while(1){
-			printf("loop_cnt=%d\n",loop_cnt);
 			std::string sendBuf = "";
 			std::cin >> sendBuf;
 			
