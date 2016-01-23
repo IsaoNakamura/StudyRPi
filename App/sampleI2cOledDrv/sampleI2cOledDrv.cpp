@@ -62,7 +62,6 @@ int main(int argc, char* argv[])
 				pOled->clearDisplay();
 				break;
 			}
-			printf("%s\n",sendBuf);
 			pOled->writeChar(sendBuf);
 			sleep(0);
 		}
