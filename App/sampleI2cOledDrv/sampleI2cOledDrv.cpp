@@ -50,7 +50,9 @@ int main(int argc, char* argv[])
 		printf("Input '#' to Exit.\n");
 		
 		bool isFirst = true;
+		unsigned int loop_cnt = 0;
 		while(1){
+			printf("loop_cnt=%d\n",loop_cnt);
 			char sendBuf = 0;
 			std::cin >> sendBuf;
 			// std::cout << sendBuf << std::endl;
@@ -63,6 +65,7 @@ int main(int argc, char* argv[])
 				break;
 			}
 			pOled->writeChar(sendBuf);
+			loop_cnt++;
 			sleep(0);
 		}
 		
