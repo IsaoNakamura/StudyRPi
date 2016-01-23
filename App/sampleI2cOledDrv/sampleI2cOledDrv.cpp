@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
 		sleep(1);
 
 		pOled->clearDisplay();
-		pOled->writeString("Input '#' to Exist.");
-		printf("Input '#' to Exist.\n");
+		pOled->writeString("Input '#' to Exit.");
+		printf("Input '#' to Exit.\n");
 		
 		bool isFirst = true;
 		while(1){
