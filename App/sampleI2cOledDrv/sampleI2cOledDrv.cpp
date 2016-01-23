@@ -53,18 +53,18 @@ int main(int argc, char* argv[])
 		unsigned int loop_cnt = 0;
 		while(1){
 			printf("loop_cnt=%d\n",loop_cnt);
-			char sendBuf = 0;
+			std::string sendBuf = "";
 			std::cin >> sendBuf;
 			// std::cout << sendBuf << std::endl;
 			if(isFirst){
 				isFirst = false;
 				pOled->clearDisplay();
 			}
-			if(sendBuf == '#'){
+			if(sendBuf.c_str() == '#'){
 				pOled->clearDisplay();
 				break;
 			}
-			pOled->writeChar(sendBuf);
+			pOled->writeString(sendBuf.c_str());
 			loop_cnt++;
 			sleep(0);
 		}
