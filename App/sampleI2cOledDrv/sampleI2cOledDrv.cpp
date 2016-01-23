@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 				isFirst = false;
 				pOled->clearDisplay();
 			}
-			if(sendBuf.c_str() == '#'){
+			if(sendBuf == "#"){
 				pOled->clearDisplay();
 				break;
 			}
