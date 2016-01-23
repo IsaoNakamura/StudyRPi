@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 		while(1){
 			char sendBuf = 0;
 			std::cin >> sendBuf;
-			std::cout << sendBuf << std::endl;
+			// std::cout << sendBuf << std::endl;
 			if(isFirst){
 				isFirst = false;
 				pOled->clearDisplay();
@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
 				pOled->clearDisplay();
 				break;
 			}
+			printf("%s\n",sendBuf);
 			pOled->writeChar(sendBuf);
 			sleep(0);
 		}
