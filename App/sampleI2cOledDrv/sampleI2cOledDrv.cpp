@@ -49,23 +49,17 @@ int main(int argc, char* argv[])
 		pOled->writeString("Input '#' to Exit.");
 		printf("Input '#' to Exit.\n");
 		
-		bool isFirst = true;
-		unsigned int loop_cnt = 0;
 		while(1){
 			printf("loop_cnt=%d\n",loop_cnt);
 			std::string sendBuf = "";
 			std::cin >> sendBuf;
-			// std::cout << sendBuf << std::endl;
-			if(isFirst){
-				isFirst = false;
-				pOled->clearDisplay();
-			}
+			
+			pOled->clearDisplay();
 			if(sendBuf == "#"){
 				pOled->clearDisplay();
 				break;
 			}
 			pOled->writeString(sendBuf.c_str());
-			loop_cnt++;
 			sleep(0);
 		}
 		
