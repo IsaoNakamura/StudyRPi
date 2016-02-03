@@ -13,6 +13,8 @@
 #define GPIO_PREV	(22)
 #define GPIO_STOP	(23)
 #define GPIO_PLAY	(24)
+#define GPIO_VUP	(25)
+#define GPIO_VDWN	(18)
 
 int main(int argc, char* argv[])
 {
@@ -27,33 +29,46 @@ int main(int argc, char* argv[])
 	pinMode(GPIO_PREV, INPUT);
 	pinMode(GPIO_STOP, INPUT);
 	pinMode(GPIO_PLAY, INPUT);
+	pinMode(GPIO_VUP, INPUT);
+	pinMode(GPIO_VDWN, INPUT);
 
 	while(1){
+		//  default status is HIGH.
 		int valExit = digitalRead(GPIO_EXIT);
 		int valNext = digitalRead(GPIO_NEXT);
 		int valPrev = digitalRead(GPIO_PREV);
 		int valStop = digitalRead(GPIO_STOP);
 		int valPlay = digitalRead(GPIO_PLAY);
+		int valVolUp = digitalRead(GPIO_VUP);
+		int valVolDwn = digitalRead(GPIO_VDWN);
 				
-		if(valExit<0){
+		if(valExit == LOW){
 			printf("shutdown system.\n");
 			system("sudo halt");
 		}
-		if(valNext<0){
+		if(valNext == LOW)){
 			printf("next.\n");
 			system("mpc next");
 		}
-		if(valPrev<0){
+		if(valPrev == LOW)){
 			printf("prev\n");
 			system("mpc prev");
 		}
-		if(valStop<0){
+		if(valStop == LOW)){
 			printf("stop.\n");
 			system("mpc stop");
 		}
-		if(valPlay<0){
+		if(valPlay == LOW)){
 			printf("play.\n");
 			system("mpc play");
+		}
+		if(valVolUp == LOW)){
+			printf("volume up.\n");
+			system("mpc volume +2");
+		}
+		if(valVolDwn == LOW)){
+			printf("volume up.\n");
+			system("mpc volume -2");
 		}
 		sleep(0);
 	}
