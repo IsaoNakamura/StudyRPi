@@ -14,8 +14,11 @@
 #define SERIAL_IDX_ACCEL         2
 
 Servo myservo;
-int defServoYaw = 90;
+int defServoYaw = 81;
 int defMotorAccel = 0;
+
+#define DEMO_WAIT_TIME  5000
+unsigned long recieveTime = 0;
 
 void setup() {
   Serial.begin(SERIAL_BAUDRATE);
@@ -33,10 +36,14 @@ void setup() {
   digitalWrite(PIN_BACK, LOW);
   analogWrite(PIN_ACCEL, defMotorAccel);
 
+  recieveTime = millis();
 }
 
 void loop() {
   if (Serial.available() > SERIAL_NUM) {
+    // get current time.
+    recieveTime = millis();
+    
     // get incoming byte:
     int inByte = Serial.read();
 
@@ -76,5 +83,39 @@ void loop() {
       }
     }
     // delay(10);
+  }else{
+    unsigned long nonRecieveTime = millis();
+    if( nonRecieveTime > recieveTime ){
+      unsigned long timeInterval = nonRecieveTime - recieveTime;
+      if(timeInterval > DEMO_WAIT_TIME){
+        // TURN-RIGHT
+        myservo.write(defServoYaw+15);
+        // ACCEL-FORWARD
+        digitalWrite(PIN_FORWARD, HIGH);
+        digitalWrite(PIN_BACK, LOW);
+        analogWrite(PIN_ACCEL, 150);
+        delay(1000);
+
+        // TURN-LEFT
+        myservo.write(defServoYaw-15);
+        // ACCEL-BACK
+        digitalWrite(PIN_FORWARD, LOW);
+        digitalWrite(PIN_BACK, HIGH);
+        analogWrite(PIN_ACCEL, 150);
+        delay(1000);
+
+        // TURN-RIGHT
+        myservo.write(defServoYaw+15);
+        // STOP
+        digitalWrite(PIN_FORWARD, LOW);
+        digitalWrite(PIN_BACK, LOW);
+        analogWrite(PIN_ACCEL, 0);
+        delay(1000);
+
+        // TURN-STRIGHT
+        myservo.write(defServoYaw);
+        delay(1000);
+      }
+    }
   }
 }
