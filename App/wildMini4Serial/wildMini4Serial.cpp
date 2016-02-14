@@ -11,9 +11,9 @@
 #include "../../Lib/utilities/LinearTransformation/LinearTransformation.h"
 
 #define SERVO_DEG_MIN	(0)
-#define SERVO_DEG_MID	(90)
+#define SERVO_DEG_MID	(81)
 #define SERVO_DEG_MAX	(180)
-#define SERVO_DEG_CLEARANCE (25)
+#define SERVO_DEG_CLEARANCE (20)
 
 #define DUALSHOCK_ANALOG_VAL_MAX	( 32767)
 #define DUALSHOCK_ANALOG_VAL_MID	(     0)
