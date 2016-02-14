@@ -43,3 +43,42 @@ bool CGpioFunc::create()
 	return;
 }
 
+int CGpioFunc::wiringPiSetupGpio()
+{
+    return wiringPiSetupGpio();
+}
+
+int CGpioFunc::pinMode(int pin, int mode)
+{
+    return pinMode(pin, mode);
+}
+
+int CGpioFunc::digitalRead(int pin)
+{
+    return digitalRead(pin);
+}
+
+int CGpioFunc::digitalWrite(int pin, int level)
+{
+    return digitalWrite(pin, level);
+}
+
+int CGpioFunc::pwmSetMode(int mode)
+{
+    return pwmSetMode(mode);
+}
+
+int CGpioFunc::pwmSetClock(int clock)
+{
+    return pwmSetClock(clock);
+}
+
+int CGpioFunc::pwmSetRange(int range)
+{
+    return pwmSetRange(range);
+}
+
+int CGpioFunc::pwmWrite(int pin, int num)
+{
+    return pwmWrite(pin, num);
+}
