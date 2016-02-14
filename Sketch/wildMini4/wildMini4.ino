@@ -14,8 +14,8 @@
 #define SERIAL_IDX_ACCEL         2
 
 Servo myservo;
-int preServoYaw = 90;
-int preMotorAccel = 0;
+int defServoYaw = 90;
+int defMotorAccel = 0;
 
 void setup() {
   Serial.begin(SERIAL_BAUDRATE);
@@ -24,10 +24,14 @@ void setup() {
   }
 
   myservo.attach( PIN_SERVO );
-  myservo.write(preServoYaw);
+  myservo.write(defServoYaw);
 
   pinMode(PIN_FORWARD, OUTPUT);
   pinMode(PIN_BACK, OUTPUT);
+  // STOP
+  digitalWrite(PIN_FORWARD, LOW);
+  digitalWrite(PIN_BACK, LOW);
+  analogWrite(PIN_ACCEL, defMotorAccel);
 
 }
 
@@ -46,35 +50,28 @@ void loop() {
         // FrameType is Motor-Parameter
 
         // Ctrl Servo-Motor
-        if( preServoYaw != readBuf[SERIAL_IDX_YAW] ){
-          myservo.write(readBuf[SERIAL_IDX_YAW]);
-          preServoYaw = readBuf[SERIAL_IDX_YAW];
-        }
+        myservo.write(readBuf[SERIAL_IDX_YAW]);
   
         // Ctrl DC-Motor
-        if( preMotorAccel != readBuf[SERIAL_IDX_ACCEL] ){
-          if(readBuf[SERIAL_IDX_ACCEL] == 90 ){
-            // STOP
-            digitalWrite(PIN_FORWARD, LOW);
-            digitalWrite(PIN_BACK, LOW);
-            analogWrite(PIN_ACCEL, 0);
-  
-          }else if( (readBuf[SERIAL_IDX_ACCEL] > 90) && (readBuf[SERIAL_IDX_ACCEL] <= 180) ){
-            // FORWARD
-            digitalWrite(PIN_FORWARD, HIGH);
-            digitalWrite(PIN_BACK, LOW);
-            int writeValue = 255 * (readBuf[SERIAL_IDX_ACCEL] - 90) / 90;
-            analogWrite(PIN_ACCEL, writeValue);
-  
-          }else if( (readBuf[SERIAL_IDX_ACCEL] < 90) && (readBuf[SERIAL_IDX_ACCEL] >= 0 ) ){
-            // BACK
-            digitalWrite(PIN_FORWARD, LOW);
-            digitalWrite(PIN_BACK, HIGH);
-            int writeValue = 255 * (90 - readBuf[SERIAL_IDX_ACCEL]) / 90;
-            analogWrite(PIN_ACCEL, writeValue);
-  
-          }
-          preMotorAccel = readBuf[SERIAL_IDX_ACCEL];
+        if(readBuf[SERIAL_IDX_ACCEL] == 90 ){
+          // STOP
+          digitalWrite(PIN_FORWARD, LOW);
+          digitalWrite(PIN_BACK, LOW);
+          analogWrite(PIN_ACCEL, 0);
+
+        }else if( (readBuf[SERIAL_IDX_ACCEL] > 90) && (readBuf[SERIAL_IDX_ACCEL] <= 180) ){
+          // FORWARD
+          digitalWrite(PIN_FORWARD, HIGH);
+          digitalWrite(PIN_BACK, LOW);
+          int writeValue = 255 * (readBuf[SERIAL_IDX_ACCEL] - 90) / 90;
+          analogWrite(PIN_ACCEL, writeValue);
+
+        }else if( (readBuf[SERIAL_IDX_ACCEL] < 90) && (readBuf[SERIAL_IDX_ACCEL] >= 0 ) ){
+          // BACK
+          digitalWrite(PIN_FORWARD, LOW);
+          digitalWrite(PIN_BACK, HIGH);
+          int writeValue = 255 * (90 - readBuf[SERIAL_IDX_ACCEL]) / 90;
+          analogWrite(PIN_ACCEL, writeValue);
         }
       }
     }
