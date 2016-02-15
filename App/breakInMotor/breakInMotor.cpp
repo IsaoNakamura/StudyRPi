@@ -75,22 +75,22 @@ int main(int argc, char* argv[])
             switch(drive_state)
             {
             case DRIVE_FORWARD:
-                printf("change to backward(time=%d[s]) state(loop=%d).\n",DEF_BACKWARD_SEC, loop_cnt);
+                printf("backward(time=%d[s]) state(loop=%d).\n",DEF_BACKWARD_SEC, loop_cnt);
                 drive_state = DRIVE_BACKWARD;
                 stLen.tv_sec = DEF_BACKWARD_SEC;
                 // BACKWARD
                 digitalWrite(GPIO_A, LOW);
                 digitalWrite(GPIO_B, HIGH);
-                loop_cnt++;
                 break;
                 
             case DRIVE_BACKWARD:
-                printf("change to forward(time=%d[s]) state(loop=%d).\n",DEF_FORWARD_SEC, loop_cnt);
+                printf("forward(time=%d[s]) state(loop=%d).\n",DEF_FORWARD_SEC, loop_cnt);
                 drive_state = DRIVE_FORWARD;
                 stLen.tv_sec = DEF_FORWARD_SEC;    
                 // FORWARD
                 digitalWrite(GPIO_A, HIGH);
                 digitalWrite(GPIO_B, LOW);
+                loop_cnt++;
                 break;
                 
             default:
