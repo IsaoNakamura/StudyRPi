@@ -96,12 +96,11 @@ int main(int argc, char* argv[])
             default:
                 break;
             }
-            timeradd(&stNow, &stLen, &stEnd);   
-        }
-        
-        if(loop_cnt>=DEF_LOOP_NUM){
-            printf("exit loop.\n");
-            break;
+            timeradd(&stNow, &stLen, &stEnd);
+            if(loop_cnt>=DEF_LOOP_NUM){
+                printf("exit loop.\n");
+                break;
+            }
         }
 	}
     
