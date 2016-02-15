@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
         gettimeofday(&stNow, NULL);
         if( timercmp(&stNow, &stEnd, >) ){
             // 任意時間経過
-            if(loop_cnt>DEF_LOOP_NUM){
+            if(loop_cnt>=DEF_LOOP_NUM){
                 printf("exit loop.\n");
                 break;
             }
