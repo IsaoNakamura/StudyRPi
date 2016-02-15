@@ -19,8 +19,8 @@
 
 enum DriveStatus
 {
-    DRIVE_FORWARD = 0;
-    DRIVE_BACKWARD,
+    DRIVE_FORWARD = 0,
+    DRIVE_BACKWARD
 };
 
 int main(int argc, char* argv[])
