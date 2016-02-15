@@ -43,8 +43,10 @@ int main(int argc, char* argv[])
     timerclear(&stNow);
     timerclear(&stLen);
     timerclear(&stEnd);
-
-    printf("forward state.\n");
+    
+    int drive_state = DRIVE_FORWARD;
+    int loop_cnt = 0;
+    printf("forward(time=%d[s]) state(loop=%d).\n",DEF_FORWARD_SEC,loop_cnt);
     gettimeofday(&stNow, NULL);
     stLen.tv_sec = DEF_FORWARD_SEC;
     stLen.tv_usec = 0;
@@ -53,8 +55,7 @@ int main(int argc, char* argv[])
     digitalWrite(GPIO_A, HIGH);
     digitalWrite(GPIO_B, LOW);
     
-    int drive_state = 0;
-    int loop_cnt = 0;
+
 
 	while(1){ 
         // 現在時刻を取得
@@ -64,7 +65,7 @@ int main(int argc, char* argv[])
             
             // 任意時間インターバル
             // STOP
-            printf("interval state.\n");
+            printf("interval(time=%d[s]) state(loop=%d).\n",DEF_INTERVAL_SEC, loop_cnt);
             digitalWrite(GPIO_A, LOW);
             digitalWrite(GPIO_B, LOW);
             sleep(DEF_INTERVAL_SEC);
@@ -74,22 +75,22 @@ int main(int argc, char* argv[])
             switch(drive_state)
             {
             case DRIVE_FORWARD:
-                printf("change to backward state.\n");
+                printf("change to backward(time=%d[s]) state(loop=%d).\n",DEF_BACKWARD_SEC, loop_cnt);
                 drive_state = DRIVE_BACKWARD;
                 stLen.tv_sec = DEF_BACKWARD_SEC;
                 // BACKWARD
                 digitalWrite(GPIO_A, LOW);
                 digitalWrite(GPIO_B, HIGH);
+                loop_cnt++;
                 break;
                 
             case DRIVE_BACKWARD:
-                printf("change to forward state.\n");
+                printf("change to forward(time=%d[s]) state(loop=%d).\n",DEF_FORWARD_SEC, loop_cnt);
                 drive_state = DRIVE_FORWARD;
                 stLen.tv_sec = DEF_FORWARD_SEC;    
                 // FORWARD
                 digitalWrite(GPIO_A, HIGH);
                 digitalWrite(GPIO_B, LOW);
-                loop_cnt++;
                 break;
                 
             default:
