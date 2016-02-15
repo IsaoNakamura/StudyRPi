@@ -104,6 +104,9 @@ int main(int argc, char* argv[])
             break;
         }
 	}
+    
+    digitalWrite(GPIO_A, LOW);
+    digitalWrite(GPIO_B, LOW);
 
     printf("end process.\n");
 	return 0;
