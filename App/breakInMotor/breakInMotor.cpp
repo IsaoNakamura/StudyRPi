@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
             timeradd(&stNow, &stLen, &stEnd);   
         }
         
-        if(loop_cnt>DEF_LOOP_NUM){
+        if(loop_cnt>=DEF_LOOP_NUM){
             printf("exit loop.\n");
             break;
         }
