@@ -12,9 +12,9 @@
 #define GPIO_A		(17)
 #define GPIO_B		(18)
 
-#define DEF_FORWARD_SEC   (10)  //30sec
-#define DEF_BACKWARD_SEC  (10)  //30sec
-#define DEF_INTERVAL_SEC   (5)  //180sec=3min
+#define DEF_FORWARD_SEC   (3)  //30sec
+#define DEF_BACKWARD_SEC  (3)  //30sec
+#define DEF_INTERVAL_SEC   (1)  //180sec=3min
 #define DEF_LOOP_NUM       (5)
 
 enum DriveStatus
@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
                 // BACKWARD
                 digitalWrite(GPIO_A, LOW);
                 digitalWrite(GPIO_B, HIGH);
+                loop_cnt++;
                 break;
                 
             case DRIVE_BACKWARD:
@@ -90,7 +91,6 @@ int main(int argc, char* argv[])
                 // FORWARD
                 digitalWrite(GPIO_A, HIGH);
                 digitalWrite(GPIO_B, LOW);
-                loop_cnt++;
                 break;
                 
             default:
