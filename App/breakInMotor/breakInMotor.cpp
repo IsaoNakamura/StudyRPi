@@ -58,10 +58,10 @@ int main(int argc, char* argv[])
     std::cout << "input loop num(DEF:" << loop_num << "):";
     std::cin >> loop_num;
     
-    std::cout << "forward:" << forward_sec << "[sec]" << endl;
-    std::cout << "backward:" << backward_sec << "[sec]" << endl;
-    std::cout << "interval:" << interval_sec << "[sec]" << endl;
-    std::cout << "loop:" << loop_num << "[times]" << endl;
+    std::cout << "forward:" << forward_sec << "[sec]" << std::endl;
+    std::cout << "backward:" << backward_sec << "[sec]" << std::endl;
+    std::cout << "interval:" << interval_sec << "[sec]" << std::endl;
+    std::cout << "loop:" << loop_num << "[times]" << std::endl;
     
     int drive_state = DRIVE_FORWARD;
     int loop_cnt = 0;
