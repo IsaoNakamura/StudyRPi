@@ -88,32 +88,74 @@ void loop() {
     if( nonRecieveTime > recieveTime ){
       unsigned long timeInterval = nonRecieveTime - recieveTime;
       if(timeInterval > DEMO_WAIT_TIME){
-        // TURN-RIGHT
+        // QUICK-STEER
         myservo.write(defServoYaw+15);
+        delay(200);
+        myservo.write(defServoYaw-15);
+        delay(200);
+         myservo.write(defServoYaw+15);
+        delay(200);
+        myservo.write(defServoYaw-15);
+        delay(200);
+        myservo.write(defServoYaw);
+        delay(200);
+        
         // ACCEL-FORWARD
+        myservo.write(defServoYaw);
         digitalWrite(PIN_FORWARD, HIGH);
         digitalWrite(PIN_BACK, LOW);
         analogWrite(PIN_ACCEL, 150);
         delay(1000);
+        
+        // TURN-RIGHT
+        myservo.write(defServoYaw+15);
+        delay(500);
 
         // TURN-LEFT
         myservo.write(defServoYaw-15);
+        delay(500);
+        
+        // TURN-RIGHT
+        myservo.write(defServoYaw+15);
+        delay(500);
+
+        // TURN-LEFT
+        myservo.write(defServoYaw-15);
+        delay(500);
+        
         // ACCEL-BACK
+        myservo.write(defServoYaw);
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACK, HIGH);
         analogWrite(PIN_ACCEL, 150);
-        delay(1000);
+        delay(500);
 
-        // TURN-RIGHT
-        myservo.write(defServoYaw+15);
+        // ACCEL-FORWARD
+        myservo.write(defServoYaw);
+        digitalWrite(PIN_FORWARD, HIGH);
+        digitalWrite(PIN_BACK, LOW);
+        analogWrite(PIN_ACCEL, 150);
+        delay(200);
+        
+        // ACCEL-BACK
+        myservo.write(defServoYaw);
+        digitalWrite(PIN_FORWARD, LOW);
+        digitalWrite(PIN_BACK, HIGH);
+        analogWrite(PIN_ACCEL, 150);
+        delay(200);
+
+        // ACCEL-FORWARD
+        myservo.write(defServoYaw);
+        digitalWrite(PIN_FORWARD, HIGH);
+        digitalWrite(PIN_BACK, LOW);
+        analogWrite(PIN_ACCEL, 150);
+        delay(500);
+
         // STOP
+        myservo.write(defServoYaw);
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACK, LOW);
         analogWrite(PIN_ACCEL, 0);
-        delay(1000);
-
-        // TURN-STRIGHT
-        myservo.write(defServoYaw);
         delay(1000);
       }
     }
