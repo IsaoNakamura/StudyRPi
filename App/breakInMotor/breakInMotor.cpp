@@ -7,6 +7,8 @@
 
 #include <sys/time.h>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include <wiringPi.h>
 
@@ -50,13 +52,44 @@ int main(int argc, char* argv[])
     int interval_sec    = DEF_INTERVAL_SEC;
     int loop_num        = DEF_LOOP_NUM;
     std::cout << "input forward sec(DEF:" << forward_sec << "):";
-    std::cin >> forward_sec;
+    {
+        std::string input;
+        std::getline( std::cin, input);
+        if( !input.empty() ){
+            std::istringstream stream(input);
+            stream >> forward_sec;
+        }
+    }
+
     std::cout << "input backward sec(DEF:" << backward_sec << "):";
-    std::cin >> backward_sec;
+    {
+        std::string input;
+        std::getline( std::cin, input);
+        if( !input.empty() ){
+            std::istringstream stream(input);
+            stream >> backward_sec;
+        }
+    }
+
     std::cout << "input interval sec(DEF:" << interval_sec << "):";
-    std::cin >> interval_sec;
+    {
+        std::string input;
+        std::getline( std::cin, input);
+        if( !input.empty() ){
+            std::istringstream stream(input);
+            stream >> interval_sec;
+        }
+    }
+
     std::cout << "input loop num(DEF:" << loop_num << "):";
-    std::cin >> loop_num;
+    {
+        std::string input;
+        std::getline( std::cin, input);
+        if( !input.empty() ){
+            std::istringstream stream(input);
+            stream >> loop_num;
+        }
+    }
     
     std::cout << "forward:" << forward_sec << "[sec]" << std::endl;
     std::cout << "backward:" << backward_sec << "[sec]" << std::endl;
