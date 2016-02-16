@@ -71,9 +71,7 @@ int main(int argc, char* argv[])
             digitalWrite(GPIO_A, LOW);
             digitalWrite(GPIO_B, LOW);
             sleep(DEF_INTERVAL_SEC);
-            
-            timerclear(&stEnd);
-            
+
             switch(drive_state)
             {
             case DRIVE_FORWARD:
@@ -98,6 +96,8 @@ int main(int argc, char* argv[])
             default:
                 break;
             }
+            timerclear(&stEnd);
+            gettimeofday(&stNow, NULL);
             timeradd(&stNow, &stLen, &stEnd);
         }
 	}
