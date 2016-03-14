@@ -251,7 +251,8 @@ int main(int argc, char* argv[])
 	
 		RaspiCamCvCapture* capture = NULL;
 		if (argc > 1){
-			capture = raspiCamCvCreateCameraCapture2( argv[1], config );
+            //capture = raspiCamCvCreateCameraCapture2( argv[1], config );
+            throw 0;
 		}else{
 			capture = raspiCamCvCreateCameraCapture2( 0, config );
             if(config){
