@@ -17,6 +17,7 @@
 
 //#define GPIO_MONOEYE	(16)
 
+#include "RaspiCamCV.h"
 
 #include <cv.h>
 #include <highgui.h>
@@ -232,16 +233,31 @@ int main(int argc, char* argv[])
 		
 		const int pitch_limit_max = servo_max - 22;
 		const int pitch_limit_min = servo_min + 34;
-	
+
+	RASPIVID_CONFIG * config = new RASPIVID_CONFIG();
+	if(!config){
+		printf("failed to create RASPIDVID_CONFIG.\n");
+		return -1;
+	}
+	config->width=static_cast<int>(WIN_WIDTH);
+	config->height=static_cast<int>(WIN_HEIGHT);
+	config->bitrate=0;	// zero: leave as default
+	config->framerate=0;
+	config->monochrome=0;
+    
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
 #endif
 	
-		CvCapture* capture = NULL;
+		RaspiCamCvCapture* capture = NULL;
 		if (argc > 1){
-			capture = cvCreateFileCapture( argv[1] );
+			capture = raspiCamCvCreateCameraCapture2( argv[1], config );
 		}else{
-			capture = cvCreateCameraCapture( -1 );
+			capture = raspiCamCvCreateCameraCapture2( 0, config );
+            if(config){
+                delete config;
+                config = NULL;
+            }
 			if(!capture){
 				printf("failed to create capture\n");
 				throw 0;
@@ -249,8 +265,8 @@ int main(int argc, char* argv[])
 			// キャプチャサイズを設定する．
 			double w = WIN_WIDTH;
 			double h = WIN_HEIGHT;
-			cvSetCaptureProperty (capture, CV_CAP_PROP_FRAME_WIDTH, w);
-			cvSetCaptureProperty (capture, CV_CAP_PROP_FRAME_HEIGHT, h);
+            raspiCamCvSetCaptureProperty (capture, RPI_CAP_PROP_FRAME_WIDTH, w);
+            raspiCamCvSetCaptureProperty (capture, RPI_CAP_PROP_FRAME_HEIGHT, h);
 		}
 	
 		// 正面顔検出器の読み込み
@@ -305,7 +321,7 @@ int main(int argc, char* argv[])
 		while(1){
 			int wrk_homing_state = HOMING_NONE;
 			
-			IplImage* frame = cvQueryFrame(capture);
+			IplImage* frame = raspiCamCvQueryFrame(capture);
 			if(!frame){
 				printf("failed to query frame.\n");
 				break;
@@ -582,7 +598,7 @@ int main(int argc, char* argv[])
 		// カスケード識別器の解放
 		cvReleaseHaarClassifierCascade(&cvHCC);
 	
-		cvReleaseCapture(&capture);
+		raspiCamCvReleaseCapture(&capture);
 		cvDestroyWindow(DISP_WIN);
 
 #if ( USE_TALK > 0 )
