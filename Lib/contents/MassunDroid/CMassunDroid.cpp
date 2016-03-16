@@ -70,3 +70,111 @@ int CMassunDroid::startInstance()
 	}
 	return iRet;
 }
+
+int CMassunDroid::setUp()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::setupServo()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::setupCv()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::exec()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::finalize()
+{
+	int iRet = -1;
+	try
+	{
+        int iServoRet = finalizeServo();
+        if(iServoRet!=0){
+            printf("failed to finalizeServo()\n");
+        }
+        int iCvRet = finalizeCv();
+        if(iCvRet!=0){
+            printf("failed to finalizeCv()\n");
+        }
+		if( (iServoRet + iCvRet) == 0 ){
+            iRet = 0;
+        }
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::finalizeServo()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::finalizeCv()
+{
+	int iRet = -1;
+	try
+	{
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}

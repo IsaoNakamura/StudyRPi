@@ -20,7 +20,18 @@ private:
 	void init();
 	void destroy();
 	int startInstance();
-    
+   
+public:
+    int setup();
+    int exec();
+    int finalize();
+
+private:
+    int setupServo();
+    int setupCv();
+    int finalizeServo();
+    int finalizeCv();
+
 private:
     int m_gpioPitch;
     int m_gpioYaw;
