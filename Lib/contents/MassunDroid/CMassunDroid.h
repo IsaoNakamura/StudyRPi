@@ -8,6 +8,12 @@
 #ifndef CMASSUNDROID_H_
 #define CMASSUNDROID_H_
 
+class RaspiCamCvCapture;
+class CvHaarClassifierCascade;
+class CvMemStorage;
+
+class DF::CamAngleConverter;
+
 class CMassunDroid {
 private:
 	CMassunDroid();
@@ -27,8 +33,9 @@ public:
     int finalize();
 
 private:
-    int setupServo();
+    int setupGpio();
     int setupCv();
+    int setupCamAngCvt();
     int finalizeServo();
     int finalizeCv();
 
@@ -47,6 +54,14 @@ private:
     int m_pitch_limit_min;
     int m_width_win;
     int m_height_win;
+    
+    // for OpenCV
+    RaspiCamCvCapture*          m_capture;
+    CvHaarClassifierCascade*    m_cvHCC;
+    CvMemStorage*               m_cvMStr;
+
+    // for CamAngleConverter
+    DF::CamAngleConverter*      m_camAngCvt;
 };
 
 #endif /* CMASSUNDROID_H_ */
