@@ -26,6 +26,16 @@ private:
 	void init();
 	void destroy();
 	int startInstance();
+    
+private:
+    enum HomingStatus
+    {
+        HOMING_NONE = 0,
+        HOMING_HOMING,
+        HOMING_DELAY,
+        HOMING_CENTER,
+        HOMING_KEEP
+    };
    
 public:
     int setup();
@@ -38,8 +48,11 @@ private:
     int setupCamAngCvt();
     int finalizeServo();
     int finalizeCv();
+    int homingAction();
 
 private:
+    HomingStatus m_homing_state;
+    HomingStatus m_wrk_homing_state;
     int m_gpioPitch;
     int m_gpioYaw;
     int m_gpioExit;
@@ -54,6 +67,10 @@ private:
     int m_pitch_limit_min;
     int m_width_win;
     int m_height_win;
+    
+    int m_over_cnt;
+    int m_nonface_cnt;
+	int m_silent_cnt;
     
     // for OpenCV
     RaspiCamCvCapture*          m_capture;

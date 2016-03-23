@@ -16,7 +16,7 @@
 #include <cv.h>
 #include <highgui.h>
 #define CASCADE	("/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml")
-#define	DISP_WIN	("faceOpenCV")
+#define	DISP_WIN	("MassunDroid")
 #define	WIN_WIDTH		(320.0)
 #define	WIN_HEIGHT		(240.0)
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
@@ -27,6 +27,15 @@ CvSize minsiz ={0,0};
 
 #include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
+
+#define SERVO_MID   (76)
+#define SERVO_MIN   (36)
+#define SERVO_MAX   (122)
+#define SERVO_MIN_DEG   (0.0)
+#define SERVO_MAX_DEG   (180.0)
+
+#define SERVO_PITCH_LIMIT_MAX   (SERVO_MAX - 22)
+#define SERVO_PITCH_LIMIT_MIN   (SERVO_MIN + 34)
 
 CMassunDroid::CMassunDroid() {
 	// TODO 自動生成されたコンストラクター・スタブ
@@ -70,6 +79,31 @@ CMassunDroid* CMassunDroid::createInstance()
 
 void CMassunDroid::init()
 {
+    m_homing_state = HOMING_NONE;
+    m_wrk_homing_state = HOMING_NONE;
+    m_gpioPitch = GPIO_PITCH;
+    m_gpioYaw = GPIO_YAW;
+    m_gpioExit = GPIO_EXIT;
+    m_gpioHalt = GPIO_HALT;
+    m_servo_mid = SERVO_MID;
+    m_servo_min = SERVO_MIN;
+    m_servo_max = SERVO_MAX;
+    m_servo_min_deg = SERVO_MIN_DEG;
+    m_servo_max_deg = SERVO_MAX_DEG;
+    m_ratio_deg = 0.0;
+    m_pitch_limit_max = SERVO_PITCH_LIMIT_MAX;
+    m_pitch_limit_min = SERVO_PITCH_LIMIT_MIN;
+    m_width_win = WIN_WIDTH;
+    m_height_win = WIN_HEIGHT;
+    m_capture = NULL;
+    m_cvHCC = NULL;
+    m_cvMStr = NULL;
+    m_camAngCvt = NULL;
+    m_over_cnt = 0;
+    m_nonface_cnt = 0;
+	m_silent_cnt = 0;
+
+    
 	return;
 }
 
@@ -181,15 +215,24 @@ int CMassunDroid::setupCv()
         raspiCamCvSetCaptureProperty (m_capture, RPI_CAP_PROP_FRAME_HEIGHT, h);
 	
 		// 正面顔検出器の読み込み
-		CvHaarClassifierCascade* cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
+		CvHaarClassifierCascade* m_cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
+        if(!m_cvHCC){
+            printf("failed to load CvHaarClassifierCascade.\n");
+            throw 0;
+        }
 	
 		// 検出に必要なメモリストレージを用意する
-		CvMemStorage* cvMStr = cvCreateMemStorage(0);
+		CvMemStorage* m_cvMStr = cvCreateMemStorage(0);
+        if(!m_cvMStr){
+            printf("failed to create CvMemStorage.\n");
+            throw 0;
+        }
         
 		iRet = 0;
 	}
 	catch(...)
 	{
+        printf("failed to CMassunDroid::setupCv().\n");
 		iRet = -1;
 	}
 	return iRet;
@@ -268,6 +311,10 @@ int CMassunDroid::finalizeServo()
 	int iRet = -1;
 	try
 	{
+        // サーボ角度を中間に設定
+		pwmWrite(m_gpioYaw, m_servo_mid);
+		pwmWrite(m_gpioPitch, m_servo_mid);
+        
 		iRet = 0;
 	}
 	catch(...)
@@ -282,8 +329,79 @@ int CMassunDroid::finalizeCv()
 	int iRet = -1;
 	try
 	{
+		// 用意したメモリストレージを解放
+        if(m_cvMStr){
+    		cvReleaseMemStorage(&m_cvMStr);
+            m_cvMStr = NULL;
+        }
+	
+		// カスケード識別器の解放
+        if(m_cvHCC){
+		    cvReleaseHaarClassifierCascade(&m_cvHCC);
+            m_cvHCC = NULL;
+        }
+	
+        if(m_capture){
+    		raspiCamCvReleaseCapture(&m_capture);
+            m_capture = NULL;
+        }
+        
+		cvDestroyWindow(DISP_WIN);
+        
 		iRet = 0;
 	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::homingAction()
+{
+	int iRet = -1;
+	try
+	{
+        // ホーミング状態を更新
+        if(homing_state != wrk_homing_state){
+            int talkType = 0;
+            switch( wrk_homing_state )
+            {
+            case HOMING_NONE:
+                printf("[STATE] no detected face.\n");
+                #if ( USE_TALK > 0 )
+                if( homing_state != HOMING_DELAY ){
+                    digitalWrite(GPIO_MONOEYE,HIGH);
+                    talkType = rand() % TALK_REASON_NUM;
+                    talkReason(talkType);
+                    digitalWrite(GPIO_MONOEYE,LOW);
+                }
+                #endif
+                break;
+            case HOMING_HOMING:
+                printf("[STATE] homing.\n");
+                #if ( USE_TALK > 0 )
+                talkType = rand() % TALK_WELCOME_NUM;
+                talkWelcome(talkType);
+                m_silent_cnt = 0;
+                #endif
+                break;
+            case HOMING_DELAY:
+                printf("[STATE] delay.\n");
+                break;
+            case HOMING_CENTER:
+                printf("[STATE] face is center.\n");
+                break;
+            case HOMING_KEEP:
+                printf("[STATE] keep.\n");
+                break;
+            default:
+                break;
+            } // switch( wrk_homing_state )
+            homing_state = wrk_homing_state;
+        } // if(homing_state != wrk_homing_state)
+        iRet = 0;
+    } // try
 	catch(...)
 	{
 		iRet = -1;
