@@ -122,13 +122,13 @@ bool talkWelcome( const int& talkType)
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きてくれて ありがとう\" | aplay");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"まっすんと も よろこんでおります\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"まっすんと あやかも よろこんでおります\" | aplay");
 		break;
 	case 5:
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"やまをめざそう\" | aplay");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"ここ へ ようこそ\" | aplay");
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"セントラーザ へ ようこそ\" | aplay");
 		break;
 	case 7:
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"なまえはかきましたか？\" | aplay");
