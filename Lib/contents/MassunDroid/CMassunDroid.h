@@ -38,8 +38,11 @@ private:
     };
    
 public:
-    int setup();
     int exec();
+    
+ private;
+    int setup();
+    int mainLoop();
     int finalize();
 
 private:
@@ -48,7 +51,12 @@ private:
     int setupCamAngCvt();
     int finalizeServo();
     int finalizeCv();
-    int homingAction();
+    int voiceAction();
+    int updateHomingState();
+    int updateView();
+    int detectFace(CvSeq* face, const IplImage* frame);
+    int exitAction();
+    int keyAction();
 
 private:
     HomingStatus m_homing_state;
@@ -71,6 +79,8 @@ private:
     int m_over_cnt;
     int m_nonface_cnt;
 	int m_silent_cnt;
+    
+    int m_exit;
     
     // for OpenCV
     RaspiCamCvCapture*          m_capture;

@@ -102,6 +102,7 @@ void CMassunDroid::init()
     m_over_cnt = 0;
     m_nonface_cnt = 0;
 	m_silent_cnt = 0;
+    m_exit = 0;
 
     
 	return;
@@ -196,9 +197,9 @@ int CMassunDroid::setupCv()
         config->framerate=0;
         config->monochrome=0;
         
-#if ( USE_WIN > 0 )
+        #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
-#endif
+        #endif
         m_capture = raspiCamCvCreateCameraCapture2( 0, config );
         if(config){
             delete config;
@@ -273,6 +274,75 @@ int CMassunDroid::exec()
 	int iRet = -1;
 	try
 	{
+        if(setUp()!=0){
+            printf("failed to CMassunDroid::setUp()\n");
+            throw 0;
+        }
+        if(mainLoop()!=0){
+            printf("failed to CMassunDroid::mainLoop()\n");
+            throw 0;
+        }
+        if(finalize()!=0){
+            printf("failed to CMassunDroid::finalize()\n");
+            throw 0;
+        }
+        if(exitAction()!=0){
+            printf("failed to CMassunDroid::exitAction()\n");
+            throw 0;
+        }
+        
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::mainLoop()
+{
+	int iRet = -1;
+	try
+	{
+        while(1){
+            IplImage* frame = raspiCamCvQueryFrame(capture);
+			if(!frame){
+				printf("failed to query frame.\n");
+				throw 0;
+			}
+             
+            CvSeq* face = NULL;
+            if(detectFace(face, frame)!=0){
+                printf("failed to CMassunDroid::detectFace()\n");
+                throw 0;
+            }
+            
+            if( face->total > 0 ){
+                if(drawRectFace(face)!=0){
+                    throw 0;
+                }
+            }
+            
+            if(voiceAction()!=0){
+                printf("failed to CMassunDroid::voiceAction()\n");
+                throw 0;
+            }
+            if(updateHomingState()!=0){
+                printf("failed to CMassunDroid::updateHomingState()\n");
+                throw 0;
+            }
+            if(updateView()!=0){
+                throw 0;
+            }
+            
+            if(keyAction()!=0){
+                throw 0;
+            }
+            if(m_exit>0){
+                break;
+            }
+        }
 		iRet = 0;
 	}
 	catch(...)
@@ -357,15 +427,14 @@ int CMassunDroid::finalizeCv()
 	return iRet;
 }
 
-int CMassunDroid::homingAction()
+int CMassunDroid::voiceAction()
 {
 	int iRet = -1;
 	try
 	{
-        // ホーミング状態を更新
-        if(homing_state != wrk_homing_state){
+        if(m_homing_state != m_wrk_homing_state){
             int talkType = 0;
-            switch( wrk_homing_state )
+            switch( m_wrk_homing_state )
             {
             case HOMING_NONE:
                 printf("[STATE] no detected face.\n");
@@ -397,9 +466,134 @@ int CMassunDroid::homingAction()
                 break;
             default:
                 break;
-            } // switch( wrk_homing_state )
-            homing_state = wrk_homing_state;
-        } // if(homing_state != wrk_homing_state)
+            } // switch( m_wrk_homing_state )
+        } // if(m_homing_state != m_wrk_homing_state)
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+
+int CMassunDroid::updateHomingState()
+{
+	int iRet = -1;
+	try
+	{
+        // ホーミング状態を更新
+        if(m_homing_state != m_wrk_homing_state){
+            m_homing_state = m_wrk_homing_state;
+        }
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::updateView()
+{
+	int iRet = -1;
+	try
+	{
+        #if ( USE_WIN > 0 )
+        // 画面表示更新
+        cvShowImage( DISP_WIN, frame);
+        #endif
+        
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::detectFace(CvSeq* face, const IplImage* frame)
+{
+	int iRet = -1;
+	try
+	{
+        if(!frame){
+            printf("frame is NULL.\n");
+            throw 0;
+        }
+        // 画像中から検出対象の情報を取得する
+        face = cvHaarDetectObjects(	  frame
+                                    , m_cvHCC
+                                    , m_cvMStr
+                                    , 1.2
+                                    , 2
+                                    , CV_HAAR_DO_CANNY_PRUNING
+                                    , minsiz
+                                    , minsiz
+        );
+        if(!face){
+            printf("failed to detect objects.\n");
+            throw 0;
+        }
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::exitAction()
+{
+	int iRet = -1;
+	try
+	{
+        #if ( USE_TALK > 0 )
+        system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"まっすんどろいど は 正常に終了しました\" | aplay");
+        #endif
+        
+        if( m_exit==1 || m_exit==2 ){
+            printf("exit program.\n");
+            #if ( USE_TALK > 0 )
+			system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"ぷろぐらむを しゅうりょう します\" | aplay");
+            #endif
+        }else if(m_exit==3){
+            printf("shutdown system.\n");
+            #if ( USE_TALK > 0 )
+			system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しすてむを しゃっとだうん します\" | aplay");
+            #endif
+			system("sudo halt");
+        }
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::keyAction()
+{
+	int iRet = -1;
+	try
+	{
+        // 負荷分散のためDelay
+        char c = cvWaitKey(DELAY_SEC);
+        if( c==27 ){ // ESC-Key
+            m_exit = 1;
+        }
+        if( digitalRead(GPIO_EXIT) == LOW ){
+            m_exit = 2;
+        }
+        if( digitalRead(GPIO_HALT) == LOW ){
+            m_exit = 3;
+        }
+
         iRet = 0;
     } // try
 	catch(...)
