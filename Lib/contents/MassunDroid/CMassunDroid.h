@@ -51,16 +51,16 @@ private:
     int setupCamAngCvt();
     int finalizeServo();
     int finalizeCv();
-    int voiceAction();
-    int updateHomingState();
+    int voiceAction(const int& homing_state);
+    int updateHomingState(const int& homing_state);
     int updateView();
     int detectFace(CvSeq* face, const IplImage* frame);
     int exitAction();
     int keyAction();
+    int drawRectFace(IplImage* frame, const CvSeq* face);
 
 private:
     HomingStatus m_homing_state;
-    HomingStatus m_wrk_homing_state;
     int m_gpioPitch;
     int m_gpioYaw;
     int m_gpioExit;
@@ -82,6 +82,11 @@ private:
     
     int m_exit;
     
+    double m_face_area_x;
+    double m_face_area_y;
+    double m_face_scrn_x;
+    double m_face_scrn_y;
+
     // for OpenCV
     RaspiCamCvCapture*          m_capture;
     CvHaarClassifierCascade*    m_cvHCC;

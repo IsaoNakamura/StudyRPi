@@ -24,6 +24,13 @@
 CvSize minsiz ={0,0};
 
 #define USE_WIN				(0)
+#define USE_TALK			(1)
+#define USE_TALK_TEST		(0)
+#define HOMING_DELAY_MSEC	(3000)
+#define CENTER_AREA_RATIO	(0.8)
+#define SERVO_OVER_MAX		(10)
+#define NONFACE_CNT_MAX		(50)
+#define SILENT_CNT			(30)
 
 #include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
@@ -80,7 +87,6 @@ CMassunDroid* CMassunDroid::createInstance()
 void CMassunDroid::init()
 {
     m_homing_state = HOMING_NONE;
-    m_wrk_homing_state = HOMING_NONE;
     m_gpioPitch = GPIO_PITCH;
     m_gpioYaw = GPIO_YAW;
     m_gpioExit = GPIO_EXIT;
@@ -103,7 +109,10 @@ void CMassunDroid::init()
     m_nonface_cnt = 0;
 	m_silent_cnt = 0;
     m_exit = 0;
-
+    m_face_area_x = 0.0;
+    m_face_area_y = 0.0;
+    m_face_scrn_x = 0.0;
+    m_face_scrn_y = 0.0;
     
 	return;
 }
@@ -305,13 +314,30 @@ int CMassunDroid::mainLoop()
 	int iRet = -1;
 	try
 	{
+		struct timeval stNow;	// 現時刻取得用
+		struct timeval stLen;	// 任意時間
+		struct timeval stEnd;	// 現時刻から任意時間経過した時刻
+		timerclear(&stNow);
+		timerclear(&stLen);
+		timerclear(&stEnd);
+		unsigned int msec = HOMING_DELAY_MSEC;
+		gettimeofday(&stNow, NULL);
+		stLen.tv_sec = msec / 1000;
+		stLen.tv_usec = msec % 1000;
+		timeradd(&stNow, &stLen, &stEnd);
+        
+        srand(stNow.tv_usec);
+        
         while(1){
-            IplImage* frame = raspiCamCvQueryFrame(capture);
+            int wrk_homing_state = HOMING_NONE;
+            // カメラ画像を取得
+            IplImage* frame = raspiCamCvQueryFrame(m_capture);
 			if(!frame){
 				printf("failed to query frame.\n");
 				throw 0;
 			}
-             
+            
+            // カメラ画像から顔を検出
             CvSeq* face = NULL;
             if(detectFace(face, frame)!=0){
                 printf("failed to CMassunDroid::detectFace()\n");
@@ -319,16 +345,44 @@ int CMassunDroid::mainLoop()
             }
             
             if( face->total > 0 ){
-                if(drawRectFace(face)!=0){
+                m_nonface_cnt = 0;
+                // 顔に矩形を描画
+                if(drawRectFace(frame, face)!=0){
                     throw 0;
                 }
+                
+                if( isInsideFaceCenter() ){
+                    wrk_homing_state = HOMING_CENTER;
+                }else{
+                    // 現在時刻を取得
+					gettimeofday(&stNow, NULL);
+                    if( timercmp(&stNow, &stEnd, >) ){
+                        // 任意時間経てば処理を行う
+                        // サーボでカメラを顔に向ける
+                        if( servoHomingFace() > 0 ){
+							// サーボの値を設定したら現時刻から任意時間プラスして、サーボの角度設定しない終了時刻を更新
+							timerclear(&stEnd);
+							timeradd(&stNow, &stLen, &stEnd);
+							wrk_homing_state = HOMING_HOMING;
+                        }else{
+                            wrk_homing_state = HOMING_KEEP;
+                        }
+                    }else{
+                        wrk_homing_state = HOMING_DELAY;
+                    }
+                }
+            }else{
+                wrk_homing_state = HOMING_NONE;
+                // NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
+				m_nonface_cnt++;
+				m_silent_cnt++;
             }
             
-            if(voiceAction()!=0){
+            if(voiceAction(wrk_homing_state)!=0){
                 printf("failed to CMassunDroid::voiceAction()\n");
                 throw 0;
             }
-            if(updateHomingState()!=0){
+            if(updateHomingState(wrk_homing_state)!=0){
                 printf("failed to CMassunDroid::updateHomingState()\n");
                 throw 0;
             }
@@ -427,14 +481,14 @@ int CMassunDroid::finalizeCv()
 	return iRet;
 }
 
-int CMassunDroid::voiceAction()
+int CMassunDroid::voiceAction(const int& homing_state)
 {
 	int iRet = -1;
 	try
 	{
-        if(m_homing_state != m_wrk_homing_state){
+        if(m_homing_state != homing_state){
             int talkType = 0;
-            switch( m_wrk_homing_state )
+            switch( homing_state )
             {
             case HOMING_NONE:
                 printf("[STATE] no detected face.\n");
@@ -466,8 +520,8 @@ int CMassunDroid::voiceAction()
                 break;
             default:
                 break;
-            } // switch( m_wrk_homing_state )
-        } // if(m_homing_state != m_wrk_homing_state)
+            } // switch( homing_state )
+        } // if(m_homing_state != homing_state)
         iRet = 0;
     } // try
 	catch(...)
@@ -478,14 +532,14 @@ int CMassunDroid::voiceAction()
 }
 
 
-int CMassunDroid::updateHomingState()
+int CMassunDroid::updateHomingState(const int& homing_state)
 {
 	int iRet = -1;
 	try
 	{
         // ホーミング状態を更新
-        if(m_homing_state != m_wrk_homing_state){
-            m_homing_state = m_wrk_homing_state;
+        if(m_homing_state != homing_state){
+            m_homing_state = homing_state;
         }
         iRet = 0;
     } // try
@@ -594,6 +648,55 @@ int CMassunDroid::keyAction()
             m_exit = 3;
         }
 
+        iRet = 0;
+    } // try
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
+{
+	int iRet = -1;
+	try
+	{
+        i=0; // 最初のひとつの顔だけ追尾ターゲットにする
+        
+        // 検出情報から顔の位置情報を取得
+        CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
+        if(!faceRect){
+            printf("failed to get Face-Rect.\n");
+            break;
+        }
+        m_face_area_x = faceRect->width / 2.0 * CENTER_AREA_RATIO;
+        m_face_area_y = faceRect->height / 2.0 * CENTER_AREA_RATIO;
+        #if ( USE_WIN > 0 )
+        // スクリーン中心らへん矩形描画を行う
+        cvRectangle(	  frame
+                        , cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
+                        , cvPoint( (WIN_WIDTH_HALF + center_area_y), (WIN_HEIGHT_HALF +center_area_y) )
+                        , CV_RGB(0, 255 ,0)
+                        , 2
+                        , CV_AA
+                        , 0
+        );
+        // 取得した顔の位置情報に基づき、矩形描画を行う
+        cvRectangle(	  frame
+                        , cvPoint(faceRect->x, faceRect->y)
+                        , cvPoint(faceRect->x + faceRect->width, faceRect->y + faceRect->height)
+                        , CV_RGB(255, 0 ,0)
+                        , 2
+                        , CV_AA
+                        , 0
+        );
+        #endif
+
+        // 顔のスクリーン座標を算出
+        m_face_scrn_x = faceRect->x + (faceRect->width / 2.0);
+        m_face_scrn_y = faceRect->y + (faceRect->height / 2.0);
+        
         iRet = 0;
     } // try
 	catch(...)
