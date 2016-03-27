@@ -32,7 +32,7 @@ CvSize minsiz ={0,0};
 #define NONFACE_CNT_MAX		(50)
 #define SILENT_CNT			(30)
 
-#include "../../Lib/utilities/CamAngleConverter/CamAngleConverter.h"
+#include "../../utilities/CamAngleConverter/CamAngleConverter.h"
 #define ANGLE_DIAGONAL	(60.0)
 
 #define SERVO_MID   (76)
