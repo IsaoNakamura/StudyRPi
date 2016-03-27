@@ -244,6 +244,7 @@ int main(int argc, char* argv[])
 	config->bitrate=0;	// zero: leave as default
 	config->framerate=0;
 	config->monochrome=0;
+    config->rotation=90; // using https://github.com/IsaoNakamura/robidouille.git
     
 #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
