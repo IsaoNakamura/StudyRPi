@@ -22,7 +22,7 @@ SOURCES = $(wildcard *.cpp)
 OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 DEPENDS  = $(OBJECTS:.o=.d)
 
-LIBDIR = ../../Lib
+LIBDIR = ../Lib
 EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
 $(TARGET): $(OBJECTS) $(LIBS)
