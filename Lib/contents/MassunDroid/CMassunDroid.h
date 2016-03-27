@@ -11,8 +11,11 @@
 class RaspiCamCvCapture;
 class CvHaarClassifierCascade;
 class CvMemStorage;
-class DF;
-class DF::CamAngleConverter;
+class CvSeq;
+class IplImage;
+
+using namespace DF;
+class CamAngleConverter;
 
 class CMassunDroid {
 private:
@@ -40,7 +43,7 @@ private:
 public:
     int exec();
     
- private;
+private:
     int setup();
     int mainLoop();
     int finalize();
@@ -93,7 +96,7 @@ private:
     CvMemStorage*               m_cvMStr;
 
     // for CamAngleConverter
-    DF::CamAngleConverter*      m_camAngCvt;
+    CamAngleConverter*      m_camAngCvt;
 };
 
 #endif /* CMASSUNDROID_H_ */
