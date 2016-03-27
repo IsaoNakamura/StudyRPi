@@ -11,7 +11,7 @@
 class RaspiCamCvCapture;
 class CvHaarClassifierCascade;
 class CvMemStorage;
-
+class DF;
 class DF::CamAngleConverter;
 
 class CMassunDroid {
