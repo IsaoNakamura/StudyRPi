@@ -8,14 +8,13 @@
 #ifndef CMASSUNDROID_H_
 #define CMASSUNDROID_H_
 
+#include "../../utilities/CamAngleConverter/CamAngleConverter.h"
+
 class RaspiCamCvCapture;
 class CvHaarClassifierCascade;
 class CvMemStorage;
 class CvSeq;
 class IplImage;
-
-using namespace DF;
-class CamAngleConverter;
 
 class CMassunDroid {
 private:
@@ -96,7 +95,7 @@ private:
     CvMemStorage*               m_cvMStr;
 
     // for CamAngleConverter
-    CamAngleConverter*      m_camAngCvt;
+    DF::CamAngleConverter*      m_camAngCvt;
 };
 
 #endif /* CMASSUNDROID_H_ */
