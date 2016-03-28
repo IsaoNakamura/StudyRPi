@@ -8,13 +8,10 @@
 #ifndef CMASSUNDROID_H_
 #define CMASSUNDROID_H_
 
-#include "../../utilities/CamAngleConverter/CamAngleConverter.h"
+#include "RaspiCamCV.h"
+#include <cv.h>
 
-class RaspiCamCvCapture;
-class CvHaarClassifierCascade;
-class CvMemStorage;
-class CvSeq;
-class IplImage;
+#include "../../utilities/CamAngleConverter/CamAngleConverter.h"
 
 class CMassunDroid {
 private:
@@ -54,12 +51,16 @@ private:
     int finalizeServo();
     int finalizeCv();
     int voiceAction(const int& homing_state);
-    int updateHomingState(const int& homing_state);
+    int updateHomingState(const HomingStatus& homing_state);
     int updateView();
     int detectFace(CvSeq* face, const IplImage* frame);
     int exitAction();
     int keyAction();
     int drawRectFace(IplImage* frame, const CvSeq* face);
+    bool isInsideFaceCenter();
+    int servoHomingFace();
+    bool talkReason( const int& talkType);
+    bool talkWelcome( const int& talkType);
 
 private:
     HomingStatus m_homing_state;
@@ -80,7 +81,7 @@ private:
     
     int m_over_cnt;
     int m_nonface_cnt;
-	int m_silent_cnt;
+    int m_silent_cnt;
     
     int m_exit;
     

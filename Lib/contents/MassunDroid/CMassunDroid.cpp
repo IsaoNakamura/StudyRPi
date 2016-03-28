@@ -12,8 +12,7 @@
 #define GPIO_EXIT		(23)
 #define GPIO_HALT		(22)
 
-#include "RaspiCamCV.h"
-#include <cv.h>
+
 #include <highgui.h>
 #define CASCADE	("/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml")
 #define	DISP_WIN	("MassunDroid")
@@ -22,6 +21,8 @@
 #define	WIN_WIDTH_HALF	(WIN_WIDTH / 2.0)
 #define	WIN_HEIGHT_HALF	(WIN_HEIGHT / 2.0)
 CvSize minsiz ={0,0};
+
+#include <sys/time.h>
 
 #define USE_WIN				(0)
 #define USE_TALK			(1)
@@ -34,6 +35,8 @@ CvSize minsiz ={0,0};
 
 #define ANGLE_DIAGONAL	(60.0)
 
+#define DELAY_SEC	(1)
+
 #define SERVO_MID   (76)
 #define SERVO_MIN   (36)
 #define SERVO_MAX   (122)
@@ -42,6 +45,134 @@ CvSize minsiz ={0,0};
 
 #define SERVO_PITCH_LIMIT_MAX   (SERVO_MAX - 22)
 #define SERVO_PITCH_LIMIT_MIN   (SERVO_MIN + 34)
+
+#define TALK_REASON_NUM	(12)
+bool CMassunDroid::talkReason( const int& talkType)
+{
+	printf("called talkReason(%d)\n",talkType);
+	switch( talkType )
+	{
+	case 0:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うれしなみだで　よくみえないや\" | aplay");
+		break;
+	case 1:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きょうは めでたい\" | aplay");
+		break;
+	case 2:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		break;
+	case 3:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きんちょうしてきた\" | aplay");
+		break;
+	case 4:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"まっすん うまく しゃべれるかな?\" | aplay");
+		break;
+	case 5:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		break;
+	case 6:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ペガサスあーーーーーーーい\" | aplay");
+		break;
+	case 7:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぉーーーく あーーーーーーーい\" | aplay");
+		break;
+	case 8:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"あいだっぷぅぅぅぅーー\" | aplay");
+		break;
+	case 9:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"われむぅぅぅぅーーーーーーー\" | aplay");
+		break;
+	case 10:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		break;
+	case 11:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"でぇーーさーーん　でぇーじいー\" | aplay");
+		break;
+	default:
+		break;
+	}
+	return true;
+}
+
+#define TALK_WELCOME_NUM	(10)//(22)
+bool CMassunDroid::talkWelcome( const int& talkType)
+{
+	printf("called talkWelcome(%d)\n",talkType);
+	switch( talkType )
+	{
+	case 0:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぇるかーむ\" | aplay");
+		break;
+	case 1:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ようこそおいでくださいました\" | aplay");
+		break;
+	case 2:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ゆっくりしていってね\" | aplay");
+		break;
+	case 3:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きてくれて ありがとう\" | aplay");
+		break;
+	case 4:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"まっすんと あやかも よろこんでおります\" | aplay");
+		break;
+	case 5:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"やまをめざそう\" | aplay");
+		break;
+	case 6:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"セントラーザ へ ようこそ\" | aplay");
+		break;
+	case 7:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"なまえはかきましたか？\" | aplay");
+		break;
+	case 8:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
+		break;
+	case 9:
+		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
+		break;
+/*
+	case 10:
+		system("aplay /home/pi/massunVoice/01-.wav");
+		break;
+	case 11:
+		system("aplay /home/pi/massunVoice/02-.wav");
+		break;
+	case 12:
+		system("aplay /home/pi/massunVoice/03-.wav");
+		break;
+	case 13:
+		system("aplay /home/pi/massunVoice/04-.wav");
+		break;
+	case 14:
+		system("aplay /home/pi/massunVoice/05-.wav");
+		break;
+	case 15:
+		system("aplay /home/pi/massunVoice/06-.wav");
+		break;
+	case 16:
+		system("aplay /home/pi/massunVoice/07-.wav");
+		break;
+	case 17:
+		system("aplay /home/pi/massunVoice/08-.wav");
+		break;
+	case 18:
+		system("aplay /home/pi/massunVoice/09-.wav");
+		break;
+	case 19:
+		system("aplay /home/pi/massunVoice/10-.wav");
+		break;
+	case 20:
+		system("aplay /home/pi/massunVoice/11-.wav");
+		break;
+	case 21:
+		system("aplay /home/pi/massunVoice/12-.wav");
+		break;
+*/
+	default:
+		break;
+	}
+	return true;
+}
 
 CMassunDroid::CMassunDroid() {
 	// TODO 自動生成されたコンストラクター・スタブ
@@ -136,7 +267,7 @@ int CMassunDroid::startInstance()
 	return iRet;
 }
 
-int CMassunDroid::setUp()
+int CMassunDroid::setup()
 {
 	int iRet = -1;
 	try
@@ -282,8 +413,8 @@ int CMassunDroid::exec()
 	int iRet = -1;
 	try
 	{
-        if(setUp()!=0){
-            printf("failed to CMassunDroid::setUp()\n");
+        if(setup()!=0){
+            printf("failed to CMassunDroid::setup()\n");
             throw 0;
         }
         if(mainLoop()!=0){
@@ -328,7 +459,7 @@ int CMassunDroid::mainLoop()
         srand(stNow.tv_usec);
         
         while(1){
-            int wrk_homing_state = HOMING_NONE;
+            HomingStatus wrk_homing_state = HOMING_NONE;
             // カメラ画像を取得
             IplImage* frame = raspiCamCvQueryFrame(m_capture);
 			if(!frame){
@@ -493,10 +624,8 @@ int CMassunDroid::voiceAction(const int& homing_state)
                 printf("[STATE] no detected face.\n");
                 #if ( USE_TALK > 0 )
                 if( homing_state != HOMING_DELAY ){
-                    digitalWrite(GPIO_MONOEYE,HIGH);
                     talkType = rand() % TALK_REASON_NUM;
                     talkReason(talkType);
-                    digitalWrite(GPIO_MONOEYE,LOW);
                 }
                 #endif
                 break;
@@ -531,7 +660,7 @@ int CMassunDroid::voiceAction(const int& homing_state)
 }
 
 
-int CMassunDroid::updateHomingState(const int& homing_state)
+int CMassunDroid::updateHomingState(const HomingStatus& homing_state)
 {
 	int iRet = -1;
 	try
@@ -661,13 +790,13 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
 	int iRet = -1;
 	try
 	{
-        i=0; // 最初のひとつの顔だけ追尾ターゲットにする
+        int i=0; // 最初のひとつの顔だけ追尾ターゲットにする
         
         // 検出情報から顔の位置情報を取得
         CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
         if(!faceRect){
             printf("failed to get Face-Rect.\n");
-            break;
+            throw 0;
         }
         m_face_area_x = faceRect->width / 2.0 * CENTER_AREA_RATIO;
         m_face_area_y = faceRect->height / 2.0 * CENTER_AREA_RATIO;
@@ -704,3 +833,14 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
 	}
 	return iRet;
 }
+
+bool CMassunDroid::isInsideFaceCenter()
+{
+	return false;
+}
+
+int CMassunDroid::servoHomingFace()
+{
+	return 0;
+}
+

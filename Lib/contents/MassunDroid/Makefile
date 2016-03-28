@@ -9,12 +9,12 @@ LDFLAGS_OPENCV = -lopencv_highgui -lopencv_core -lopencv_legacy -lopencv_video -
 LDFLAGS_USERLAND = -L$(USERLAND_ROOT)/build/lib -lmmal_core -lmmal -l mmal_util -lvcos -lbcm_host
 LDFLAGS_PICAMCV = $(LDFLAGS_OPENCV) $(LDFLAGS_USERLAND) -lX11 -lXext -lrt -lstdc++
 
-CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal -mfpu=vfpv3 -O4
+CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal
 LDFLAGS = -lwiringPi -lm $(LDFLAGS_PICAMCV) -L/usr/lib
 LIBS = $(RASPICAMCV_ROOT)/libraspicamcv.a
 INCLUDE = -I../../Lib -I$(OPENCV_ROOT) -I$(RASPICAMCV_ROOT)
 TARGET   = ./$(shell basename `readlink -f .`)
-OBJDIR = ../../Bin/obj
+OBJDIR = ../../../Bin/obj
 ifeq "$(strip $(OBJDIR))" ""
 	OBJDIR = .
 endif
@@ -25,8 +25,9 @@ DEPENDS  = $(OBJECTS:.o=.d)
 LIBDIR = ../..
 EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
-$(TARGET): $(OBJECTS) $(LIBS)
-	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
+$(TARGET): $(SOURCES) $(LIBS)
+	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$@
 
 $(OBJDIR)/%.o: %.cpp
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
