@@ -89,6 +89,9 @@ private:
     double m_face_area_y;
     double m_face_scrn_x;
     double m_face_scrn_y;
+    
+    int m_servo_yaw;
+    int m_servo_pitch;
 
     // for OpenCV
     RaspiCamCvCapture*          m_capture;

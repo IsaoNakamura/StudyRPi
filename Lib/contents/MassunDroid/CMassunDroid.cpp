@@ -243,6 +243,8 @@ void CMassunDroid::init()
     m_face_area_y = 0.0;
     m_face_scrn_x = 0.0;
     m_face_scrn_y = 0.0;
+    m_servo_yaw = SERVO_MID;
+    m_servo_pitch = SERVO_MID;
     
 	return;
 }
@@ -395,6 +397,8 @@ int CMassunDroid::setupCamAngCvt()
 			printf("failed to initialize CamAngleConverter.\n");
 			throw 0;
 		}
+        m_ratio_deg = ( m_servo_max_deg - m_servo_min_deg ) / ( m_servo_max - m_servo_min );
+
 		iRet = 0;
 	}
 	catch(...)
@@ -836,11 +840,80 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
 
 bool CMassunDroid::isInsideFaceCenter()
 {
+	if(	   m_face_scrn_x >= (WIN_WIDTH_HALF - m_face_area_x)
+        && m_face_scrn_x <= (WIN_WIDTH_HALF + m_face_area_x)
+		&& m_face_scrn_y >= (WIN_HEIGHT_HALF - m_face_area_y)
+        && m_face_scrn_y <= (WIN_HEIGHT_HALF + m_face_area_y)	){
+            return true;
+	}
 	return false;
 }
 
 int CMassunDroid::servoHomingFace()
 {
+    int iRet = -1;
+    // スクリーン座標からカメラのピッチ・ヨー角を算出
+    double deg_yaw		= 0.0;
+    double deg_pitch	= 0.0;
+    if( m_camAngCvt->ScreenToCameraAngle(deg_yaw, deg_pitch, m_face_scrn_x, m_face_scrn_y) != 0 ){
+        return iRet;
+    }
+    printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",m_face_scrn_x,m_face_scrn_y,deg_yaw,deg_pitch,_servo_yaw,_servo_pitch);
+
+    // サーボ値を入れる変数　初期値は前回の結果
+    int servo_yaw	= m_servo_yaw;
+    int servo_pitch	= m_servo_pitch;
+
+    // ヨー角用サーボ制御
+    servo_yaw = m_servo_yaw  - static_cast<int>(deg_yaw / m_ratio_deg);
+    if(servo_yaw > m_servo_max){
+        m_over_cnt++;
+        printf("yaw is over max. cnt=%d ######## \n", m_over_cnt);
+    }else if(servo_yaw < m_servo_min){
+        m_over_cnt++;
+        printf("yaw is under min. cnt=%d ######## \n",m_over_cnt);
+        servo_yaw = m_servo_min;
+    }
+    //printf("face_x=%f deg_yaw=%f servo_yaw=%d \n",face_x,deg_yaw,servo_yaw);
+
+    // ピッチ角用サーボ制御
+    servo_pitch = m_servo_pitch - static_cast<int>(deg_pitch / m_ratio_deg);
+    if(servo_pitch > m_pitch_limit_max){
+        m_over_cnt++;
+        printf("pitch is over max ######## \n");
+        servo_pitch = m_pitch_limit_max;
+    }else if(servo_pitch < m_pitch_limit_min){
+        m_over_cnt++;
+        printf("pitch is under min ######## \n");
+        servo_pitch = m_pitch_limit_min;
+    }
+    //printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
+    
+    // SERVO_OVER_MAXフレーム分の間、サーボ角度が最大が続くのであれば、サーボ角度を中間にもどす。
+    if( m_over_cnt > SERVO_OVER_MAX){
+        servo_yaw=m_servo_mid;
+        servo_pitch=m_servo_mid;
+        m_over_cnt = 0;
+    }
+    iRet = 0;
+
+    // 前回と同じサーボ値ならスキップ
+    if(servo_yaw!=m_servo_yaw){
+        // サーボの角度設定
+        printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
+        pwmWrite(GPIO_YAW, servo_yaw);
+        iRet = 1;
+        // 前値保存
+        m_servo_yaw = servo_yaw;
+    }
+    if(servo_pitch!=_servo_pitch){
+        // サーボの角度設定
+        printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
+        pwmWrite(GPIO_PITCH, servo_pitch);
+        iRet = 1;
+        // 前値保存
+        m_servo_pitch = servo_pitch;
+    }
 	return 0;
 }
 
