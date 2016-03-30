@@ -5,5 +5,5 @@
 # というような本スクリプトを実行する命令を exit 0 の前に記載すれば
 # 起動時に実行できるようになる。
 
-sudo /home/pi/GitHub/StudyRPi/App/homingFace/homingFace
+sudo /home/pi/GitHub/StudyRPi/App/massunDroidAratame/massunDroidAratame
 
