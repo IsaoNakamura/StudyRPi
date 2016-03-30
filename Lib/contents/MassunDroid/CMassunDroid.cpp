@@ -858,7 +858,7 @@ int CMassunDroid::servoHomingFace()
     if( m_camAngCvt->ScreenToCameraAngle(deg_yaw, deg_pitch, m_face_scrn_x, m_face_scrn_y) != 0 ){
         return iRet;
     }
-    printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",m_face_scrn_x,m_face_scrn_y,deg_yaw,deg_pitch,_servo_yaw,_servo_pitch);
+    printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",m_face_scrn_x,m_face_scrn_y,deg_yaw,deg_pitch,m_servo_yaw,m_servo_pitch);
 
     // サーボ値を入れる変数　初期値は前回の結果
     int servo_yaw	= m_servo_yaw;
@@ -906,7 +906,7 @@ int CMassunDroid::servoHomingFace()
         // 前値保存
         m_servo_yaw = servo_yaw;
     }
-    if(servo_pitch!=_servo_pitch){
+    if(servo_pitch!=m_servo_pitch){
         // サーボの角度設定
         printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
         pwmWrite(GPIO_PITCH, servo_pitch);
