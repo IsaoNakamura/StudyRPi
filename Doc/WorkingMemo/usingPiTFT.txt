@@ -1,0 +1,4 @@
+sudo apt-get install fbi
+
+sudo fbi -T 2 -d /dev/fb1 -noverbose -a [画像ファイル]
+sudo fbi -T 2 -d /dev/fb1 -noverbose -a adapiluv320x240.jpg
