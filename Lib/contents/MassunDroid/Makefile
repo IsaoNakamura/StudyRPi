@@ -13,7 +13,6 @@ CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equ
 LDFLAGS = -lwiringPi -lm $(LDFLAGS_PICAMCV) -L/usr/lib
 LIBS = $(RASPICAMCV_ROOT)/libraspicamcv.a
 INCLUDE = -I../../Lib -I$(OPENCV_ROOT) -I$(RASPICAMCV_ROOT)
-TARGET   = ./$(shell basename `readlink -f .`)
 OBJDIR = ../../../Bin/obj
 ifeq "$(strip $(OBJDIR))" ""
 	OBJDIR = .
@@ -21,13 +20,14 @@ endif
 SOURCES = $(wildcard *.cpp)
 OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 DEPENDS  = $(OBJECTS:.o=.d)
+TARGET = $(SOURCES:.cpp=.o)
 
 LIBDIR = ../..
 EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
 $(TARGET): $(SOURCES)
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
-	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJECTS)
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$@
 
 .PHONY: subsystem
 subsystem:
