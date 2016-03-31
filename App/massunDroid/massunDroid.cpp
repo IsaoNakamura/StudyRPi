@@ -103,7 +103,7 @@ bool talkReason( const int& talkType)
 	return true;
 }
 
-#define TALK_WELCOME_NUM	(10)//(22)
+#define TALK_WELCOME_NUM	(23)
 bool talkWelcome( const int& talkType)
 {
 	printf("called talkWelcome(%d)\n",talkType);
@@ -139,44 +139,45 @@ bool talkWelcome( const int& talkType)
 	case 9:
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
 		break;
-/*
 	case 10:
-		system("aplay /home/pi/massunVoice/01-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220230.m4a.wav");
 		break;
 	case 11:
-		system("aplay /home/pi/massunVoice/02-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220312.m4a.wav");
 		break;
 	case 12:
-		system("aplay /home/pi/massunVoice/03-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220424.m4a.wav");
 		break;
 	case 13:
-		system("aplay /home/pi/massunVoice/04-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220518.m4a.wav");
 		break;
 	case 14:
-		system("aplay /home/pi/massunVoice/05-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220642.m4a.wav");
 		break;
 	case 15:
-		system("aplay /home/pi/massunVoice/06-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 220800.m4a.wav");
 		break;
 	case 16:
-		system("aplay /home/pi/massunVoice/07-.wav");
+		system("aplay /home/pi/MassunVoice/020160328 220852.m4a.wav");
 		break;
 	case 17:
-		system("aplay /home/pi/massunVoice/08-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 221522.m4a.wav");
 		break;
 	case 18:
-		system("aplay /home/pi/massunVoice/09-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 222556.m4a.wav");
 		break;
 	case 19:
-		system("aplay /home/pi/massunVoice/10-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 223638.m4a.wav");
 		break;
 	case 20:
-		system("aplay /home/pi/massunVoice/11-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 223728.m4a.wav");
 		break;
 	case 21:
-		system("aplay /home/pi/massunVoice/12-.wav");
+		system("aplay /home/pi/MassunVoice/20160328 225218.m4a.wav");
 		break;
-*/
+	case 22:
+		system("aplay /home/pi/MassunVoice/20160328 225246.m4a.wav");
+		break;
 	default:
 		break;
 	}
