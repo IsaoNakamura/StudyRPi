@@ -1,8 +1,11 @@
 COMPILER = g++
+
+RASPICAMCV_ROOT = $(HOME)/GitHub/robidouille/raspicam_cv
+
 CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal
 LDFLAGS =
 LIBS =
-INCLUDE = -I../../Lib
+INCLUDE = -I../../Lib -I$(RASPICAMCV_ROOT)
 TARGET   = ./$(shell basename `readlink -f .`)
 OBJDIR = ../../Bin/obj
 ifeq "$(strip $(OBJDIR))" ""
