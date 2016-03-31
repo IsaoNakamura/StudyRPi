@@ -25,7 +25,7 @@ DEPENDS  = $(OBJECTS:.o=.d)
 LIBDIR = ../..
 EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
-$(TARGET): $(SOURCES) $(LIBS)
+$(TARGET): $(SOURCES)
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
 	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$@
 
