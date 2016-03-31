@@ -38,6 +38,5 @@ all: clean subsystem $(TARGET)
 clean:
 	rm -f $(OBJECTS) $(DEPENDS) $(TARGET)
 	@rmdir --ignore-fail-on-non-empty `readlink -f $(OBJDIR)`
-	$(MAKE) clean -C $(LIBDIR)/contents/MassunDroid
 
 -include $(DEPENDS)

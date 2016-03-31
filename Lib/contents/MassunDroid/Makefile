@@ -25,9 +25,9 @@ TARGET = $(SOURCES:.cpp=.o)
 LIBDIR = ../..
 EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
-$(TARGET): $(SOURCES)
+$(TARGET): $(SOURCES) $(LIBS)
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
-	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$@
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$@ $(LDFLAGS) $(EXOBJS)
 
 .PHONY: subsystem
 subsystem:
