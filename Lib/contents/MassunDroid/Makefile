@@ -27,7 +27,7 @@ EXOBJS = $(OBJDIR)/CamAngleConverter.o
 
 $(TARGET): $(SOURCES)
 	@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
-	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJDIR)/$<
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -c $^ -o $(OBJECTS)
 
 .PHONY: subsystem
 subsystem:
