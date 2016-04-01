@@ -52,7 +52,7 @@ private:
     int finalizeCv();
     int voiceAction(const int& homing_state);
     int updateHomingState(const HomingStatus& homing_state);
-    int updateView();
+    int updateView(const IplImage* frame);
     int detectFace(CvSeq* face, const IplImage* frame);
     int exitAction();
     int keyAction();

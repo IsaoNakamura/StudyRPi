@@ -24,7 +24,7 @@ CvSize minsiz ={0,0};
 
 #include <sys/time.h>
 
-#define USE_WIN				(0)
+#define USE_WIN				(1)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
 #define HOMING_DELAY_MSEC	(3000)
@@ -357,15 +357,15 @@ int CMassunDroid::setupCv()
         raspiCamCvSetCaptureProperty (m_capture, RPI_CAP_PROP_FRAME_WIDTH, w);
         raspiCamCvSetCaptureProperty (m_capture, RPI_CAP_PROP_FRAME_HEIGHT, h);
 	
-		// 正面顔検出器の読み込み
-		CvHaarClassifierCascade* m_cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
+	// 正面顔検出器の読み込み
+	m_cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
         if(!m_cvHCC){
             printf("failed to load CvHaarClassifierCascade.\n");
             throw 0;
         }
 	
-		// 検出に必要なメモリストレージを用意する
-		CvMemStorage* m_cvMStr = cvCreateMemStorage(0);
+	// 検出に必要なメモリストレージを用意する
+	m_cvMStr = cvCreateMemStorage(0);
         if(!m_cvMStr){
             printf("failed to create CvMemStorage.\n");
             throw 0;
@@ -418,27 +418,27 @@ int CMassunDroid::exec()
 	int iRet = -1;
 	try
 	{
-        if(setup()!=0){
-            printf("failed to CMassunDroid::setup()\n");
-            throw 0;
-        }
-        if(mainLoop()!=0){
-            printf("failed to CMassunDroid::mainLoop()\n");
-            throw 0;
-        }
-        if(finalize()!=0){
-            printf("failed to CMassunDroid::finalize()\n");
-            throw 0;
-        }
-        if(exitAction()!=0){
-            printf("failed to CMassunDroid::exitAction()\n");
-            throw 0;
-        }
-        
+		if(setup()!=0){
+		    printf("failed to CMassunDroid::setup()\n");
+		    throw 0;
+		}
+		if(mainLoop()!=0){
+		    printf("failed to CMassunDroid::mainLoop()\n");
+		    throw 0;
+		}
+		if(finalize()!=0){
+		    printf("failed to CMassunDroid::finalize()\n");
+		    throw 0;
+		}
+		if(exitAction()!=0){
+		    printf("failed to CMassunDroid::exitAction()\n");
+		    throw 0;
+		}
 		iRet = 0;
 	}
 	catch(...)
 	{
+		printf("catch!! exec()\n");
 		iRet = -1;
 	}
 	return iRet;
@@ -471,26 +471,36 @@ int CMassunDroid::mainLoop()
 				printf("failed to query frame.\n");
 				throw 0;
 			}
-            
             // カメラ画像から顔を検出
             CvSeq* face = NULL;
-            if(detectFace(face, frame)!=0){
-                printf("failed to CMassunDroid::detectFace()\n");
+            face = cvHaarDetectObjects(	  frame
+                                                                 , m_cvHCC
+                                                                 , m_cvMStr
+                                                                 , 1.2
+                                                                 , 2
+                                                                 , CV_HAAR_DO_CANNY_PRUNING
+                                                                 , minsiz
+                                                                 , minsiz
+            );
+           // if(detectFace(face, frame)!=0){
+           //     printf("failed to CMassunDroid::detectFace()\n");
+           //     throw 0;
+           // }
+	    if(!face){
+	        printf("face is NULL\n");
                 throw 0;
             }
-            
             if( face->total > 0 ){
                 m_nonface_cnt = 0;
                 // 顔に矩形を描画
                 if(drawRectFace(frame, face)!=0){
                     throw 0;
                 }
-                
                 if( isInsideFaceCenter() ){
                     wrk_homing_state = HOMING_CENTER;
                 }else{
                     // 現在時刻を取得
-					gettimeofday(&stNow, NULL);
+                    gettimeofday(&stNow, NULL);
                     if( timercmp(&stNow, &stEnd, >) ){
                         // 任意時間経てば処理を行う
                         // サーボでカメラを顔に向ける
@@ -512,7 +522,6 @@ int CMassunDroid::mainLoop()
 				m_nonface_cnt++;
 				m_silent_cnt++;
             }
-            
             if(voiceAction(wrk_homing_state)!=0){
                 printf("failed to CMassunDroid::voiceAction()\n");
                 throw 0;
@@ -521,21 +530,21 @@ int CMassunDroid::mainLoop()
                 printf("failed to CMassunDroid::updateHomingState()\n");
                 throw 0;
             }
-            if(updateView()!=0){
+            if(updateView(frame)!=0){
                 throw 0;
             }
-            
             if(keyAction()!=0){
                 throw 0;
             }
             if(m_exit>0){
-                break;
+                // break;
             }
         }
 		iRet = 0;
 	}
 	catch(...)
 	{
+		printf("catch!! at mainLoop()\n");
 		iRet = -1;
 	}
 	return iRet;
@@ -683,7 +692,7 @@ int CMassunDroid::updateHomingState(const HomingStatus& homing_state)
 	return iRet;
 }
 
-int CMassunDroid::updateView()
+int CMassunDroid::updateView(const IplImage* frame)
 {
 	int iRet = -1;
 	try
@@ -711,6 +720,14 @@ int CMassunDroid::detectFace(CvSeq* face, const IplImage* frame)
             printf("frame is NULL.\n");
             throw 0;
         }
+	if(!m_cvHCC){
+		printf("m_cvHCC is NULL.\n");
+		throw 0;
+	}
+	if(!m_cvMStr){
+		printf("m_cvMStris NULL.\n");
+		
+	}
         // 画像中から検出対象の情報を取得する
         face = cvHaarDetectObjects(	  frame
                                     , m_cvHCC
@@ -731,6 +748,7 @@ int CMassunDroid::detectFace(CvSeq* face, const IplImage* frame)
 	{
 		iRet = -1;
 	}
+	printf("detectFace end\n");
 	return iRet;
 }
 
@@ -753,7 +771,7 @@ int CMassunDroid::exitAction()
             #if ( USE_TALK > 0 )
 			system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しすてむを しゃっとだうん します\" | aplay");
             #endif
-			system("sudo halt");
+			// system("sudo halt");
         }
         iRet = 0;
     } // try
@@ -803,18 +821,21 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
             printf("failed to get Face-Rect.\n");
             throw 0;
         }
+
         m_face_area_x = faceRect->width / 2.0 * CENTER_AREA_RATIO;
         m_face_area_y = faceRect->height / 2.0 * CENTER_AREA_RATIO;
+
         #if ( USE_WIN > 0 )
         // スクリーン中心らへん矩形描画を行う
         cvRectangle(	  frame
-                        , cvPoint( (WIN_WIDTH_HALF - center_area_x), (WIN_HEIGHT_HALF - center_area_x) )
-                        , cvPoint( (WIN_WIDTH_HALF + center_area_y), (WIN_HEIGHT_HALF +center_area_y) )
+                        , cvPoint( (WIN_WIDTH_HALF - m_face_area_x), (WIN_HEIGHT_HALF - m_face_area_x) )
+                        , cvPoint( (WIN_WIDTH_HALF + m_face_area_y), (WIN_HEIGHT_HALF +m_face_area_y) )
                         , CV_RGB(0, 255 ,0)
                         , 2
                         , CV_AA
                         , 0
         );
+
         // 取得した顔の位置情報に基づき、矩形描画を行う
         cvRectangle(	  frame
                         , cvPoint(faceRect->x, faceRect->y)
@@ -829,11 +850,12 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
         // 顔のスクリーン座標を算出
         m_face_scrn_x = faceRect->x + (faceRect->width / 2.0);
         m_face_scrn_y = faceRect->y + (faceRect->height / 2.0);
-        
+
         iRet = 0;
     } // try
 	catch(...)
 	{
+		printf("catch!! drawRectFace()\n");
 		iRet = -1;
 	}
 	return iRet;
