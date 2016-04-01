@@ -27,7 +27,7 @@ CvSize minsiz ={0,0};
 #define USE_WIN				(1)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
-#define HOMING_DELAY_MSEC	(3000)
+#define HOMING_DELAY_MSEC	(1000)
 #define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
@@ -474,20 +474,20 @@ int CMassunDroid::mainLoop()
             // カメラ画像から顔を検出
             CvSeq* face = NULL;
             face = cvHaarDetectObjects(	  frame
-                                                                 , m_cvHCC
-                                                                 , m_cvMStr
-                                                                 , 1.2
-                                                                 , 2
-                                                                 , CV_HAAR_DO_CANNY_PRUNING
-                                                                 , minsiz
-                                                                 , minsiz
+                                        , m_cvHCC
+                                        , m_cvMStr
+                                        , 1.2
+                                        , 2
+                                        , CV_HAAR_DO_CANNY_PRUNING
+                                        , minsiz
+                                        , minsiz
             );
            // if(detectFace(face, frame)!=0){
            //     printf("failed to CMassunDroid::detectFace()\n");
            //     throw 0;
            // }
-	    if(!face){
-	        printf("face is NULL\n");
+           if(!face){
+	            printf("face is NULL\n");
                 throw 0;
             }
             if( face->total > 0 ){
