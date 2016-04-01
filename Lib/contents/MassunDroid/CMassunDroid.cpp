@@ -498,6 +498,9 @@ int CMassunDroid::mainLoop()
                 }
                 if( isInsideFaceCenter() ){
                     wrk_homing_state = HOMING_CENTER;
+                    
+                    // フレーム画像を保存
+                    cvSaveImage("/home/pi/face_image.jpg",frame);
                 }else{
                     // 現在時刻を取得
                     gettimeofday(&stNow, NULL);
@@ -522,8 +525,8 @@ int CMassunDroid::mainLoop()
 				m_nonface_cnt++;
 				m_silent_cnt++;
             }
-            if(voiceAction(wrk_homing_state)!=0){
-                printf("failed to CMassunDroid::voiceAction()\n");
+            if(homingAction(wrk_homing_state)!=0){
+                printf("failed to CMassunDroid::homingAction()\n");
                 throw 0;
             }
             if(updateHomingState(wrk_homing_state)!=0){
@@ -625,7 +628,7 @@ int CMassunDroid::finalizeCv()
 	return iRet;
 }
 
-int CMassunDroid::voiceAction(const int& homing_state)
+int CMassunDroid::homingAction(const int& homing_state)
 {
 	int iRet = -1;
 	try

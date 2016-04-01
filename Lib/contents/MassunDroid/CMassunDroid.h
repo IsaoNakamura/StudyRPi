@@ -50,7 +50,7 @@ private:
     int setupCamAngCvt();
     int finalizeServo();
     int finalizeCv();
-    int voiceAction(const int& homing_state);
+    int homingAction(const int& homing_state);
     int updateHomingState(const HomingStatus& homing_state);
     int updateView(const IplImage* frame);
     int detectFace(CvSeq* face, const IplImage* frame);
