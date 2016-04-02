@@ -502,6 +502,7 @@ int CMassunDroid::mainLoop()
                     // フレーム画像を保存
                     if(wrk_homing_state!=m_homing_state){
                         cvSaveImage("/home/pi/face_image.jpg",frame);
+                        printf("save face-image.\n");
                     }
                 }else{
                     // 現在時刻を取得
