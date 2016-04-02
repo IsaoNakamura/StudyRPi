@@ -753,7 +753,6 @@ int CMassunDroid::detectFace(CvSeq* face, const IplImage* frame)
 	{
 		iRet = -1;
 	}
-	printf("detectFace end\n");
 	return iRet;
 }
 
@@ -886,7 +885,7 @@ int CMassunDroid::servoHomingFace()
     if( m_camAngCvt->ScreenToCameraAngle(deg_yaw, deg_pitch, m_face_scrn_x, m_face_scrn_y) != 0 ){
         return iRet;
     }
-    printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",m_face_scrn_x,m_face_scrn_y,deg_yaw,deg_pitch,m_servo_yaw,m_servo_pitch);
+    // printf("face(%f,%f) deg_yaw=%f deg_pitch=%f servo(%d,%d)\n",m_face_scrn_x,m_face_scrn_y,deg_yaw,deg_pitch,m_servo_yaw,m_servo_pitch);
 
     // サーボ値を入れる変数　初期値は前回の結果
     int servo_yaw	= m_servo_yaw;
@@ -896,10 +895,10 @@ int CMassunDroid::servoHomingFace()
     servo_yaw = m_servo_yaw  - static_cast<int>(deg_yaw / m_ratio_deg);
     if(servo_yaw > m_servo_max){
         m_over_cnt++;
-        printf("yaw is over max. cnt=%d ######## \n", m_over_cnt);
+        // printf("yaw is over max. cnt=%d ######## \n", m_over_cnt);
     }else if(servo_yaw < m_servo_min){
         m_over_cnt++;
-        printf("yaw is under min. cnt=%d ######## \n",m_over_cnt);
+        // printf("yaw is under min. cnt=%d ######## \n",m_over_cnt);
         servo_yaw = m_servo_min;
     }
     //printf("face_x=%f deg_yaw=%f servo_yaw=%d \n",face_x,deg_yaw,servo_yaw);
@@ -908,11 +907,11 @@ int CMassunDroid::servoHomingFace()
     servo_pitch = m_servo_pitch - static_cast<int>(deg_pitch / m_ratio_deg);
     if(servo_pitch > m_pitch_limit_max){
         m_over_cnt++;
-        printf("pitch is over max ######## \n");
+        // printf("pitch is over max ######## \n");
         servo_pitch = m_pitch_limit_max;
     }else if(servo_pitch < m_pitch_limit_min){
         m_over_cnt++;
-        printf("pitch is under min ######## \n");
+        // printf("pitch is under min ######## \n");
         servo_pitch = m_pitch_limit_min;
     }
     //printf("pwmWrite(%d,%d,%f)\n",servo_yaw,servo_pitch,ratio_deg);
@@ -928,7 +927,7 @@ int CMassunDroid::servoHomingFace()
     // 前回と同じサーボ値ならスキップ
     if(servo_yaw!=m_servo_yaw){
         // サーボの角度設定
-        printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
+        // printf("pwmWrite(GPIO_YAW, %d)\n",servo_yaw);
         pwmWrite(GPIO_YAW, servo_yaw);
         iRet = 1;
         // 前値保存
@@ -936,7 +935,7 @@ int CMassunDroid::servoHomingFace()
     }
     if(servo_pitch!=m_servo_pitch){
         // サーボの角度設定
-        printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
+        // printf("pwmWrite(GPIO_PITCH, %d)\n",servo_pitch);
         pwmWrite(GPIO_PITCH, servo_pitch);
         iRet = 1;
         // 前値保存
