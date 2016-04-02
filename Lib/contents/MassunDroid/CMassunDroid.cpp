@@ -24,7 +24,7 @@ CvSize minsiz ={0,0};
 
 #include <sys/time.h>
 
-#define USE_WIN				(1)
+#define USE_WIN				(0)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
 #define HOMING_DELAY_MSEC	(1000)
@@ -505,7 +505,7 @@ int CMassunDroid::mainLoop()
                         printf("save face-image.\n");
                         // HDMI:  /dev/fb0
                         // PiTFT: /dev/fb1
-                        system("sudo fbi -T 2 -d /dev/fb0 -noverbose -t 2 /home/pi/face_image.jpg");
+                        system("sudo fbi -T 2 -d /dev/fb0 -t 2 -once /home/pi/face_image.jpg");
                     }
                 }else{
                     // 現在時刻を取得
