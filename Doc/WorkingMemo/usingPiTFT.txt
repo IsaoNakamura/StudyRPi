@@ -2,3 +2,13 @@ sudo apt-get install fbi
 
 sudo fbi -T 2 -d /dev/fb1 -noverbose -a [画像ファイル]
 sudo fbi -T 2 -d /dev/fb1 -noverbose -a adapiluv320x240.jpg
+
+
+
+
+画面の出力先を変更する
+インストール時に作成したファイル。
+/usr/share/X11/xorg.conf.d/99-pitft.conf
+# "fb0"または"fb1"に設定する
+Option "fbdev" "/dev/fb0"
+"fb0"でHDMIから出力して"fb1"でPiTFTに出力する。
