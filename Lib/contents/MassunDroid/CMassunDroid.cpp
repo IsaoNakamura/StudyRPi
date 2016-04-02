@@ -962,5 +962,5 @@ void CMassunDroid::servoResetMid()
     pwmWrite(GPIO_PITCH, servo_pitch);
     m_servo_yaw = servo_yaw;
     m_servo_pitch = servo_pitch;
-    return 0;
+    return;
 }
