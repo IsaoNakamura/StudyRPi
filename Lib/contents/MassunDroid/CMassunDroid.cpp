@@ -523,9 +523,13 @@ int CMassunDroid::mainLoop()
                 }
             }else{
                 wrk_homing_state = HOMING_NONE;
-                // NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
 				m_nonface_cnt++;
 				m_silent_cnt++;
+                // NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
+                if( m_nonface_cnt > NONFACE_CNT_MAX ){
+                    m_nonface_cnt = 0;
+                    servoResetMid();
+                }
             }
             if(homingAction(wrk_homing_state)!=0){
                 printf("failed to CMassunDroid::homingAction()\n");
@@ -641,18 +645,23 @@ int CMassunDroid::homingAction(const int& homing_state)
             {
             case HOMING_NONE:
                 printf("[STATE] no detected face.\n");
-                #if ( USE_TALK > 0 )
-                if( homing_state != HOMING_DELAY ){
-                    talkType = rand() % TALK_REASON_NUM;
-                    talkReason(talkType);
+                if( m_silent_cnt > SILENT_CNT ){
+                    m_silent_cnt = 0;
+                    #if ( USE_TALK > 0 )
+                    if( homing_state != HOMING_DELAY ){
+                        talkType = rand() % TALK_REASON_NUM;
+                        talkReason(talkType);
+                    }
+                    #endif
                 }
-                #endif
                 break;
             case HOMING_HOMING:
                 printf("[STATE] homing.\n");
+                m_silent_cnt = 0;
                 break;
             case HOMING_DELAY:
                 printf("[STATE] delay.\n");
+                m_silent_cnt = 0;
                 break;
             case HOMING_CENTER:
                 printf("[STATE] face is center.\n");
@@ -664,6 +673,7 @@ int CMassunDroid::homingAction(const int& homing_state)
                 break;
             case HOMING_KEEP:
                 printf("[STATE] keep.\n");
+                m_silent_cnt = 0;
                 break;
             default:
                 break;
@@ -944,3 +954,13 @@ int CMassunDroid::servoHomingFace()
 	return 0;
 }
 
+void CMassunDroid::servoResetMid()
+{
+    int servo_yaw	= SERVO_MID;
+    int servo_pitch	= SERVO_MID;
+    pwmWrite(GPIO_YAW, servo_yaw);
+    pwmWrite(GPIO_PITCH, servo_pitch);
+    m_servo_yaw = servo_yaw;
+    m_servo_pitch = servo_pitch;
+    return 0;
+}

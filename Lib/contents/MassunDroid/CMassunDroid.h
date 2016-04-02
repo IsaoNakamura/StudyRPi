@@ -59,6 +59,7 @@ private:
     int drawRectFace(IplImage* frame, const CvSeq* face);
     bool isInsideFaceCenter();
     int servoHomingFace();
+    void servoResetMid();
     bool talkReason( const int& talkType);
     bool talkWelcome( const int& talkType);
 
