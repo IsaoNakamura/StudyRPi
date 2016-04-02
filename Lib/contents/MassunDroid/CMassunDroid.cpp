@@ -131,43 +131,43 @@ bool CMassunDroid::talkWelcome( const int& talkType)
 		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
 		break;
 	case 10:
-		system("aplay /home/pi/MassunVoice/20160328 220230.m4a.wav");
+		system("aplay /home/pi/MassunVoice/01.wav");
 		break;
 	case 11:
-		system("aplay /home/pi/MassunVoice/20160328 220312.m4a.wav");
+		system("aplay /home/pi/MassunVoice/02.wav");
 		break;
 	case 12:
-		system("aplay /home/pi/MassunVoice/20160328 220424.m4a.wav");
+		system("aplay /home/pi/MassunVoice/03.wav");
 		break;
 	case 13:
-		system("aplay /home/pi/MassunVoice/20160328 220518.m4a.wav");
+		system("aplay /home/pi/MassunVoice/04.wav");
 		break;
 	case 14:
-		system("aplay /home/pi/MassunVoice/20160328 220642.m4a.wav");
+		system("aplay /home/pi/MassunVoice/05.wav");
 		break;
 	case 15:
-		system("aplay /home/pi/MassunVoice/20160328 220800.m4a.wav");
+		system("aplay /home/pi/MassunVoice/06.wav");
 		break;
 	case 16:
-		system("aplay /home/pi/MassunVoice/020160328 220852.m4a.wav");
+		system("aplay /home/pi/MassunVoice/07.wav");
 		break;
 	case 17:
-		system("aplay /home/pi/MassunVoice/20160328 221522.m4a.wav");
+		system("aplay /home/pi/MassunVoice/08.wav");
 		break;
 	case 18:
-		system("aplay /home/pi/MassunVoice/20160328 222556.m4a.wav");
+		system("aplay /home/pi/MassunVoice/09.wav");
 		break;
 	case 19:
-		system("aplay /home/pi/MassunVoice/20160328 223638.m4a.wav");
+		system("aplay /home/pi/MassunVoice/10.wav");
 		break;
 	case 20:
-		system("aplay /home/pi/MassunVoice/20160328 223728.m4a.wav");
+		system("aplay /home/pi/MassunVoice/11.wav");
 		break;
 	case 21:
-		system("aplay /home/pi/MassunVoice/20160328 225218.m4a.wav");
+		system("aplay /home/pi/MassunVoice/12.wav");
 		break;
 	case 22:
-		system("aplay /home/pi/MassunVoice/20160328 225246.m4a.wav");
+		system("aplay /home/pi/MassunVoice/13.wav");
 		break;
 	default:
 		break;
