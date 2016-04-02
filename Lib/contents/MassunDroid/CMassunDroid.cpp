@@ -500,7 +500,9 @@ int CMassunDroid::mainLoop()
                     wrk_homing_state = HOMING_CENTER;
                     
                     // フレーム画像を保存
-                    cvSaveImage("/home/pi/face_image.jpg",frame);
+                    if(wrk_homing_state!=m_homing_state){
+                        cvSaveImage("/home/pi/face_image.jpg",frame);
+                    }
                 }else{
                     // 現在時刻を取得
                     gettimeofday(&stNow, NULL);
@@ -648,17 +650,17 @@ int CMassunDroid::homingAction(const int& homing_state)
                 break;
             case HOMING_HOMING:
                 printf("[STATE] homing.\n");
-                #if ( USE_TALK > 0 )
-                talkType = rand() % TALK_WELCOME_NUM;
-                talkWelcome(talkType);
-                m_silent_cnt = 0;
-                #endif
                 break;
             case HOMING_DELAY:
                 printf("[STATE] delay.\n");
                 break;
             case HOMING_CENTER:
                 printf("[STATE] face is center.\n");
+                #if ( USE_TALK > 0 )
+                talkType = rand() % TALK_WELCOME_NUM;
+                talkWelcome(talkType);
+                m_silent_cnt = 0;
+                #endif
                 break;
             case HOMING_KEEP:
                 printf("[STATE] keep.\n");
