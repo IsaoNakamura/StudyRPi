@@ -505,7 +505,7 @@ int CMassunDroid::mainLoop()
                         printf("save face-image.\n");
                         // HDMI:  /dev/fb0
                         // PiTFT: /dev/fb1
-                        system("sudo fbi -T 2 -d /dev/fb0 -t 2 -once /home/pi/face_image.jpg");
+                        system("sudo fbi -T 2 -d /dev/fb0 -t 2 -once -a /home/pi/face_image.jpg");
                     }
                 }else{
                     // 現在時刻を取得
@@ -853,7 +853,7 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
                         , CV_AA
                         , 0
         );
-
+        #endif
         // 取得した顔の位置情報に基づき、矩形描画を行う
         cvRectangle(	  frame
                         , cvPoint(faceRect->x, faceRect->y)
@@ -863,7 +863,7 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
                         , CV_AA
                         , 0
         );
-        #endif
+
 
         // 顔のスクリーン座標を算出
         m_face_scrn_x = faceRect->x + (faceRect->width / 2.0);
