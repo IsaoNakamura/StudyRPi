@@ -505,7 +505,7 @@ int CMassunDroid::mainLoop()
                         printf("save face-image.\n");
                         // HDMI:  /dev/fb0
                         // PiTFT: /dev/fb1
-                        system("sudo fbi -T 2 -d /dev/fb0 -noverbose /home/pi/face_image.jpg");
+                        system("sudo fbi -T 2 -d /dev/fb0 -noverbose -t 2 /home/pi/face_image.jpg");
                     }
                 }else{
                     // 現在時刻を取得
