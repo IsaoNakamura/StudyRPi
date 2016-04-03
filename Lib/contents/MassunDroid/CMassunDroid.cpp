@@ -46,6 +46,8 @@ CvSize minsiz ={0,0};
 #define SERVO_PITCH_LIMIT_MAX   (SERVO_MAX - 22)
 #define SERVO_PITCH_LIMIT_MIN   (SERVO_MIN + 34)
 
+#define CAMERA_ROTATE   (270)
+
 #define TALK_REASON_NUM	(12)
 bool CMassunDroid::talkReason( const int& talkType)
 {
@@ -338,7 +340,7 @@ int CMassunDroid::setupCv()
         config->bitrate=0;	// zero: leave as default
         config->framerate=0;
         config->monochrome=0;
-        config->rotation=270;
+        config->rotation=CAMERA_ROTATE;
         
         #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
