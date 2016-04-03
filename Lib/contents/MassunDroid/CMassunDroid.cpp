@@ -24,6 +24,8 @@ CvSize minsiz ={0,0};
 
 #include <sys/time.h>
 
+#define KEEP_FILE           (1)
+#define OUT_FB              (1) // 0:HDMI 1:PiTFT
 #define USE_WIN				(0)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
@@ -504,8 +506,8 @@ int CMassunDroid::mainLoop()
                     
                     // フレーム画像を保存
                     if(wrk_homing_state!=m_homing_state){
-                        #if 1
-                        saveFaceImage(frame, 0);
+                        #if ( KEEP_FILE > 0 )
+                        saveFaceImage(frame, OUT_FB);
                         #else
                         cvSaveImage("/home/pi/face_image.jpg",frame);
                         printf("save face-image.\n");
