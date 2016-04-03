@@ -960,7 +960,7 @@ int CMassunDroid::servoHomingFace()
         // 前値保存
         m_servo_pitch = servo_pitch;
     }
-	return 0;
+	return iRet;
 }
 
 void CMassunDroid::servoResetMid()
