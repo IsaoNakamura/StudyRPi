@@ -486,7 +486,7 @@ int CMassunDroid::mainLoop()
            //     printf("failed to CMassunDroid::detectFace()\n");
            //     throw 0;
            // }
-           if(!face){
+            if(!face){
 	            printf("face is NULL\n");
                 throw 0;
             }
@@ -501,11 +501,15 @@ int CMassunDroid::mainLoop()
                     
                     // フレーム画像を保存
                     if(wrk_homing_state!=m_homing_state){
+                        #if 1
+                        saveFaceImage(frame, 0);
+                        #else
                         cvSaveImage("/home/pi/face_image.jpg",frame);
                         printf("save face-image.\n");
                         // HDMI:  /dev/fb0
                         // PiTFT: /dev/fb1
                         system("sudo fbi -T 2 -d /dev/fb0 -t 2 -once -a /home/pi/face_image.jpg");
+                        #endif
                     }
                 }else{
                     // 現在時刻を取得
@@ -967,4 +971,52 @@ void CMassunDroid::servoResetMid()
     m_servo_yaw = servo_yaw;
     m_servo_pitch = servo_pitch;
     return;
+}
+
+int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo)
+{
+	int iRet = -1;
+	time_t timer=0;
+	struct tm *t_st=NULL;
+	char strFile[64]={0};
+    char strCmd[128]={0};
+
+	try
+	{
+		time(&timer);
+		//printf("%s\n",ctime(&timer));
+
+		t_st=localtime(&timer);
+		sprintf(strFile,
+				"/home/pi/face_%04d%02d%02d%02d%02d%02d.jpg"
+				, t_st->tm_year+1900
+				, t_st->tm_mon+1,
+				, t_st->tm_mday
+				, t_st->tm_hour
+				, t_st->tm_min
+				, t_st->tm_sec
+		);
+
+        // save picture.
+		printf("save file=%s.\n",strFile);
+        cvSaveImage(strFile,frame);
+        
+        // display picture.
+        // HDMI:  /dev/fb0
+        // PiTFT: /dev/fb1
+        sprintf(strCmd,
+                "sudo fbi -T 2 -d /dev/fb%d -t 2 -once -a %s"
+                , fbNo
+                , strFile
+        );
+        system(strCmd);
+
+		//ここまでくれば正常
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
 }
