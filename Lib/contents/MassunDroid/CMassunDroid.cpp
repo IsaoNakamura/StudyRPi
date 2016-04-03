@@ -338,6 +338,7 @@ int CMassunDroid::setupCv()
         config->bitrate=0;	// zero: leave as default
         config->framerate=0;
         config->monochrome=0;
+        config->rotation=270;
         
         #if ( USE_WIN > 0 )
 		cvNamedWindow( DISP_WIN , CV_WINDOW_AUTOSIZE );
@@ -357,15 +358,15 @@ int CMassunDroid::setupCv()
         raspiCamCvSetCaptureProperty (m_capture, RPI_CAP_PROP_FRAME_WIDTH, w);
         raspiCamCvSetCaptureProperty (m_capture, RPI_CAP_PROP_FRAME_HEIGHT, h);
 	
-	// 正面顔検出器の読み込み
-	m_cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
+        // 正面顔検出器の読み込み
+        m_cvHCC = (CvHaarClassifierCascade*)cvLoad(CASCADE, NULL,NULL,NULL);
         if(!m_cvHCC){
             printf("failed to load CvHaarClassifierCascade.\n");
             throw 0;
         }
 	
-	// 検出に必要なメモリストレージを用意する
-	m_cvMStr = cvCreateMemStorage(0);
+        // 検出に必要なメモリストレージを用意する
+        m_cvMStr = cvCreateMemStorage(0);
         if(!m_cvMStr){
             printf("failed to create CvMemStorage.\n");
             throw 0;
