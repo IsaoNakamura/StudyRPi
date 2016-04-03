@@ -62,7 +62,7 @@ private:
     void servoResetMid();
     bool talkReason( const int& talkType);
     bool talkWelcome( const int& talkType);
-    int saveFaceImage(const IplImage* frame, const int& fbNo);
+    int saveFaceImage(const IplImage* frame, const int& fbNo, const int& dispTime);
 
 private:
     HomingStatus m_homing_state;

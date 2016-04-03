@@ -25,7 +25,8 @@ CvSize minsiz ={0,0};
 #include <sys/time.h>
 
 #define KEEP_FILE           (1)
-#define OUT_FB              (1) // 0:HDMI 1:PiTFT
+#define DISP_FB             (1) // 0:HDMI 1:PiTFT
+#define DISP_FACE_SEC       (3)
 #define USE_WIN				(0)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
@@ -508,7 +509,7 @@ int CMassunDroid::mainLoop()
                     // フレーム画像を保存
                     if(wrk_homing_state!=m_homing_state){
                         #if ( KEEP_FILE > 0 )
-                        saveFaceImage(frame, OUT_FB);
+                        saveFaceImage(frame, DISP_FB, DISP_FACE_SEC);
                         #else
                         cvSaveImage("/home/pi/face_image.jpg",frame);
                         printf("save face-image.\n");
@@ -979,7 +980,7 @@ void CMassunDroid::servoResetMid()
     return;
 }
 
-int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo)
+int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo, const int& dispTime)
 {
 	int iRet = -1;
 	time_t timer=0;
@@ -1011,8 +1012,9 @@ int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo)
         // HDMI:  /dev/fb0
         // PiTFT: /dev/fb1
         sprintf(strCmd,
-                "sudo fbi -T 2 -d /dev/fb%d -t 2 -once -a %s"
+                "sudo fbi -T 2 -d /dev/fb%d -t %d -once -a %s"
                 , fbNo
+                , dispTime
                 , strFile
         );
         system(strCmd);
