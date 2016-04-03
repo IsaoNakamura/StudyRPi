@@ -34,6 +34,7 @@ CvSize minsiz ={0,0};
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
 #define SILENT_CNT			(30)
+#define RECT_THICKNESS      (1)
 
 #define ANGLE_DIAGONAL	(60.0)
 
@@ -858,7 +859,7 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
                         , cvPoint( (WIN_WIDTH_HALF - m_face_area_x), (WIN_HEIGHT_HALF - m_face_area_x) )
                         , cvPoint( (WIN_WIDTH_HALF + m_face_area_y), (WIN_HEIGHT_HALF +m_face_area_y) )
                         , CV_RGB(0, 255 ,0)
-                        , 2
+                        , RECT_THICKNESS
                         , CV_AA
                         , 0
         );
@@ -868,7 +869,7 @@ int CMassunDroid::drawRectFace(IplImage* frame, const CvSeq* face)
                         , cvPoint(faceRect->x, faceRect->y)
                         , cvPoint(faceRect->x + faceRect->width, faceRect->y + faceRect->height)
                         , CV_RGB(255, 0 ,0)
-                        , 2
+                        , RECT_THICKNESS
                         , CV_AA
                         , 0
         );
