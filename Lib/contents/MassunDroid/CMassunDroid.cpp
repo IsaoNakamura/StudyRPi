@@ -990,7 +990,7 @@ int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo)
 		sprintf(strFile,
 				"/home/pi/face_%04d%02d%02d%02d%02d%02d.jpg"
 				, t_st->tm_year+1900
-				, t_st->tm_mon+1,
+				, t_st->tm_mon+1
 				, t_st->tm_mday
 				, t_st->tm_hour
 				, t_st->tm_min
