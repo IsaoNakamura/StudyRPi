@@ -8,3 +8,11 @@ amixer cset numid=3 2
 amixer cset numid=3 1
 
 ./AquesTalkPi -b -v f1 -s 50 "テストです" | aplay
+
+# USBオーディオからデフォルトで出力する
+/etc/modprorbe.d/alsa-base.conf
+change
+ options snd-usb-audio index=-2
+to
+ options snd-usb-audio index=0 
+or none
