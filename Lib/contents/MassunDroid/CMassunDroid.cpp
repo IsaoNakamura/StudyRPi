@@ -320,6 +320,8 @@ int CMassunDroid::setupGpio()
 		pinMode(GPIO_EXIT, INPUT);
 		pinMode(GPIO_HALT, INPUT);
         
+        servoResetMid();
+        
 		iRet = 0;
 	}
 	catch(...)
@@ -604,8 +606,7 @@ int CMassunDroid::finalizeServo()
 	try
 	{
         // サーボ角度を中間に設定
-		pwmWrite(m_gpioYaw, m_servo_mid);
-		pwmWrite(m_gpioPitch, m_servo_mid);
+		servoResetMid();
         
 		iRet = 0;
 	}
