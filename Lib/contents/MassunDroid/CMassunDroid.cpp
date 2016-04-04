@@ -563,7 +563,7 @@ int CMassunDroid::mainLoop()
                 throw 0;
             }
             if(m_exit>0){
-                // break;
+                break;
             }
         }
 		iRet = 0;
