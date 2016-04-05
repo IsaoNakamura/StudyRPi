@@ -427,6 +427,10 @@ int CMassunDroid::exec()
 	int iRet = -1;
 	try
 	{
+        #if ( USE_TALK_TEST > 0 )
+	    testTalk();
+        #endif
+        
 		if(setup()!=0){
 		    printf("failed to CMassunDroid::setup()\n");
 		    throw 0;
@@ -451,6 +455,19 @@ int CMassunDroid::exec()
 		iRet = -1;
 	}
 	return iRet;
+}
+
+void CMassunDroid::testTalk()
+{
+	int i=0;
+	for(i=0;i<TALK_REASON_NUM;i++){
+		talkReason(i);
+	}
+
+	for(i=0;i<TALK_WELCOME_NUM;i++){
+		talkWelcome(i);
+	}
+    return;
 }
 
 int CMassunDroid::mainLoop()
