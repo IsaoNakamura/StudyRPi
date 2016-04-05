@@ -922,6 +922,7 @@ int CMassunDroid::servoHomingFace()
     if(servo_yaw > m_servo_max){
         m_over_cnt++;
         // printf("yaw is over max. cnt=%d ######## \n", m_over_cnt);
+        servo_yaw = m_servo_max;
     }else if(servo_yaw < m_servo_min){
         m_over_cnt++;
         // printf("yaw is under min. cnt=%d ######## \n",m_over_cnt);
