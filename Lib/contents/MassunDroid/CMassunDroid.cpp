@@ -801,7 +801,7 @@ int CMassunDroid::exitAction()
             #if ( USE_TALK > 0 )
 			system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"しすてむを しゃっとだうん します\" | aplay");
             #endif
-			// system("sudo halt");
+			system("sudo halt");
         }
         iRet = 0;
     } // try

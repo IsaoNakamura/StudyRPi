@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
             throw 0;
         }
         
-        if(!pMassun->exec()){
+        if(pMassun->exec()!=0){
             printf("failed to CMassunDroid::exec()\n");
             throw 0;
         }
