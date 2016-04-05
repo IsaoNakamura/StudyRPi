@@ -396,6 +396,7 @@ int main(int argc, char* argv[])
 						if(servo_yaw > servo_max){
 							over_cnt++;
 							printf("yaw is over max. cnt=%d ######## \n", over_cnt);
+                            servo_yaw = servo_max;
 						}else if(servo_yaw < servo_min){
 							over_cnt++;
 							printf("yaw is under min. cnt=%d ######## \n",over_cnt);
