@@ -39,7 +39,7 @@ CvSize minsiz ={0,0};
 
 #define ANGLE_DIAGONAL	(60.0)
 
-#define DELAY_SEC	(1)
+#define DELAY_MSEC	(1)
 
 #define SERVO_MID   (76)
 #define SERVO_MIN   (36)
@@ -751,14 +751,14 @@ int CMassunDroid::detectFace(CvSeq* face, const IplImage* frame)
             printf("frame is NULL.\n");
             throw 0;
         }
-	if(!m_cvHCC){
-		printf("m_cvHCC is NULL.\n");
-		throw 0;
-	}
-	if(!m_cvMStr){
-		printf("m_cvMStris NULL.\n");
-		
-	}
+        if(!m_cvHCC){
+            printf("m_cvHCC is NULL.\n");
+            throw 0;
+        }
+        if(!m_cvMStr){
+            printf("m_cvMStris NULL.\n");
+            
+        }
         // 画像中から検出対象の情報を取得する
         face = cvHaarDetectObjects(	  frame
                                     , m_cvHCC
@@ -818,7 +818,7 @@ int CMassunDroid::keyAction()
 	try
 	{
         // 負荷分散のためDelay
-        char c = cvWaitKey(DELAY_SEC);
+        char c = cvWaitKey(DELAY_MSEC);
         if( c==27 ){ // ESC-Key
             m_exit = 1;
         }
