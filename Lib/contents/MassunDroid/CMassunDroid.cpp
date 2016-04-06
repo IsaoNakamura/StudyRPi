@@ -34,7 +34,7 @@ CvSize minsiz ={0,0};
 #define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
-#define SILENT_CNT			(30)
+#define SILENT_CNT			(10)
 #define RECT_THICKNESS      (1)
 
 #define ANGLE_DIAGONAL	(60.0)
@@ -558,7 +558,6 @@ int CMassunDroid::mainLoop()
             }else{
                 wrk_homing_state = HOMING_NONE;
 				m_nonface_cnt++;
-				m_silent_cnt++;
                 // NONFACE_CNT_MAXフレーム分の間、顔検出されなければ、サーボ角度を中間にもどす。
                 if( m_nonface_cnt > NONFACE_CNT_MAX ){
                     m_nonface_cnt = 0;
@@ -677,7 +676,8 @@ int CMassunDroid::homingAction(const int& homing_state)
             switch( homing_state )
             {
             case HOMING_NONE:
-                printf("[STATE] no detected face.\n");
+                m_silent_cnt++;
+                printf("[STATE] no detected face cont=%d.\n",m_silent_cnt);
                 if( m_silent_cnt > SILENT_CNT ){
                     m_silent_cnt = 0;
                     #if ( USE_TALK > 0 )
