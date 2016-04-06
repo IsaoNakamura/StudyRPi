@@ -34,7 +34,7 @@ CvSize minsiz ={0,0};
 #define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
-#define SILENT_CNT			(10)
+#define SILENT_CNT			(20)
 #define RECT_THICKNESS      (1)
 
 #define ANGLE_DIAGONAL	(60.0)
@@ -563,6 +563,16 @@ int CMassunDroid::mainLoop()
                     m_nonface_cnt = 0;
                     servoResetMid();
                 }
+                m_silent_cnt++;
+                if( m_silent_cnt > SILENT_CNT ){
+                    m_silent_cnt = 0;
+                    #if ( USE_TALK > 0 )
+                    if( homing_state != HOMING_DELAY ){
+                        talkType = rand() % TALK_REASON_NUM;
+                        talkReason(talkType);
+                    }
+                    #endif
+                }
             }
             if(homingAction(wrk_homing_state)!=0){
                 printf("failed to CMassunDroid::homingAction()\n");
@@ -676,17 +686,7 @@ int CMassunDroid::homingAction(const int& homing_state)
             switch( homing_state )
             {
             case HOMING_NONE:
-                m_silent_cnt++;
                 printf("[STATE] no detected face cont=%d.\n",m_silent_cnt);
-                if( m_silent_cnt > SILENT_CNT ){
-                    m_silent_cnt = 0;
-                    #if ( USE_TALK > 0 )
-                    if( homing_state != HOMING_DELAY ){
-                        talkType = rand() % TALK_REASON_NUM;
-                        talkReason(talkType);
-                    }
-                    #endif
-                }
                 break;
             case HOMING_HOMING:
                 printf("[STATE] homing.\n");
