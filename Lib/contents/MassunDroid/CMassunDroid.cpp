@@ -34,7 +34,7 @@ CvSize minsiz ={0,0};
 #define CENTER_AREA_RATIO	(0.8)
 #define SERVO_OVER_MAX		(10)
 #define NONFACE_CNT_MAX		(50)
-#define SILENT_CNT			(20)
+#define SILENT_CNT			(30)
 #define RECT_THICKNESS      (1)
 
 #define ANGLE_DIAGONAL	(60.0)
