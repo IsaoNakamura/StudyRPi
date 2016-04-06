@@ -567,10 +567,8 @@ int CMassunDroid::mainLoop()
                 if( m_silent_cnt > SILENT_CNT ){
                     m_silent_cnt = 0;
                     #if ( USE_TALK > 0 )
-                    if( homing_state != HOMING_DELAY ){
-                        talkType = rand() % TALK_REASON_NUM;
-                        talkReason(talkType);
-                    }
+                    int talkType = rand() % TALK_REASON_NUM;
+                    talkReason(talkType);
                     #endif
                 }
             }
