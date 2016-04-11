@@ -397,11 +397,18 @@ int CMassunDroid::exec()
         #if ( USE_TALK_TEST > 0 )
 	    testTalk();
         #endif
+
+        #if ( USE_TALK > 0 )
+        system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"まっすんどろいど を 起動します\" | aplay");
+        #endif
         
 		if(setup()!=0){
 		    printf("failed to CMassunDroid::setup()\n");
 		    throw 0;
 		}
+        #if ( USE_TALK > 0 )
+        system("/home/pi/aquestalkpi/AquesTalkPi -g 60 \"まっすんどろいど は ウェルカムモード に 移行します\" | aplay");
+        #endif
 		if(mainLoop()!=0){
 		    printf("failed to CMassunDroid::mainLoop()\n");
 		    throw 0;
