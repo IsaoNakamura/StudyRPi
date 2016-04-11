@@ -566,6 +566,7 @@ int CMassunDroid::mainLoop()
                 m_silent_cnt++;
                 if( m_silent_cnt > SILENT_CNT ){
                     m_silent_cnt = 0;
+                    dispMassunImage(DISP_FB, DISP_FACE_SEC);
                     #if ( USE_TALK > 0 )
                     int talkType = rand() % TALK_REASON_NUM;
                     talkReason(talkType);
@@ -1025,6 +1026,35 @@ int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo, const in
 		printf("save file=%s.\n",strFile);
         cvSaveImage(strFile,frame);
         
+        // disp picture.
+        if( dispImage(strFile, fbNo, dispTime)!=0 ){
+            throw 0;
+        }
+
+		//ここまでくれば正常
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::dispImage(const char* filePath, const int& fbNo, const int& dispTime)
+{
+	int iRet = -1;
+    char strCmd[128]={0};
+
+	try
+	{
+        if(!filePath){
+            printf("dispImage() filePath is NULL\n");
+            throw 0;
+        }
+        // save picture.
+		printf("disp file=%s.\n",filePath);
+        
         // display picture.
         // HDMI:  /dev/fb0
         // PiTFT: /dev/fb1
@@ -1032,9 +1062,43 @@ int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo, const in
                 "sudo fbi -T 2 -d /dev/fb%d -t %d -once -a %s"
                 , fbNo
                 , dispTime
-                , strFile
+                , filePath
         );
         system(strCmd);
+
+		//ここまでくれば正常
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
+#define MASSUN_IMG_NUM  (3)
+int CMassunDroid::dispMassunImage(const int& fbNo, const int& dispTime)
+{
+	int iRet = -1;
+    char strFile[64]={0};
+
+	try
+	{
+        if(!filePath){
+            printf("dispImage() filePath is NULL\n");
+            throw 0;
+        }
+        int imageType = rand() % MASSUN_IMG_NUM;
+        
+		sprintf(strFile,
+				"/home/pi/massunImage/massun_%02d.jpg"
+				, imageType
+		);
+        
+        if(dispImage(strFile, fbNo, dispTime)!=0){
+            printf("failed to dispImage(%s)\n",strFile);
+            throw 0;
+        }
 
 		//ここまでくれば正常
 		iRet = 0;

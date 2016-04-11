@@ -63,6 +63,8 @@ private:
     bool talkReason( const int& talkType);
     bool talkWelcome( const int& talkType);
     int saveFaceImage(const IplImage* frame, const int& fbNo, const int& dispTime);
+    int dispImageconst char* filePath, const int& fbNo, const int& dispTime);
+    int dispMassunImage(const int& fbNo, const int& dispTime)
     void testTalk();
 
 private:
