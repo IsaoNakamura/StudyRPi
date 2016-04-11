@@ -52,77 +52,47 @@ CvSize minsiz ={0,0};
 
 #define CAMERA_ROTATE   (270)
 
-#define TALK_REASON_NUM	(22)
+#define TALK_REASON_NUM	(12)
 bool CMassunDroid::talkReason( const int& talkType)
 {
 	printf("called talkReason(%d)\n",talkType);
 	switch( talkType )
 	{
 	case 0:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うれしなみだで　よくみえないや\" | aplay");
+		system("aplay /home/pi/MassunVoice/05.wav");
 		break;
 	case 1:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きょうは めでたい\" | aplay");
+		system("aplay /home/pi/MassunVoice/06.wav");
 		break;
 	case 2:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ふぅ しあわせすぎて ためいきがでる\" | aplay");
+		system("aplay /home/pi/MassunVoice/07.wav");
 		break;
 	case 3:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きんちょうしてきた\" | aplay");
+		system("aplay /home/pi/MassunVoice/08.wav");
 		break;
 	case 4:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"まっすん うまく しゃべれるかな?\" | aplay");
+		system("aplay /home/pi/MassunVoice/09.wav");
 		break;
 	case 5:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"わたしは 商品開発課の なかむらによって 休みの合間を縫って開発されました\" | aplay");
+		system("aplay /home/pi/MassunVoice/11.wav");
 		break;
 	case 6:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ペガサスあーーーーーーーい\" | aplay");
+		system("aplay /home/pi/MassunVoice/12.wav");
 		break;
 	case 7:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぉーーーく あーーーーーーーい\" | aplay");
+		system("aplay /home/pi/MassunVoice/13.wav");
 		break;
 	case 8:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"あいだっぷぅぅぅぅーー\" | aplay");
+		system("aplay /home/pi/MassunVoice/16.wav");
 		break;
 	case 9:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"われむぅぅぅぅーーーーーーー\" | aplay");
+		system("aplay /home/pi/MassunVoice/17.wav");
 		break;
 	case 10:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"がれむぅぅぅぅーーーーーーー\" | aplay");
+		system("aplay /home/pi/MassunVoice/18.wav");
 		break;
 	case 11:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"でぇーーさーーん　でぇーじいー\" | aplay");
-		break;
-	case 12:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"うぇるかーむ\" | aplay");
-		break;
-	case 13:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ようこそおいでくださいました\" | aplay");
-		break;
-	case 14:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"ゆっくりしていってね\" | aplay");
-		break;
-	case 15:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40 \"きてくれて ありがとう\" | aplay");
-		break;
-	case 16:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"まっすんと あやかも よろこんでおります\" | aplay");
-		break;
-	case 17:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"やまをめざそう\" | aplay");
-		break;
-	case 18:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"セントラーザ へ ようこそ\" | aplay");
-		break;
-	case 19:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"なまえはかきましたか？\" | aplay");
-		break;
-	case 20:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"ちゃぺるまで ごあんないします うそです うごけません\" | aplay");
-		break;
-	case 21:
-		system("/home/pi/aquestalkpi/AquesTalkPi -g 40  \"めがあいましたね うふ\" | aplay");
+		system("aplay /home/pi/MassunVoice/20.wav");
 		break;
 	default:
 		break;
@@ -130,7 +100,7 @@ bool CMassunDroid::talkReason( const int& talkType)
 	return true;
 }
 
-#define TALK_WELCOME_NUM	(13)
+#define TALK_WELCOME_NUM	(12)
 bool CMassunDroid::talkWelcome( const int& talkType)
 {
 	printf("called talkWelcome(%d)\n",talkType);
@@ -149,31 +119,28 @@ bool CMassunDroid::talkWelcome( const int& talkType)
 		system("aplay /home/pi/MassunVoice/04.wav");
 		break;
 	case 4:
-		system("aplay /home/pi/MassunVoice/05.wav");
-		break;
-	case 5:
-		system("aplay /home/pi/MassunVoice/06.wav");
-		break;
-	case 6:
-		system("aplay /home/pi/MassunVoice/07.wav");
-		break;
-	case 7:
-		system("aplay /home/pi/MassunVoice/08.wav");
-		break;
-	case 8:
-		system("aplay /home/pi/MassunVoice/09.wav");
-		break;
-	case 9:
 		system("aplay /home/pi/MassunVoice/10.wav");
 		break;
+	case 5:
+		system("aplay /home/pi/MassunVoice/14.wav");
+		break;
+	case 6:
+		system("aplay /home/pi/MassunVoice/15.wav");
+		break;
+	case 7:
+		system("aplay /home/pi/MassunVoice/19.wav");
+		break;
+	case 8:
+		system("aplay /home/pi/MassunVoice/21.wav");
+		break;
+	case 9:
+		system("aplay /home/pi/MassunVoice/22.wav");
+		break;
 	case 10:
-		system("aplay /home/pi/MassunVoice/11.wav");
+		system("aplay /home/pi/MassunVoice/23.wav");
 		break;
 	case 11:
-		system("aplay /home/pi/MassunVoice/12.wav");
-		break;
-	case 12:
-		system("aplay /home/pi/MassunVoice/13.wav");
+		system("aplay /home/pi/MassunVoice/24.wav");
 		break;
 	default:
 		break;
