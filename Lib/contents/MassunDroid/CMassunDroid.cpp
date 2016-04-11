@@ -1004,7 +1004,6 @@ int CMassunDroid::saveFaceImage(const IplImage* frame, const int& fbNo, const in
 	time_t timer=0;
 	struct tm *t_st=NULL;
 	char strFile[64]={0};
-    char strCmd[128]={0};
 
 	try
 	{
@@ -1084,10 +1083,6 @@ int CMassunDroid::dispMassunImage(const int& fbNo, const int& dispTime)
 
 	try
 	{
-        if(!filePath){
-            printf("dispImage() filePath is NULL\n");
-            throw 0;
-        }
         int imageType = rand() % MASSUN_IMG_NUM;
         
 		sprintf(strFile,
