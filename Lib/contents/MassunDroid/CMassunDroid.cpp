@@ -1042,7 +1042,7 @@ int CMassunDroid::dispImage(const char* filePath, const int& fbNo, const int& di
 	return iRet;
 }
 
-#define MASSUN_IMG_NUM  (3)
+#define MASSUN_IMG_NUM  (4)
 int CMassunDroid::dispMassunImage(const int& fbNo, const int& dispTime)
 {
 	int iRet = -1;
