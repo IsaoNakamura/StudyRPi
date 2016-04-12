@@ -52,7 +52,7 @@ CvSize minsiz ={0,0};
 
 #define CAMERA_ROTATE   (270)
 
-#define TALK_REASON_NUM	(12)
+#define TALK_REASON_NUM	(25)
 bool CMassunDroid::talkReason( const int& talkType)
 {
 	printf("called talkReason(%d)\n",talkType);
@@ -94,13 +94,52 @@ bool CMassunDroid::talkReason( const int& talkType)
 	case 11:
 		system("aplay /home/pi/MassunVoice/20.wav");
 		break;
+	case 12:
+		system("aplay /home/pi/MassunVoice/27.wav");
+		break;
+	case 13:
+		system("aplay /home/pi/MassunVoice/28.wav");
+		break;
+	case 14:
+		system("aplay /home/pi/MassunVoice/31.wav");
+		break;
+	case 15:
+		system("aplay /home/pi/MassunVoice/32.wav");
+		break;
+	case 16:
+		system("aplay /home/pi/MassunVoice/33.wav");
+		break;
+	case 17:
+		system("aplay /home/pi/MassunVoice/34.wav");
+		break;
+	case 18:
+		system("aplay /home/pi/MassunVoice/35.wav");
+		break;
+	case 19:
+		system("aplay /home/pi/MassunVoice/36.wav");
+		break;
+	case 20:
+		system("aplay /home/pi/MassunVoice/39.wav");
+		break;
+	case 21:
+		system("aplay /home/pi/MassunVoice/40.wav");
+		break;
+	case 22:
+		system("aplay /home/pi/MassunVoice/41.wav");
+		break;
+	case 23:
+		system("aplay /home/pi/MassunVoice/42.wav");
+		break;
+	case 24:
+		system("aplay /home/pi/MassunVoice/43.wav");
+		break;
 	default:
 		break;
 	}
 	return true;
 }
 
-#define TALK_WELCOME_NUM	(12)
+#define TALK_WELCOME_NUM	(19)
 bool CMassunDroid::talkWelcome( const int& talkType)
 {
 	printf("called talkWelcome(%d)\n",talkType);
@@ -141,6 +180,27 @@ bool CMassunDroid::talkWelcome( const int& talkType)
 		break;
 	case 11:
 		system("aplay /home/pi/MassunVoice/24.wav");
+		break;
+	case 12:
+		system("aplay /home/pi/MassunVoice/25.wav");
+		break;
+	case 13:
+		system("aplay /home/pi/MassunVoice/26.wav");
+		break;
+	case 14:
+		system("aplay /home/pi/MassunVoice/29.wav");
+		break;
+	case 15:
+		system("aplay /home/pi/MassunVoice/30.wav");
+		break;
+	case 16:
+		system("aplay /home/pi/MassunVoice/37.wav");
+		break;
+	case 17:
+		system("aplay /home/pi/MassunVoice/38.wav");
+		break;
+	case 18:
+		system("aplay /home/pi/MassunVoice/44.wav");
 		break;
 	default:
 		break;
