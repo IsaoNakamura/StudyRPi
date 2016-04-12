@@ -723,11 +723,11 @@ int CMassunDroid::homingAction(const int& homing_state)
                 break;
             case HOMING_HOMING:
                 printf("[STATE] homing.\n");
-                m_silent_cnt = 0;
+                // m_silent_cnt = 0;
                 break;
             case HOMING_DELAY:
                 printf("[STATE] delay.\n");
-                m_silent_cnt = 0;
+                // m_silent_cnt = 0;
                 break;
             case HOMING_CENTER:
                 printf("[STATE] face is center.\n");
@@ -739,7 +739,7 @@ int CMassunDroid::homingAction(const int& homing_state)
                 break;
             case HOMING_KEEP:
                 printf("[STATE] keep.\n");
-                m_silent_cnt = 0;
+                // m_silent_cnt = 0;
                 break;
             default:
                 break;
