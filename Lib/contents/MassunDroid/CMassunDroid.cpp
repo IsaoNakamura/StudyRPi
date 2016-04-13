@@ -26,7 +26,7 @@ CvSize minsiz ={0,0};
 
 #define KEEP_FILE           (1)
 #define DISP_FB             (1) // 0:HDMI 1:PiTFT
-#define DISP_FACE_SEC       (7)
+#define DISP_FACE_SEC       (5)
 #define USE_WIN				(0)
 #define USE_TALK			(1)
 #define USE_TALK_TEST		(0)
