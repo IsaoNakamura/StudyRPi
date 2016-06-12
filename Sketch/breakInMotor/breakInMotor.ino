@@ -1,16 +1,26 @@
+#include <Wire.h>
+#include <SeeedOLED.h>
+
 #define PIN_FORWARD     8
 #define PIN_BACKWARD    9
 
-#define LOOP_MAX    4
-#define DRIVE_MSEC  100
-#define REST_MSEC   3000
+#define LOOP_MAX    5
+#define DRIVE_MSEC  30000
+#define REST_MSEC   180000
 
 unsigned long g_splitTime = 0;
 int g_motor_state = -1; // -1:first-time 0:forward 1:rest_forward 2:backward 3:rest_backward
 int g_loop_num = 0;
 
 void setup() {
-  // put your setup code here, to run once:
+  Wire.begin();
+  SeeedOled.init();  //initialze SEEED OLED display
+
+  SeeedOled.clearDisplay();          //clear the screen and set start position to top left corner
+  SeeedOled.setNormalDisplay();      //Set display to normal mode (i.e non-inverse mode)
+  SeeedOled.setPageMode();           //Set addressing mode to Page Mode
+  SeeedOled.setTextXY(0,0);          //Set the cursor to Xth Page, Yth Column  
+  SeeedOled.putString("Hello World!"); //Print the String
 
   pinMode(PIN_FORWARD, OUTPUT);
   pinMode(PIN_BACKWARD, OUTPUT);
@@ -24,7 +34,7 @@ void setup() {
 }
 
 void loop() {
-  if( g_loop_num > LOOP_MAX ){
+  if( g_loop_num >= LOOP_MAX ){
     // STOP
     digitalWrite(PIN_FORWARD, LOW);
     digitalWrite(PIN_BACKWARD, LOW);
@@ -70,20 +80,33 @@ void loop() {
     if(g_motor_state != motor_state){
       if(motor_state == 0 ){
         // FORWARD
+        SeeedOled.clearDisplay();
+        SeeedOled.putString("FORWARD");
         digitalWrite(PIN_FORWARD, HIGH);
         digitalWrite(PIN_BACKWARD, LOW);
-        g_loop_num++;
-        
       }else if(motor_state == 2){
         // BACKWARD
+        SeeedOled.clearDisplay();
+        SeeedOled.putString("BACKWARD");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, HIGH);
       }else if(motor_state == 1 || motor_state == 3){
         // REST
+        SeeedOled.clearDisplay();
+        SeeedOled.putString("REST");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, LOW);
+        if(motor_state == 3){
+          g_loop_num++;
+          if(g_loop_num >= LOOP_MAX){
+            SeeedOled.clearDisplay();
+            SeeedOled.putString("break is over.");
+          }
+        }
       }else{
         // FIRST
+        SeeedOled.clearDisplay();
+        SeeedOled.putString("FIRST");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, LOW);
       }
