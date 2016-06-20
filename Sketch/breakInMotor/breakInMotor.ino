@@ -74,10 +74,10 @@ static const unsigned char TamiyaLogo[] PROGMEM ={
 
 #define LOOP_MAX    5
 #define DRIVE_MSEC  1000 //30000
-#define REST_MSEC   2000 //180000
+#define PAUSE_MSEC  2000 //180000
 
 unsigned long g_splitTime = 0;
-int g_motor_state = -1; // -1:first-time 0:forward 1:rest_forward 2:backward 3:rest_backward
+int g_motor_state = -1; // -1:first-time 0:forward 1:pause_forward 2:backward 3:pause_backward
 int g_loop_num = 0;
 
 void setup() {
@@ -126,21 +126,21 @@ void loop() {
         if( timeInterval > DRIVE_MSEC){
           g_splitTime = curTime;
           if(g_motor_state == 0 ){
-            // forward to rest
+            // forward to pause
             motor_state = 1;
           }else{
-            // backward to rest
+            // backward to pause
             motor_state = 3;
           }
         }
       }else if(g_motor_state==1 || g_motor_state==3){
-        if( timeInterval > REST_MSEC){
+        if( timeInterval > PAUSE_MSEC){
           g_splitTime = curTime;
           if(g_motor_state == 1 ){
-            // rest to backward
+            // pause to backward
             motor_state = 2;
           }else{
-            // rest to forward
+            // pause to forward
             motor_state = 0;
           }
         }
@@ -161,9 +161,9 @@ void loop() {
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, HIGH);
       }else if(motor_state == 1 || motor_state == 3){
-        // REST
+        // PAUSE
         SeeedOled.clearDisplay();
-        SeeedOled.putString("REST");
+        SeeedOled.putString("PAUSE");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, LOW);
         if(motor_state == 3){
