@@ -374,14 +374,14 @@ void CI2cOledDrv::writeTetrisWall()
 
 	//1block
 	buf[0]=OLED_RS_DATA;
-	buf[1]=0x00;
-	buf[2]=0x7E;
-	buf[3]=0x7E;
-	buf[4]=0x7E;
-	buf[5]=0x7E;
-	buf[6]=0x7E;
-	buf[7]=0x7E;
-	buf[8]=0x00;
+	buf[1]=0x00; // 0 0 0 0 0 0 0 0 
+	buf[2]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[3]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[4]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[5]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[6]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[7]=0x7E; // 0 1 1 1 1 1 1 0
+	buf[8]=0x00; // 0 0 0 0 0 0 0 0 
 
 	if(write(m_fd,buf,9) != 9)
 	{
