@@ -291,7 +291,7 @@ void setup() {
   //SeeedOled.setTextXY(0,0);          //Set the cursor to Xth Page, Yth Column  
   //SeeedOled.putString("Hello World!"); //Print the String
   //SeeedOled.setInverseDisplay();
-  SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop[,1024);   // 1024 = 128 Pixels * 64 Pixels / 8
+  SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);   // 1024 = 128 Pixels * 64 Pixels / 8
 
   pinMode(PIN_FORWARD, OUTPUT);
   pinMode(PIN_BACKWARD, OUTPUT);
@@ -305,13 +305,13 @@ void setup() {
 }
 
 void loop() {
+  int motor_state = g_motor_state;
   if( g_loop_num >= LOOP_MAX ){
     // STOP
     motor_state = -1;
   }else{
      // get current time.
     unsigned long curTime = millis();
-    int motor_state = g_motor_state;
   
     if(curTime > g_splitTime){
       unsigned long timeInterval = curTime - g_splitTime;
@@ -351,21 +351,21 @@ void loop() {
       if(motor_state == 0 ){
         // FORWARD
         SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff[,1024);
+        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
         SeeedOled.putString("FORWARD");
         digitalWrite(PIN_FORWARD, HIGH);
         digitalWrite(PIN_BACKWARD, LOW);
       }else if(motor_state == 2){
         // BACKWARD
         SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind[,1024);
+        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
         SeeedOled.putString("BACKWARD");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, HIGH);
       }else if(motor_state == 1 || motor_state == 3){
         // PAUSE
         SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause[,1024);
+        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause,1024);
         SeeedOled.putString("PAUSE");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, LOW);
@@ -375,7 +375,7 @@ void loop() {
       }else{
         // STOP
         SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop[,1024);
+        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
         SeeedOled.putString("STOP");
         digitalWrite(PIN_FORWARD, LOW);
         digitalWrite(PIN_BACKWARD, LOW);
