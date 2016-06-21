@@ -309,6 +309,14 @@ void loop() {
   if( g_loop_num >= LOOP_MAX ){
     // STOP
     motor_state = -1;
+    if(g_motor_state!=motor_state){
+      SeeedOled.clearDisplay();
+      SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
+      SeeedOled.putString("STOP");
+      digitalWrite(PIN_FORWARD, LOW);
+      digitalWrite(PIN_BACKWARD, LOW);
+      g_motor_state = motor_state;
+    }
   }else{
      // get current time.
     unsigned long curTime = millis();
