@@ -274,9 +274,9 @@ static const unsigned char TamiyaLogo_stop[] PROGMEM ={
 #define PIN_FORWARD     8
 #define PIN_BACKWARD    9
 
-#define LOOP_MAX    2
 #define DRIVE_MSEC  3000 //30000
 #define PAUSE_MSEC  2000 //180000
+#define HIDEN_MSEC  5000
 
 Servo myservo;
 int pos = 0;
@@ -312,98 +312,93 @@ void setup() {
 }
 
 void loop() {
+  // get current time.
+  unsigned long curTime = millis();
+  unsigned long timeInterval = 0;
+  if(curTime >= g_splitTime){
+    timeInterval = curTime - g_splitTime;
+  }
+
+  // this frame motor_stae
   int motor_state = g_motor_state;
-  if( g_loop_num >= LOOP_MAX ){
+  
+  // calc current motor_state
+  if(g_motor_state==-1){ // -1:stop
+    if( timeInterval > HIDEN_MSEC){
+      g_splitTime = curTime;
+      // stop to forward
+      motor_state = 0;
+    }
+  }else 
+  if(g_motor_state==0 || g_motor_state==2){ // 0:forward 2:backward
+    if( timeInterval > DRIVE_MSEC){
+      g_splitTime = curTime;
+      if(g_motor_state == 0 ){
+        // forward to pause
+        motor_state = 1;
+      }else{
+        // backward to pause
+        motor_state = 3;
+      }
+    }
+  }else if(g_motor_state==1 || g_motor_state==3){ // 1:pause_forward or 3:pause_backward
+    if( timeInterval > PAUSE_MSEC){
+      g_splitTime = curTime;
+      if(g_motor_state == 1 ){
+        // pause to backward
+        motor_state = 2;
+      }else{
+        // pause to forward
+        motor_state = 0;
+      }
+    }
+  }
+
+  // action by motor_state.
+  if(motor_state == 0 ){
+    // FORWARD
+    if(g_motor_state != motor_state){
+      // SeeedOled.clearDisplay();
+      SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
+      SeeedOled.putString("FORWARD");
+      digitalWrite(PIN_FORWARD, HIGH);
+      digitalWrite(PIN_BACKWARD, LOW);
+      //myservo.write(110);
+    }
+  }else if(motor_state == 2){
+    // BACKWARD
+    if(g_motor_state != motor_state){
+      // SeeedOled.clearDisplay();
+      SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
+      SeeedOled.putString("BACKWARD");
+      digitalWrite(PIN_FORWARD, LOW);
+      digitalWrite(PIN_BACKWARD, HIGH);
+      //myservo.write(110);
+    }
+  }else if(motor_state == 1 || motor_state == 3){
+    // PAUSE
+    if(g_motor_state != motor_state){
+      // SeeedOled.clearDisplay();
+      SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause,1024);
+      SeeedOled.putString("PAUSE");
+      digitalWrite(PIN_FORWARD, LOW);
+      digitalWrite(PIN_BACKWARD, LOW);
+      //myservo.write(65);
+      if(motor_state == 3){
+        g_loop_num++;
+      }
+    }
+  }else{
     // STOP
-    motor_state = -1;
-    if(g_motor_state!=motor_state){
-      SeeedOled.clearDisplay();
+    if(g_motor_state != motor_state){
+      // SeeedOled.clearDisplay();
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
       SeeedOled.putString("STOP");
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, LOW);
-      for( pos=50; pos<130; pos++ ){
-        myservo.write(pos);
-        delay(15);
-      }
-      g_motor_state = motor_state;
     }
-  }else{
-     // get current time.
-    unsigned long curTime = millis();
-  
-    if(curTime > g_splitTime){
-      unsigned long timeInterval = curTime - g_splitTime;
-    
-      // calc current motor_state
-      if(g_motor_state==-1){
-        g_splitTime = curTime;
-        // stop to forward
-        motor_state = 0;
-      }else 
-      if(g_motor_state==0 || g_motor_state==2){
-        if( timeInterval > DRIVE_MSEC){
-          g_splitTime = curTime;
-          if(g_motor_state == 0 ){
-            // forward to pause
-            motor_state = 1;
-          }else{
-            // backward to pause
-            motor_state = 3;
-          }
-        }
-      }else if(g_motor_state==1 || g_motor_state==3){
-        if( timeInterval > PAUSE_MSEC){
-          g_splitTime = curTime;
-          if(g_motor_state == 1 ){
-            // pause to backward
-            motor_state = 2;
-          }else{
-            // pause to forward
-            motor_state = 0;
-          }
-        }
-      }
-    }
-  
-    if(g_motor_state != motor_state){
-      if(motor_state == 0 ){
-        // FORWARD
-        SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
-        SeeedOled.putString("FORWARD");
-        digitalWrite(PIN_FORWARD, HIGH);
-        digitalWrite(PIN_BACKWARD, LOW);
-        myservo.write(110);
-      }else if(motor_state == 2){
-        // BACKWARD
-        SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
-        SeeedOled.putString("BACKWARD");
-        digitalWrite(PIN_FORWARD, LOW);
-        digitalWrite(PIN_BACKWARD, HIGH);
-        myservo.write(110);
-      }else if(motor_state == 1 || motor_state == 3){
-        // PAUSE
-        SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause,1024);
-        SeeedOled.putString("PAUSE");
-        digitalWrite(PIN_FORWARD, LOW);
-        digitalWrite(PIN_BACKWARD, LOW);
-        myservo.write(65);
-        if(motor_state == 3){
-          g_loop_num++;
-        }
-      }else{
-        // STOP
-        SeeedOled.clearDisplay();
-        SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
-        SeeedOled.putString("STOP");
-        digitalWrite(PIN_FORWARD, LOW);
-        digitalWrite(PIN_BACKWARD, LOW);
-      }
-      g_motor_state = motor_state;
-    }
-  } // if( g_loop_num > LOOP_MAX ) else
+  }
+  g_motor_state = motor_state;
+
   delay(0);
 }
