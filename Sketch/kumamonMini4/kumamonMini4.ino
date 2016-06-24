@@ -279,7 +279,11 @@ static const unsigned char TamiyaLogo_stop[] PROGMEM ={
 #define HIDEN_MSEC  5000
 
 Servo myservo;
-int pos = 0;
+#define PIN_SERVO   10
+#define MAX_SERVO  100
+#define MIN_SERVO   65
+#define MOVE_DELTA   1
+#define DELAY_SERVO 15
 
 unsigned long g_splitTime = 0;
 int g_motor_state = -1; // -1:stop 0:forward 1:pause_forward 2:backward 3:pause_backward
@@ -304,11 +308,10 @@ void setup() {
   digitalWrite(PIN_FORWARD, LOW);
   digitalWrite(PIN_BACKWARD, LOW);
 
-  myservo.attach( 10 );
-  myservo.write(65);//65
+  myservo.attach( PIN_SERVO );
+  myservo.write( MIN_SERVO );
 
   g_splitTime = millis();
-
 }
 
 void loop() {
@@ -341,56 +344,82 @@ void actionMotor
 (
   int& loop_num,
   const int motor_state,
-  const bool isChanged
+  const bool isChanged,
+  const unsigned long timeInterval
 )
 {
   if(motor_state == 0 ){
     // FORWARD
     if(isChanged){
-      // SeeedOled.clearDisplay();
+      // DRAW LEFT-HAND
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
-      SeeedOled.putString("FORWARD");
+
+      // MOTOR-FORWARD
       digitalWrite(PIN_FORWARD, HIGH);
       digitalWrite(PIN_BACKWARD, LOW);
-      myservo.write(95);
+
+      // HATCH-CLOSE
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
     }
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("FORWARD:");
+    SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 2){
     // BACKWARD
     if(isChanged){
-      // SeeedOled.clearDisplay();
+      // DRAW RIGHT-HAND
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
-      SeeedOled.putString("BACKWARD");
+
+      // MOTOR-BACKWARD
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, HIGH);
-      myservo.write(65);
+
+      // HATCH-CLOSE
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
     }
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("BACKWARD:");
+    SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 1 || motor_state == 3){
     // PAUSE
     if(isChanged){
-      // SeeedOled.clearDisplay();
+      // DRAW NO-HAND
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause,1024);
-      SeeedOled.putString("PAUSE");
+
+      // MOTOR-STOP
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, LOW);
-      myservo.write(95);
+
+      // HATCH-OPEN
+      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, DELAY_SERVO);
+
       if(motor_state == 3){
         loop_num++;
       }
     }
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("PAUSE:");
+    SeeedOled.putNumber(timeInterval);
   }else{
     // STOP
     if(isChanged){
-      // SeeedOled.clearDisplay();
+      // DRAW ALL-HAND
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
-      SeeedOled.putString("STOP");
+
+      // MOTOR-STOP
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, LOW);
-      myservo.write(65);
+
+      // HATCH-CLOSE
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
     }
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("STOP:");
+    SeeedOled.putNumber(timeInterval);
   }
   return;
 }
@@ -401,7 +430,6 @@ bool calcCurrentMotorState
   const int prev_motor_state,
   const unsigned long curTime,
   const unsigned long timeInterval
-
 ) 
 {
   bool bRet = false;
@@ -444,4 +472,45 @@ bool calcCurrentMotorState
     }
   }
   return bRet;
+}
+
+void moveServoSmoothly
+(
+  Servo& servo
+  const int beg_pos,
+  const int end_pos,
+  const int move_delta,
+  const int delay_time
+)
+{
+  int pos = beg_pos;
+  servo.write(pos);
+  delay(delay_time);
+
+  if(beg_pos <= end_pos){
+    while(1){
+      pos+=move_delta;
+      if(pos>end_pos){
+        pos=end_pos;
+      }
+      servo.write(pos);
+      delay(delay_time);
+      if(pos>=end_pos){
+        break;
+      }
+    }
+  }else{
+    while(1){
+      pos-=move_delta;
+      if(pos<end_pos){
+        pos=end_pos;
+      }
+      servo.write(pos);
+      delay(delay_time);
+      if(pos<=end_pos){
+        break;
+      }
+    }
+  }
+  return;
 }
