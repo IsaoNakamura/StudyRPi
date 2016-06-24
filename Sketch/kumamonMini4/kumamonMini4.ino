@@ -330,7 +330,7 @@ void loop() {
   }
 
   // action by motor_state.
-  actionMotor(g_loop_num, motor_state, isChanged);
+  actionMotor(g_loop_num, motor_state, isChanged, timeInterval);
 
   // update g_motor_state.
   if( isChanged ){
@@ -476,7 +476,7 @@ bool calcCurrentMotorState
 
 void moveServoSmoothly
 (
-  Servo& servo
+  Servo& servo,
   const int beg_pos,
   const int end_pos,
   const int move_delta,
