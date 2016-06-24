@@ -319,45 +319,34 @@ void loop() {
     timeInterval = curTime - g_splitTime;
   }
 
-  // this frame motor_stae
-  int motor_state = g_motor_state;
-  
   // calc current motor_state
-  if(g_motor_state==-1){ // -1:stop
-    if( timeInterval > HIDEN_MSEC){
-      g_splitTime = curTime;
-      // stop to forward
-      motor_state = 0;
-    }
-  }else 
-  if(g_motor_state==0 || g_motor_state==2){ // 0:forward 2:backward
-    if( timeInterval > DRIVE_MSEC){
-      g_splitTime = curTime;
-      if(g_motor_state == 0 ){
-        // forward to pause
-        motor_state = 1;
-      }else{
-        // backward to pause
-        motor_state = 3;
-      }
-    }
-  }else if(g_motor_state==1 || g_motor_state==3){ // 1:pause_forward or 3:pause_backward
-    if( timeInterval > PAUSE_MSEC){
-      g_splitTime = curTime;
-      if(g_motor_state == 1 ){
-        // pause to backward
-        motor_state = 2;
-      }else{
-        // pause to forward
-        motor_state = 0;
-      }
-    }
+  int motor_state = g_motor_state;
+  bool isChanged = calcCurrentMotorState(motor_state, g_motor_state, curTime, timeInterval);
+  if( isChanged ){
+    g_splitTime = curTime;
   }
 
   // action by motor_state.
+  actionMotor(loop_num, motor_state, isChanged);
+
+  // update g_motor_state.
+  if( isChanged ){
+    g_motor_state = motor_state;
+  }
+
+  delay(0);
+}
+
+void actionMotor
+(
+  int& loop_num,
+  const int motor_state,
+  const bool isChanged
+)
+{
   if(motor_state == 0 ){
     // FORWARD
-    if(g_motor_state != motor_state){
+    if(isChanged){
       // SeeedOled.clearDisplay();
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
       SeeedOled.putString("FORWARD");
@@ -367,7 +356,7 @@ void loop() {
     }
   }else if(motor_state == 2){
     // BACKWARD
-    if(g_motor_state != motor_state){
+    if(isChanged){
       // SeeedOled.clearDisplay();
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
       SeeedOled.putString("BACKWARD");
@@ -377,7 +366,7 @@ void loop() {
     }
   }else if(motor_state == 1 || motor_state == 3){
     // PAUSE
-    if(g_motor_state != motor_state){
+    if(isChanged){
       // SeeedOled.clearDisplay();
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_pause,1024);
       SeeedOled.putString("PAUSE");
@@ -385,12 +374,12 @@ void loop() {
       digitalWrite(PIN_BACKWARD, LOW);
       //myservo.write(65);
       if(motor_state == 3){
-        g_loop_num++;
+        loop_numr++;
       }
     }
   }else{
     // STOP
-    if(g_motor_state != motor_state){
+    if(isChanged){
       // SeeedOled.clearDisplay();
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_stop,1024);
       SeeedOled.putString("STOP");
@@ -398,7 +387,56 @@ void loop() {
       digitalWrite(PIN_BACKWARD, LOW);
     }
   }
-  g_motor_state = motor_state;
+  return;
+}
 
-  delay(0);
+bool calcCurrentMotorState
+(
+  int& motor_state,
+  const int prev_motor_state,
+  const unsigned long curTime,
+  const unsigned long timeInterval,
+
+) 
+{
+  bool bRet = false;
+
+  // this frame motor_stae
+  motor_state = prev_motor_state;
+  
+  // calc current motor_state
+  if(prev_motor_state==-1){ // -1:stop
+    if( timeInterval > HIDEN_MSEC){
+      bRet = true;
+
+      // stop to forward
+      motor_state = 0;
+    }
+  }else 
+  if(prev_motor_state==0 || prev_motor_state==2){ // 0:forward 2:backward
+    if( timeInterval > DRIVE_MSEC){
+      bRet = true;
+
+      if(prev_motor_state == 0 ){
+        // forward to pause
+        motor_state = 1;
+      }else{
+        // backward to pause
+        motor_state = 3;
+      }
+    }
+  }else if(prev_motor_state==1 || prev_motor_state==3){ // 1:pause_forward or 3:pause_backward
+    if( timeInterval > PAUSE_MSEC){
+      bRet = true;
+
+      if(prev_motor_state == 1 ){
+        // pause to backward
+        motor_state = 2;
+      }else{
+        // pause to forward
+        motor_state = 0;
+      }
+    }
+  }
+  return bRet;
 }
