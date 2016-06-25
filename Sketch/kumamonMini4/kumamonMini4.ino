@@ -274,9 +274,9 @@ static const unsigned char TamiyaLogo_pause[] PROGMEM ={
 #define PIN_FORWARD     8
 #define PIN_BACKWARD    9
 
-#define DRIVE_MSEC  3000 //30000
-#define PAUSE_MSEC  5000 //180000
-#define HIDEN_MSEC  8000
+#define DRIVE_MSEC   15000
+#define PAUSE_MSEC    5000
+#define HIDEN_MSEC  180000
 
 Servo myservo;
 #define PIN_SERVO   10
@@ -310,7 +310,6 @@ void setup() {
   digitalWrite(PIN_BACKWARD, LOW);
 
   myservo.attach( PIN_SERVO );
-  //myservo.write( MIN_SERVO );
   moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
   g_splitTime = millis();
@@ -342,6 +341,9 @@ void loop() {
   delay(0);
 }
 
+bool g_isDrive = false;
+unsigned long  g_driveInterval = 0;
+
 void actionMotor
 (
   int& loop_num,
@@ -356,17 +358,32 @@ void actionMotor
       // DRAW LEFT-HAND
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
-
-      // MOTOR-FORWARD
-      digitalWrite(PIN_FORWARD, HIGH);
-      digitalWrite(PIN_BACKWARD, LOW);
-
+            
       // HATCH-CLOSE
       moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
-    SeeedOled.setTextXY(0,0);
-    SeeedOled.putString("FORWARD:");
-    SeeedOled.putNumber(timeInterval);
+
+    // MOTOR-FORWARD
+    unsigned long interval_drive = timeInterval - g_driveInterval;
+    if(g_isDrive){
+      if(interval_drive>200){
+        digitalWrite(PIN_FORWARD, LOW);
+        digitalWrite(PIN_BACKWARD, LOW);
+        g_driveInterval = timeInterval;
+        g_isDrive = false;
+      }
+    }else{
+      if(interval_drive>30){
+        digitalWrite(PIN_FORWARD, HIGH);
+        digitalWrite(PIN_BACKWARD, LOW);
+        g_driveInterval = timeInterval;
+        g_isDrive = true;
+      }
+    }
+    
+    //SeeedOled.setTextXY(0,0);
+    //SeeedOled.putString("FORWARD:");
+    //SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 2){
     // BACKWARD
     if(isChanged){
@@ -374,16 +391,31 @@ void actionMotor
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_rewind,1024);
 
-      // MOTOR-BACKWARD
-      digitalWrite(PIN_FORWARD, LOW);
-      digitalWrite(PIN_BACKWARD, HIGH);
-
       // HATCH-CLOSE
       moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
-    SeeedOled.setTextXY(0,0);
-    SeeedOled.putString("BACKWARD:");
-    SeeedOled.putNumber(timeInterval);
+
+    // MOTOR-BACKWARD
+    unsigned long interval_drive = timeInterval - g_driveInterval;
+    if(g_isDrive){
+      if(interval_drive>200){
+        digitalWrite(PIN_FORWARD, LOW);
+        digitalWrite(PIN_BACKWARD, LOW);
+        g_driveInterval = timeInterval;
+        g_isDrive = false;
+      }
+    }else{
+      if(interval_drive>30){
+        digitalWrite(PIN_FORWARD,  LOW);
+        digitalWrite(PIN_BACKWARD, HIGH);
+        g_driveInterval = timeInterval;
+        g_isDrive = true;
+      }
+    }
+    
+    //SeeedOled.setTextXY(0,0);
+    //SeeedOled.putString("BACKWARD:");
+    //SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 1 || motor_state == 3){
     // PAUSE
     if(isChanged){
@@ -402,9 +434,9 @@ void actionMotor
         loop_num++;
       }
     }
-    SeeedOled.setTextXY(0,0);
-    SeeedOled.putString("PAUSE:");
-    SeeedOled.putNumber(timeInterval);
+    //SeeedOled.setTextXY(0,0);
+    //SeeedOled.putString("PAUSE:");
+    //SeeedOled.putNumber(timeInterval);
   }else{
     // STOP
     if(isChanged){
@@ -415,11 +447,6 @@ void actionMotor
       // MOTOR-STOP
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, LOW);
-
-      // HATCH-CLOSE
-      //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
-      // HATCH-OPEN
-      // moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("STOP:");
