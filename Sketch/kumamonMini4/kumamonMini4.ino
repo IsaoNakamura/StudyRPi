@@ -444,8 +444,8 @@ bool calcCurrentMotorState
     if( timeInterval > HIDEN_MSEC){
       bRet = true;
 
-      // stop to forward
-      motor_state = 0;
+      // stop to pause
+      motor_state = 3;
     }
   }else 
   if(prev_motor_state==0 || prev_motor_state==2){ // 0:forward 2:backward
