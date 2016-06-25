@@ -283,7 +283,8 @@ Servo myservo;
 #define MAX_SERVO  100
 #define MIN_SERVO   65
 #define MOVE_DELTA   1
-#define DELAY_SERVO 15
+#define QUICK_SERVO  6
+#define SLOW_SERVO  15
 
 unsigned long g_splitTime = 0;
 int g_motor_state = -1; // -1:stop 0:forward 1:pause_forward 2:backward 3:pause_backward
@@ -309,7 +310,8 @@ void setup() {
   digitalWrite(PIN_BACKWARD, LOW);
 
   myservo.attach( PIN_SERVO );
-  myservo.write( MIN_SERVO );
+  //myservo.write( MIN_SERVO );
+  moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
   g_splitTime = millis();
 }
@@ -360,7 +362,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-CLOSE
-      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("FORWARD:");
@@ -377,7 +379,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, HIGH);
 
       // HATCH-CLOSE
-      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("BACKWARD:");
@@ -394,7 +396,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-OPEN
-      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, DELAY_SERVO);
+      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
 
       if(motor_state == 3){
         loop_num++;
@@ -415,9 +417,9 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-CLOSE
-      //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, DELAY_SERVO);
+      //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
       // HATCH-OPEN
-      // moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, DELAY_SERVO);
+      // moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("STOP:");
