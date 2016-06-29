@@ -274,9 +274,11 @@ static const unsigned char TamiyaLogo_pause[] PROGMEM ={
 #define PIN_FORWARD     8
 #define PIN_BACKWARD    9
 
-#define DRIVE_MSEC   15000
-#define PAUSE_MSEC    5000
-#define HIDEN_MSEC  180000
+#define LOOP_MAX    5
+
+#define DRIVE_MSEC    5000 //15000
+#define PAUSE_MSEC    3000 // 5000
+#define HIDEN_MSEC    5000 //180000
 
 Servo myservo;
 #define PIN_SERVO   10
@@ -380,9 +382,9 @@ void actionMotor
       }
     }
     
-    //SeeedOled.setTextXY(0,0);
-    //SeeedOled.putString("FORWARD:");
-    //SeeedOled.putNumber(timeInterval);
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("FORWARD:");
+    SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 2){
     // BACKWARD
     if(isChanged){
@@ -412,9 +414,9 @@ void actionMotor
       }
     }
     
-    //SeeedOled.setTextXY(0,0);
-    //SeeedOled.putString("BACKWARD:");
-    //SeeedOled.putNumber(timeInterval);
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("BACKWARD:");
+    SeeedOled.putNumber(timeInterval);
   }else if(motor_state == 1 || motor_state == 3){
     // PAUSE
     if(isChanged){
@@ -429,9 +431,9 @@ void actionMotor
       // HATCH-OPEN
       moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
-    //SeeedOled.setTextXY(0,0);
-    //SeeedOled.putString("PAUSE:");
-    //SeeedOled.putNumber(timeInterval);
+    SeeedOled.setTextXY(0,0);
+    SeeedOled.putString("PAUSE:");
+    SeeedOled.putNumber(timeInterval);
   }else{
     // STOP
     if(isChanged){
@@ -497,6 +499,7 @@ bool calcCurrentMotorState
         if( loop_num >= LOOP_MAX ){
           // pause to stop
           motor_state = -1;
+          g_loop_num = 0;
         }else{
           // pause to forward
           motor_state = 0;
