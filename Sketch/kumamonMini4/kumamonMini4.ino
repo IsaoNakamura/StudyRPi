@@ -325,13 +325,13 @@ void loop() {
 
   // calc current motor_state
   int motor_state = g_motor_state;
-  bool isChanged = calcCurrentMotorState(motor_state, g_motor_state, curTime, timeInterval);
+  bool isChanged = calcCurrentMotorState(motor_state, g_loop_num, g_motor_state, curTime, timeInterval);
   if( isChanged ){
     g_splitTime = curTime;
   }
 
   // action by motor_state.
-  actionMotor(g_loop_num, motor_state, isChanged, timeInterval);
+  actionMotor(motor_state, isChanged, timeInterval);
 
   // update g_motor_state.
   if( isChanged ){
@@ -346,7 +346,6 @@ unsigned long  g_driveInterval = 0;
 
 void actionMotor
 (
-  int& loop_num,
   const int motor_state,
   const bool isChanged,
   const unsigned long timeInterval
@@ -429,10 +428,6 @@ void actionMotor
 
       // HATCH-OPEN
       moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
-
-      if(motor_state == 3){
-        loop_num++;
-      }
     }
     //SeeedOled.setTextXY(0,0);
     //SeeedOled.putString("PAUSE:");
@@ -458,6 +453,7 @@ void actionMotor
 bool calcCurrentMotorState
 (
   int& motor_state,
+  int& loop_num,
   const int prev_motor_state,
   const unsigned long curTime,
   const unsigned long timeInterval
@@ -487,6 +483,7 @@ bool calcCurrentMotorState
       }else{
         // backward to pause
         motor_state = 3;
+        loop_num++;
       }
     }
   }else if(prev_motor_state==1 || prev_motor_state==3){ // 1:pause_forward or 3:pause_backward
@@ -497,8 +494,13 @@ bool calcCurrentMotorState
         // pause to backward
         motor_state = 2;
       }else{
-        // pause to forward
-        motor_state = 0;
+        if( loop_num >= LOOP_MAX ){
+          // pause to stop
+          motor_state = -1;
+        }else{
+          // pause to forward
+          motor_state = 0;
+        }
       }
     }
   }
