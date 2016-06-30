@@ -309,8 +309,8 @@ void setup() {
   digitalWrite(PIN_BACKWARD, LOW);
 
   myservo.attach( PIN_SERVO );
-  // HATCH-OPEN
-  moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
+  // HATCH-CLOSE
+  moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
   g_splitTime = millis();
 }
@@ -356,8 +356,6 @@ void actionMotor
       SeeedOled.setTextXY(0,0);
       SeeedOled.drawBitmap((unsigned char*) TamiyaLogo_ff,1024);
             
-      // HATCH-CLOSE
-      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
       // MOTOR-FORWARD
       digitalWrite(PIN_FORWARD, HIGH);
@@ -439,7 +437,7 @@ bool calcCurrentMotorState
   
   // calc current motor_state
   if(prev_motor_state==-1){ // -1:stop
-    if( timeInterval > HIDEN_MSEC){
+    if( (loop_num < LOOP_MAX) && (timeInterval > HIDEN_MSEC) ){
       bRet = true;
 
       // stop to forward
