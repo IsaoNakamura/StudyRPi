@@ -363,7 +363,8 @@ void actionMotor
       digitalWrite(PIN_FORWARD, HIGH);
       digitalWrite(PIN_BACKWARD, LOW);
     }
-
+    
+    SeeedOled.setTextXY(0,0);
     SeeedOled.putString("FORWARD(");
     SeeedOled.putNumber(loop_num);
     SeeedOled.putString("):");
