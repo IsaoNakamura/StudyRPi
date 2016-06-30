@@ -53,7 +53,7 @@ void actionMotor
   const int motor_state,
   const bool isChanged,
   const unsigned long timeInterval,
-  const int loop_num,
+  const int loop_num
 )
 {
   if(motor_state == 0 ){
@@ -146,43 +146,3 @@ bool calcCurrentMotorState
   return bRet;
 }
 
-void moveServoSmoothly
-(
-  Servo& servo,
-  const int beg_pos,
-  const int end_pos,
-  const int move_delta,
-  const int delay_time
-)
-{
-  int pos = beg_pos;
-  servo.write(pos);
-  delay(delay_time);
-
-  if(beg_pos <= end_pos){
-    while(1){
-      pos+=move_delta;
-      if(pos>end_pos){
-        pos=end_pos;
-      }
-      servo.write(pos);
-      delay(delay_time);
-      if(pos>=end_pos){
-        break;
-      }
-    }
-  }else{
-    while(1){
-      pos-=move_delta;
-      if(pos<end_pos){
-        pos=end_pos;
-      }
-      servo.write(pos);
-      delay(delay_time);
-      if(pos<=end_pos){
-        break;
-      }
-    }
-  }
-  return;
-}

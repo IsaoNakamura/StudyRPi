@@ -346,7 +346,7 @@ void actionMotor
   const int motor_state,
   const bool isChanged,
   const unsigned long timeInterval,
-  const int loop_num,
+  const int loop_num
 )
 {
   if(motor_state == 0 ){
