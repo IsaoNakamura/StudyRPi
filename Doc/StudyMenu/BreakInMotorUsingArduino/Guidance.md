@@ -17,6 +17,7 @@
 モーター慣らしをしたとしても確実に速くなるわけではないです。  
 逆に遅くなったり、壊れたり、寿命を縮める可能性もありますので自己責任でお願いいたします。
 
+## 最後に
 モーターの慣らし方についても所説あります。  
 モーターの個体差もあいまっているので正解はありません。  
 「モーター慣らしは必要ない。練習走行の中で勝手に慣らされて行く」という人もいます。  
@@ -55,12 +56,30 @@
  4. モーターを一定時間 止めて休ませる。  
  5. 1～4を任意回数行う。  
 
-モーターの状態が遷移していくのが肝ですね。  
-それでは、状態遷移図に落としてみます。  
+モーターの状態が遷移していくのが肝です。  
+状態遷移図に落としてみます。  
+![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/BreakInMotorUsingArduino/AutoBreakInMotor_UML-StateMachine.png?raw=true) 
+
+### ソフトとハードを繋ぐIF設計
+#### モーターの制御
+モーターを制御するのに便利な以下のモータードライバICを使用します。  
+* [モータードライバIC TA7291P]()
+
+このICに制御信号を送ることで、モーターの正回転、逆回転、停止を行えます。  
+このICは出力電流が少ないので負荷時にモーターが回らなく可能性があります。  
+しかし、モーター慣らしは負荷をかけない前提なので今回は良しとしました。  
+このICはモーターに直接接続することになります。  
+
+#### モータードライバICの制御
+モータードライバICに制御信号を送るのに以下のArduino互換機(マイコン)を使用します。  
+* [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)
+
+このArduinoにモータードライバICに制御信号を送信するプログラムを格納すればいいです。  
+
 
 ### ハードウェア設計
 
-### ソフトとハードを繋ぐIF設計
+
 
 
 
@@ -79,7 +98,7 @@
 ## 特別にいるもの
 * [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)
 * [USB2 0 to TTL 6pin CH340G Converter x3](http://ja.aliexpress.com/item/Free-Shipping-new-version-5pcs-lot-Pro-Mini-328-Mini-ATMEGA328-5V-16MHz-for-Arduino/1656644616.html?adminSeq=220352482&shopNumber=1022067) (USBシリアルアダプタ) 
-* モータドライバIC TA7291P
+* [モータドライバIC TA7291P]()
 
 
 
