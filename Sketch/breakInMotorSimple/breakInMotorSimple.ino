@@ -8,7 +8,8 @@
 #define HIDEN_MSEC     1000
 
 unsigned long g_splitTime = 0;
-int g_motor_state = -1; // -1:stop 0:forward 1:pause_forward 2:backward 3:pause_backward
+enum motor_state { STOP, FORWARD, PAUSE_FORWARD, BACKWARD, PAUSE_BACKWARD };
+motor_state g_motor_state = -1; // -1:stop 0:forward 1:pause_forward 2:backward 3:pause_backward
 int g_loop_num = 0;
 
 void setup() {
@@ -31,7 +32,7 @@ void loop() {
   }
 
   // calc current motor_state
-  int motor_state = g_motor_state;
+  motor_state motor_state = g_motor_state;
   bool isChanged = calcCurrentMotorState(motor_state, g_loop_num, g_motor_state, curTime, timeInterval);
   if( isChanged ){
     g_splitTime = curTime;
@@ -50,27 +51,27 @@ void loop() {
 
 void actionMotor
 (
-  const int motor_state,
+  const motor_state motor_state,
   const bool isChanged,
   const unsigned long timeInterval,
   const int loop_num
 )
 {
-  if(motor_state == 0 ){
+  if(motor_state == FORWARD ){
     // FORWARD
     if(isChanged){
       // MOTOR-FORWARD
       digitalWrite(PIN_FORWARD, HIGH);
       digitalWrite(PIN_BACKWARD, LOW);
     }
-  }else if(motor_state == 2){
+  }else if(motor_state == BACKWARD){
     // BACKWARD
     if(isChanged){
       // MOTOR-BACKWARD
       digitalWrite(PIN_FORWARD,  LOW);
       digitalWrite(PIN_BACKWARD, HIGH);
     }
-  }else if(motor_state == 1 || motor_state == 3){
+  }else if(motor_state == PAUSE_FORWARD || motor_state == 3){
     // PAUSE
     if(isChanged){
       // MOTOR-STOP
@@ -90,9 +91,9 @@ void actionMotor
 
 bool calcCurrentMotorState
 (
-  int& motor_state,
+  motor_state& motor_state,
   int& loop_num,
-  const int prev_motor_state,
+  const motor_state prev_motor_state,
   const unsigned long curTime,
   const unsigned long timeInterval
 ) 
@@ -103,42 +104,42 @@ bool calcCurrentMotorState
   motor_state = prev_motor_state;
   
   // calc current motor_state
-  if(prev_motor_state==-1){ // -1:stop
+  if(prev_motor_state==STOP){
     if( timeInterval > HIDEN_MSEC){
       bRet = true;
 
       // stop to forward
-      motor_state = 0;
+      motor_state = FORWARD;
     }
   }else 
-  if(prev_motor_state==0 || prev_motor_state==2){ // 0:forward 2:backward
+  if(prev_motor_state==FORWARD || prev_motor_state==BACKWARD){ // 0:forward 2:backward
     if( timeInterval > DRIVE_MSEC){
       bRet = true;
 
-      if(prev_motor_state == 0 ){
+      if(prev_motor_state == FORWARD ){
         // forward to pause
-        motor_state = 1;
+        motor_state = PAUSE_FORWARD;
       }else{
         // backward to pause
         motor_state = 3;
         loop_num++;
       }
     }
-  }else if(prev_motor_state==1 || prev_motor_state==3){ // 1:pause_forward or 3:pause_backward
+  }else if(prev_motor_state==PAUSE_FORWARD || prev_motor_state==3){ // 1:pause_forward or 3:pause_backward
     if( timeInterval > PAUSE_MSEC){
       bRet = true;
 
-      if(prev_motor_state == 1 ){
+      if(prev_motor_state == PAUSE_FORWARD ){
         // pause to backward
-        motor_state = 2;
+        motor_state = BACKWARD;
       }else{
         if( loop_num >= LOOP_MAX ){
           // pause to stop
-          motor_state = -1;
+          motor_state = STOP;
           // loop_num = 0;
         }else{
           // pause to forward
-          motor_state = 0;
+          motor_state = FORWARD;
         }
       }
     }
