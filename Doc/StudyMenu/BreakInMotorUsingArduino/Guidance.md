@@ -1,31 +1,19 @@
-# 1. Arduino(互換機)を用いたミニ四駆用自動モーター慣らし器の作成
+# Arduino(互換機)を用いたミニ四駆用自動モーター慣らし器の作成
 
-## はじめに
+## １．はじめに
 はじめまして、ISAOXです。  
 突然ですが、最近ミニ四駆にハマりました。  
 普通に組み立てて遊ぶのにはいいのですが、男はレースとなれば勝ちたくなるもの。  
 そこで勝つためのガジェットとして自動モーター慣らし器を開発したので紹介します。  
 
 
-## モーターの慣らしが必要な理由
+## ２．モーターの慣らしが必要な理由
 モーターをある程度回すと、モーター内部で接触する部分がある程度削れ滑らかになります。  
 さらに、電気を流すために接触する部分もフィットするように削れ、電気の流れがよくなります。  
 よって、モーターの性能が上がるのです。  
 
 
-## 注意事項
-モーター慣らしをしたとしても確実に速くなるわけではないです。  
-逆に遅くなったり、壊れたり、寿命を縮める可能性もありますので自己責任でお願いいたします。
-
-## 最後に
-モーターの慣らし方についても所説あります。  
-モーターの個体差もあいまっているので正解はありません。  
-「モーター慣らしは必要ない。練習走行の中で勝手に慣らされて行く」という人もいます。  
-自分でこれだという方法を見つけていくのもミニ四駆の楽しさ奥深さだと思います。  
-各自いろいろ試してみましょう。  
-
-
-## モーターを慣らす方法
+## 3．モーターを慣らす方法
 モーター慣らしの方法としては、モーターをシャーシに入れ、駆動部に伝わるギヤなどは外します。  
 ギヤを外す理由はモーターに負荷が加わらないようにするためです。  
 そして、一定時間回します。  
@@ -37,19 +25,18 @@
 
 、、、めんどい。正直めんどいわ！！
 
-## 解決しようとする問題と方法
+## 4．解決しようとする問題と方法
 上記の方法を見ると、手動で同じ事を繰り返す事が大問題です！！  
 では、この手動で行っている部分を自動化できるガジェットを開発していきます。  
 
-## 設計  
-
-### ハードと人を繋ぐIF設計
+## 5．設計  
+### 5-1. ハードと人を繋ぐIF設計
 以下のような簡単なヒューマンインターフェースにします。
 * 人が電源を入れたら、ハードがモーターの慣らしを開始。
 * ハードがモーターの慣らしを終えたら、人が電源を切る。
 
-### ソフトウェア設計
-上記の方法をまとめると以下です。
+### 5-2. ソフトウェア設計
+モーター慣らし方法をまとめると以下です。
  1. モーターを一定時間 正回転させる。  
  2. モーターを一定時間 止めて休ませる。  
  3. モーターを一定時間 逆回転させる。  
@@ -57,64 +44,60 @@
  5. 1～4を任意回数行う。  
 
 モーターの状態が遷移していくのが肝です。  
-状態遷移図に落としてみます。  
-![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/master/Doc/StudyMenu/BreakInMotorUsingArduino/AutoBreakInMotor_UML-StateMachine.png?raw=true) 
+モーターの状態を以下のように定義します。  
+* STOP	        : 停止状態(初期状態と最終状態)。
+* FORWARD	    : 正回転状態。
+* PAUSE_FORWARD	: 正回転後の休止状態。
+* BACKWARD	    : 逆回転状態。
+* PAUSE_BACKWARD: 逆回転後の休止状態。
 
-### ソフトとハードを繋ぐIF設計
-#### モーターの制御
-モーターを制御するのに便利な以下のモータードライバICを使用します。  
-* [モータードライバIC TA7291P]()
+上記状態がどういう条件で遷移するかを下記の状態遷移図で定義します。  
+![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/StudyMenu/BreakInMotorUsingArduino/AutoBreakInMotor_UML-StateMachine.png?raw=true)  
+この状態に応じてモーターを制御させるソフトフェアにします。  
 
+### 5-3. ソフトとハードを繋ぐIF設計
+#### 5-3-1. モーターの制御
+モーターを制御するのに以下のモータードライバICを使用します。  
+* [モータードライバIC TA7291P]()  
 このICに制御信号を送ることで、モーターの正回転、逆回転、停止を行えます。  
 このICは出力電流が少ないので負荷時にモーターが回らなく可能性があります。  
 しかし、モーター慣らしは負荷をかけない前提なので今回は良しとしました。  
 このICはモーターに直接接続することになります。  
 
-#### モータードライバICの制御
+#### 5-3-2. モータードライバICの制御
 モータードライバICに制御信号を送るのに以下のArduino互換機(マイコン)を使用します。  
-* [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)
+* [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)  
+このArduinoに状態に応じてモータードライバICに制御信号を送信するプログラムを書き込むことになります。  
 
-このArduinoにモータードライバICに制御信号を送信するプログラムを格納すればいいです。  
 
-
-### ハードウェア設計
-
+### 5-4. ハードウェア設計
 
 
 
 
-## 製造
-### コーディング
-### ブレッドボードにワイヤリング
 
-## テスト
+## 6. 製造
+### 6-1. コーディング
+以下のGitHubにArduinoのSketch(プログラムのソースコード)を格納しました。  
+[https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotorSimple/breakInMotorSimple.ino](https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotorSimple/breakInMotorSimple.ino)  
 
-## 運用
+### 6-2. ブレッドボードにワイヤリングする
 
-## 発展
+### 6-3. Arduinoにプログラムを書き込む
 
+## 7. テスト
 
+## 8. 運用
 
-## 特別にいるもの
-* [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)
-* [USB2 0 to TTL 6pin CH340G Converter x3](http://ja.aliexpress.com/item/Free-Shipping-new-version-5pcs-lot-Pro-Mini-328-Mini-ATMEGA328-5V-16MHz-for-Arduino/1656644616.html?adminSeq=220352482&shopNumber=1022067) (USBシリアルアダプタ) 
-* [モータドライバIC TA7291P]()
+## 9. 発展
 
+## 10. 注意事項
+モーター慣らしをしたとしても確実に速くなるわけではないです。  
+逆に遅くなったり、壊れたり、寿命を縮める可能性もありますので自己責任でお願いいたします。
 
-
-
-## 手順
-### 1. funduiroにピンヘッダを半田付けする。
-1. ワイヤリング。
-
-### 2. 
-1. hoge
-#### 2-1. 
-1. hoge
-
-#### 2-2. 
-1. hoge  
-
-### 3. 
-
-### 4. 
+## 11. 最後に
+モーターの慣らし方についても所説あります。  
+モーターの個体差もあいまっているので正解はありません。  
+「モーター慣らしは必要ない。練習走行の中で勝手に慣らされて行く」という人もいます。  
+自分でこれだという方法を見つけていくのもミニ四駆の楽しさ奥深さだと思います。  
+各自いろいろ試してみましょう。  
