@@ -6,12 +6,10 @@
 普通に組み立てて遊ぶのにはいいのですが、男はレースとなれば勝ちたくなるもの。  
 そこで勝つためのガジェットとして自動モーター慣らし器を開発したので紹介します。  
 
-
 ## ２．モーターの慣らしが必要な理由
 モーターをある程度回すと、モーター内部で接触する部分がある程度削れ滑らかになります。  
 さらに、電気を流すために接触する部分もフィットするように削れ、電気の流れがよくなります。  
 よって、モーターの性能が上がるのです。  
-
 
 ## 3．モーターを慣らす方法
 モーター慣らしの方法としては、モーターをシャーシに入れ、駆動部に伝わるギヤなどは外します。  
@@ -23,7 +21,7 @@
 このサイクルを何回か繰り返します。  
 そう、手動でね。  
 
-、、、めんどい。正直めんどいわ！！
+**、、、めんどい。正直めんどいわ！！**
 
 ## 4．解決しようとする問題と方法
 上記の方法を見ると、手動で同じ事を繰り返す事が大問題です！！  
@@ -55,10 +53,17 @@
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/StudyMenu/BreakInMotorUsingArduino/AutoBreakInMotor_UML-StateMachine.png?raw=true)  
 この状態に応じてモーターを制御させるソフトフェアにします。  
 
-### 5-3. ソフトとハードを繋ぐIF設計
+各時間は以下のように定義します。  
+* 待機時間  :   1[sec] =   1000[msec]
+* 運転時間  :  30[sec] =  30000[msec]
+* 冷却時間  : 180[sec] = 180000[msec]  
+
+上記の時間は適当です。最適な時間を見つけるのも面白いかもしれません。  
+
+### 5-3. ハードウェア設計
 #### 5-3-1. モーターの制御
 モーターを制御するのに以下のモータードライバICを使用します。  
-* [モータードライバIC TA7291P]()  
+* [モータードライバIC TA7291P](http://akizukidenshi.com/download/ta7291p.pdf)  
 このICに制御信号を送ることで、モーターの正回転、逆回転、停止を行えます。  
 このICは出力電流が少ないので負荷時にモーターが回らなく可能性があります。  
 しかし、モーター慣らしは負荷をかけない前提なので今回は良しとしました。  
@@ -66,15 +71,11 @@
 
 #### 5-3-2. モータードライバICの制御
 モータードライバICに制御信号を送るのに以下のArduino互換機(マイコン)を使用します。  
-* [funduiro pro mini](http://ja.aliexpress.com/item/Free-Shipping-3pcs-lot-USB2-0-To-TTL-6Pin-CH340G-Converter-for-Arduino-PRO-Instead-of/1922500840.html?isOrigTitle=true) (arduiro pro mini互換機)  
+* [funduiro pro mini(Arduiro pro mini互換機)](http://ja.aliexpress.com/item/Free-Shipping-new-version-5pcs-lot-Pro-Mini-328-Mini-ATMEGA328-5V-16MHz-for-Arduino/1656644616.html?adminSeq=220352482&shopNumber=1022067)  
 このArduinoに状態に応じてモータードライバICに制御信号を送信するプログラムを書き込むことになります。  
 
-
-### 5-4. ハードウェア設計
-
-
-
-
+#### 5-3-3. ワイヤリング(配線)
+![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotor/BreakInMotor_bread.png?raw=true)  
 
 ## 6. 製造
 ### 6-1. コーディング
@@ -90,14 +91,15 @@
 ## 8. 運用
 
 ## 9. 発展
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
 
 ## 10. 注意事項
 モーター慣らしをしたとしても確実に速くなるわけではないです。  
 逆に遅くなったり、壊れたり、寿命を縮める可能性もありますので自己責任でお願いいたします。
 
 ## 11. 最後に
-モーターの慣らし方についても所説あります。  
+モーターの慣らし方については所説あります。  
 モーターの個体差もあいまっているので正解はありません。  
 「モーター慣らしは必要ない。練習走行の中で勝手に慣らされて行く」という人もいます。  
-自分でこれだという方法を見つけていくのもミニ四駆の楽しさ奥深さだと思います。  
+自分でこれだという方法を見つけていくのもミニ四駆の楽しさ、奥深さだと思います。  
 各自いろいろ試してみましょう。  
