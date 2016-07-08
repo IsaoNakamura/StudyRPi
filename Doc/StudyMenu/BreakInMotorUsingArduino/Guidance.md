@@ -89,7 +89,7 @@
 
 #### 5-3-3. ワイヤリング(配線)
 各部品の配線図は以下です。  
-![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotor/BreakInMotor_bread.png?raw=true)  
+![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotorSimple/BreakInMotorSimple_bread.png?raw=true)  
 
 * ArduinoとモータードライバICの接続  
 Arduinoのデジタル信号端子をモータードライバICの入力用端子を接続します。  
@@ -133,6 +133,8 @@ PCとArduinoを専用ケーブルでつなげて、SketchをArduinoに書き込�
 * ユニバーサル基盤に半田付け
 * 安全性を考慮し、モーター慣らしが始まるとボディが閉じ、終わるとボディが開く。
 
+各部品の配線図は以下です。  
+![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotor/BreakInMotor_bread.png?raw=true)  
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
 
