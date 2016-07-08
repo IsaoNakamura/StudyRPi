@@ -1,4 +1,4 @@
-# Arduino(互換機)を用いたミニ四駆用自動モーター慣らし器の作成
+# Arduino(互換機)を用いたミニ四駆用自動モーター慣らし器の開発
 
 ## １．はじめに
 はじめまして、ISAOXです。  
@@ -43,81 +43,105 @@
 
 モーターの状態が遷移していくのが肝です。  
 モーターの状態を以下のように定義します。  
-* STOP	        : 停止状態(初期状態と最終状態)。
-* FORWARD	    : 正回転状態。
-* PAUSE_FORWARD	: 正回転後の休止状態。
-* BACKWARD	    : 逆回転状態。
-* PAUSE_BACKWARD: 逆回転後の休止状態。
+| モーターの状態   | 説明                       |
+| :------------- | :------------------------ | 
+| STOP           | 停止状態(初期状態と最終状態) | 
+| FORWARD        | 正回転状態                 | 
+| PAUSE_FORWARD  | 正回転後の休止状態          | 
+| BACKWARD       | 逆回転状態                 | 
+| PAUSE_BACKWARD | 逆回転後の休止状態          | 
 
 上記状態がどういう条件で遷移するかを下記の状態遷移図で定義します。  
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/StudyMenu/BreakInMotorUsingArduino/AutoBreakInMotor_UML-StateMachine.png?raw=true)  
 この状態に応じてモーターを制御させるソフトフェアにします。  
 
 各時間は以下のように定義します。  
-* 待機時間  :   1[sec] =   1000[msec]
-* 運転時間  :  30[sec] =  30000[msec]
-* 冷却時間  : 180[sec] = 180000[msec]  
-
+| 種類        | 時間[msec]  | 使用されるモーターの状態           | 
+| :--------- | ----------: | :------------------------------ | 
+| 待機時間    |        1000 | STOP                            | 
+| 運転時間    |       30000 | FORWARD or BACKWARD             | 
+| 冷却時間    |      180000 | PAUSE_FORWARD or PAUSE_BACKWARD | 
 上記の時間は適当です。最適な時間を見つけるのも面白いかもしれません。  
 
 ### 5-3. ハードウェア設計
 #### 5-3-1. モーターの制御
 モーターを制御するのに以下のモータードライバICを使用します。  
 * [モータードライバIC TA7291P](http://akizukidenshi.com/download/ta7291p.pdf)  
-このICに制御信号を送ることで、モーターの正回転、逆回転、停止を行えます。  
 このICは出力電流が少ないので負荷時にモーターが回らなく可能性があります。  
 しかし、モーター慣らしは負荷をかけない前提なので今回は良しとしました。  
-このICはモーターに直接接続することになります。  
+このICはモーターに直接接続することになります。 
+
+モータードライバICの入力端子に下表のように信号を送ることで、モーターを正回転、逆回転、停止、ブレーキができます。   
+|    IN1     |     IN2     |    OUT1    |    OUT2    |     モーターの動き    |
+| :--------: | :---------: | :--------: | :--------: |  :----------------: |
+|    LOW     |     LOW     |     ∞      |      ∞     |  停止               |
+|    HIGH    |     LOW     |    HIGH    |     LOW    |  正回転             |
+|    LOW     |     HIGH    |     LOW    |    HIGH    |  逆回転             |
+|    HIGH    |     HIGH    |     LOW    |     LOW    |  ブレーキ            |
 
 #### 5-3-2. モータードライバICの制御
-モータードライバICに制御信号を送るのに以下のArduino互換機(マイコン)を使用します。  
+モータードライバICへ制御信号を送るのに以下のArduino互換機(マイコン)を使用します。  
 * [funduiro pro mini(Arduiro pro mini互換機)](http://ja.aliexpress.com/item/Free-Shipping-new-version-5pcs-lot-Pro-Mini-328-Mini-ATMEGA328-5V-16MHz-for-Arduino/1656644616.html?adminSeq=220352482&shopNumber=1022067)  
-このArduinoに状態に応じてモータードライバICに制御信号を送信するプログラムを書き込むことになります。  
+このArduinoにモーターの状態に応じてモータードライバICに制御信号を送信するプログラムを書き込むことになります。  
 
 #### 5-3-3. ワイヤリング(配線)
-各部品を下図のように配線します。
+各部品の配線図は以下です。  
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotor/BreakInMotor_bread.png?raw=true)  
+
+* ArduinoとモータードライバICの接続  
+Arduinoのデジタル信号端子をモータードライバICの入力用端子を接続します。  
+　⇒ArduinoのデジタルIOピンD8をモータードライバICのIN1へ接続。  
+　⇒ArduinoのデジタルIOピンD9をモータードライバICのIN2へ接続。  
+
+* モータードライバICとモーターの接続  
+モータードライバICの出力用端子にモーターを接続します。  
+　⇒モータードライバICのOUT1をモーターのプラス端子へ接続。  
+　⇒モータードライバICのOUT2をモーターのマイナス端子へ接続。  
+
 * 左側にある２本の単三乾電池  
 モーターを駆動するための電源です。  
-モータードライバICのモーター用電源端子に接続します。  
+モータードライバICの出力側電源端子(Vs)に接続します。  
 
 * 右側にある４本の単三乾電池  
 ArduinoとモータードライバICを動作させるための電源です。  
-ArduinoとモータードライバICの電源端子にそれぞれ接続します。  
-
-* ArduinoとモータードライバICの接続  
-Arduinoのデジタル信号端子をモータードライバICの制御用端子に２箇所接続します。  
-以下の表のようにモーターを正回転、逆回転、停止するには信号が２つ必要です。  
-ソフトウェアにて上記で定義したモーター状態に応じて、この２つの信号をON/OFF切り替えることでモーターを制御できます。  
-
-
-* モータードライバICとモーターの接続  
-モータードライバICのモーター制御用端子にモーターを接続します。  
-
-
-
+Arduinoの電源端子(Vcc)とモータードライバICの電源端子(Vcc)にそれぞれ接続します。  
 
 ## 6. 製造
 ### 6-1. コーディング
 以下のGitHubにArduinoのSketch(プログラムのソースコード)を格納しました。  
 [https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotorSimple/breakInMotorSimple.ino](https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotorSimple/breakInMotorSimple.ino)  
 
-### 6-2. ブレッドボードにワイヤリングする
+### 6-2. Arduinoにプログラムを書き込む
+PCとArduinoを専用ケーブルでつなげて、SketchをArduinoに書き込みます。
 
-### 6-3. Arduinoにプログラムを書き込む
+### 6-3. ブレッドボードにワイヤリングする
+配線図通りにブレッドボードに各部品を接続すれば完成です。
 
 ## 7. テスト
+電池を接続したら、自動モーター慣らし器が動き出します。  
+動かなければ、配線が間違っていないかなどをチェックしてください。  
+全体の動きを素早くチェックしたい場合は、各動作時間を短くしてみるのもいいですね。  
 
-## 8. 運用
+## 8. 実用化
+ここまで説明した内容は自動モーター慣らし機の基本原理でしかありません。  
+私が実際にモーター慣らしのためにこのガジェットを開発したので、使いやすく機能を追加しカスタマイズします。  
+* モーター慣らしの進捗状況が分かるディスプレイモジュールを追加
+* ミニ四駆のシャーシとボディ、パーツケースを筐体として採用
+* ユニバーサル基盤に半田付け
+* 安全性を考慮し、モーター慣らしが始まるとボディが閉じ、終わるとボディが開く。
 
-## 9. 発展
+
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
 
-## 10. 注意事項
+以下のGitHubに実用化したArduinoのSketch(プログラムのソースコード)を格納しました。  
+[https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotor/breakInMotor.ino](https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotor/breakInMotor.ino) 
+
+
+## 9. 注意事項
 モーター慣らしをしたとしても確実に速くなるわけではないです。  
 逆に遅くなったり、壊れたり、寿命を縮める可能性もありますので自己責任でお願いいたします。
 
-## 11. 最後に
+## 10. 最後に
 モーターの慣らし方については所説あります。  
 モーターの個体差もあいまっているので正解はありません。  
 「モーター慣らしは必要ない。練習走行の中で勝手に慣らされて行く」という人もいます。  
