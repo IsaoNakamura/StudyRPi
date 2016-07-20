@@ -277,7 +277,7 @@ static const unsigned char TamiyaLogo_stop[] PROGMEM ={
 #define LOOP_MAX    5
 
 #define DRIVE_MSEC    30000
-#define PAUSE_MSEC   180000
+#define PAUSE_MSEC    30000
 #define HIDEN_MSEC     1000
 
 Servo myservo;
@@ -360,6 +360,11 @@ void actionMotor
       // MOTOR-FORWARD
       digitalWrite(PIN_FORWARD, HIGH);
       digitalWrite(PIN_BACKWARD, LOW);
+
+      // HATCH-CLOSE
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
+
+
     }
     
     SeeedOled.setTextXY(0,0);
@@ -377,6 +382,9 @@ void actionMotor
       // MOTOR-BACKWARD
       digitalWrite(PIN_FORWARD,  LOW);
       digitalWrite(PIN_BACKWARD, HIGH);
+
+      // HATCH-CLOSE
+      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
     
     SeeedOled.setTextXY(0,0);
@@ -394,6 +402,9 @@ void actionMotor
       // MOTOR-STOP
       digitalWrite(PIN_FORWARD, LOW);
       digitalWrite(PIN_BACKWARD, LOW);
+
+      // HATCH-OPEN
+      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("PAUSE(");
