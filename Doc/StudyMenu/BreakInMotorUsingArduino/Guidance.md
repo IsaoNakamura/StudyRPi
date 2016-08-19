@@ -136,7 +136,8 @@ PCとArduinoを専用ケーブルでつなげて、SketchをArduinoに書き込�
 各部品の配線図は以下です。  
 ![Picture](https://github.com/IsaoNakamura/StudyRPi/blob/wrkDocBreakInMotor/Doc/Wiring/Arduino_AutoBreakInMotor/BreakInMotor_bread.png?raw=true)  
 
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+動作している時の動画です。  
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/9eU1KwwVP6k/0.jpg)](http://www.youtube.com/watch?v=9eU1KwwVP6k)
 
 以下のGitHubに実用化したArduinoのSketch(プログラムのソースコード)を格納しました。  
 [https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotor/breakInMotor.ino](https://github.com/IsaoNakamura/StudyRPi/blob/master/Sketch/breakInMotor/breakInMotor.ino) 
