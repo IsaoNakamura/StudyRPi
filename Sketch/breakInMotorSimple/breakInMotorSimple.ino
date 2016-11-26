@@ -7,9 +7,14 @@
 #define PAUSE_MSEC   180000
 #define HIDEN_MSEC     1000
 
+#define STOP          -1
+#define FORWARD        0
+#define PAUSE_FORWARD  1
+#define BACKWARD       2
+#define PAUSE_BACKWARD 3
+
 unsigned long g_splitTime = 0;
-enum motor_state { STOP, FORWARD, PAUSE_FORWARD, BACKWARD, PAUSE_BACKWARD };
-motor_state g_motor_state = -1; // -1:stop 0:forward 1:pause_forward 2:backward 3:pause_backward
+int g_motor_state = STOP;
 int g_loop_num = 0;
 
 void setup() {
@@ -32,7 +37,7 @@ void loop() {
   }
 
   // calc current motor_state
-  motor_state motor_state = g_motor_state;
+  int motor_state = g_motor_state;
   bool isChanged = calcCurrentMotorState(motor_state, g_loop_num, g_motor_state, curTime, timeInterval);
   if( isChanged ){
     g_splitTime = curTime;
@@ -51,7 +56,7 @@ void loop() {
 
 void actionMotor
 (
-  const motor_state motor_state,
+  const int motor_state,
   const bool isChanged,
   const unsigned long timeInterval,
   const int loop_num
@@ -71,7 +76,7 @@ void actionMotor
       digitalWrite(PIN_FORWARD,  LOW);
       digitalWrite(PIN_BACKWARD, HIGH);
     }
-  }else if(motor_state == PAUSE_FORWARD || motor_state == 3){
+  }else if(motor_state == PAUSE_FORWARD || motor_state == PAUSE_BACKWARD){
     // PAUSE
     if(isChanged){
       // MOTOR-STOP
@@ -91,9 +96,9 @@ void actionMotor
 
 bool calcCurrentMotorState
 (
-  motor_state& motor_state,
+  int& motor_state,
   int& loop_num,
-  const motor_state prev_motor_state,
+  const int prev_motor_state,
   const unsigned long curTime,
   const unsigned long timeInterval
 ) 
@@ -112,7 +117,7 @@ bool calcCurrentMotorState
       motor_state = FORWARD;
     }
   }else 
-  if(prev_motor_state==FORWARD || prev_motor_state==BACKWARD){ // 0:forward 2:backward
+  if(prev_motor_state==FORWARD || prev_motor_state==BACKWARD){
     if( timeInterval > DRIVE_MSEC){
       bRet = true;
 
@@ -121,11 +126,11 @@ bool calcCurrentMotorState
         motor_state = PAUSE_FORWARD;
       }else{
         // backward to pause
-        motor_state = 3;
+        motor_state = PAUSE_BACKWARD;
         loop_num++;
       }
     }
-  }else if(prev_motor_state==PAUSE_FORWARD || prev_motor_state==3){ // 1:pause_forward or 3:pause_backward
+  }else if(prev_motor_state==PAUSE_FORWARD || prev_motor_state==PAUSE_BACKWARD){
     if( timeInterval > PAUSE_MSEC){
       bRet = true;
 
