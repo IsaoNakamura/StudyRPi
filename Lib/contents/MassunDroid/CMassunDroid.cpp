@@ -279,12 +279,17 @@ void CMassunDroid::init()
     m_face_scrn_y = 0.0;
     m_servo_yaw = SERVO_MID;
     m_servo_pitch = SERVO_MID;
+	m_mutex_homing = NULL;
     
 	return;
 }
 
 void CMassunDroid::destroy()
 {
+	if(m_mutex_homing){
+		pthread_mutex_destroy(m_mutex_homing);
+		m_mutex_homing = NULL;
+	}
 	return;
 }
 
@@ -317,6 +322,9 @@ int CMassunDroid::setup()
         if ( setupCamAngCvt()!=0 ){
             throw 0;
         }
+		if ( setupThread()!=0 ){
+			throw 0;
+		}
 		iRet = 0;
 	}
 	catch(...)
@@ -444,6 +452,23 @@ int CMassunDroid::setupCamAngCvt()
             delete m_camAngCvt;
             m_camAngCvt = NULL;
         }
+		iRet = -1;
+	}
+	return iRet;
+}
+
+int CMassunDroid::setupThread()
+{
+	int iRet = -1;
+	try
+	{
+		if(m_mutex_homing){
+			pthread_mutex_init(m_mutex_homing, NULL);
+		}
+		iRet = 0;
+	}
+	catch(...)
+	{
 		iRet = -1;
 	}
 	return iRet;

@@ -11,6 +11,8 @@
 #include "RaspiCamCV.h"
 #include <cv.h>
 
+#include <pthread.h>
+
 #include "../../utilities/CamAngleConverter/CamAngleConverter.h"
 
 class CMassunDroid {
@@ -48,6 +50,7 @@ private:
     int setupGpio();
     int setupCv();
     int setupCamAngCvt();
+    int setupThread();
     int finalizeServo();
     int finalizeCv();
     int homingAction(const int& homing_state);
@@ -105,6 +108,9 @@ private:
 
     // for CamAngleConverter
     DF::CamAngleConverter*      m_camAngCvt;
+
+    // for Thread
+    pthread_mutex_t* m_mutex_homing;
 };
 
 #endif /* CMASSUNDROID_H_ */
