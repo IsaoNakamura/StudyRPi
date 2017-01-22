@@ -21,6 +21,11 @@ module.exports = (robot) ->
       msg.send stdout if stdout?
       msg.send stderr if stderr?
 
+  robot.respond /cd (.*)/i, (res) ->
+    @exec = require('child_process').exec
+    directory = res.match[1]
+    res.send "directory is #{directory}"
+
   # robot.hear /badger/i, (res) ->
   #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
   #
