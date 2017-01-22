@@ -308,9 +308,9 @@ void setup() {
   digitalWrite(PIN_FORWARD, LOW);
   digitalWrite(PIN_BACKWARD, LOW);
 
-  myservo.attach( PIN_SERVO );
+  //myservo.attach( PIN_SERVO );
   // HATCH-CLOSE
-  moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
+  //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
   g_splitTime = millis();
 }
@@ -362,7 +362,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-CLOSE
-      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
+      //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
 
 
     }
@@ -384,7 +384,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, HIGH);
 
       // HATCH-CLOSE
-      moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
+      //moveServoSmoothly(myservo, MAX_SERVO, MIN_SERVO, MOVE_DELTA, SLOW_SERVO);
     }
     
     SeeedOled.setTextXY(0,0);
@@ -404,7 +404,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-OPEN
-      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
+      //moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("PAUSE(");
@@ -423,7 +423,7 @@ void actionMotor
       digitalWrite(PIN_BACKWARD, LOW);
 
       // HATCH-OPEN
-      moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
+      //moveServoSmoothly(myservo, MIN_SERVO, MAX_SERVO, MOVE_DELTA, QUICK_SERVO);
     }
     SeeedOled.setTextXY(0,0);
     SeeedOled.putString("STOP:");
