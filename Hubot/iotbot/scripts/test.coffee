@@ -34,7 +34,7 @@ module.exports = (robot) ->
     target = msg.match[1]
     @exec = require('child_process').exec
     path = "cd #{target}"
-    msg.send "Command: #{command}"
+    msg.send "Path: #{path}"
     @exec path, (error, stdout, stderr) ->
       msg.send error if error?
       msg.send stdout if stdout?
