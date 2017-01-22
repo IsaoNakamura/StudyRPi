@@ -30,24 +30,24 @@ module.exports = (robot) ->
       msg.send stdout if stdout?
       msg.send stderr if stderr?
 
-  robot.respond /cd (.*)/i, (msg) ->
-    directory = msg.match[1]
-    msg.send "directory is #{directory}"
-    @exec = require('child_process').exec
-    command = "cd #{directory}"
-    @exec command, (error, stdout, stderr) ->
-      msg.send error if error?
-      msg.send stdout if stdout?
-      msg.send stderr if stderr?
+#  robot.respond /cd (.*)/i, (msg) ->
+#    directory = msg.match[1]
+#    msg.send "directory is #{directory}"
+#    @exec = require('child_process').exec
+#    command = "cd #{directory}"
+#    @exec command, (error, stdout, stderr) ->
+#      msg.send error if error?
+#      msg.send stdout if stdout?
+#      msg.send stderr if stderr?
 
-  robot.respond /cmd (.*)/i, (msg) ->
-    command = msg.match[1]
-    @exec = require('child_process').exec
-    msg.send "Command: #{command}"
-    @exec command, (error, stdout, stderr) ->
-      msg.send error if error?
-      msg.send stdout if stdout?
-      msg.send stderr if stderr?
+#  robot.respond /cmd (.*)/i, (msg) ->
+#    command = msg.match[1]
+#    @exec = require('child_process').exec
+#    msg.send "Command: #{command}"
+#    @exec command, (error, stdout, stderr) ->
+#      msg.send error if error?
+#      msg.send stdout if stdout?
+#      msg.send stderr if stderr?
 
   # robot.hear /badger/i, (res) ->
   #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
