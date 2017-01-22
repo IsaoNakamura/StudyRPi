@@ -30,9 +30,15 @@ module.exports = (robot) ->
       msg.send stdout if stdout?
       msg.send stderr if stderr?
 
-  robot.respond /cd (.*)/i, (res) ->
-    directory = res.match[1]
-    res.send "directory is #{directory}"
+  robot.respond /cd (.*)/i, (msg) ->
+    directory = msg.match[1]
+    msg.send "directory is #{directory}"
+    @exec = require('child_process').exec
+    command = "sudo -u pi cd #{directory}"
+    @exec command, (error, stdout, stderr) ->
+      msg.send error if error?
+      msg.send stdout if stdout?
+      msg.send stderr if stderr?
 
   # robot.hear /badger/i, (res) ->
   #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
