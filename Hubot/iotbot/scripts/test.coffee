@@ -33,7 +33,7 @@ module.exports = (robot) ->
   robot.respond /make (.*)/i, (msg) ->
     target = msg.match[1]
     @exec = require('child_process').exec
-    command = "sudo -u pi exec #{target}/Makefile"
+    command = "sudo -u pi sh #{target}/Makefile"
     msg.send "Command: #{command}"
     @exec command, (error, stdout, stderr) ->
       msg.send error if error?
