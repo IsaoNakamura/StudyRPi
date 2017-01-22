@@ -6,5 +6,6 @@
 # 起動時に実行できるようになる。
 
 cd /home/pi/GitHub/StudyRPi/Hubot/iotbot
+git pull
 sudo ./bin/hubot -a slack
 cd /home
