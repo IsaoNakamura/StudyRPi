@@ -22,7 +22,6 @@ module.exports = (robot) ->
       msg.send stderr if stderr?
 
   robot.respond /cd (.*)/i, (res) ->
-    @exec = require('child_process').exec
     directory = res.match[1]
     res.send "directory is #{directory}"
 
