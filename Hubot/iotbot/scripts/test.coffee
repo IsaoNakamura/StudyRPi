@@ -6,7 +6,7 @@ module.exports = (robot) ->
     msg.send "You are #{msg.message.user.name}"
 
   robot.respond /git (.*)/i, (msg) ->
-    if #{msg.message.user.name} == "isaox"
+    if msg.message.user.name == "isaox"
       arg = msg.match[1]
       @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/git_cmd.sh #{arg}"
@@ -37,7 +37,7 @@ module.exports = (robot) ->
       msg.send stderr if stderr?
 
   robot.respond /make (.*)/i, (msg) ->
-    if #{msg.message.user.name} == "isaox"
+    if msg.message.user.name == "isaox"
       target = msg.match[1]
       @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/make_bin.sh #{target}"
