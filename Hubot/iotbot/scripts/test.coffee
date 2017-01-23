@@ -12,15 +12,6 @@ module.exports = (robot) ->
       msg.send stdout if stdout?
       msg.send stderr if stderr?
 
-  robot.respond /git_pull/, (msg) ->
-    @exec = require('child_process').exec
-    command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/git_pull.sh"
-    msg.send "Command: #{command}"
-    @exec command, (error, stdout, stderr) ->
-      msg.send error if error?
-      msg.send stdout if stdout?
-      msg.send stderr if stderr?
-
   robot.respond /reboot/, (msg) ->
     @exec = require('child_process').exec
     command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/cmd_reboot.sh"
