@@ -2,15 +2,21 @@ module.exports = (robot) ->
   robot.hear /isaox/i, (res) ->
     res.send "isaox? isaox is my master!!"
 
+  robot.hear /who am I/i, (msg) ->
+    msg.send "You are #{msg.message.user.name}"
+
   robot.respond /git (.*)/i, (msg) ->
-    arg = msg.match[1]
-    @exec = require('child_process').exec
-    command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/git_cmd.sh #{arg}"
-    msg.send "Command: #{command}"
-    @exec command, (error, stdout, stderr) ->
-      msg.send error if error?
-      msg.send stdout if stdout?
-      msg.send stderr if stderr?
+    if #{msg.message.user.name} == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/git_cmd.sh #{arg}"
+      msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
 
   robot.respond /reboot/, (msg) ->
     @exec = require('child_process').exec
@@ -31,14 +37,17 @@ module.exports = (robot) ->
       msg.send stderr if stderr?
 
   robot.respond /make (.*)/i, (msg) ->
-    target = msg.match[1]
-    @exec = require('child_process').exec
-    command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/make_bin.sh #{target}"
-    msg.send "Command: #{command}"
-    @exec command, (error, stdout, stderr) ->
-      msg.send error if error?
-      msg.send stdout if stdout?
-      msg.send stderr if stderr?
+    if #{msg.message.user.name} == "isaox"
+      target = msg.match[1]
+      @exec = require('child_process').exec
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/make_bin.sh #{target}"
+      msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
 
 #  robot.respond /cd (.*)/i, (msg) ->
 #    directory = msg.match[1]
