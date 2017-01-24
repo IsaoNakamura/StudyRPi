@@ -5,6 +5,9 @@ module.exports = (robot) ->
   robot.hear /who am I/i, (msg) ->
     msg.send "You are #{msg.message.user.name}"
 
+  robot.hear /who are You/i, (msg) ->
+    msg.send "My name is iotbot! I am HUBOT!!"
+
   robot.respond /git (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
