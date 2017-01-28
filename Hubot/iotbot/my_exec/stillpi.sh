@@ -1,14 +1,11 @@
 #!/bin/sh
 
-if [ $# -eq 0 ]; then
-  echo "指定された引数は$#個です。"
-fi
-
 DATE=$(date +"%Y-%m-%d_%H%M")
 echo "arg_num : $#"
 echo "date    : $DATE"
-if [ $# -eq 0]
-then
+
+if [ $# -eq 0 ]; then
+    echo "指定された引数は$#個です。"
     echo "no arg"
     raspistill -o /home/pi/picam/$DATE.jpg
 else
