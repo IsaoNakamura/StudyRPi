@@ -6,3 +6,4 @@ then
     raspistill $@ -o /home/pi/picam/$DATE.jpg
 else
     raspistill -o /home/pi/picam/$DATE.jpg
+fi
