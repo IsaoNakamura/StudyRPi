@@ -86,13 +86,13 @@ module.exports = (robot) ->
 
   robot.respond /stillpi|stillpi (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
-      @exec = require('child_process').exec
-      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
       arg = msg.match[1]
       msg.send "arg: #{arg}"
       msg.send "arg is defined" if arg?
       msg.send "arg is undefined" unless arg?
-      command = "#{command} #{arg}" if arg?
+      @exec = require('child_process').exec
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
+      command = "#{command} #{arg}"
       msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
