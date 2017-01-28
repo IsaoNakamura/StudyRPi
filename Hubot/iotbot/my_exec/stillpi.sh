@@ -1,10 +1,12 @@
 #!/bin/sh
 
 DATE=$(date +"%Y-%m-%d_%H%M")
-if [ "$#" > 0]
+echo "arg_num : $#"
+echo "date    : $DATE"
+if [ $# eq 0]
 then
+    raspistill -o /home/pi/picam/$DATE.jpg
+else
     echo raspistill $@ -o /home/pi/picam/$DATE.jpg
     raspistill $@ -o /home/pi/picam/$DATE.jpg
-else
-    raspistill -o /home/pi/picam/$DATE.jpg
 fi
