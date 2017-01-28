@@ -84,7 +84,7 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /stillpi (.*)/i, (msg) ->
+  robot.respond /stillpi|stillpi (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       @exec = require('child_process').exec
