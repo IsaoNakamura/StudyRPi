@@ -84,14 +84,14 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /stillpi (.*)|stillpi/i, (msg) ->
+  robot.respond /raspistill (.*)|raspistill/i, (msg) ->
     if msg.message.user.name == "isaox"
-      msg.send "match[0]: #{msg.match[0]}"
-      msg.send "match[1]: #{msg.match[1]}"
+      # msg.send "match[0]: #{msg.match[0]}"
+      # msg.send "match[1]: #{msg.match[1]}"
       arg = msg.match[1]
-      msg.send "arg: #{arg}"
-      msg.send "arg is defined" if arg?
-      msg.send "arg is undefined" unless arg?
+      # msg.send "arg: #{arg}"
+      # msg.send "arg is defined" if arg?
+      # msg.send "arg is undefined" unless arg?
       @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
       command = "#{command} #{arg}" if arg?
