@@ -89,11 +89,7 @@ module.exports = (robot) ->
       @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
       arg = msg.match[1]
-      if arg == undefined
-        msg.send "arg is undefined"
-      else
-        msg.send "arg is defined"
-        command = "#{command} #{arg}" 
+      command = "#{command} #{arg}" if arg?
       msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
