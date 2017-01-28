@@ -3,7 +3,7 @@
 DATE=$(date +"%Y-%m-%d_%H%M")
 echo "arg_num : $#"
 echo "date    : $DATE"
-if [ $# eq 0]
+if [ $# -eq 0]
 then
     raspistill -o /home/pi/picam/$DATE.jpg
 else
