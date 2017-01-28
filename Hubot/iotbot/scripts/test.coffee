@@ -88,7 +88,9 @@ module.exports = (robot) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       @exec = require('child_process').exec
-      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh #{arg}"
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
+      if arg?
+        command = "#{command} #{arg}" 
       msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
