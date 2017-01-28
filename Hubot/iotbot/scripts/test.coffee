@@ -84,6 +84,19 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /stillpi (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh #{arg}"
+      msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
 #  robot.respond /cd (.*)/i, (msg) ->
 #    directory = msg.match[1]
 #    msg.send "directory is #{directory}"
