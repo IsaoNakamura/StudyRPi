@@ -16,18 +16,17 @@ module.exports = (robot) ->
       min = ("0"+dt.getMinutes()).slice(-2)
       sec = ("0"+dt.getSeconds()).slice(-2)
       file_path = "/home/pi/picam/"
-      # file_name = "#{year}-#{month}-#{date}_#{hour}#{min}_#{sec}.jpg"
-      file_name = "2017-01-29_1511_02.jpg"
+      file_name = "#{year}-#{month}-#{date}_#{hour}#{min}_#{sec}.jpg"
       msg.send "file_name: #{file_name}"
-      #@exec = require('child_process').exec
+      @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh #{file_path}#{file_name} "
       command = "#{command} #{arg}" if arg?
       msg.send "Command: #{command}"
-      #@exec command, (error, stdout, stderr) ->
-      #  msg.send error if error?
-      #  msg.send stdout if stdout?
-      #  msg.send stderr if stderr?
-
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+      file_name = "2017-01-29_1511_02.jpg"
       api_url = "https://slack.com/api/"
       channel = msg.message.room
       options = {
