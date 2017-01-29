@@ -5,6 +5,8 @@ module.exports = (robot) ->
 
  robot.respond /stillup (.*)/i, (msg) ->
    file_name = msg.match[1]
+   msg.send "match[0]: #{msg.match[0]}"
+   msg.send "match[1]: #{msg.match[1]}"
    file = fs.createWriteStream file_name
    api_url = 'https://slack.com/api/'
    channel = msg.message.room
@@ -16,16 +18,16 @@ module.exports = (robot) ->
      channels: channel
    }
 
-   console.log options
+   # console.log options
    msg.send " #{options} " 
 
    request
      .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
        if !error && response.statusCode == 200
-         console.log 'ok'
+         # console.log 'ok'
          msg.send "OK"
        else
-         console.log 'status code: ' + response.statusCode
+         # console.log 'status code: ' + response.statusCode
          msg.send "NG status code: #{response.statusCode}"
 
   robot.hear /isaox/i, (res) ->
