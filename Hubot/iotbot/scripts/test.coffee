@@ -7,10 +7,17 @@ module.exports = (robot) ->
     if msg.message.user.name == "isaox"
       msg.send "match[0]: #{msg.match[0]}"
       msg.send "match[1]: #{msg.match[1]}"
-      arg = msg.match[1]
-      msg.send "arg: #{arg}"
-      msg.send "arg is defined" if arg?
-      msg.send "arg is undefined" unless arg?
+      file_name = msg.match[1]
+      msg.send "file_name: #{file_name}"
+      api_url = "https://slack.com/api/"
+      channel = msg.message.room
+      options = {
+        token: process.env.HUBOT_SLACK_TOKEN,
+        filename: file_name,
+        file: fs.createReadStream('/home/pi/picam/' + file_name),
+        channels: channel
+      }
+
     else
       msg.send "get out !!"
 
