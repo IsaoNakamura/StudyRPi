@@ -17,7 +17,7 @@ module.exports = (robot) ->
    }
 
    console.log options
-   msg.send options
+   msg.send " #{options} " 
 
    request
      .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
@@ -26,32 +26,7 @@ module.exports = (robot) ->
          msg.send "OK"
        else
          console.log 'status code: ' + response.statusCode
-         msg.send "NG status code:#{response.statusCode}"
-
- robot.respond /stillup (.*)/i, (msg) ->
-   file_name = msg.match[1]
-   file = fs.createWriteStream file_name
-   api_url = 'https://slack.com/api/'
-   channel = msg.message.room
-
-   options = {
-     token: process.env.HUBOT_SLACK_TOKEN,
-     filename: file_name,
-     file: fs.createReadStream('/home/pi/picam/' + file_name),
-     channels: channel
-   }
-
-   console.log options
-   msg.send options
-
-   request
-     .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
-       if !error && response.statusCode == 200
-         console.log 'ok'
-         msg.send "OK"
-       else
-         console.log 'status code: ' + response.statusCode
-         msg.send "NG status code:#{response.statusCode}"
+         msg.send "NG status code: #{response.statusCode}"
 
   robot.hear /isaox/i, (res) ->
     res.send "isaox? isaox is my master!!"
