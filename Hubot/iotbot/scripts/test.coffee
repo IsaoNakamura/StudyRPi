@@ -5,8 +5,8 @@ module.exports = (robot) ->
 
   robot.respond /stillup (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
-      msg.send "match[0]: #{msg.match[0]}"
-      msg.send "match[1]: #{msg.match[1]}"
+      # msg.send "match[0]: #{msg.match[0]}"
+      # msg.send "match[1]: #{msg.match[1]}"
       file_name = msg.match[1]
       msg.send "file_name: #{file_name}"
       api_url = "https://slack.com/api/"
@@ -23,7 +23,7 @@ module.exports = (robot) ->
           if !error && response.statusCode == 200
             msg.send "OK"
           else
-            msg.send "NG"
+            msg.send "NG status code: #{response.statusCode}"
 
     else
       msg.send "get out !!"

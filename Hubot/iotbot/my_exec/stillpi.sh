@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DATE=$(date +"%Y-%m-%d_%H%M")
-echo "arg_num : $#"
+# echo "arg_num : $#"
 echo "date    : $DATE"
 
 if [ $# -eq 0 ]; then
