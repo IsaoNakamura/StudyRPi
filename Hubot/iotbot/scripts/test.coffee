@@ -19,8 +19,8 @@ module.exports = (robot) ->
       file_name = "#{year}-#{month}-#{date}_#{hour}#{min}_#{sec}.jpg"
       msg.send "file_name: #{file_name}"
       @exec = require('child_process').exec
-      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
-      command = "#{command} #{file_path}#{file_name} #{arg}" if arg?
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh #{file_path}#{file_name} "
+      command = "#{command} #{arg}" if arg?
       msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
@@ -32,7 +32,7 @@ module.exports = (robot) ->
       options = {
         token: process.env.HUBOT_SLACK_TOKEN,
         filename: file_name,
-        file: fs.createReadStream(file_path + file_name),
+        file: fs.createReadStream("#{file_path}#{file_name}"),
         channels: channel
       }
 
