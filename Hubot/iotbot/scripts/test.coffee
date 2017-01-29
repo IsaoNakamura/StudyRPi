@@ -16,30 +16,30 @@ module.exports = (robot) ->
       min = dt.getMinutes()
       file_name = "#{year}-#{month}-#{date}_#{hour}#{min}.jpg"
       msg.send "file_name: #{file_name}"
-      @exec = require('child_process').exec
-      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
-      command = "#{command} #{arg}" if arg?
-      msg.send "Command: #{command}"
-      @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
-        msg.send stdout if stdout?
-        msg.send stderr if stderr?
+      # @exec = require('child_process').exec
+      # command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
+      # command = "#{command} #{arg}" if arg?
+      # msg.send "Command: #{command}"
+      # @exec command, (error, stdout, stderr) ->
+      #   msg.send error if error?
+      #   msg.send stdout if stdout?
+      #   msg.send stderr if stderr?
 
-      api_url = "https://slack.com/api/"
-      channel = msg.message.room
-      options = {
-        token: process.env.HUBOT_SLACK_TOKEN,
-        filename: file_name,
-        file: fs.createReadStream('/home/pi/picam/' + file_name),
-        channels: channel
-      }
+      # api_url = "https://slack.com/api/"
+      # channel = msg.message.room
+      # options = {
+      #   token: process.env.HUBOT_SLACK_TOKEN,
+      #   filename: file_name,
+      #   file: fs.createReadStream('/home/pi/picam/' + file_name),
+      #   channels: channel
+      # }
 
-      request
-        .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
-          if !error && response.statusCode == 200
-            msg.send "OK"
-          else
-            msg.send "NG status code: #{response.statusCode}"
+      # request
+      #   .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
+      #     if !error && response.statusCode == 200
+      #       msg.send "OK"
+      #     else
+      #       msg.send "NG status code: #{response.statusCode}"
     else
       msg.send "get out !!"
 
