@@ -10,5 +10,5 @@ if [ $# -eq 0 ]; then
     raspistill -o /home/pi/picam/$DATE.jpg
 else
     echo "raspistill $@ -o /home/pi/picam/$DATE.jpg"
-    raspistill $@ -o /home/pi/picam/$DATE.jpg
+    raspistill ${2} -o $1
 fi
