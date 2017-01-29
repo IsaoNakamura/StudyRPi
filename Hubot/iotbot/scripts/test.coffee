@@ -18,6 +18,13 @@ module.exports = (robot) ->
         channels: channel
       }
 
+      request
+        .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
+          if !error && response.statusCode == 200
+            msg.send "OK"
+          else
+            msg.send "NG"
+
     else
       msg.send "get out !!"
 
