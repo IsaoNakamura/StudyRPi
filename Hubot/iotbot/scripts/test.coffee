@@ -1,6 +1,5 @@
 request = require "request";
 fs = require "fs";
-# dt = require "Date";
 
 module.exports = (robot) ->
 
@@ -9,13 +8,14 @@ module.exports = (robot) ->
       # msg.send "match[0]: #{msg.match[0]}"
       # msg.send "match[1]: #{msg.match[1]}"
       arg = msg.match[1]
-      # year = dt.getFullYear()
+      dt = new Date()
+      year = dt.getFullYear()
       # month = dt.getMonth() + 1
       # date = dt.getDate()
       # hour = dt.getHours()
       # min = dt.getMinutes()
       # file_name = "#{year}-#{month}-#{date}_#{hour}#{min}.jpg"
-      file_name = "#{arg}.jpg"
+      file_name = "#{year}.jpg"
       msg.send "file_name: #{file_name}"
       # @exec = require('child_process').exec
       # command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
