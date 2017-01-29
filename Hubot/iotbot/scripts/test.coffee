@@ -3,13 +3,16 @@ fs = require "fs";
 
 module.exports = (robot) ->
 
- robot.respond /stillup (.*)/i, (msg) ->
-   file_name = msg.match[1]
-   msg.send "match[0]: #{msg.match[0]}"
-   msg.send "match[1]: #{msg.match[1]}"
-   file = fs.createWriteStream file_name
-   api_url = 'https://slack.com/api/'
-   channel = msg.message.room
+  robot.respond /stillup (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      msg.send "match[0]: #{msg.match[0]}"
+      msg.send "match[1]: #{msg.match[1]}"
+      arg = msg.match[1]
+      msg.send "arg: #{arg}"
+      msg.send "arg is defined" if arg?
+      msg.send "arg is undefined" unless arg?
+    else
+      msg.send "get out !!"
 
   robot.hear /isaox/i, (res) ->
     res.send "isaox? isaox is my master!!"
