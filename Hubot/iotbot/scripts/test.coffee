@@ -26,7 +26,6 @@ module.exports = (robot) ->
         msg.send error if error?
         msg.send stdout if stdout?
         msg.send stderr if stderr?
-      # file_name = "2017-01-29_1511_02.jpg"
       api_url = "https://slack.com/api/"
       channel = msg.message.room
       options = {
@@ -35,7 +34,6 @@ module.exports = (robot) ->
         file: fs.createReadStream("#{file_path}#{file_name}"),
         channels: channel
       }
-      msg.send "createReadStream #{file_path}#{file_name}"
 
       request
         .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
