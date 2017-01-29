@@ -35,6 +35,7 @@ module.exports = (robot) ->
         file: fs.createReadStream("#{file_path}#{file_name}"),
         channels: channel
       }
+      msg.send "createReadStream #{file_path}#{file_name}"
 
       request
         .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
