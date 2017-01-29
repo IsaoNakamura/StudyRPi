@@ -10,12 +10,11 @@ module.exports = (robot) ->
       arg = msg.match[1]
       dt = new Date()
       year = dt.getFullYear()
-      # month = dt.getMonth() + 1
-      # date = dt.getDate()
-      # hour = dt.getHours()
-      # min = dt.getMinutes()
-      # file_name = "#{year}-#{month}-#{date}_#{hour}#{min}.jpg"
-      file_name = "#{year}.jpg"
+      month = dt.getMonth() + 1
+      date = dt.getDate()
+      hour = dt.getHours()
+      min = dt.getMinutes()
+      file_name = "#{year}-#{month}-#{date}_#{hour}#{min}.jpg"
       msg.send "file_name: #{file_name}"
       # @exec = require('child_process').exec
       # command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/stillpi.sh"
