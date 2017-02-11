@@ -53,6 +53,21 @@ module.exports = (robot) ->
   robot.hear /who are You/i, (msg) ->
     msg.send "My name is iotbot! I am HUBOT!!"
 
+  robot.respond /ifconfig (.*)|ifconfig/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      # msg.send "match[0]: #{msg.match[0]}"
+      # msg.send "match[1]: #{msg.match[1]}"
+      arg = msg.match[1]
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/ifconfig_cmd.sh"
+      command = "#{command} #{arg}" if arg?
+      msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /git (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
