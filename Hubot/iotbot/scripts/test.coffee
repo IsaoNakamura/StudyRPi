@@ -58,6 +58,7 @@ module.exports = (robot) ->
       # msg.send "match[0]: #{msg.match[0]}"
       # msg.send "match[1]: #{msg.match[1]}"
       arg = msg.match[1]
+      @exec = require('child_process').exec
       command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/ifconfig_cmd.sh"
       command = "#{command} #{arg}" if arg?
       msg.send "Command: #{command}"
