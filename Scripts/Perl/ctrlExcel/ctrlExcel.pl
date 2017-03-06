@@ -30,7 +30,7 @@ print $$array[0][1]  . "\r\n";
 print $$array[0][2]  . "\r\n";
 
 # ブックを名前を付けて保存する
-$book->SaveAs('C:\Users\isao_nakamura.GEOGIKEN\Desktop\GitHub\StudyRPi\Scripts\Perl\ctrlExcel\test.xlsx');
+$book->SaveAs('.\test.xlsx');
 
 # ブックを閉じる
 $book->Close();
