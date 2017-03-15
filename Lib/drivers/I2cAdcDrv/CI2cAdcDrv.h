@@ -106,6 +106,9 @@ struct stChannelState
 
 #define CNT_LIMIT 2
 
+#define BUTTON_ON 1
+#define BUTTON_OFF 0
+
 class CI2cAdcDrv {
 public:
 	virtual ~CI2cAdcDrv();
