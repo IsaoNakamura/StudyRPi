@@ -393,7 +393,7 @@ int CI2cAdcDrv::updateChannelState(stChannelState &ret_state, unsigned int chann
 		if(wrk_btn_state == BUTTON_ON)
 		{//ONなら
 			//ONカウントアップ
-			countUpContinueCnt(ret_state.continue_on_cnt);
+			countUpContinueCnt(ret_state.continue_on_cnt, m_continue_threshold);
 			//printf("countUp ON \n");
 			//OFFカウントリセット
 			ret_state.continue_off_cnt = 0;
@@ -401,7 +401,7 @@ int CI2cAdcDrv::updateChannelState(stChannelState &ret_state, unsigned int chann
 		else
 		{//OFFなら
 			//OFFカウントアップ
-			countUpContinueCnt(ret_state.continue_off_cnt);
+			countUpContinueCnt(ret_state.continue_off_cnt, m_continue_threshold);
 		}
 
 		if(ret_state.continue_on_cnt >= ret_state.cnt_limit)

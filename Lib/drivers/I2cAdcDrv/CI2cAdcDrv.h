@@ -105,6 +105,7 @@ struct stChannelState
 };
 
 #define CNT_LIMIT 2
+#define CNT_OFF_LIMIT 10
 
 #define BUTTON_ON 1
 #define BUTTON_OFF 0
