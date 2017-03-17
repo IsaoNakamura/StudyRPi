@@ -99,7 +99,6 @@ struct stChannelState
 	int diff_value;
 	unsigned int continue_off_cnt;
 	unsigned int continue_on_cnt;
-	unsigned int continue_cnt;
 	unsigned int cnt_limit;
 	int btn_state;
 };
@@ -153,7 +152,9 @@ private:
 
 	int initAllChannelValue();
 
-	int updateChannelState(stChannelState &ret_state, unsigned int channel);
+	int updateChannelStateBall(stChannelState &ret_state, unsigned int channel);
+	int updateChannelStatePulse(stChannelState &ret_state, unsigned int channel);
+
 
 	static
     int countUpContinueCnt

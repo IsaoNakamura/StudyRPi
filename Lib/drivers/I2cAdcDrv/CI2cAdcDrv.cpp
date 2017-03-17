@@ -87,7 +87,6 @@ void CI2cAdcDrv::initInstance()
 		m_state[i].btn_state = BUTTON_OFF;
 		m_state[i].continue_off_cnt = 0;
 		m_state[i].continue_on_cnt = 0;
-		m_state[i].continue_cnt = 0;
 		m_state[i].cnt_limit = CNT_LIMIT;
 	}
 }
@@ -358,7 +357,7 @@ int CI2cAdcDrv::countUpContinueCnt
 	return iRet;
 }
 
-int CI2cAdcDrv::updateChannelState(stChannelState &ret_state, unsigned int channel)
+int CI2cAdcDrv::updateChannelStateBall(stChannelState &ret_state, unsigned int channel)
 {
 	int iRet = -1;
 	unsigned short old_val=0;
@@ -432,6 +431,55 @@ int CI2cAdcDrv::updateChannelState(stChannelState &ret_state, unsigned int chann
 	return iRet;
 }
 
+int CI2cAdcDrv::updateChannelStatePulse(stChannelState &ret_state, unsigned int channel)
+{
+	int iRet = -1;
+	unsigned short old_val=0;
+
+	try
+	{
+		//現在の値を記録
+		old_val = ret_state.org_value;
+
+		//値を更新
+		if(readADC_SingledEnded(ret_state.org_value,channel)!=0)
+		{
+			throw 0;
+		}
+
+		//差を求める
+		ret_state.diff_value = old_val - ret_state.org_value;
+
+		if( abs(ret_state.diff_value) > m_diff_threshold)
+		{//しきい値より差が大きければ
+			if(ret_state.diff_value > 0){
+				// 増加なら
+				// 状態をONにする
+				//printf("wrk_state = ON \n");
+				ret_state.btn_state = BUTTON_ON;
+			}else{
+				// 減少なら
+				// 状態をOFFにする
+				//printf("wrk_state = OFF \n");
+				ret_state.btn_state = BUTTON_OFF;
+			}
+		}
+		else
+		{//しきい値以下であれば
+			//状態をOFFにする
+			ret_state.btn_state = BUTTON_OFF;
+		}
+
+		//ここまでくれば正常
+		iRet = 0;
+	}
+	catch(...)
+	{
+		iRet = -1;
+	}
+	return iRet;
+}
+
 int CI2cAdcDrv::getChannelValue
 (
 		unsigned short		&ret_value
@@ -450,7 +498,7 @@ int CI2cAdcDrv::getChannelValue
 		switch(channel)
 		{
 		case CH_0:
-			if( this->updateChannelState(m_state[CH_0], CH_0) != 0)
+			if( this->updateChannelStatePulse(m_state[CH_0], CH_0) != 0)
 			{
 				throw 0;
 			}
@@ -464,7 +512,7 @@ int CI2cAdcDrv::getChannelValue
 			}
 			break;
 		case CH_1:
-			if( this->updateChannelState(m_state[CH_1], CH_1) != 0)
+			if( this->updateChannelStatePulse(m_state[CH_1], CH_1) != 0)
 			{
 				throw 0;
 			}
@@ -478,7 +526,7 @@ int CI2cAdcDrv::getChannelValue
 			}
 			break;
 		case CH_2:
-			if( this->updateChannelState(m_state[CH_2], CH_2) != 0)
+			if( this->updateChannelStatePulse(m_state[CH_2], CH_2) != 0)
 			{
 				throw 0;
 			}
@@ -492,7 +540,7 @@ int CI2cAdcDrv::getChannelValue
 			}
 			break;
 		case CH_3:
-			if( this->updateChannelState(m_state[CH_3], CH_3) != 0)
+			if( this->updateChannelStatePulse(m_state[CH_3], CH_3) != 0)
 			{
 				throw 0;
 			}
