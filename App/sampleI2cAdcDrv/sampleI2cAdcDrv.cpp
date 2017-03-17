@@ -72,6 +72,9 @@ int main(int argc, char* argv[])
 		if(fd >= 0){
 			close(fd);
 		}
+
+		// ここまでくれば正常
+		iRet = 0;
 	}
 	catch(...)
 	{
