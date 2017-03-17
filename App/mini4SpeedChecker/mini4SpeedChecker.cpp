@@ -22,11 +22,12 @@
 #define USE_CH 0
 
 #define PULSE_INTERVAL_DIST (0.55417693464)	//[m]
+#define SAMPLING_RATE (1000000) // [usec]
 
 #define LOOP_MAX 1000
 
 int calcSpeedPerOn( CI2cAdcDrv* pAdc );
-int calcSpeedPerSec( CI2cAdcDrv* pAdc );
+int calcSpeedPerHz( CI2cAdcDrv* pAdc , suseconds_t samplingRate=SAMPLING_RATE);
 
 int main(int argc, char* argv[])
 {
@@ -62,8 +63,8 @@ int main(int argc, char* argv[])
 		}
 		
 		if(calcSpeedMode==0){
-			if( calcSpeedPerSec(pAdc) != 0){
-				printf("failed to calcSpeedPerSec()¥n");
+			if( calcSpeedPerHz(pAdc) != 0){
+				printf("failed to calcSpeedPerHz()¥n");
 				throw 0;
 			}
 		}else if(calcSpeedMode==1){
@@ -105,7 +106,7 @@ int main(int argc, char* argv[])
 	return iRet;
 }
 
-int calcSpeedPerSec( CI2cAdcDrv* pAdc )
+int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/ )
 {
 	int iRet = -1;
 	try
@@ -125,8 +126,8 @@ int calcSpeedPerSec( CI2cAdcDrv* pAdc )
 		int loop_cnt = 0;
 
 		gettimeofday(&stNow, NULL);
-		stLen.tv_sec = 1;
-		stLen.tv_usec = 0;
+		stLen.tv_sec = 0;
+		stLen.tv_usec = samplingRate;
 		timeradd(&stNow, &stLen, &stEnd);
 
 		int pulse_cnt = 0;
@@ -152,7 +153,7 @@ int calcSpeedPerSec( CI2cAdcDrv* pAdc )
 				// 任意時間経過
 
 				// スピードを計算
-				double speed_m_s = PULSE_INTERVAL_DIST * pulse_cnt ; //[m/s]
+				double speed_m_s = PULSE_INTERVAL_DIST * pulse_cnt / (samplingRate*1e-6);
 				double speed_km_h = speed_m_s * 3600.0 / 1000.0;
 				printf("Speed:%03.02f[km/s]:%05.02f[m/s]", speed_km_h, speed_m_s);
 
