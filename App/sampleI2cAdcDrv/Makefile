@@ -13,7 +13,7 @@ OBJECTS  = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 DEPENDS  = $(OBJECTS:.o=.d)
 
 LIBDIR = ../../Lib
-EXOBJS = $(OBJDIR)/I2cAdcDrv.o
+EXOBJS = $(OBJDIR)/CI2cAdcDrv.o
 
 $(TARGET): $(OBJECTS) $(LIBS)
 	$(COMPILER) -o $@ $^ $(LDFLAGS) $(EXOBJS)
