@@ -157,7 +157,7 @@ int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/
 				// スピードを計算
 				double speed_m_s = PULSE_INTERVAL_DIST * pulse_cnt / (samplingRate*1e-6);
 				double speed_km_h = speed_m_s * 3600.0 / 1000.0;
-				printf("Speed:%03.02f[km/s]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
+				printf("Speed:%03.02f[km/h]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
 
 				// 経過時刻を更新
 				timerclear(&stEnd);
@@ -225,7 +225,7 @@ int calcSpeedPerOn( CI2cAdcDrv* pAdc )
 						double realsec = diffsec+diffsub*1e-6; //[s]
 						double speed_m_s = PULSE_INTERVAL_DIST / realsec ; //[m/s]
 						double speed_km_h = speed_m_s * 3600.0 / 1000.0;
-						printf("Speed:%03.02f[km/s]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
+						printf("Speed:%03.02f[km/h]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
 					}
 
 					// 前回時刻を更新
