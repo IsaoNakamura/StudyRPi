@@ -24,7 +24,7 @@
 #define PULSE_INTERVAL_DIST (0.55417693464)	//[m]
 #define SAMPLING_RATE (1000000) // [usec]
 
-#define LOOP_MAX 1000
+#define LOOP_MAX 10000
 
 int calcSpeedPerOn( CI2cAdcDrv* pAdc );
 int calcSpeedPerHz( CI2cAdcDrv* pAdc , suseconds_t samplingRate=SAMPLING_RATE);
@@ -63,11 +63,13 @@ int main(int argc, char* argv[])
 		}
 		
 		if(calcSpeedMode==0){
+			printf("calc Speed is per Hz.\n");
 			if( calcSpeedPerHz(pAdc) != 0){
 				printf("failed to calcSpeedPerHz()\n");
 				throw 0;
 			}
 		}else if(calcSpeedMode==1){
+			printf("calc Speed is per pulse.\n");
 			if( calcSpeedPerOn(pAdc) != 0){
 				printf("failed to calcSpeedPerOn()\n");
 				throw 0;
