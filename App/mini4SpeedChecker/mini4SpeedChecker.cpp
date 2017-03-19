@@ -53,27 +53,27 @@ int main(int argc, char* argv[])
 		// ready Adc
 		pAdc = CI2cAdcDrv::createInstance(fd);
 		if(!pAdc){
-			printf("failed to CI2cAdcDrv::createInstance(fd=%d)¥n",fd);
+			printf("failed to CI2cAdcDrv::createInstance(fd=%d)\n",fd);
 			throw 0;
 		}
 		
 		if( pAdc->useDevice() != 0 ){
-			printf("failed to CI2cAdcDrv::useDevice()¥n");
+			printf("failed to CI2cAdcDrv::useDevice()\n");
 			throw 0;
 		}
 		
 		if(calcSpeedMode==0){
 			if( calcSpeedPerHz(pAdc) != 0){
-				printf("failed to calcSpeedPerHz()¥n");
+				printf("failed to calcSpeedPerHz()\n");
 				throw 0;
 			}
 		}else if(calcSpeedMode==1){
 			if( calcSpeedPerOn(pAdc) != 0){
-				printf("failed to calcSpeedPerOn()¥n");
+				printf("failed to calcSpeedPerOn()\n");
 				throw 0;
 			}
 		}else{
-			printf("error!! calcSpeedMode(%d) is out of range. ¥n",calcSpeedMode);
+			printf("error!! calcSpeedMode(%d) is out of range. \n",calcSpeedMode);
 		}
 		
 		if(pAdc){
@@ -155,7 +155,7 @@ int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/
 				// スピードを計算
 				double speed_m_s = PULSE_INTERVAL_DIST * pulse_cnt / (samplingRate*1e-6);
 				double speed_km_h = speed_m_s * 3600.0 / 1000.0;
-				printf("Speed:%03.02f[km/s]:%05.02f[m/s]", speed_km_h, speed_m_s);
+				printf("Speed:%03.02f[km/s]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
 
 				// 経過時刻を更新
 				timerclear(&stEnd);
@@ -171,6 +171,9 @@ int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/
 
 			sleep(0);
 		}
+
+		// ここまでくれば正常
+		iRet = 0;
 	}
 	catch(...)
 	{
@@ -220,7 +223,7 @@ int calcSpeedPerOn( CI2cAdcDrv* pAdc )
 						double realsec = diffsec+diffsub*1e-6; //[s]
 						double speed_m_s = PULSE_INTERVAL_DIST / realsec ; //[m/s]
 						double speed_km_h = speed_m_s * 3600.0 / 1000.0;
-						printf("Speed:%03.02f[km/s]:%05.02f[m/s]", speed_km_h, speed_m_s);
+						printf("Speed:%03.02f[km/s]:%05.02f[m/s]\n", speed_km_h, speed_m_s);
 					}
 
 					// 前回時刻を更新
@@ -234,6 +237,9 @@ int calcSpeedPerOn( CI2cAdcDrv* pAdc )
 
 			sleep(0);
 		}
+
+		// ここまでくれば正常
+		iRet = 0;
 	}
 	catch(...)
 	{
