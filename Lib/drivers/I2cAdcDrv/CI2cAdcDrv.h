@@ -128,7 +128,7 @@ public:
     (
             int fd
         ,   int address=ADS1015_ADDRESS
-        ,   unsigned int diff_threshold=8000
+        ,   unsigned int diff_threshold=7000
         ,   unsigned int continue_threshold=65535
     );
 
