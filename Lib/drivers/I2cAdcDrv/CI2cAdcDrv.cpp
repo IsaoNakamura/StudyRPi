@@ -448,7 +448,7 @@ int CI2cAdcDrv::updateChannelStatePulse(stChannelState &ret_state, unsigned int 
 		}
 
 		//差を求める
-		ret_state.diff_value = old_val - ret_state.org_value;
+		ret_state.diff_value = ret_state.org_value - old_val;
 
 		if( abs(ret_state.diff_value) > m_diff_threshold)
 		{//しきい値より差が大きければ
