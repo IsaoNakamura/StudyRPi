@@ -22,7 +22,7 @@
 #define USE_CH 0
 
 #define PULSE_INTERVAL_DIST (0.55417693464)	//[m]
-#define SAMPLING_RATE (500000) // [usec]
+#define SAMPLING_RATE (1000000) // [usec]
 
 #define LOOP_MAX 10000
 
