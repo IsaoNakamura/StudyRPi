@@ -35,12 +35,12 @@ int main(int argc, char* argv[])
 		// ready Adc
 		pAdc = CI2cAdcDrv::createInstance(fd);
 		if(!pAdc){
-			printf("failed to CI2cAdcDrv::createInstance(fd=%d)¥n",fd);
+			printf("failed to CI2cAdcDrv::createInstance(fd=%d)\n",fd);
 			throw 0;
 		}
 		
 		if( pAdc->useDevice() != 0 ){
-			printf("failed to CI2cAdcDrv::useDevice()¥n");
+			printf("failed to CI2cAdcDrv::useDevice()\n");
 			throw 0;
 		}
 		
