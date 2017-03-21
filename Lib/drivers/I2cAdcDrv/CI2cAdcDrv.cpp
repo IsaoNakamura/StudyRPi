@@ -31,6 +31,7 @@ CI2cAdcDrv::~CI2cAdcDrv() {
 CI2cAdcDrv* CI2cAdcDrv::createInstance(
 	  int fd
 	, int address/*=ADS1015_ADDRESS*/
+	, unsigned int on_threshold/*=100*/
 	, unsigned int diff_threshold/*=5000*/
 	, unsigned int continue_threshold/*=65535*/
 )
@@ -53,6 +54,7 @@ CI2cAdcDrv* CI2cAdcDrv::createInstance(
 
 		pObj->m_fd = fd;
 		pObj->m_address = address;
+		pObj->m_on_threshold = on_threshold;
 		pObj->m_diff_threshold = diff_threshold;
 		pObj->m_continue_threshold = continue_threshold;
 
@@ -77,6 +79,7 @@ void CI2cAdcDrv::initInstance()
 {
 	m_fd = 0;
 	m_address = 0;
+	m_on_threshold = 0;
 	m_diff_threshold = 0;
 	m_continue_threshold = 0;
 

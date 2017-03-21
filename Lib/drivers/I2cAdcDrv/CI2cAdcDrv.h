@@ -117,6 +117,7 @@ private:
 	int m_fd;
 	int m_address;
 	unsigned int m_diff_threshold;
+	unsigned int m_on_threshold;
     unsigned int m_continue_threshold; 
 
 	stChannelState m_state[CH_NUM];
@@ -128,6 +129,7 @@ public:
     (
             int fd
         ,   int address=ADS1015_ADDRESS
+		,	unsigned int on_threshold=100
         ,   unsigned int diff_threshold=7000
         ,   unsigned int continue_threshold=65535
     );
