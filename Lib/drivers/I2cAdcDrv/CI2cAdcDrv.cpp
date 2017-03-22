@@ -453,23 +453,27 @@ int CI2cAdcDrv::updateChannelStatePulse(stChannelState &ret_state, unsigned int 
 		//差を求める
 		ret_state.diff_value = ret_state.org_value - old_val;
 
-		if( abs(ret_state.diff_value) > m_diff_threshold)
-		{//しきい値より差が大きければ
-			if(ret_state.diff_value > 0){
-				// 増加なら
-				// 状態をONにする
-				//printf("wrk_state = ON \n");
+		if(ret_state.org_value > m_on_threshold)
+		{//しきい値より大きければ
+			// カウントアップ
+			ret_state.continue_on_cnt++;
+			if(ret_state.continue_on_cnt==1)
+			{//最初のONなら
+				//状態をONにする
 				ret_state.btn_state = BUTTON_ON;
-			}else{
-				// 減少なら
-				// 状態をOFFにする
-				//printf("wrk_state = OFF \n");
+			}
+			else
+			{//最初以降のONなら
+				//状態をOFFにする
 				ret_state.btn_state = BUTTON_OFF;
 			}
 		}
 		else
-		{//しきい値以下であれば
-			//状態をOFFにする
+		{//しきい値より小さければ
+			// カウントリセット
+			ret_state.continue_on_cnt = 0;
+
+			// 状態をOFFにする
 			ret_state.btn_state = BUTTON_OFF;
 		}
 
