@@ -24,7 +24,7 @@
 #define PULSE_INTERVAL_DIST (0.55417693464)	//[m]
 #define SAMPLING_RATE (1000000) // [usec]
 
-#define LOOP_MAX 10000
+#define LOOP_MAX 5000
 
 int calcSpeedPerOn( CI2cAdcDrv* pAdc );
 int calcSpeedPerHz( CI2cAdcDrv* pAdc , suseconds_t samplingRate=SAMPLING_RATE);
@@ -133,6 +133,7 @@ int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/
 		timeradd(&stNow, &stLen, &stEnd);
 
 		int pulse_cnt = 0;
+		bool isFirstOn = true;
 
 		while(loop_cnt<LOOP_MAX){
 			// チャンネル0の値を取得
@@ -143,6 +144,11 @@ int calcSpeedPerHz( CI2cAdcDrv* pAdc, suseconds_t samplingRate/*=SAMPLING_RATE*/
 				if( ret_state > 0 ){
 					//printf("ch[%02d]:val=%05d,stat=%02d \n",USE_CH,ret_value, ret_state);
 					pulse_cnt++;
+					if(isFirstOn){
+						// 初回
+						isFirstOn = false;
+						printf("START!!\n");
+					}
 				}
 			}else{
 				// 取得失敗
@@ -216,6 +222,7 @@ int calcSpeedPerOn( CI2cAdcDrv* pAdc )
 					if(isFirstOn){
 						// 初回
 						isFirstOn = false;
+						printf("START!!\n");
 					}else{
 						// 初回以降
 
