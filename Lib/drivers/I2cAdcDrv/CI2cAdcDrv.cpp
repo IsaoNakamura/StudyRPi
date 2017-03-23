@@ -502,68 +502,22 @@ int CI2cAdcDrv::getChannelValue
 			throw 0;
 		}
 
-		switch(channel)
+		// CHの状態を更新する
+		if( this->updateChannelStatePulse(m_state[channel], channel) != 0)
 		{
-		case CH_0:
-			if( this->updateChannelStatePulse(m_state[CH_0], CH_0) != 0)
-			{
-				throw 0;
+			throw 0;
+		}
+		ret_value = m_state[channel].org_value;
+		ret_state = m_state[channel].btn_state;
+
+		// 他のCHのカウンターはリセット
+		if(ret_state == BUTTON_ON)
+		{
+			for(unsigned int i=0; i<CH_NUM; i++){
+				if(i!=channel){
+					m_state[i].continue_on_cnt = 0;
+				}
 			}
-			ret_value = m_state[CH_0].org_value;
-			ret_state = m_state[CH_0].btn_state;
-			if(ret_state == BUTTON_ON)
-			{
-				m_state[CH_1].continue_on_cnt = 0;
-				m_state[CH_2].continue_on_cnt = 0;
-				m_state[CH_3].continue_on_cnt = 0;
-			}
-			break;
-		case CH_1:
-			if( this->updateChannelStatePulse(m_state[CH_1], CH_1) != 0)
-			{
-				throw 0;
-			}
-			ret_value = m_state[CH_1].org_value;
-			ret_state = m_state[CH_1].btn_state;
-			if(ret_state == BUTTON_ON)
-			{
-				m_state[CH_0].continue_on_cnt = 0;
-				m_state[CH_2].continue_on_cnt = 0;
-				m_state[CH_3].continue_on_cnt = 0;
-			}
-			break;
-		case CH_2:
-			if( this->updateChannelStatePulse(m_state[CH_2], CH_2) != 0)
-			{
-				throw 0;
-			}
-			ret_value = m_state[CH_2].org_value;
-			ret_state = m_state[CH_2].btn_state;
-			if(ret_state == BUTTON_ON)
-			{
-				m_state[CH_0].continue_on_cnt = 0;
-				m_state[CH_1].continue_on_cnt = 0;
-				m_state[CH_3].continue_on_cnt = 0;
-			}
-			break;
-		case CH_3:
-			if( this->updateChannelStatePulse(m_state[CH_3], CH_3) != 0)
-			{
-				throw 0;
-			}
-			ret_value = m_state[CH_3].org_value;
-			ret_state = m_state[CH_3].btn_state;
-			if(ret_state == BUTTON_ON)
-			{
-				m_state[CH_0].continue_on_cnt = 0;
-				m_state[CH_1].continue_on_cnt = 0;
-				m_state[CH_2].continue_on_cnt = 0;
-			}
-			break;
-		default:
-			ret_value = 0;
-			ret_state = BUTTON_OFF;
-			break;
 		}
 
 		//ここまでくれば正常
