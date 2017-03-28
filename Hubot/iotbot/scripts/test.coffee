@@ -47,6 +47,9 @@ module.exports = (robot) ->
   robot.hear /isaox/i, (res) ->
     res.send "isaox? isaox is my master!!"
 
+  robot.hear /（くそが)|(くっそ)/i, (res) ->
+    res.send "https://pbs.twimg.com/media/C5k-X9aU4AAx2Pk.jpg:large"
+
   robot.hear /who am I/i, (msg) ->
     msg.send "You are #{msg.message.user.name}"
 
