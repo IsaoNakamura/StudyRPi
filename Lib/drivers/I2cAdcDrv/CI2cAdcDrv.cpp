@@ -511,14 +511,14 @@ int CI2cAdcDrv::getChannelValue
 		ret_state = m_state[channel].btn_state;
 
 		// 他のCHのカウンターはリセット
-		if(ret_state == BUTTON_ON)
-		{
-			for(unsigned int i=0; i<CH_NUM; i++){
-				if(i!=channel){
-					m_state[i].continue_on_cnt = 0;
-				}
-			}
-		}
+		// if(ret_state == BUTTON_ON)
+		// {
+		// 	for(unsigned int i=0; i<CH_NUM; i++){
+		// 		if(i!=channel){
+		// 			m_state[i].continue_on_cnt = 0;
+		// 		}
+		// 	}
+		// }
 
 		//ここまでくれば正常
 		iRet = 0;
