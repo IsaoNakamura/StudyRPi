@@ -25,10 +25,12 @@ module.exports = (robot) ->
       #   Day of Week  : 0-6
       if cron_job != null
         msg.send "cron_job is exist."
+        delete cron_job；
+        msg.send "deleted cron_job."
       else
         msg.send "cron_job is-not exist."
         cron_job = new cron '15 * * * * *', () =>
-          robot.send {room: channel}, "Test of Cron"
+          robot.send {room: channel}, "I send msg with regularity."
         , null, true, "Asia/Tokyo"
         msg.send "created cron_job."
     else
