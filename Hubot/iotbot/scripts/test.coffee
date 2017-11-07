@@ -25,7 +25,8 @@ module.exports = (robot) ->
       #   Day of Week  : 0-6
       if cron_job != null
         msg.send "cron_job is exist."
-        delete cron_job；
+        #delete cron_job；
+        cron_job = null;
         msg.send "deleted cron_job."
       else
         msg.send "cron_job is-not exist."
