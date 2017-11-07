@@ -11,6 +11,7 @@ module.exports = (robot) ->
       arg = msg.match[1]
       msg.send "Arg[0]: #{arg}" if arg?
       channel = msg.message.room
+      msg.send "respond testcron."
       # cron's 1st parameter
       #   seconds      : 0-59
       #   Minutes      : 0-59
