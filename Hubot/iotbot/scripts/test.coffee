@@ -5,7 +5,7 @@ cron = require('cron').CronJob;
 
 module.exports = (robot) ->
 
-  #cron_job = null;
+  cron_job = null;
 
   robot.respond /testcron (.*)|testcron/i, (msg) ->
     if msg.message.user.name == "isaox"
