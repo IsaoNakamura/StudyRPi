@@ -5,10 +5,10 @@ cron = require('cron').CronJob;
 
 module.exports = (robot) ->
 
-  #var cron_job = null;
-  cron_job = new cron '15 * * * * *', () =>
-    robot.send {room: "#raspiface"}, "Test of Cron"
-  , null, true, "Asia/Tokyo"
+  cron_job = null;
+  #cron_job = new cron '15 * * * * *', () =>
+  #  robot.send {room: "#raspiface"}, "Test of Cron"
+  #, null, true, "Asia/Tokyo"
 
   robot.respond /testcron (.*)|testcron/i, (msg) ->
     if msg.message.user.name == "isaox"
@@ -24,12 +24,12 @@ module.exports = (robot) ->
       #   Months       : 0-11
       #   Day of Week  : 0-6
       if cron_job != null
-        msg.send "cron_job is-not exist."
-      #  cron_job = new cron '15 * * * * *', () =>
-      #    robot.send {room: channel}, "Test of Cron"
-      #  , null, true, "Asia/Tokyo"
-      else
         msg.send "cron_job is exist."
+      else
+        msg.send "cron_job is-not exist."
+        cron_job = new cron '15 * * * * *', () =>
+          robot.send {room: "#raspiface"}, "Test of Cron"
+        , null, true, "Asia/Tokyo"
     else
       msg.send "get out !!"
 
