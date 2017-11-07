@@ -31,6 +31,39 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /timesignal (.*)|timesignal/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      msg.send "Arg[0]: #{arg}" if arg?
+      channel = msg.message.room
+      msg.send "respond from #{channel}."
+      if cron_job != null
+        msg.send "cron_job is exist."
+      else
+        msg.send "cron_job is-not exist."
+        cron_job = new cron '15 * * * * *', () =>
+          # get time.
+          dt = new Date()
+          year = dt.getFullYear()
+          month = ("0"+( dt.getMonth() + 1 )).slice(-2)
+          date = ("0"+dt.getDate()).slice(-2)
+          hour = ("0"+dt.getHours()).slice(-2)
+          min = ("0"+dt.getMinutes()).slice(-2)
+          sec = ("0"+dt.getSeconds()).slice(-2)
+          time_msg = "いまは #{month}がつ #{date}にち #{hour}じ #{min}ふん #{sec}びょう です"
+          #create command
+          @exec = require('child_process').exec
+          command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
+          msg.send "#{time_msg}"
+          @exec command, (error, stdout, stderr) ->
+            msg.send error if error?
+            msg.send stdout if stdout?
+            msg.send stderr if stderr?
+        , null, true, "Asia/Tokyo"
+        msg.send "created cron_job."
+    else
+      msg.send "get out !!"
+
   robot.respond /raspistill (.*)|raspistill/i, (msg) ->
     if msg.message.user.name == "isaox"
       # msg.send "match[0]: #{msg.match[0]}"
