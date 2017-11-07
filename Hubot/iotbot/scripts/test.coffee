@@ -15,7 +15,7 @@ module.exports = (robot) ->
       arg = msg.match[1]
       msg.send "Arg[0]: #{arg}" if arg?
       channel = msg.message.room
-      msg.send "respond testcron."
+      msg.send "respond from #{channel}."
       # cron's 1st parameter
       #   seconds      : 0-59
       #   Minutes      : 0-59
@@ -28,8 +28,9 @@ module.exports = (robot) ->
       else
         msg.send "cron_job is-not exist."
         cron_job = new cron '15 * * * * *', () =>
-          robot.send {room: "#raspiface"}, "Test of Cron"
+          robot.send {room: channel}, "Test of Cron"
         , null, true, "Asia/Tokyo"
+        msg.send "created cron_job."
     else
       msg.send "get out !!"
 
