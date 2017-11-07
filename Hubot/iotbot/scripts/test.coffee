@@ -51,14 +51,15 @@ module.exports = (robot) ->
           min = ("0"+dt.getMinutes()).slice(-2)
           sec = ("0"+dt.getSeconds()).slice(-2)
           time_msg = "いまは #{month}がつ #{date}にち #{hour}じ #{min}ふん #{sec}びょう です"
+          robot.send {room: channel}, "#{time_msg}"
           #create command
-          @exec = require('child_process').exec
-          command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
-          msg.send "#{time_msg}"
-          @exec command, (error, stdout, stderr) ->
-            msg.send error if error?
-            msg.send stdout if stdout?
-            msg.send stderr if stderr?
+          #@exec = require('child_process').exec
+          #command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
+          #msg.send "#{time_msg}"
+          #@exec command, (error, stdout, stderr) ->
+          #  msg.send error if error?
+          #  msg.send stdout if stdout?
+          #  msg.send stderr if stderr?
         , null, true, "Asia/Tokyo"
         msg.send "created cron_job."
     else
