@@ -36,7 +36,7 @@ module.exports = (robot) ->
       arg = msg.match[1]
       msg.send "Arg[0]: #{arg}" if arg?
       channel = msg.message.room
-      msg.send "respond from #{channel}."
+      #msg.send "respond from #{channel}."
       if cron_job != null
         msg.send "cron_job is exist."
       else
@@ -53,15 +53,15 @@ module.exports = (robot) ->
           time_msg = "いまは #{month}がつ #{date}にち #{hour}じ #{min}ふん #{sec}びょう です"
           robot.send {room: channel}, "#{time_msg}"
           #create command
-          #@exec = require('child_process').exec
-          #command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
+          @exec = require('child_process').exec
+          command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
           #msg.send "#{time_msg}"
-          #@exec command, (error, stdout, stderr) ->
-          #  msg.send error if error?
-          #  msg.send stdout if stdout?
-          #  msg.send stderr if stderr?
+          @exec command, (error, stdout, stderr) ->
+            msg.send error if error?
+            msg.send stdout if stdout?
+            msg.send stderr if stderr?
         , null, true, "Asia/Tokyo"
-        msg.send "created cron_job."
+        # msg.send "created cron_job."
     else
       msg.send "get out !!"
 
