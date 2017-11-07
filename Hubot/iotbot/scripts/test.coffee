@@ -50,7 +50,7 @@ module.exports = (robot) ->
           hour = ("0"+dt.getHours()).slice(-2)
           min = ("0"+dt.getMinutes()).slice(-2)
           sec = ("0"+dt.getSeconds()).slice(-2)
-          time_msg = "いまは #{month}がつ #{date}にち #{hour}じ #{min}ふん #{sec}びょう です"
+          time_msg = "いまは#{month}がつ#{date}にち#{hour}じ#{min}ふん#{sec}びょうです"
           robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').exec
