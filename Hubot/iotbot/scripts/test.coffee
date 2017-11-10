@@ -41,7 +41,7 @@ module.exports = (robot) ->
         msg.send "cron_job is exist."
       else
         msg.send "cron_job is-not exist."
-        cron_job = new cron '15 * * * * *', () =>
+        cron_job = new cron '0 * * * * *', () =>
           # get time.
           dt = new Date()
           year = dt.getFullYear()
@@ -50,7 +50,9 @@ module.exports = (robot) ->
           hour = ("0"+dt.getHours()).slice(-2)
           min = ("0"+dt.getMinutes()).slice(-2)
           sec = ("0"+dt.getSeconds()).slice(-2)
-          time_msg = "いまは#{month}がつ#{date}にち#{hour}じ#{min}ふん#{sec}びょうです"
+          # time_msg = "いまは#{month}がつ#{date}にち#{hour}じ#{min}ふん#{sec}びょうです"
+          time_msg = "#{hour}じ#{min}になりました。"
+          time_msg = "#{time_msg}#{arg}" if arg?
           robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').execSync
