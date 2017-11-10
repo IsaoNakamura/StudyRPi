@@ -3,6 +3,10 @@
 # echo "arg_num : $#"
 
 if [ $# -eq 0 ]; then
+    if [ -e /home/pi/picam ]; then
+    else
+        mkdir /home/pi/picam
+    fi
     # echo "no arg"
     DATE=$(date +"%Y-%m-%d_%H%M")
     # echo "date    : $DATE"
