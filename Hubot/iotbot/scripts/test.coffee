@@ -51,7 +51,7 @@ module.exports = (robot) ->
           min = ("0"+dt.getMinutes()).slice(-2)
           sec = ("0"+dt.getSeconds()).slice(-2)
           # time_msg = "いまは#{month}がつ#{date}にち#{hour}じ#{min}ふん#{sec}びょうです"
-          time_msg = "#{hour}じ#{min}になりました。"
+          time_msg = "#{hour}じ、#{min}ふん、になりました。"
           time_msg = "#{time_msg}#{arg}" if arg?
           robot.send {room: channel}, "#{time_msg}"
           #create command

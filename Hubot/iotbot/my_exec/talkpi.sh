@@ -8,5 +8,5 @@ cd /home/pi/aquestalkpi
 #  -g 0-100  : Volume
 #  -b        : Bouyomi
 #  -o a.wav  : Output
-./AquesTalkPi -s 60 -v f1 $@ | aplay -D plughw
+./AquesTalkPi -s 65 -v f1 $@ | aplay -D plughw
 cd /home/pi
