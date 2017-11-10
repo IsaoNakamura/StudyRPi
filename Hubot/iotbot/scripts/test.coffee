@@ -41,7 +41,7 @@ module.exports = (robot) ->
         msg.send "cron_job is exist."
       else
         msg.send "cron_job is-not exist."
-        cron_job = new cron '0 * * * * *', () =>
+        cron_job = new cron '0 0 * * * *', () =>
           # get time.
           dt = new Date()
           year = dt.getFullYear()
