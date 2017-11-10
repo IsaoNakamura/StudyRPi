@@ -54,11 +54,6 @@ module.exports = (robot) ->
           robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').execSync
-          pre_cmd = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh ハロー"
-          @exec pre_cmd, (error, stdout, stderr) ->
-            msg.send error if error?
-            msg.send stdout if stdout?
-            msg.send stderr if stderr?
           command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/talkpi.sh #{time_msg}"
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
