@@ -2,10 +2,14 @@
 
 # echo "arg_num : $#"
 
+dir=/home/pi/picam
+
 if [ $# -eq 0 ]; then
-    if [ -e /home/pi/picam ]; then
+    if [ -e $dir ]; then
+        echo "dir is exist."
     else
-        mkdir /home/pi/picam
+        echo "dir is-not exist."
+        mkdir $dir
     fi
     # echo "no arg"
     DATE=$(date +"%Y-%m-%d_%H%M")
