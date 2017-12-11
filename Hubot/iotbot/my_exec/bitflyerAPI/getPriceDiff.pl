@@ -1,4 +1,4 @@
-#!/usr/local/share/perl
+#!perl
 
 use strict;
 
