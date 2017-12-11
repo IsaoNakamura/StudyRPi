@@ -1,0 +1,5 @@
+#key,value
+hostName,https://bitflyer.jp/
+apiKey,HOGE
+apiSecret,HOGE
+

@@ -7,6 +7,50 @@ module.exports = (robot) ->
 
   cron_job = null;
 
+  robot.respond /BTC_MONITOR (.*)|BTC_MONITOR/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      msg.send "diff_threshold: #{arg}[%]" if arg?
+      channel = msg.message.room
+      #msg.send "respond from #{channel}."
+      # cron's 1st parameter
+      #   seconds      : 0-59
+      #   Minutes      : 0-59
+      #   Hours        : 0-23
+      #   Day of Month : 1-31
+      #   Months       : 0-11
+      #   Day of Week  : 0-6
+      if cron_job == null
+        # msg.send "cron_job is-not exist."
+        cron_job = new cron '0 * * * * *', () =>
+          # get time.
+          dt = new Date()
+          year = dt.getFullYear()
+          month = ("0"+( dt.getMonth() + 1 )).slice(-2)
+          date = ("0"+dt.getDate()).slice(-2)
+          hour = ("0"+dt.getHours()).slice(-2)
+          min = ("0"+dt.getMinutes()).slice(-2)
+          sec = ("0"+dt.getSeconds()).slice(-2)
+          time_msg = "BTC:#{year}/#{month}/#{date} #{hour}:#{min}"
+          # robot.send {room: channel}, "#{time_msg}"
+          #create command
+          @exec = require('child_process').exec
+          # command = ".\\my_exec\\bitflyerAPI\\_getPriceDiff.cmd"
+          command = ".\\my_exec\\bitflyerAPI\\getPriceDiff.pl"
+          host = "https://bitflyer.jp/api/echo/price"
+          dest = ".\\my_exec\\bitflyerAPI\\DEST\\result.json"
+          rate = 0
+          rate = arg if arg?
+          command = "#{command} #{host} #{dest} #{rate}"
+          #msg.send "Command: #{command}"
+          @exec command, (error, stdout, stderr) ->
+            msg.send error if error?
+            msg.send stdout if stdout?
+            msg.send stderr if stderr?
+        , null, true, "Asia/Tokyo"
+    else
+      msg.send "get out !!"
+
   robot.respond /testcron (.*)|testcron/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
