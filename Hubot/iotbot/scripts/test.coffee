@@ -50,6 +50,26 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /BTC_TEST (.*)|BTC_TEST/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
+      channel = msg.message.room
+      @exec = require('child_process').exec
+      command = "perl /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
+      host = "https://bitflyer.jp/api/echo/price"
+      dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
+      rate = 0
+      rate = arg if arg?
+      command = "#{command} #{host} #{dest} #{rate}"
+      #msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /testcron (.*)|testcron/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
