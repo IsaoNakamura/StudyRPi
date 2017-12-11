@@ -35,7 +35,7 @@ module.exports = (robot) ->
           # robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').exec
-          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
+          command = "perl /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
           host = "https://bitflyer.jp/api/echo/price"
           dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
           rate = 0
