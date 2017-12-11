@@ -53,10 +53,10 @@ if(-e $dest){
 		my $diff_mid = $curr_mid - $prev_mid;
 		my $diff_rate = $diff_mid / $prev_mid * 100.0;
 
-		#print "CurrMiddleRate:" . $curr_mid . "[BTC/JPY]\n";
-		#print "PrevMiddleRate:" . $prev_mid . "[BTC/JPY]\n";
-		#print "DiffMiddleRate:" . $diff_mid . "[BTC/JPY]\n";
-		#print "diff_rate:" . $diff_rate . "[%]\n";
+		print "CurrMiddleRate:" . $curr_mid . "[BTC/JPY]\n";
+		print "PrevMiddleRate:" . $prev_mid . "[BTC/JPY]\n";
+		print "DiffMiddleRate:" . $diff_mid . "[BTC/JPY]\n";
+		print "diff_rate:" . $diff_rate . "[%]\n";
 
 		if(abs($diff_mid)>=$threshold){
 			#print "MiddleRate:" . $content_ref->{"mid"} . "[BTC/JPY]\n";
