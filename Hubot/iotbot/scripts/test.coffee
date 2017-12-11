@@ -56,7 +56,7 @@ module.exports = (robot) ->
       msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
       channel = msg.message.room
       @exec = require('child_process').exec
-      command = "perl /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
+      command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
       host = "https://bitflyer.jp/api/echo/price"
       dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
       rate = 0
