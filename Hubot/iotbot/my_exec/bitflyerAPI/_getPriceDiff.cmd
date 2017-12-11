@@ -11,7 +11,7 @@ IF NOT EXIST %DEST% (
     MKDIR %DEST%
 )
 
-SET DIFF_RATE=0
+SET DIFF_THRESHOLD=5000
 
 SET CONFIG=%CUR_DIR%config_bitflyer.txt
 FOR /F "eol=# delims=, tokens=1,2" %%a in ( %CONFIG% ) do (
@@ -24,7 +24,7 @@ SET API_TYPE=api/echo/price
 SET DEST_URL=%HOST_URL%%API_TYPE%
 
 :START_LINE
-%EXEC_FILE% %DEST_URL% %DEST%\result.json %DIFF_RATE%
+%EXEC_FILE% %DEST_URL% %DEST%\result.json %DIFF_THRESHOLD%
 
 pause > NUL
 EXIT /B

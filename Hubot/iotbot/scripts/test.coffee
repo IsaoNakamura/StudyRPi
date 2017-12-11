@@ -10,7 +10,7 @@ module.exports = (robot) ->
   robot.respond /BTC_MONITOR (.*)|BTC_MONITOR/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
-      msg.send "diff_threshold: #{arg}[%]" if arg?
+      msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
       channel = msg.message.room
       #msg.send "respond from #{channel}."
       # cron's 1st parameter
@@ -35,10 +35,9 @@ module.exports = (robot) ->
           # robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').exec
-          # command = ".\\my_exec\\bitflyerAPI\\_getPriceDiff.cmd"
-          command = ".\\my_exec\\bitflyerAPI\\getPriceDiff.pl"
+          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
           host = "https://bitflyer.jp/api/echo/price"
-          dest = ".\\my_exec\\bitflyerAPI\\DEST\\result.json"
+          dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
           rate = 0
           rate = arg if arg?
           command = "#{command} #{host} #{dest} #{rate}"
