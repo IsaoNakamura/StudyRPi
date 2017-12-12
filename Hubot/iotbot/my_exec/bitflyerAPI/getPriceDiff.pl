@@ -53,10 +53,10 @@ if(-e $dest){
 		my $diff_mid = $curr_mid - $prev_mid;
 		my $diff_rate = $diff_mid / $prev_mid * 100.0;
 
-		print "CurrMiddleRate:" . $curr_mid . "[BTC/JPY]\n";
-		print "PrevMiddleRate:" . $prev_mid . "[BTC/JPY]\n";
-		print "DiffMiddleRate:" . $diff_mid . "[BTC/JPY]\n";
-		print "diff_rate:" . $diff_rate . "[%]\n";
+		#print "CurrMiddleRate:" . $curr_mid . "[BTC/JPY]\n";
+		#print "PrevMiddleRate:" . $prev_mid . "[BTC/JPY]\n";
+		#print "DiffMiddleRate:" . $diff_mid . "[BTC/JPY]\n";
+		#print "diff_rate:" . $diff_rate . "[%]\n";
 
 		if(abs($diff_mid)>=$threshold){
 			#print "MiddleRate:" . $content_ref->{"mid"} . "[BTC/JPY]\n";
@@ -71,9 +71,9 @@ if(-e $dest){
 
 			my $report;
 			if($diff_mid<0){
-				$report = sprintf("%d[BTC/JPY] (  %d[BTC/JPY],  %.01f\[%%] ) Updated Checkpoint.\n",$curr_mid, $diff_mid, $diff_rate);
+				$report = sprintf("%d[BTC/JPY] (  %d[BTC/JPY],  %.01f\[%%] )\n",$curr_mid, $diff_mid, $diff_rate);
 			}else{
-				$report = sprintf("%d[BTC/JPY] ( +%d[BTC/JPY], +%.01f\[%%] ) Updated Checkpoint.\n",$curr_mid, $diff_mid, $diff_rate);
+				$report = sprintf("%d[BTC/JPY] ( +%d[BTC/JPY], +%.01f\[%%] )\n",$curr_mid, $diff_mid, $diff_rate);
 			}
 			print $report;
 
@@ -81,6 +81,8 @@ if(-e $dest){
 			open (OUT, '>', $dest) || die('File Open Error');
 			print OUT to_json($content_ref, {pretty=>1});
 			close(OUT);
+
+			# print "Updated Checkpoint.\n";
 		}
 	}else{
 		print "FileOpenError. $dest\n";
