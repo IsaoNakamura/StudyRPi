@@ -6,5 +6,5 @@ url=https://bitflyer.jp/api/echo/price
 echo dir=$dir >&1
 echo url=$url >&1
 
-$dir/getPriceList.pl $url $dir/DEST/result.json $@
+sudo $dir/getPriceList.pl $url $dir/DEST/result.json $@
 

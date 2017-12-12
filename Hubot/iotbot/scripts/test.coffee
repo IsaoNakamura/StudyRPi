@@ -72,12 +72,14 @@ module.exports = (robot) ->
         btc_monitor_job = new cron '0 * * * * *', () =>
           #create command
           @exec = require('child_process').exec
-          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
-          host = "https://bitflyer.jp/api/echo/price"
-          dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
+          # command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
+          # host = "https://bitflyer.jp/api/echo/price"
+          # dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/result.json"
+          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/_getPriceDiff.sh"
           rate = 0
           rate = arg if arg?
-          command = "#{command} #{host} #{dest} #{rate}"
+          #command = "#{command} #{host} #{dest} #{rate}"
+          command = "#{command} #{rate}"
           #msg.send "Command: #{command}"
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
