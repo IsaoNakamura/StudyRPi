@@ -8,6 +8,47 @@ module.exports = (robot) ->
   cron_job = null;
   signal_job = null;
   btc_monitor_job = null;
+  btc_list_job = null;
+
+  robot.respond /BTC_LIST (.*)|BTC_LIST/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      channel = msg.message.room
+      #msg.send "respond from #{channel}."
+      # cron's 1st parameter
+      #   seconds      : 0-59
+      #   Minutes      : 0-59
+      #   Hours        : 0-23
+      #   Day of Month : 1-31
+      #   Months       : 0-11
+      #   Day of Week  : 0-6
+      if btc_list_job == null
+        # msg.send "btc_list_job is-not exist."
+        msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
+        btc_list_job = new cron '0 * * * * *', () =>
+          #create command
+          @exec = require('child_process').exec
+          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
+          host = "https://bitflyer.jp/api/echo/price"
+          dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
+          rate = 0
+          rate = arg if arg?
+          command = "#{command} #{host} #{dest} #{rate}"
+          msg.send "Command: #{command}"
+          @exec command, (error, stdout, stderr) ->
+            msg.send error if error?
+            msg.send stdout if stdout?
+            msg.send stderr if stderr?
+        , null, true, "Asia/Tokyo"
+      else
+        if btc_list_job.running
+          btc_list_job.stop()
+          msg.send "btc_list_job is stop."
+        else
+          btc_list_job.start()
+          msg.send "btc_list_job is start."
+    else
+      msg.send "get out !!"
 
   robot.respond /BTC_MONITOR (.*)|BTC_MONITOR/i, (msg) ->
     if msg.message.user.name == "isaox"
@@ -25,16 +66,6 @@ module.exports = (robot) ->
       if btc_monitor_job == null
         # msg.send "btc_monitor_job is-not exist."
         btc_monitor_job = new cron '0 * * * * *', () =>
-          # get time.
-          dt = new Date()
-          year = dt.getFullYear()
-          month = ("0"+( dt.getMonth() + 1 )).slice(-2)
-          date = ("0"+dt.getDate()).slice(-2)
-          hour = ("0"+dt.getHours()).slice(-2)
-          min = ("0"+dt.getMinutes()).slice(-2)
-          sec = ("0"+dt.getSeconds()).slice(-2)
-          time_msg = "BTC:#{year}/#{month}/#{date} #{hour}:#{min}"
-          # robot.send {room: channel}, "#{time_msg}"
           #create command
           @exec = require('child_process').exec
           command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceDiff.pl"
