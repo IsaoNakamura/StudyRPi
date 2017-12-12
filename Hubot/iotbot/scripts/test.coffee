@@ -23,7 +23,7 @@ module.exports = (robot) ->
       #   Months       : 0-11
       #   Day of Week  : 0-6
       if btc_list_job == null
-        # msg.send "btc_list_job is-not exist."
+        msg.send "create btc_list_job."
         msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
         btc_list_job = new cron '0 * * * * *', () =>
           #create command
@@ -34,7 +34,8 @@ module.exports = (robot) ->
           rate = 0
           rate = arg if arg?
           command = "#{command} #{host} #{dest} #{rate}"
-          msg.send "Command: #{command}"
+          # msg.send "Command: #{command}"
+          msg.send "exec getPriceList.pl"
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
             msg.send stdout if stdout?
