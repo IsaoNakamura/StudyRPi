@@ -6,6 +6,8 @@ cron = require('cron').CronJob;
 module.exports = (robot) ->
 
   cron_job = null;
+  signal_job = null;
+  btc_monitor_job = null;
 
   robot.respond /BTC_MONITOR (.*)|BTC_MONITOR/i, (msg) ->
     if msg.message.user.name == "isaox"
@@ -20,9 +22,9 @@ module.exports = (robot) ->
       #   Day of Month : 1-31
       #   Months       : 0-11
       #   Day of Week  : 0-6
-      if cron_job == null
-        # msg.send "cron_job is-not exist."
-        cron_job = new cron '0 * * * * *', () =>
+      if btc_monitor_job == null
+        # msg.send "btc_monitor_job is-not exist."
+        btc_monitor_job = new cron '0 * * * * *', () =>
           # get time.
           dt = new Date()
           year = dt.getFullYear()
@@ -47,6 +49,13 @@ module.exports = (robot) ->
             msg.send stdout if stdout?
             msg.send stderr if stderr?
         , null, true, "Asia/Tokyo"
+      else
+        if btc_monitor_job.running
+          btc_monitor_job.stop()
+          msg.send "btc_monitor_job is stop."
+        else
+          btc_monitor_job.start()
+          msg.send "btc_monitor_job is start."
     else
       msg.send "get out !!"
 
@@ -98,11 +107,17 @@ module.exports = (robot) ->
       msg.send "Arg[0]: #{arg}" if arg?
       channel = msg.message.room
       #msg.send "respond from #{channel}."
-      if cron_job != null
-        msg.send "cron_job is exist."
+      if signal_job != null
+        msg.send "signal_job is exist."
+        if signal_job.running
+          signal_job.stop()
+          msg.send "signal_job is stop."
+        else
+          signal_job.start()
+          msg.send "signal_job is start."
       else
-        msg.send "cron_job is-not exist."
-        cron_job = new cron '0 0 * * * *', () =>
+        msg.send "signal_job is-not exist."
+        signal_job = new cron '0 0 * * * *', () =>
           # get time.
           dt = new Date()
           year = dt.getFullYear()
