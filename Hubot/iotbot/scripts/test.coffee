@@ -27,6 +27,7 @@ module.exports = (robot) ->
         msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
         btc_list_job = new cron '0 * * * * *', () =>
           #create command
+          robot.send {room: channel}, "I send msg with regularity."
           @exec = require('child_process').exec
           command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
           host = "https://bitflyer.jp/api/echo/price"
@@ -36,10 +37,10 @@ module.exports = (robot) ->
           command = "#{command} #{host} #{dest} #{rate}"
           # msg.send "Command: #{command}"
           msg.send "exec getPriceList.pl"
-          @exec command, (error, stdout, stderr) ->
-            msg.send error if error?
-            msg.send stdout if stdout?
-            msg.send stderr if stderr?
+          #@exec command, (error, stdout, stderr) ->
+          #  msg.send error if error?
+          #  msg.send stdout if stdout?
+          #  msg.send stderr if stderr?
         , null, true, "Asia/Tokyo"
       else
         if btc_list_job.running
