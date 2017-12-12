@@ -37,10 +37,10 @@ module.exports = (robot) ->
           command = "#{command} #{host} #{dest} #{rate}"
           # msg.send "Command: #{command}"
           msg.send "exec getPriceList.pl"
-          #@exec command, (error, stdout, stderr) ->
-          #  msg.send error if error?
-          #  msg.send stdout if stdout?
-          #  msg.send stderr if stderr?
+          @exec command, (error, stdout, stderr) ->
+            msg.send error if error?
+            msg.send stdout if stdout?
+            msg.send stderr if stderr?
         , null, true, "Asia/Tokyo"
       else
         if btc_list_job.running
