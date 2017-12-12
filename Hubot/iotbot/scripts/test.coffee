@@ -28,7 +28,7 @@ module.exports = (robot) ->
         btc_list_job = new cron '0 * * * * *', () =>
           #create command
           robot.send {room: channel}, "I send msg with regularity."
-          @exec = require('child_process').exec
+          @exec = require('child_process').execSync
           command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
           host = "https://bitflyer.jp/api/echo/price"
           dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
