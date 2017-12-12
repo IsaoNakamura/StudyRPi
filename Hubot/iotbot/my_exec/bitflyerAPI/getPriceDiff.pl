@@ -75,7 +75,7 @@ if(-e $dest){
 			}else{
 				$report = sprintf("%d[BTC/JPY] ( +%d[BTC/JPY], +%.01f\[%%] )\n",$curr_mid, $diff_mid, $diff_rate);
 			}
-			print $report;
+			print STDOUT $report;
 
 			# save to Json.
 			open (OUT, '>', $dest) || die('File Open Error');
