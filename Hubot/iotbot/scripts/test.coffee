@@ -23,25 +23,47 @@ module.exports = (robot) ->
       #   Months       : 0-11
       #   Day of Week  : 0-6
       if btc_list_job == null
-        msg.send "create btc_list_job."
-        msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
+        # msg.send "btc_list_job is-not exist."
+        msg.send "arg: #{arg}" if arg?
         btc_list_job = new cron '0 * * * * *', () =>
           #create command
-          robot.send {room: channel}, "exec _getPriceList with regularity."
           @exec = require('child_process').execSync
-          #command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
-          #host = "https://bitflyer.jp/api/echo/price"
-          #dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
-          command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/_getPriceList.sh"
-          rate = 0
-          rate = arg if arg?
-          #command = "#{command} #{host} #{dest} #{rate}"
-          command = "#{command} #{rate}"
-          # msg.send "Command: #{command}"
+          #command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/_getPriceList.sh"
+          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
+          host = "https://bitflyer.jp/api/echo/price"
+          dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
+          graph = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.png"
+          threshold = 10000
+          sampling = 30
+          param = "#{threshold} #{sampling}"
+          param = arg if arg?
+          command = "#{command} #{host} #{dest} #{graph} #{param}"
+          #msg.send "Command: #{command}"
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
             msg.send stdout if stdout?
             msg.send stderr if stderr?
+          
+          fs.access("#{graph}", (error) =>
+            if(error)
+              # msg.send "is-not exists"
+            else
+              msg.send "is exists"
+              api_url = "https://slack.com/api/"
+              channel = msg.message.room
+              options = {
+                token: process.env.HUBOT_SLACK_TOKEN,
+                filename: graph,
+                file: fs.createReadStream("#{graph}"),
+                channels: channel
+              }
+              request
+                .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
+                  if !error && response.statusCode == 200
+                    # msg.send "OK"
+                  else
+                    msg.send "NG status code: #{response.statusCode}"
+              )
         , null, true, "Asia/Tokyo"
       else
         if btc_list_job.running

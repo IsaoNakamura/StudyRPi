@@ -12,6 +12,7 @@ IF NOT EXIST %DEST% (
 )
 
 SET DIFF_THRESHOLD=0
+SET SAMPLING_NUM=30
 
 SET CONFIG=%CUR_DIR%config_bitflyer.txt
 FOR /F "eol=# delims=, tokens=1,2" %%a in ( %CONFIG% ) do (
@@ -24,7 +25,7 @@ SET API_TYPE=api/echo/price
 SET DEST_URL=%HOST_URL%%API_TYPE%
 
 :START_LINE
-%EXEC_FILE% %DEST_URL% %DEST%\BTCLIST.json %DIFF_THRESHOLD%
+%EXEC_FILE% %DEST_URL% %DEST%\PriceList.json %DEST%\PriceList.png %DIFF_THRESHOLD% %SAMPLING_NUM%
 
 pause > NUL
 EXIT /B
