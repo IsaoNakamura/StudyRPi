@@ -29,6 +29,7 @@ EOM
 my $url = shift;
 my $dest = shift;
 my $graphPath = shift;
+my $test = shift;
 my $threshold = shift;
 my $sampling_num = shift;
 HELP_MESSAGE() unless $url;
@@ -170,14 +171,16 @@ if($price_num>=$sampling_num){
         print OUT $image->png();
         close OUT;
 
-        # Clear
-        %{$priceHash_ref} = ();
-        if(exists $priceHash_ref->{$key_date}){
-            # keys is exist.
-            print "$key_date is exist.\n";
-        }else{
-            # Add key-value.
-            $priceHash_ref->{$key_date} = $curr_mid;
+        if($test==0){
+            # Clear
+            %{$priceHash_ref} = ();
+            if(exists $priceHash_ref->{$key_date}){
+                # keys is exist.
+                print "$key_date is exist.\n";
+            }else{
+                # Add key-value.
+                $priceHash_ref->{$key_date} = $curr_mid;
+            }
         }
     }else{
         if(-e $graphPath){
