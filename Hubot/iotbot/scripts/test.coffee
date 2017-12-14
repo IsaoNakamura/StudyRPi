@@ -28,12 +28,12 @@ module.exports = (robot) ->
         btc_list_job = new cron '0 * * * * *', () =>
           #create command
           @exec = require('child_process').execSync
-          #command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/_getPriceList.sh"
-          command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
+          path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+          command = "#{path}_getPriceList.sh"
           host = "https://bitflyer.jp/api/echo/price"
-          dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
-          graph = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.png"
-          test = 1
+          dest = "#{path}DEST/PriceList.json"
+          graph = "#{path}DEST/PriceList.png"
+          test = 0
           threshold = 10000
           sampling = 30
           param = "#{threshold} #{sampling}"
@@ -44,7 +44,6 @@ module.exports = (robot) ->
             msg.send error if error?
             msg.send stdout if stdout?
             msg.send stderr if stderr?
-          
           fs.access("#{graph}", (error) =>
             if(error)
               # msg.send "is-not exists"
@@ -124,19 +123,17 @@ module.exports = (robot) ->
       msg.send "diff_threshold: #{arg}[BTC/JPY]" if arg?
       channel = msg.message.room
       @exec = require('child_process').execSync
-      command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/getPriceList.pl"
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+      command = "#{path}_getPriceList.sh"
       host = "https://bitflyer.jp/api/echo/price"
-      dest = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.json"
-      graph = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/DEST/PriceList.png"
+      dest = "#{path}DEST/PriceList.json"
+      graph = "#{path}DEST/PriceList.png"
       test = 1
       threshold = 0
       sampling = 5
       param = "#{threshold} #{sampling}"
       param = arg if arg?
-      command = "#{command} #{host} #{dest} #{graph} #{test} #{param}"
-      rate = 0
-      rate = arg if arg?
-      command = "#{command} #{rate}"
+      command = "sudo -u pi sh #{command} #{host} #{dest} #{graph} #{test} #{param}"
       #msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
