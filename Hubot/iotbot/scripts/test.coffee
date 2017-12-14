@@ -34,12 +34,12 @@ module.exports = (robot) ->
           dest = "#{path}DEST/PriceList.json"
           graph = "#{path}DEST/PriceList.png"
           test = 0
-          threshold = 10000
+          threshold = 20000
           sampling = 30
           param = "#{threshold} #{sampling}"
           param = arg if arg?
           command = "#{command} #{host} #{dest} #{graph} #{test} #{param}"
-          #msg.send "Command: #{command}"
+          msg.send "exec getPriceList."
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
             msg.send stdout if stdout?
