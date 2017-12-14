@@ -30,15 +30,15 @@ module.exports = (robot) ->
           @exec = require('child_process').execSync
           path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
           command = "#{path}_getPriceList.sh"
-          host = "https://bitflyer.jp/api/echo/price"
-          dest = "#{path}DEST/PriceList.json"
-          graph = "#{path}DEST/PriceList.png"
-          test = 0
+          #host = "https://bitflyer.jp/api/echo/price"
+          #dest = "#{path}DEST/PriceList.json"
+          #graph = "#{path}DEST/PriceList.png"
+          #test = 0
           threshold = 20000
           sampling = 30
           param = "#{threshold} #{sampling}"
           param = arg if arg?
-          command = "#{command} #{host} #{dest} #{graph} #{test} #{param}"
+          command = "sudo -u pi sh #{command} #{param}"
           msg.send "exec getPriceList."
           @exec command, (error, stdout, stderr) ->
             msg.send error if error?
@@ -125,15 +125,15 @@ module.exports = (robot) ->
       @exec = require('child_process').execSync
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
       command = "#{path}_getPriceList.sh"
-      host = "https://bitflyer.jp/api/echo/price"
-      dest = "#{path}DEST/PriceList.json"
-      graph = "#{path}DEST/PriceList.png"
-      test = 1
+      #host = "https://bitflyer.jp/api/echo/price"
+      #dest = "#{path}DEST/PriceList.json"
+      #graph = "#{path}DEST/PriceList.png"
+      #test = 1
       threshold = 0
       sampling = 5
       param = "#{threshold} #{sampling}"
       param = arg if arg?
-      command = "sudo -u pi sh #{command} #{host} #{dest} #{graph} #{test} #{param}"
+      command = "sudo -u pi sh #{command} #{param}"
       #msg.send "Command: #{command}"
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
