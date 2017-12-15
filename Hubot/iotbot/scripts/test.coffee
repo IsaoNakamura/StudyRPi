@@ -23,7 +23,7 @@ module.exports = (robot) ->
       #   Months       : 0-11
       #   Day of Week  : 0-6
       if btc_monitor_job == null
-        # msg.send "btc_monitor_job is-not exist."
+        msg.send "create btc_monitor_job."
         msg.send "arg: #{arg}" if arg?
         btc_monitor_job = new cron '0 * * * * *', () =>
           fs.access("#{graph}", (error) =>
