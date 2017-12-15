@@ -8,30 +8,18 @@ use LWP::UserAgent;
 use JSON;
 # use open ':locale';
 
-sub HELP_MESSAGE {
-	print STDERR <<"EOM";
-usage : $0 -k API_KEY url DEST_PATH
-		-k API_KEY: API Access Key
-EOM
-	exit 0;
-}
-
-our $opt_k;
-getopts('k:') or HELP_MESSAGE();
 my $url = shift;
 my $dest = shift;
-HELP_MESSAGE() unless $url;
+
 
 # print "KEY=$opt_k\n";
 # print "URL=$url\n";
 # print "DEST=$dest\n";
 
-
 ####################################
 my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
-# $ua->default_header('apikey' => $opt_k) if $opt_k;
 
 my $res = $ua->get($url);
 
