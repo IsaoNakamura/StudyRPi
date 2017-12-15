@@ -46,6 +46,7 @@ module.exports = (robot) ->
                     fs.unlink("#{graph}", (del_error) =>
                       if(del_error)
                         msg.send "can't delete Graph-File:#{graph}"
+                    )
                   else
                     msg.send "NG status code: #{response.statusCode}"
               )
@@ -77,7 +78,7 @@ module.exports = (robot) ->
       threshold = 20000
       param = "#{sampling} #{threshold}"
       param = arg if arg?
-      command = "#{command} #{host} #{list} #{graph} #{stop} #{test} #{param}"
+      command = "#{command} #{host} #{list} #{graph} #{stop} #{test} #{cycle_sec} #{param}"
       msg.send "exec getPriceCron() param=#{param} "
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?

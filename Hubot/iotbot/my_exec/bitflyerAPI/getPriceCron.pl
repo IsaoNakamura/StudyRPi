@@ -47,12 +47,12 @@ while(1){
 
     my $content_ref = from_json($content);
     my $curr_mid = $content_ref->{"mid"};
-    print "price is " . $curr_mid . "\n";
+    # print "price is " . $curr_mid . "\n";
 
 
     my $key_date;
     getDate(\$key_date);
-    print "date is " . $key_date . "\n";
+    # print "date is " . $key_date . "\n";
 
     my $priceHash_ref;
     %{$priceHash_ref} = ();
@@ -88,7 +88,7 @@ while(1){
 
     if($price_num>=$sampling_num){
 
-        print "generate Graph. price_num=$price_num\n";
+        # print "generate Graph. price_num=$price_num\n";
         
         my $end = ($price_num-1);
         my $beg = $end - ($sampling_num-1);
@@ -115,7 +115,7 @@ while(1){
         }else{
             $report = sprintf("%d[BTC/JPY] (+%d) %s\n",$curr_mid, $diff_mid,$key_date);
         }
-        print $report;
+        # print $report;
         
         if(abs($diff_mid)>=$threshold){
             my @data = ( \@xLabels, \@price);
