@@ -187,7 +187,7 @@ while(1){
     }
 
     if(-e $stopCode){
-        print "recieved StopCode:$listPath\n";
+        print "recieved StopCode:$stopCode\n";
         unlink $stopCode;
         last;
     }
