@@ -7,5 +7,5 @@ graph=$path/DEST/PriceList.png
 test=1
 
 # sudo $path/getPriceList.pl $host $dest $graph $test $@
-sudo $path/getPriceDiff.pl $path/DEST/PriceDiff.json 0
+sudo $path/getPriceDiff.pl $host $path/DEST/PriceDiff.json 0
 
