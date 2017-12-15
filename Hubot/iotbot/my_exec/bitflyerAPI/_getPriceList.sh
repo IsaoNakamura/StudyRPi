@@ -10,5 +10,6 @@ test=1
 # sudo $path/getPriceDiff.pl $host $path/DEST/PriceDiff.json 0
 # sudo $path/helloPerl.pl
 # sudo $path/genPriceGraph.pl $path/DEST/PriceDiff.json $graph $@
-sudo $path/getPrice.pl $host $path/DEST/Price.json
+# sudo $path/getPrice.pl $host $path/DEST/Price.json
+sudo /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/lsusb_cmd.sh
 
