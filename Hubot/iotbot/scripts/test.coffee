@@ -9,59 +9,7 @@ module.exports = (robot) ->
   signal_job = null;
   btc_monitor_job = null;
 
-  robot.respond /BTC_MONITOR/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      channel = msg.message.room
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      graph = "#{path}DEST/BtcPriceGraph.png"
-      # cron's 1st parameter
-      #   seconds      : 0-59
-      #   Minutes      : 0-59
-      #   Hours        : 0-23
-      #   Day of Month : 1-31
-      #   Months       : 0-11
-      #   Day of Week  : 0-6
-      if btc_monitor_job == null
-        msg.send "create btc_monitor_job."
-        msg.send "arg: #{arg}" if arg?
-        btc_monitor_job = new cron '0 * * * * *', () =>
-          fs.access("#{graph}", (error) =>
-            if(error)
-              # msg.send "is-not exists"
-            else
-              msg.send "is exists"
-              api_url = "https://slack.com/api/"
-              channel = msg.message.room
-              options = {
-                token: process.env.HUBOT_SLACK_TOKEN,
-                filename: graph,
-                file: fs.createReadStream("#{graph}"),
-                channels: channel
-              }
-              request
-                .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
-                  if !error && response.statusCode == 200
-                    msg.send "upload OK"
-                    fs.unlink("#{graph}", (del_error) =>
-                      if(del_error)
-                        msg.send "can't delete Graph-File:#{graph}"
-                    )
-                  else
-                    msg.send "NG status code: #{response.statusCode}"
-              )
-        , null, true, "Asia/Tokyo"
-      else
-        if btc_monitor_job.running
-          btc_monitor_job.stop()
-          msg.send "btc_monitor_job is stop."
-        else
-          btc_monitor_job.start()
-          msg.send "btc_monitor_job is start."
-    else
-      msg.send "get out !!"
-
-  robot.respond /BTC_START (.*)|BTC_START/i, (msg) ->
+  robot.respond /btcstart (.*)|btcstart/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       channel = msg.message.room
@@ -90,7 +38,7 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /BTC_STOP (.*)|BTC_STOP/i, (msg) ->
+  robot.respond /btcstop (.*)|btcstop/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       channel = msg.message.room
@@ -108,128 +56,106 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /BTC_UP/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      channel = msg.message.room
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      graph = "#{path}DEST/BtcPriceGraph.png"
-      fs.access("#{graph}", (error) =>
-        if(error)
-          msg.send "is-not exists"
-        else
-          msg.send "is exists"
-          api_url = "https://slack.com/api/"
-          channel = msg.message.room
-          options = {
-            token: process.env.HUBOT_SLACK_TOKEN,
-            filename: graph,
-            file: fs.createReadStream("#{graph}"),
-            channels: channel
-          }
-          request
-            .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
-              if !error && response.statusCode == 200
-                msg.send "upload OK"
-                fs.unlink("#{graph}", (del_error) =>
-                  if(del_error)
-                    msg.send "can't delete Graph-File:#{graph}"
-                )
-              else
-                msg.send "NG status code: #{response.statusCode}"
-          )
-    else
-      msg.send "get out !!"
+#  robot.respond /BTC_UP/i, (msg) ->
+#    if msg.message.user.name == "isaox"
+#      arg = msg.match[1]
+#      channel = msg.message.room
+#      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+#      graph = "#{path}DEST/BtcPriceGraph.png"
+#      fs.access("#{graph}", (error) =>
+#        if(error)
+#          msg.send "is-not exists"
+#        else
+#          msg.send "is exists"
+#          api_url = "https://slack.com/api/"
+#          channel = msg.message.room
+#          options = {
+#            token: process.env.HUBOT_SLACK_TOKEN,
+#            filename: graph,
+#            file: fs.createReadStream("#{graph}"),
+#            channels: channel
+#          }
+#          request
+#            .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
+#              if !error && response.statusCode == 200
+#                msg.send "upload OK"
+#                fs.unlink("#{graph}", (del_error) =>
+#                  if(del_error)
+#                    msg.send "can't delete Graph-File:#{graph}"
+#                )
+#              else
+#                msg.send "NG status code: #{response.statusCode}"
+#          )
+#    else
+#      msg.send "get out !!"
 
-  robot.respond /POSTSLACK (.*)|POSTSLACK/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      command = "#{path}slackPost.pl"
-      host = "https://slack.com/api/chat.postMessage"
-      token = process.env.HUBOT_SLACK_TOKEN
-      channel = msg.message.room
-      text = ""
-      text = arg if arg?
-      command = "#{command} #{host} #{token} #{channel} #{text}"
-      #msg.send "token:#{token}"
-      #msg.send "channel:#{channel}"
-      #msg.send "text:#{text}"
-      @exec = require('child_process').exec
-      @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
-        msg.send stdout if stdout?
-        msg.send stderr if stderr?
-    else
-      msg.send "get out !!"
+#  robot.respond /POSTSLACK (.*)|POSTSLACK/i, (msg) ->
+#    if msg.message.user.name == "isaox"
+#      arg = msg.match[1]
+#      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+#      command = "#{path}slackPost.pl"
+#      host = "https://slack.com/api/chat.postMessage"
+#      token = process.env.HUBOT_SLACK_TOKEN
+#      channel = msg.message.room
+#      text = ""
+#      text = arg if arg?
+#      command = "#{command} #{host} #{token} #{channel} #{text}"
+#      #msg.send "token:#{token}"
+#      #msg.send "channel:#{channel}"
+#      #msg.send "text:#{text}"
+#      @exec = require('child_process').exec
+#      @exec command, (error, stdout, stderr) ->
+#        msg.send error if error?
+#        msg.send stdout if stdout?
+#        msg.send stderr if stderr?
+#    else
+#      msg.send "get out !!"
 
-  robot.respond /uploadslack (.*)/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      command = "#{path}slackUpload.pl"
-      host = "https://slack.com/api/files.upload"
-      token = process.env.HUBOT_SLACK_TOKEN
-      channel = msg.message.room
-      filePath = ""
-      filePath = arg if arg?
-      command = "#{command} #{host} #{token} #{channel} #{filePath}"
-      #msg.send "token:#{token}"
-      #msg.send "channel:#{channel}"
-      #msg.send "text:#{filePath}"
-      @exec = require('child_process').exec
-      @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
-        msg.send stdout if stdout?
-        msg.send stderr if stderr?
-    else
-      msg.send "get out !!"
+#  robot.respond /uploadslack (.*)/i, (msg) ->
+#    if msg.message.user.name == "isaox"
+#      arg = msg.match[1]
+#      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+#      command = "#{path}slackUpload.pl"
+#      host = "https://slack.com/api/files.upload"
+#      token = process.env.HUBOT_SLACK_TOKEN
+#      channel = msg.message.room
+#      filePath = ""
+#      filePath = arg if arg?
+#      command = "#{command} #{host} #{token} #{channel} #{filePath}"
+#      #msg.send "token:#{token}"
+#      #msg.send "channel:#{channel}"
+#      #msg.send "text:#{filePath}"
+#      @exec = require('child_process').exec
+#      @exec command, (error, stdout, stderr) ->
+#        msg.send error if error?
+#        msg.send stdout if stdout?
+#        msg.send stderr if stderr?
+#    else
+#      msg.send "get out !!"
 
-  robot.respond /uploadcurl (.*)/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      command = "#{path}_slackUpload.sh"
-      host = "https://slack.com/api/files.upload"
-      token = process.env.HUBOT_SLACK_TOKEN
-      channel = msg.message.room
-      filePath = ""
-      filePath = arg if arg?
-      command = "sudo -u pi sh #{command} #{host} #{token} #{channel} #{filePath}"
-      #msg.send "token:#{token}"
-      #msg.send "channel:#{channel}"
-      #msg.send "text:#{filePath}"
-      @exec = require('child_process').exec
-      @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
-        msg.send stdout if stdout?
-        msg.send stderr if stderr?
-    else
-      msg.send "get out !!"
-
-  robot.respond /testcron (.*)|testcron/i, (msg) ->
-    if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      msg.send "Arg[0]: #{arg}" if arg?
-      channel = msg.message.room
-      msg.send "respond from #{channel}."
-      # cron's 1st parameter
-      #   seconds      : 0-59
-      #   Minutes      : 0-59
-      #   Hours        : 0-23
-      #   Day of Month : 1-31
-      #   Months       : 0-11
-      #   Day of Week  : 0-6
-      if cron_job != null
-        msg.send "cron_job is exist."
-      else
-        msg.send "cron_job is-not exist."
-        cron_job = new cron '15 * * * * *', () =>
-          robot.send {room: channel}, "I send msg with regularity."
-        , null, true, "Asia/Tokyo"
-        msg.send "created cron_job."
-    else
-      msg.send "get out !!"
+#  robot.respond /testcron (.*)|testcron/i, (msg) ->
+#    if msg.message.user.name == "isaox"
+#      arg = msg.match[1]
+#      msg.send "Arg[0]: #{arg}" if arg?
+#      channel = msg.message.room
+#      msg.send "respond from #{channel}."
+#      # cron's 1st parameter
+#      #   seconds      : 0-59
+#      #   Minutes      : 0-59
+#      #   Hours        : 0-23
+#      #   Day of Month : 1-31
+#      #   Months       : 0-11
+#      #   Day of Week  : 0-6
+#      if cron_job != null
+#        msg.send "cron_job is exist."
+#      else
+#        msg.send "cron_job is-not exist."
+#        cron_job = new cron '15 * * * * *', () =>
+#          robot.send {room: channel}, "I send msg with regularity."
+#        , null, true, "Asia/Tokyo"
+#        msg.send "created cron_job."
+#    else
+#      msg.send "get out !!"
 
   robot.respond /timesignal (.*)|timesignal/i, (msg) ->
     if msg.message.user.name == "isaox"
