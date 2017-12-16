@@ -69,6 +69,8 @@ module.exports = (robot) ->
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
       command = "#{path}getPriceCron.pl"
       host = "https://bitflyer.jp/api/echo/price"
+      token = process.env.HUBOT_SLACK_TOKEN
+      channel = msg.message.room
       list = "#{path}DEST/BtcPriceList.json"
       graph = "#{path}DEST/BtcPriceGraph.png"
       stop = "#{path}DEST/StopCode.txt"
@@ -78,7 +80,7 @@ module.exports = (robot) ->
       threshold = 20000
       param = "#{sampling} #{threshold}"
       param = arg if arg?
-      command = "#{command} #{host} #{list} #{graph} #{stop} #{test} #{cycle_sec} #{param}"
+      command = "#{command} #{token} #{channel} #{host} #{list} #{graph} #{stop} #{test} #{cycle_sec} #{param}"
       msg.send "exec getPriceCron() param=#{param} "
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?

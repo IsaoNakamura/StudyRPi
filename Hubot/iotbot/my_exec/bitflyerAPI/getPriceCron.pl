@@ -18,7 +18,9 @@ use List::Util qw(max min);
 
 use Fcntl;
 
-my $url = shift;
+my $host = shift;
+my $token = shift;
+my $channel = shift;
 my $listPath = shift;
 my $graphPath = shift;
 my $stopCode = shift;
@@ -27,13 +29,14 @@ my $cycle_sec = shift;
 my $sampling_num = shift;
 my $threshold = shift;
 
+
 ####################################
 my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 while(1){
-    my $res = $ua->get($url);
+    my $res = $ua->get($host);
 
     if($res->is_error){
         print $res->message;
@@ -157,6 +160,9 @@ while(1){
             binmode OUT;
             print OUT $image->png();
             close OUT;
+
+            my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel -F token=$token $host";
+            system($curlCmd);
 
             if($isTest==0){
                 # Clear

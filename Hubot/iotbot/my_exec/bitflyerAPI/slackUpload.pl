@@ -6,7 +6,7 @@ use strict;
 
 my $host = shift;
 my $token = shift;
-my $channel_id = shift;
+my $channel = shift;
 my $filePath = shift;
 
 #print "host=$host\n";
@@ -14,7 +14,7 @@ my $filePath = shift;
 #print "channel_id=$channel_id\n";
 #print "filepath=$filePath\n";
 
-my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel_id -F token=$token $host";
+my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel -F token=$token $host";
 system($curlCmd);
 
 #my $req = POST ($host,
