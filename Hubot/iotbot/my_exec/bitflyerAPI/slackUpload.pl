@@ -20,8 +20,8 @@ my $opts = {
 };
 
 my $req = POST ($host,
-    Content-Type => 'form-data',
-    Content => [
+    'Content-Type' => 'form-data',
+    'Content' => [
         %{$opts}
     ]);
 my $res = Furl->new->request($req);
