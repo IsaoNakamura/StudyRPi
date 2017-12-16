@@ -25,8 +25,8 @@ my $req = POST ($host,
         %{$opts}
     ]);
 my $res = Furl->new->request($req);
-print "response-msg:$res->message¥n";
-print "response-code:$res->code¥n";
+print "response-msg:$res->message\n";
+print "response-code:$res->code\n";
 
 close(IN);
 
