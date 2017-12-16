@@ -105,6 +105,40 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /BTC_UP/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      channel = msg.message.room
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+      graph = "#{path}DEST/BtcPriceGraph.png"
+      fs.access("#{graph}", (error) =>
+        if(error)
+          msg.send "is-not exists"
+        else
+          msg.send "is exists"
+          api_url = "https://slack.com/api/"
+          channel = msg.message.room
+          options = {
+            token: process.env.HUBOT_SLACK_TOKEN,
+            filename: graph,
+            file: fs.createReadStream("#{graph}"),
+            channels: channel
+          }
+          request
+            .post {url:api_url + 'files.upload', formData: options}, (error, response, body) ->
+              if !error && response.statusCode == 200
+                msg.send "upload OK"
+                fs.unlink("#{graph}", (del_error) =>
+                  if(del_error)
+                    msg.send "can't delete Graph-File:#{graph}"
+                )
+              else
+                msg.send "NG status code: #{response.statusCode}"
+          )
+    else
+      msg.send "get out !!"
+
+
 
   robot.respond /testcron (.*)|testcron/i, (msg) ->
     if msg.message.user.name == "isaox"
