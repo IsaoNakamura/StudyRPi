@@ -9,23 +9,32 @@ my $token = shift;
 my $channel_id = shift;
 my $filePath = shift;
 
-open( IN, '<', $filePath) || exit -1;
+#open( IN, '<', $filePath) || exit -1;
 # binmode IN;
 
-my $opts = {
-    token    => $token,
-    channels => $channel_id,
-    filename => $filePath,
-    file     => <IN>
-};
+#my $opts = {
+#    token    => $token,
+#    channels => $channel_id,
+#    filename => $filePath,
+#    file     => <IN>
+#};
 
-my $req = POST ($host,[
-        token    => $token,
+my $req = POST ($host,
+    'Content' => [
+        token => $token,
         channels => $channel_id,
         filename => $filePath,
-        file     => @$filePath,
+        file     => $filePath,
         filetype => 'javascript'
     ]);
+
+#my $req = POST ($host,[
+#        token    => $token,
+#        channels => $channel_id,
+#        filename => $filePath,
+#        file     => $filePath,
+#        filetype => 'javascript'
+#    ]);
 
 #my $req = POST ($host,
 #    'Content-Type' => 'form-data',
@@ -45,7 +54,7 @@ print "response-code:$res_code\n";
 print "response-msg:$res_msg\n";
 
 
-close(IN);
+#close(IN);
 
 print "host=$host\n";
 print "token=$token\n";
