@@ -20,12 +20,12 @@ my $opts = {
 };
 
 my $req = POST ($host,
-    Content-Type => 'form-data',
+    'Content-Type' => 'form-data',
     'Content' => [
         token    => $token,
         channels => $channel_id,
-        filename => $filePath,
-        file     => <IN>
+        filename => $filePath
+        #file     => <IN>
     ]);
 #    'Content' => [
 #        %{$opts}
