@@ -25,7 +25,7 @@ my $req = POST ($host,
         token    => $token,
         channels => $channel_id,
         filename => $filePath,
-        file     => IN
+        file     => <IN>
     ]);
 #    'Content' => [
 #        %{$opts}
