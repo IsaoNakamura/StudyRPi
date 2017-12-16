@@ -161,7 +161,7 @@ while(1){
             print OUT $image->png();
             close OUT;
 
-            my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel -F token=$token $host";
+            my $curlCmd = "curl -o /dev/null -s -F file=\@$graphPath -F channels=$channel -F token=$token $host";
             system($curlCmd);
 
             if($isTest==0){
