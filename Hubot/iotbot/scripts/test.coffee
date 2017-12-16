@@ -138,7 +138,7 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /BTC_STOP (.*)|POSTSLACK/i, (msg) ->
+  robot.respond /POSTSLACK (.*)|POSTSLACK/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
