@@ -20,7 +20,7 @@ my $opts = {
 };
 
 my $req = POST ($host,
-    'Content-Type' => 'form-data',
+    Content-Type => 'form-data',
     'Content' => [
         token    => $token,
         channels => $channel_id,
