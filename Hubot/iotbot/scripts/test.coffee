@@ -142,7 +142,7 @@ module.exports = (robot) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
-      command = "#{path}slackPost.ls"
+      command = "#{path}slackPost.pl"
       host = "https://slack.com/api/chat.postMessage"
       token = process.env.HUBOT_SLACK_TOKEN
       channel = msg.message.room
