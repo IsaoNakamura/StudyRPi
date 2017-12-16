@@ -31,8 +31,11 @@ my $req = POST ($host,
 #        %{$opts}
 #    ]);
 my $res = Furl->new->request($req);
-print "response-msg:$res->as_hashref()->message\n";
-print "response-code:$res->as_hashref()->code\n";
+my $res_code = $res->code;
+my $res_msg = $res->message
+print "response-code:$res_code\n";
+print "response-msg:$res_msg\n";
+
 
 close(IN);
 
