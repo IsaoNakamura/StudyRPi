@@ -23,7 +23,7 @@ my $req = POST ($host,[
         token    => $token,
         channels => $channel_id,
         filename => $filePath,
-        file     => $filePath,
+        file     => @$filePath,
         filetype => 'javascript'
     ]);
 
