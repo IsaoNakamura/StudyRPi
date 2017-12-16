@@ -10,7 +10,7 @@ my $channel_id = shift;
 my $filePath = shift;
 
 open( IN, '<', $filePath) || exit -1;
-binmode IN;
+# binmode IN;
 
 my $opts = {
     token    => $token,
@@ -31,8 +31,8 @@ my $req = POST ($host,
 #        %{$opts}
 #    ]);
 my $res = Furl->new->request($req);
-print "response-msg:$res->message\n";
-print "response-code:$res->code\n";
+print "response-msg:$res->as_hashref()->message\n";
+print "response-code:$res->as_hashref()->code\n";
 
 close(IN);
 
