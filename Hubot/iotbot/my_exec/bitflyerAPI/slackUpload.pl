@@ -32,7 +32,7 @@ my $req = POST ($host,
 #    ]);
 my $res = Furl->new->request($req);
 my $res_code = $res->code;
-my $res_msg = $res->message
+my $res_msg = $res->message;
 print "response-code:$res_code\n";
 print "response-msg:$res_msg\n";
 
