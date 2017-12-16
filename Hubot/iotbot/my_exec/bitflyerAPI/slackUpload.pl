@@ -20,11 +20,11 @@ my $opts = {
 };
 
 my $req = POST ($host,[
-        'token'    => $token,
-        'channels' => $channel_id,
-        'filename' => $filePath,
-        'file'     => $filePath,
-        'filetype' => 'javascript'
+        token    => $token,
+        channels => $channel_id,
+        filename => $filePath,
+        file     => $filePath,
+        filetype => 'javascript'
     ]);
 
 #my $req = POST ($host,
