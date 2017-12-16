@@ -22,8 +22,14 @@ my $opts = {
 my $req = POST ($host,
     'Content-Type' => 'form-data',
     'Content' => [
-        %{$opts}
+        token    => $token,
+        channels => $channel_id,
+        filename => $filePath,
+        file     => IN
     ]);
+#    'Content' => [
+#        %{$opts}
+#    ]);
 my $res = Furl->new->request($req);
 print "response-msg:$res->message\n";
 print "response-code:$res->code\n";
