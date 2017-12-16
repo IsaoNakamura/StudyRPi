@@ -19,7 +19,7 @@ my $req = POST ($host,
     'Content' => [
         token => $token,
         channel => $channel,
-        text => $test
+        text => $text
     ]);
 my $res = Furl->new->request($req);
 
