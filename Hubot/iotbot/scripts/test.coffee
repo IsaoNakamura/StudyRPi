@@ -149,9 +149,31 @@ module.exports = (robot) ->
       text = ""
       text = arg if arg?
       command = "#{command} #{host} #{token} #{channel} #{text}"
-      msg.send "token:#{token}"
-      msg.send "channel:#{channel}"
-      msg.send "text:#{text}"
+      #msg.send "token:#{token}"
+      #msg.send "channel:#{channel}"
+      #msg.send "text:#{text}"
+      @exec = require('child_process').exec
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
+  robot.respond /uploadslack (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/"
+      command = "#{path}slackUpload.pl"
+      host = "https://slack.com/api/files.upload"
+      token = process.env.HUBOT_SLACK_TOKEN
+      channel = msg.message.room
+      filePath = ""
+      filePath = arg if arg?
+      command = "#{command} #{host} #{token} #{channel} #{filePath}"
+      #msg.send "token:#{token}"
+      #msg.send "channel:#{channel}"
+      #msg.send "text:#{filePath}"
       @exec = require('child_process').exec
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?

@@ -23,9 +23,9 @@ my $req = POST ($host,
     ]);
 my $res = Furl->new->request($req);
 
-print "host=$host\n";
-print "token=$token\n";
-print "channel=$channel\n";
-print "text=$text\n";
+#print "host=$host\n";
+#print "token=$token\n";
+#print "channel=$channel\n";
+#print "text=$text\n";
 
 exit 0;
