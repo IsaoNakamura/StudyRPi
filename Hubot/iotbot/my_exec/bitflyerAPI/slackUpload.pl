@@ -9,7 +9,7 @@ my $token = shift;
 my $channel_id = shift;
 my $filePath = shift;
 
-my $curlCmd = "curl -o /dev/null -s -F file=@$filePath -F channels=$channel_id -F token=$token $host";
+my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel_id -F token=$token $host";
 system($curlCmd);
 
 #my $req = POST ($host,
