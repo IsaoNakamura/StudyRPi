@@ -20,12 +20,13 @@ my $opts = {
 };
 
 my $req = POST ($host,
-    'Content' => [
-        %$opts
+    Content-Type => 'form-data',
+    Content => [
+        %{$opts}
     ]);
 my $res = Furl->new->request($req);
-print "response-msg:$res->message";
-print "response-code:$res->code";
+print "response-msg:$res->message¥n";
+print "response-code:$res->code¥n";
 
 close(IN);
 
