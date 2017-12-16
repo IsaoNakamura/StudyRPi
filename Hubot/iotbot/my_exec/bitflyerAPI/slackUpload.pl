@@ -20,13 +20,21 @@ my $opts = {
 };
 
 my $req = POST ($host,
-    'Content-Type' => 'form-data',
-    'Content' => [
-        token    => $token,
-        channels => $channel_id,
-        filename => $filePath
-        #file     => <IN>
+        'token'    => $token,
+        'channels' => $channel_id,
+        'filename' => $filePath,
+        'file'     => [$filePath],
+        'filetype' => 'javascript'
     ]);
+
+#my $req = POST ($host,
+#    'Content-Type' => 'form-data',
+#    'Content' => [
+#        token    => $token,
+#        channels => $channel_id,
+#        filename => $filePath
+#        file     => <IN>
+#    ]);
 #    'Content' => [
 #        %{$opts}
 #    ]);
