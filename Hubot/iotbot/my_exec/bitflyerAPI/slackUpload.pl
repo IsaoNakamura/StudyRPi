@@ -24,10 +24,8 @@ my $req = POST ($host,
         %$opts
     ]);
 my $res = Furl->new->request($req);
-if($res->is_error){
-    print $res->message;
-    exit -1;
-}
+print "response-msg:$res->message";
+print "response-code:$res->code";
 
 close(IN);
 
