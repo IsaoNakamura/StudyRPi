@@ -10,6 +10,7 @@ my $channel_id = shift;
 my $filePath = shift;
 
 open( IN, '<', $filePath) || exit -1;
+binmode IN;
 
 my $opts = {
     token    => $token,
@@ -23,6 +24,10 @@ my $req = POST ($host,
         %$opts
     ]);
 my $res = Furl->new->request($req);
+if($res->is_error){
+    print $res->message;
+    exit -1;
+}
 
 close(IN);
 
