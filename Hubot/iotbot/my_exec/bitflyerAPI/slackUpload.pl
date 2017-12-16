@@ -14,7 +14,7 @@ open( IN, '<', $filePath) || exit -1;
 my $opts = {
     token    => $token,
     channels => $channel_id,
-    filename => $filepath,
+    filename => $filePath,
     file     => <IN>
 };
 
@@ -29,6 +29,6 @@ close(IN);
 print "host=$host\n";
 print "token=$token\n";
 print "channel_id=$channel_id\n";
-print "filepath=$filepath\n";
+print "filepath=$filePath\n";
 
 exit 0;
