@@ -18,7 +18,8 @@ use List::Util qw(max min);
 
 use Fcntl;
 
-my $host = shift;
+my $btc_host = shift;
+my $slack_host = shift;
 my $token = shift;
 my $channel = shift;
 my $listPath = shift;
@@ -36,7 +37,7 @@ $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 while(1){
-    my $res = $ua->get($host);
+    my $res = $ua->get($btc_host);
 
     if($res->is_error){
         print $res->message;
@@ -161,7 +162,7 @@ while(1){
             print OUT $image->png();
             close OUT;
 
-            my $curlCmd = "curl -o /dev/null -s -F file=\@$graphPath -F channels=$channel -F token=$token $host";
+            my $curlCmd = "curl -o /dev/null -s -F file=\@$graphPath -F channels=$channel -F token=$token $slack_host";
             system($curlCmd);
 
             if($isTest==0){
