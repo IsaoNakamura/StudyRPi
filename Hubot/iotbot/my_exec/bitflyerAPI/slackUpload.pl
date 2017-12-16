@@ -9,6 +9,11 @@ my $token = shift;
 my $channel_id = shift;
 my $filePath = shift;
 
+#print "host=$host\n";
+#print "token=$token\n";
+#print "channel_id=$channel_id\n";
+#print "filepath=$filePath\n";
+
 my $curlCmd = "curl -o /dev/null -s -F file=\@$filePath -F channels=$channel_id -F token=$token $host";
 system($curlCmd);
 
@@ -25,10 +30,5 @@ system($curlCmd);
 #my $res_msg = $res->message;
 #print "response-code:$res_code\n";
 #print "response-msg:$res_msg\n";
-
-print "host=$host\n";
-print "token=$token\n";
-print "channel_id=$channel_id\n";
-print "filepath=$filePath\n";
 
 exit 0;
