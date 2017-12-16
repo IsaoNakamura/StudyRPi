@@ -19,7 +19,7 @@ my $opts = {
     file     => <IN>
 };
 
-my $req = POST ($host,
+my $req = POST ($host,[
         'token'    => $token,
         'channels' => $channel_id,
         'filename' => $filePath,
