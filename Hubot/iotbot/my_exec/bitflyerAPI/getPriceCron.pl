@@ -36,6 +36,11 @@ my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
+if(-e $stopCode){
+    unlink $stopCode;
+    last;
+}
+
 while(1){
     my $res = $ua->get($btc_host);
 
