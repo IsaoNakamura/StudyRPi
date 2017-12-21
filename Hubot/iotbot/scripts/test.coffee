@@ -9,6 +9,45 @@ module.exports = (robot) ->
   signal_job = null;
   btc_monitor_job = null;
 
+    robot.respond /vip (.*)|vip/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
+      command = "#{path}getTweetCron.pl"
+      host = "https://slack.com/api/chat.postMessage"
+      token = process.env.HUBOT_SLACK_TOKEN
+      channel = msg.message.room
+      cycle_sec = 60
+      cycle_sec = arg if arg?
+      stop = "#{path}DEST/StopCode.txt"
+      command = "#{command} #{host} #{token} #{channel} #{cycle_sec} #{stop}"
+      msg.send "exec getTweetCron()"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
+  robot.respond /vipstop (.*)|vipstop/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      channel = msg.message.room
+      @exec = require('child_process').exec
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
+      command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/createStopCode.pl"
+      stop = "#{path}DEST/StopCode.txt"
+      stop = arg if arg?
+      command = "#{command} #{stop}"
+      msg.send "exec createStopCode() stop=#{stop} "
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /btcstart (.*)|btcstart/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
