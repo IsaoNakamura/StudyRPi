@@ -24,9 +24,9 @@ module.exports = (robot) ->
       command = "#{command} #{host} #{token} #{channel} #{cycle_sec} #{stop}"
       msg.send "exec getTweetCron()"
       @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
+        #msg.send error if error?
         msg.send stdout if stdout?
-        msg.send stderr if stderr?
+        #msg.send stderr if stderr?
     else
       msg.send "get out !!"
 
