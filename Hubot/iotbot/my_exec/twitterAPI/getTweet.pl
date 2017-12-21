@@ -27,6 +27,8 @@ use Net::SSL;
 use Net::Twitter::Lite::WithAPIv1_1;
 use Data::Dumper;
 
+use Date::Manip;
+
 use Mozilla::CA;
 $ENV{HTTPS_CA_FILE} = Mozilla::CA::SSL_ca_file();
 
@@ -38,6 +40,7 @@ use DateTime::Format::HTTP;
 my $host = shift;
 my $token = shift;
 my $channel = shift;
+
 
 #my %authSlack = ();
 #$authSlack{"host"} = $host;
@@ -61,7 +64,11 @@ my $channel = shift;
 #exit 0;
 
 #my %vipBCH = ();
-#$vipBCH{"hoge"} = 0;
+#$vipBCH{"JihanWu"} = 0;
+#$vipBCH{"tobuzo_net"} = 0;
+#$vipBCH{"23pluton"} = 0;
+#$vipBCH{"LCsPHt2lUdIED6X"} = 0;
+#$vipBCH{"shya_crypt"} = 0;
 #if(writeJson(\\%vipBCH, "./vipBCH.json", ">")!=0){
 #    print "FileSaveError. vipBCH.\n";
 #    exit -1;
@@ -97,8 +104,28 @@ if(readJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json")!=0){
 }
 
 my @keys_BCH = keys %{$vipBCH};
+
+#for(my $i=0; $i<@keys_BCH; $i++){
+#    print "keys_BCH[$i]:$keys_BCH[$i]\n";
+#    if($keys_BCH[$i] ne "hoge"){
+#        next;
+#    }
+#    my $res_users =  $nt->lookup_users(
+#                            {
+#                                screen_name => $keys_BCH[$i],
+#                                include_entities => 0,
+ #                           }
+  #                      );
+#
+#    if(writeJson(\$res_users, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_users.json", ">")!=0){
+#        print "FileWriteError. $keys_BCH[$i]_users.json.\n";
+#    }
+#}
+# exit 0;
+
 for(my $i=0; $i<@keys_BCH; $i++){
     # print "keys_BCH[$i]:$keys_BCH[$i]\n";
+    #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
     #if($keys_BCH[$i] ne "hoge"){
     #    next;
     #}
@@ -106,69 +133,79 @@ for(my $i=0; $i<@keys_BCH; $i++){
     my $res_timeline =  $nt->user_timeline(
                             {
                                 screen_name => $keys_BCH[$i],
-                                count       => 1,
-                                since_id    => int($vipBCH->{$keys_BCH[$i]}),
-                                include_rts => 0,
-                                exclude_replies => 1,
-                                trim_user => 1,
+                                count       => 2,
+                                since_id    => $vipBCH->{$keys_BCH[$i]}->{"since_id"},
+                                include_rts => $vipBCH->{$keys_BCH[$i]}->{"include_rts"},   # 0:RTが含まれない
+                                exclude_replies => "true",                                  # 0:リプライを含む
+                                trim_user => "true",                                        # 0:ユーザ情報を含む
+                                include_entities => "false",                                # 0:entities情報が含まれない
+                                contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
+                                page => 0,
                             }
                         );
 
     for(my $j=0; $j<@{$res_timeline}; $j++){
         my $tweet_ref = \%{ $res_timeline->[$j] };
-        my $tweet_text = "https://twitter.com/$keys_BCH[$i]\n";
-        #if( exists $tweet_ref->{"user"}->{"name"} ){
-        #    my $name = $tweet_ref->{"user"}->{"name"};
-        #    # print $name;
-        #    $tweet_text .= $name;
-        #}
-        #if( exists $tweet_ref->{"user"}->{"screen_name"} ){
-        #    my $screen_name = $tweet_ref->{"user"}->{"screen_name"};
-        #    print " @" . $screen_name . "\n";
-        #    $tweet_text = " @" . $screen_name;
-        #}
-        # $tweet_text .= "\n";
+        my $id = $tweet_ref->{"id"};
+        my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id\n";
 
         if( exists $tweet_ref->{"created_at"} ){
             my $created_at = $tweet_ref->{"created_at"};
             # 終了時間をGMTからJSTに変換して現時間との差を計算する。
-            my $jst = $created_at; #DateTime::Format::HTTP->parse_datetime($created_at);
+            my $jst_date="";
+            convertTimeTZtoJST(\$jst_date, $created_at);
             # convertTimeGMTtoJST(\$jst, $created_at);
-            $tweet_text .= "$jst\n";
+            $tweet_text .= "$jst_date\n";
         }
 
         if( exists $tweet_ref->{"text"} ){
             my $text = $tweet_ref->{"text"};
             # print $text . "\n";
-            $tweet_text =  "```" . $tweet_text . $text ."\n" . "```";
+            $tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
             #$tweet_text =  $tweet_text . $text ."\n";
             # print $tweet_text;
+
+            # 添付ファイルURL取得
+            # print "exists extended_entities\n";
+            if( exists $tweet_ref->{"extended_entities"} ){
+                # print "exists media\n";
+                my $extended = $tweet_ref->{"extended_entities"};
+                if( exists $extended->{"media"} ){
+                    my $media = $extended->{"media"};
+                    for(my $k=0; $k<@{$media}; $k++){
+                        my $mediaInfo = \%{ $media->[$k] };
+                        if( exists $mediaInfo->{"media_url_https"}){
+                            my $media_url = $mediaInfo->{"media_url_https"};
+                            $tweet_text = $tweet_text . $media_url . "\n";
+                        }
+                    }
+                }
+            }
+
             my $req = POST ($host,
                 'Content' => [
                     token => $token,
                     channel => $channel,
                     # icon_url => $tweet_ref->{"user"}->{"profile_image_url_https"},
+                    username => $keys_BCH[$i],
+                    icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
                     text => $tweet_text
                 ]);
             my $res = Furl->new->request($req);
         }
 
-        if( exists $tweet_ref->{"id"} ){
-            my $id = $tweet_ref->{"id"};
-            # print $id . "\n";
-
-            $vipBCH->{$keys_BCH[$i]} = int($id);
-            #if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
-            #    print "FileWriteError. vipBCH.\n";
-            #    next;
-            #}
+        $vipBCH->{$keys_BCH[$i]}->{"since_id"} = int($id);
+        if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
+            print "FileWriteError. vipBCH.\n";
+            next;
         }
-
         
-        if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i].json", ">")!=0){
+        if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
             print "FileWriteError. $keys_BCH[$i].\n";
             next;
         }
+
+        sleep(3);
     }
 }
 
@@ -243,7 +280,7 @@ sub convertTimeGMTtoJST{
 	my $jst_ref	= shift; # OUT
 	my $gmt_str	= shift; #  IN
 
-    # Wed Dec 20 06:07:43 +0000 2017
+    
     # $tm =~ /^(\s+) (\s+)-(\d+)T(\d+):(\d+):(\d+)/;
 	
 	my $tm = $gmt_str;
@@ -261,4 +298,17 @@ sub convertTimeGMTtoJST{
 	#my $jst = localtime($utm);
 	#my $jst_str = strftime("%Y-%m-%d %H:%M:%S",localtime($utm));
 	#print "\t\t\t\t\t jst=$jst_str\n";
+}
+
+sub convertTimeTZtoJST{
+	my $jst_ref	= shift; # OUT
+	my $tz_str	= shift; #  IN
+
+    # Date_Init("TZ=JST");
+
+    # Wed Dec 20 06:07:43 +0000 2017
+    my $date = ParseDate($tz_str);
+    $$jst_ref = UnixDate($date,"%Y/%m/%d %H:%M:%S");
+	
+	return (0);
 }
