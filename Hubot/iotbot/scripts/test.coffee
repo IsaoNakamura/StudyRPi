@@ -9,7 +9,7 @@ module.exports = (robot) ->
   signal_job = null;
   btc_monitor_job = null;
 
-  robot.respond /vip (.*)|vip/i, (msg) ->
+  robot.respond /vipstart (.*)|vipstart/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
       @exec = require('child_process').exec
