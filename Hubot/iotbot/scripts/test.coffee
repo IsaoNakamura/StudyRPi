@@ -319,6 +319,20 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /ps (.*)|ps/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      command = "sudo -u pi sh /home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/ps_cmd.sh"
+      command = "#{command} #{arg}" if arg?
+      msg.send "Command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /dpkg (.*)|dpg/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
