@@ -63,99 +63,102 @@ my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
 );
 
 while(1){
-    my $vipBCH;
-    if(readJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json")!=0){
-        print "FileReadError. vipBCH.\n";
-        exit -1;
-    }
+    eval{
+        my $vipBCH;
+        if(readJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json")!=0){
+            print "FileReadError. vipBCH.\n";
+            exit -1;
+        }
 
-    my @keys_BCH = keys %{$vipBCH};
+        my @keys_BCH = keys %{$vipBCH};
 
-    for(my $i=0; $i<@keys_BCH; $i++){
-        # print "keys_BCH[$i]:$keys_BCH[$i]\n";
-        #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
-        #if($keys_BCH[$i] ne "hoge"){
-        #    next;
-        #}
+        for(my $i=0; $i<@keys_BCH; $i++){
+            # print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
+            #if($keys_BCH[$i] ne "hoge"){
+            #    next;
+            #}
 
-        my $res_timeline =  $nt->user_timeline(
-                                {
-                                    screen_name => $keys_BCH[$i],
-                                    count       => 2,
-                                    since_id    => $vipBCH->{$keys_BCH[$i]}->{"since_id"},
-                                    include_rts => $vipBCH->{$keys_BCH[$i]}->{"include_rts"},   # 0:RTが含まれない
-                                    exclude_replies => "true",                                  # 0:リプライを含む
-                                    trim_user => "true",                                        # 0:ユーザ情報を含む
-                                    include_entities => "false",                                # 0:entities情報が含まれない
-                                    contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
-                                    page => 0,
+            my $res_timeline =  $nt->user_timeline(
+                                    {
+                                        screen_name => $keys_BCH[$i],
+                                        count       => 2,
+                                        since_id    => $vipBCH->{$keys_BCH[$i]}->{"since_id"},
+                                        include_rts => $vipBCH->{$keys_BCH[$i]}->{"include_rts"},   # 0:RTが含まれない
+                                        exclude_replies => "true",                                  # 0:リプライを含む
+                                        trim_user => "true",                                        # 0:ユーザ情報を含む
+                                        include_entities => "false",                                # 0:entities情報が含まれない
+                                        contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
+                                        page => 0,
+                                    }
+                                );
+
+            for(my $j=0; $j<@{$res_timeline}; $j++){
+                my $tweet_ref = \%{ $res_timeline->[$j] };
+                my $id = $tweet_ref->{"id"};
+                my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id\n";
+
+                if( exists $tweet_ref->{"created_at"} ){
+                    my $created_at = $tweet_ref->{"created_at"};
+                    # 終了時間をGMTからJSTに変換して現時間との差を計算する。
+                    my $jst_date="";
+                    convertTimeTZtoJST(\$jst_date, $created_at);
+                    # convertTimeGMTtoJST(\$jst, $created_at);
+                    $tweet_text .= "$jst_date\n";
+                }
+
+                if( exists $tweet_ref->{"text"} ){
+                    my $text = $tweet_ref->{"text"};
+                    # print $text . "\n";
+                    $tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
+                    #$tweet_text =  $tweet_text . $text ."\n";
+                    # print $tweet_text;
+
+                    # 添付ファイルURL取得
+                    # print "exists extended_entities\n";
+                    if( exists $tweet_ref->{"extended_entities"} ){
+                        # print "exists media\n";
+                        my $extended = $tweet_ref->{"extended_entities"};
+                        if( exists $extended->{"media"} ){
+                            my $media = $extended->{"media"};
+                            for(my $k=0; $k<@{$media}; $k++){
+                                my $mediaInfo = \%{ $media->[$k] };
+                                if( exists $mediaInfo->{"media_url_https"}){
+                                    my $media_url = $mediaInfo->{"media_url_https"};
+                                    $tweet_text = $tweet_text . $media_url . "\n";
                                 }
-                            );
-
-        for(my $j=0; $j<@{$res_timeline}; $j++){
-            my $tweet_ref = \%{ $res_timeline->[$j] };
-            my $id = $tweet_ref->{"id"};
-            my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id\n";
-
-            if( exists $tweet_ref->{"created_at"} ){
-                my $created_at = $tweet_ref->{"created_at"};
-                # 終了時間をGMTからJSTに変換して現時間との差を計算する。
-                my $jst_date="";
-                convertTimeTZtoJST(\$jst_date, $created_at);
-                # convertTimeGMTtoJST(\$jst, $created_at);
-                $tweet_text .= "$jst_date\n";
-            }
-
-            if( exists $tweet_ref->{"text"} ){
-                my $text = $tweet_ref->{"text"};
-                # print $text . "\n";
-                $tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
-                #$tweet_text =  $tweet_text . $text ."\n";
-                # print $tweet_text;
-
-                # 添付ファイルURL取得
-                # print "exists extended_entities\n";
-                if( exists $tweet_ref->{"extended_entities"} ){
-                    # print "exists media\n";
-                    my $extended = $tweet_ref->{"extended_entities"};
-                    if( exists $extended->{"media"} ){
-                        my $media = $extended->{"media"};
-                        for(my $k=0; $k<@{$media}; $k++){
-                            my $mediaInfo = \%{ $media->[$k] };
-                            if( exists $mediaInfo->{"media_url_https"}){
-                                my $media_url = $mediaInfo->{"media_url_https"};
-                                $tweet_text = $tweet_text . $media_url . "\n";
                             }
                         }
                     }
+
+                    my $req = POST ($host,
+                        'Content' => [
+                            token => $token,
+                            channel => $channel,
+                            # icon_url => $tweet_ref->{"user"}->{"profile_image_url_https"},
+                            username => $keys_BCH[$i],
+                            icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
+                            text => $tweet_text
+                        ]);
+                    my $res = Furl->new->request($req);
                 }
 
-                my $req = POST ($host,
-                    'Content' => [
-                        token => $token,
-                        channel => $channel,
-                        # icon_url => $tweet_ref->{"user"}->{"profile_image_url_https"},
-                        username => $keys_BCH[$i],
-                        icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
-                        text => $tweet_text
-                    ]);
-                my $res = Furl->new->request($req);
-            }
+                $vipBCH->{$keys_BCH[$i]}->{"since_id"} = int($id);
+                if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
+                    print "FileWriteError. vipBCH.\n";
+                    next;
+                }
+                
+                if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
+                    print "FileWriteError. $keys_BCH[$i].\n";
+                    next;
+                }
 
-            $vipBCH->{$keys_BCH[$i]}->{"since_id"} = int($id);
-            if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
-                print "FileWriteError. vipBCH.\n";
-                next;
+                sleep(3);
             }
-            
-            if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
-                print "FileWriteError. $keys_BCH[$i].\n";
-                next;
-            }
-
-            sleep(3);
         }
-    }
+    };
+
     if(-e $stopCode){
         print "recieved StopCode:$stopCode\n";
         unlink $stopCode;
