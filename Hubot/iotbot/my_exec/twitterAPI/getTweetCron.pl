@@ -89,15 +89,18 @@ while(1){
                                         trim_user => "true",                                        # 0:ユーザ情報を含む
                                         include_entities => "false",                                # 0:entities情報が含まれない
                                         contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
-                                        page => 0,
+                                        page => 1,
                                     }
                                 );
 
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
+                
+                # Link取得
                 my $id = $tweet_ref->{"id"};
-                #my $tweet_text = "```" . "https://twitter.com/$keys_BCH[$i]/status/$id" . "```" . "\n";
                 my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
+
+                # 日付取得
                 my $tweet_date = "";
                 if( exists $tweet_ref->{"created_at"} ){
                     my $created_at = $tweet_ref->{"created_at"};
@@ -108,101 +111,118 @@ while(1){
                     $tweet_date .= "$jst_date\n";
                 }
 
+                # 本文取得
                 my $tweet_text = "";
                 if( exists $tweet_ref->{"text"} ){
                     my $text = $tweet_ref->{"text"};
                     # print $text . "\n";
-                    #$tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
                     $tweet_text = $text ."\n";
-                    # print $tweet_text;
+                }
 
-                    # 添付ファイルURL取得
-                    # print "exists extended_entities\n";
-                    if( exists $tweet_ref->{"extended_entities"} ){
-                        # print "exists media\n";
-                        my $extended = $tweet_ref->{"extended_entities"};
-                        if( exists $extended->{"media"} ){
-                            my $media = $extended->{"media"};
-                            for(my $k=0; $k<@{$media}; $k++){
-                                my $mediaInfo = \%{ $media->[$k] };
-                                if( exists $mediaInfo->{"media_url_https"}){
-                                    my $media_url = $mediaInfo->{"media_url_https"};
-                                    $tweet_text = $tweet_text . $media_url . "\n";
-                                }
+                # 添付ファイルURL取得
+                # print "exists extended_entities\n";
+                my $extended_text = "";
+                if( exists $tweet_ref->{"extended_entities"} ){
+                    # print "exists media\n";
+                    my $extended = $tweet_ref->{"extended_entities"};
+                    if( exists $extended->{"media"} ){
+                        my $media = $extended->{"media"};
+                        for(my $k=0; $k<@{$media}; $k++){
+                            my $mediaInfo = \%{ $media->[$k] };
+                            if( exists $mediaInfo->{"media_url_https"}){
+                                my $media_url = $mediaInfo->{"media_url_https"};
+                                $extended_text = $extended_text . $media_url . "\n";
                             }
                         }
                     }
-                    # 引用元取得
-                    if( exists $tweet_ref->{"quoted_status"} ){
-                        my $quoted = $tweet_ref->{"quoted_status"};
-                        if( exists $quoted->{"text"} ){
-                            if( exists $quoted->{"created_at"} ){
-                                my $quoted_date = $quoted->{"created_at"};
-                                my $quoted_date_jst="";
-                                convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
-                                my $quoted_text = $quoted->{"text"};
-                                $tweet_text =  $tweet_text . "> " . $quoted_date_jst . "\n";
+                }
 
-                                my @strArray = split(/\n/, $quoted_text);
-                                for(my $k=0; $k<@strArray; $k++){
-                                    $tweet_text =  $tweet_text . "> ". $strArray[$k] . "\n";
-                                }
+                # 引用元取得
+                if( exists $tweet_ref->{"quoted_status"} ){
+                    my $quoted = $tweet_ref->{"quoted_status"};
+                    if( exists $quoted->{"text"} ){
+                        if( exists $quoted->{"created_at"} ){
+                            my $quoted_date = $quoted->{"created_at"};
+                            my $quoted_date_jst="";
+                            convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
+                            my $quoted_text = $quoted->{"text"};
+                            $tweet_text =  $tweet_text . "> " . $quoted_date_jst . "\n";
+                            my @strArray = split(/\n/, $quoted_text);
+                            for(my $k=0; $k<@strArray; $k++){
+                                $tweet_text =  $tweet_text . "> ". $strArray[$k] . "\n";
                             }
                         }
                     }
+                }
 
-                    # RT元取得
-                    my $rt_text = "";
-                    my $rt_quoted = "";
-                    if( exists $tweet_ref->{"retweeted_status"} ){
-                        my $retweeted = $tweet_ref->{"retweeted_status"};
-                        if( exists $retweeted->{"text"} ){
-                            if( exists $retweeted->{"created_at"} ){
-                                my $retweeted_date = $retweeted->{"created_at"};
-                                my $retweeted_date_jst="";
-                                convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
-                                my $retweeted_text = $retweeted->{"text"};
-                                $rt_text =  $rt_text . $retweeted_date_jst . "\n";
-                                $rt_text =  $rt_text . $retweeted_text . "\n";
-                                # RT引用元取得
-                                if( exists $retweeted->{"quoted_status"} ){
-                                    my $quoted = $retweeted->{"quoted_status"};
-                                    if( exists $quoted->{"text"} ){
-                                        if( exists $quoted->{"created_at"} ){
-                                            my $quoted_date = $quoted->{"created_at"};
-                                            my $quoted_date_jst="";
-                                            convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
-                                            my $quoted_text = $quoted->{"text"};
-                                            $rt_quoted =  $rt_quoted . "> " . $quoted_date_jst . "\n";
+                # RT元取得
+                my $rt_text = "";
+                my $rt_quoted = "";
+                my $rt_extended = "";
+                if( exists $tweet_ref->{"retweeted_status"} ){
+                    my $retweeted = $tweet_ref->{"retweeted_status"};
+                    if( exists $retweeted->{"text"} ){
+                        if( exists $retweeted->{"created_at"} ){
+                            my $retweeted_date = $retweeted->{"created_at"};
+                            my $retweeted_date_jst="";
+                            convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
+                            my $retweeted_text = $retweeted->{"text"};
+                            $rt_text =  $rt_text . $retweeted_date_jst . "\n";
+                            $rt_text =  $rt_text . $retweeted_text . "\n";
 
-                                            my @strArray = split(/\n/, $quoted_text);
-                                            for(my $k=0; $k<@strArray; $k++){
-                                                $rt_quoted =  $rt_quoted . "> ". $strArray[$k] . "\n";
-                                            }
+                            # RT引用元取得
+                            if( exists $retweeted->{"quoted_status"} ){
+                                my $quoted = $retweeted->{"quoted_status"};
+                                if( exists $quoted->{"text"} ){
+                                    if( exists $quoted->{"created_at"} ){
+                                        my $quoted_date = $quoted->{"created_at"};
+                                        my $quoted_date_jst="";
+                                        convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
+                                        my $quoted_text = $quoted->{"text"};
+                                        $rt_quoted =  $rt_quoted . "> " . $quoted_date_jst . "\n";
+
+                                        my @strArray = split(/\n/, $quoted_text);
+                                        for(my $k=0; $k<@strArray; $k++){
+                                            $rt_quoted =  $rt_quoted . "> ". $strArray[$k] . "\n";
+                                        }
+                                    }
+                                }
+                            }
+
+                            # 添付ファイルURL取得
+                            if( exists $retweeted->{"extended_entities"} ){
+                                my $extended = $retweeted->{"extended_entities"};
+                                if( exists $extended->{"media"} ){
+                                    my $media = $extended->{"media"};
+                                    for(my $k=0; $k<@{$media}; $k++){
+                                        my $mediaInfo = \%{ $media->[$k] };
+                                        if( exists $mediaInfo->{"media_url_https"}){
+                                            my $media_url = $mediaInfo->{"media_url_https"};
+                                            $rt_extended = $rt_extended . $media_url . "\n";
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
-                    my $post_text = "";
-                    if($rt_quoted eq ""){
-                        "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n";
-                    }else{
-                        "```\n" . $tweet_link . $rt_text . $rt_quoted . "```\n";
-                    }
-                    
-                    my $req = POST ($host,
-                        'Content' => [
-                            token => $token,
-                            channel => $channel,
-                            username => $keys_BCH[$i],
-                            icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
-                            text => $post_text
-                        ]);
-                    my $res = Furl->new->request($req);
                 }
+
+                my $post_text = "";
+                if($rt_quoted eq ""){
+                    $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n" . $extended_text;
+                }else{
+                    $post_text = "```\n" . $tweet_link . $rt_text . $rt_quoted . "```\n" . $rt_extended;
+                }
+                
+                my $req = POST ($host,
+                    'Content' => [
+                        token => $token,
+                        channel => $channel,
+                        username => $keys_BCH[$i],
+                        icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
+                        text => $post_text
+                    ]);
+                my $res = Furl->new->request($req);
 
                 $vipBCH->{$keys_BCH[$i]}->{"since_id"} = int($id);
                 if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
