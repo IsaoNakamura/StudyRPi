@@ -141,7 +141,7 @@ while(1){
                                 my $quoted_date_jst="";
                                 convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
                                 my $quoted_text = $quoted->{"text"};
-                                $tweet_text =  $tweet_text . ">" . $quoted_date_jst . "\n";
+                                $tweet_text =  $tweet_text . "> " . $quoted_date_jst . "\n";
 
                                 my @strArray = split(/\n/, $quoted_text);
                                 for(my $k=0; $k<@strArray; $k++){
@@ -152,23 +152,47 @@ while(1){
                     }
 
                     # RT元取得
-                    #if( exists $tweet_ref->{"retweeted_status"} ){
-                    #    my $retweeted = $tweet_ref->{"retweeted_status"};
-                    #    if( exists $retweeted->{"text"} ){
-                    #        if( exists $retweeted->{"created_at"} ){
-                    #            my $retweeted_date = $retweeted->{"created_at"};
-                    #            my $retweeted_date_jst="";
-                    #            convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
-                    #            my $retweeted_text = $retweeted->{"text"};
-                    #            $tweet_text =  $tweet_text . ">";
-                    #            $tweet_text =  $tweet_text . $retweeted_date_jst . "\n";
-                    #            $tweet_text =  $tweet_text . ">";
-                    #            $tweet_text =  $tweet_text . $retweeted_text . "\n";
-                    #        }
-                    #    }
-                    #}
+                    my $rt_text = "";
+                    my $rt_quoted = "";
+                    if( exists $tweet_ref->{"retweeted_status"} ){
+                        my $retweeted = $tweet_ref->{"retweeted_status"};
+                        if( exists $retweeted->{"text"} ){
+                            if( exists $retweeted->{"created_at"} ){
+                                my $retweeted_date = $retweeted->{"created_at"};
+                                my $retweeted_date_jst="";
+                                convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
+                                my $retweeted_text = $retweeted->{"text"};
+                                $rt_text =  $rt_text . $retweeted_date_jst . "\n";
+                                $rt_text =  $rt_text . $retweeted_text . "\n";
+                                # RT引用元取得
+                                if( exists $retweeted->{"quoted_status"} ){
+                                    my $quoted = $retweeted->{"quoted_status"};
+                                    if( exists $quoted->{"text"} ){
+                                        if( exists $quoted->{"created_at"} ){
+                                            my $quoted_date = $quoted->{"created_at"};
+                                            my $quoted_date_jst="";
+                                            convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
+                                            my $quoted_text = $quoted->{"text"};
+                                            $rt_quoted =  $rt_quoted . "> " . $quoted_date_jst . "\n";
 
-                    my $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n";
+                                            my @strArray = split(/\n/, $quoted_text);
+                                            for(my $k=0; $k<@strArray; $k++){
+                                                $rt_quoted =  $rt_quoted . "> ". $strArray[$k] . "\n";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    my $post_text = "";
+                    if($rt_quoted eq ""){
+                        "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n";
+                    }else{
+                        "```\n" . $tweet_link . $rt_text . $rt_quoted . "```\n";
+                    }
+                    
                     my $req = POST ($host,
                         'Content' => [
                             token => $token,
