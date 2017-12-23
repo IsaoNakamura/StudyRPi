@@ -97,22 +97,23 @@ while(1){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
                 my $id = $tweet_ref->{"id"};
                 #my $tweet_text = "```" . "https://twitter.com/$keys_BCH[$i]/status/$id" . "```" . "\n";
-                my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
-
+                my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
+                my $tweet_date = "";
                 if( exists $tweet_ref->{"created_at"} ){
                     my $created_at = $tweet_ref->{"created_at"};
                     # 終了時間をGMTからJSTに変換して現時間との差を計算する。
                     my $jst_date="";
                     convertTimeTZtoJST(\$jst_date, $created_at);
                     # convertTimeGMTtoJST(\$jst, $created_at);
-                    $tweet_text .= "$jst_date\n";
+                    $tweet_date .= "$jst_date\n";
                 }
 
+                my $tweet_text = "";
                 if( exists $tweet_ref->{"text"} ){
                     my $text = $tweet_ref->{"text"};
                     # print $text . "\n";
                     #$tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
-                    $tweet_text =  $tweet_text . $text ."\n";
+                    $tweet_text = $text ."\n";
                     # print $tweet_text;
 
                     # 添付ファイルURL取得
@@ -140,13 +141,11 @@ while(1){
                                 my $quoted_date_jst="";
                                 convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
                                 my $quoted_text = $quoted->{"text"};
-                                $tweet_text =  $tweet_text . ">";
-                                $tweet_text =  $tweet_text . $quoted_date_jst . "\n";
+                                $tweet_text =  $tweet_text . ">" . $quoted_date_jst . "\n";
 
                                 my @strArray = split(/\n/, $quoted_text);
                                 for(my $k=0; $k<@strArray; $k++){
-                                    $tweet_text =  $tweet_text . ">";
-                                    $tweet_text =  $tweet_text . $strArray[$k] . "\n";
+                                    $tweet_text =  $tweet_text . ">". $strArray[$k] . "\n";
                                 }
                             }
                         }
@@ -169,7 +168,8 @@ while(1){
                     #    }
                     #}
 
-                    $tweet_text = "```\n" + $tweet_text . "```\n";
+                    $tweet_text = "```\n" . $tweet_text . "```\n";
+                    my $post_text = $tweet_link . $tweet_date . $tweet_text;
 
                     my $req = POST ($host,
                         'Content' => [
@@ -177,7 +177,7 @@ while(1){
                             channel => $channel,
                             username => $keys_BCH[$i],
                             icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
-                            text => $tweet_text
+                            text => $post_text
                         ]);
                     my $res = Furl->new->request($req);
                 }
