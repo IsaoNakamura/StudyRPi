@@ -96,7 +96,8 @@ while(1){
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
                 my $id = $tweet_ref->{"id"};
-                my $tweet_text = "```" . "https://twitter.com/$keys_BCH[$i]/status/$id" . "```" . "\n";
+                #my $tweet_text = "```" . "https://twitter.com/$keys_BCH[$i]/status/$id" . "```" . "\n";
+                my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
 
                 if( exists $tweet_ref->{"created_at"} ){
                     my $created_at = $tweet_ref->{"created_at"};
@@ -139,36 +140,41 @@ while(1){
                                 my $quoted_date_jst="";
                                 convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
                                 my $quoted_text = $quoted->{"text"};
-                                $tweet_text =  $tweet_text . "```";
+                                $tweet_text =  $tweet_text . ">";
                                 $tweet_text =  $tweet_text . $quoted_date_jst . "\n";
-                                $tweet_text =  $tweet_text . $quoted_text . "\n";
-                                $tweet_text =  $tweet_text . "```" . "\n";
+
+                                my @strArray = split(/\n/, $quoted_text);
+                                for(my $k=0; $k<@strArray; $k++){
+                                    $tweet_text =  $tweet_text . ">";
+                                    $tweet_text =  $tweet_text . $strArray[$k] . "\n";
+                                }
                             }
                         }
                     }
 
                     # RT元取得
-                    if( exists $tweet_ref->{"retweeted_status"} ){
-                        my $retweeted = $tweet_ref->{"retweeted_status"};
-                        if( exists $retweeted->{"text"} ){
-                            if( exists $retweeted->{"created_at"} ){
-                                my $retweeted_date = $retweeted->{"created_at"};
-                                my $retweeted_date_jst="";
-                                convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
-                                my $retweeted_text = $retweeted->{"text"};
-                                $tweet_text =  $tweet_text . "```";
-                                $tweet_text =  $tweet_text . $retweeted_date_jst . "\n";
-                                $tweet_text =  $tweet_text . $retweeted_text . "\n";
-                                $tweet_text =  $tweet_text . "```" . "\n";
-                            }
-                        }
-                    }
+                    #if( exists $tweet_ref->{"retweeted_status"} ){
+                    #    my $retweeted = $tweet_ref->{"retweeted_status"};
+                    #    if( exists $retweeted->{"text"} ){
+                    #        if( exists $retweeted->{"created_at"} ){
+                    #            my $retweeted_date = $retweeted->{"created_at"};
+                    #            my $retweeted_date_jst="";
+                    #            convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
+                    #            my $retweeted_text = $retweeted->{"text"};
+                    #            $tweet_text =  $tweet_text . ">";
+                    #            $tweet_text =  $tweet_text . $retweeted_date_jst . "\n";
+                    #            $tweet_text =  $tweet_text . ">";
+                    #            $tweet_text =  $tweet_text . $retweeted_text . "\n";
+                    #        }
+                    #    }
+                    #}
+
+                    $tweet_text = "```\n" + $tweet_text . "```\n";
 
                     my $req = POST ($host,
                         'Content' => [
                             token => $token,
                             channel => $channel,
-                            # icon_url => $tweet_ref->{"user"}->{"profile_image_url_https"},
                             username => $keys_BCH[$i],
                             icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
                             text => $tweet_text
