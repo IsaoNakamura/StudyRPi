@@ -145,7 +145,7 @@ while(1){
 
                                 my @strArray = split(/\n/, $quoted_text);
                                 for(my $k=0; $k<@strArray; $k++){
-                                    $tweet_text =  $tweet_text . ">". $strArray[$k] . "\n";
+                                    $tweet_text =  $tweet_text . "> ". $strArray[$k] . "\n";
                                 }
                             }
                         }
