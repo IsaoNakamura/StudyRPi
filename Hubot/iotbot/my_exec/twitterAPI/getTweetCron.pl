@@ -168,9 +168,7 @@ while(1){
                     #    }
                     #}
 
-                    $tweet_text = "```\n" . $tweet_text . "```\n";
-                    my $post_text = $tweet_link . $tweet_date . $tweet_text;
-
+                    my $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n";
                     my $req = POST ($host,
                         'Content' => [
                             token => $token,
