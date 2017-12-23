@@ -96,7 +96,7 @@ while(1){
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
                 my $id = $tweet_ref->{"id"};
-                my $tweet_text = "https://twitter.com/$keys_BCH[$i]/status/$id\n";
+                my $tweet_text = "```" . "https://twitter.com/$keys_BCH[$i]/status/$id" . "```" . "\n";
 
                 if( exists $tweet_ref->{"created_at"} ){
                     my $created_at = $tweet_ref->{"created_at"};
