@@ -110,8 +110,8 @@ while(1){
                 if( exists $tweet_ref->{"text"} ){
                     my $text = $tweet_ref->{"text"};
                     # print $text . "\n";
-                    $tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
-                    #$tweet_text =  $tweet_text . $text ."\n";
+                    #$tweet_text =  "```" . $tweet_text . $text . "```" ."\n";
+                    $tweet_text =  $tweet_text . $text ."\n";
                     # print $tweet_text;
 
                     # 添付ファイルURL取得
@@ -127,6 +127,22 @@ while(1){
                                     my $media_url = $mediaInfo->{"media_url_https"};
                                     $tweet_text = $tweet_text . $media_url . "\n";
                                 }
+                            }
+                        }
+                    }
+                    # 引用元取得
+                    if( exists $tweet_ref->{"quoted_status"} ){
+                        my $quoted = $tweet_ref->{"quoted_status"};
+                        if( exists $quoted->{"text"} ){
+                            if( exists $quoted->{"created_at"} ){
+                                my $quoted_date = $quoted->{"created_at"};
+                                my $quoted_date_jst="";
+                                convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
+                                my $quoted_text = $quoted->{"text"};
+                                $tweet_text =  $tweet_text . "```";
+                                $tweet_text =  $tweet_text . $quoted_date_jst . "\n";
+                                $tweet_text =  $tweet_text . $quoted_text . "\n";
+                                $tweet_text =  $tweet_text . "```" . "\n";
                             }
                         }
                     }
