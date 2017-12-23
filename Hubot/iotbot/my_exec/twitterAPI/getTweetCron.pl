@@ -147,6 +147,23 @@ while(1){
                         }
                     }
 
+                    # RT元取得
+                    if( exists $tweet_ref->{"retweeted_status"} ){
+                        my $retweeted = $tweet_ref->{"retweeted_status"};
+                        if( exists $retweeted->{"text"} ){
+                            if( exists $retweeted->{"created_at"} ){
+                                my $retweeted_date = $quoted->{"created_at"};
+                                my $retweeted_date_jst="";
+                                convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
+                                my $retweeted_text = $retweeted->{"text"};
+                                $tweet_text =  $tweet_text . "```";
+                                $tweet_text =  $tweet_text . $retweeted_date_jst . "\n";
+                                $tweet_text =  $tweet_text . $retweeted_text . "\n";
+                                $tweet_text =  $tweet_text . "```" . "\n";
+                            }
+                        }
+                    }
+
                     my $req = POST ($host,
                         'Content' => [
                             token => $token,
