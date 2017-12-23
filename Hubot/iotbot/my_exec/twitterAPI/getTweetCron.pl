@@ -152,7 +152,7 @@ while(1){
                         my $retweeted = $tweet_ref->{"retweeted_status"};
                         if( exists $retweeted->{"text"} ){
                             if( exists $retweeted->{"created_at"} ){
-                                my $retweeted_date = $quoted->{"created_at"};
+                                my $retweeted_date = $retweeted->{"created_at"};
                                 my $retweeted_date_jst="";
                                 convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
                                 my $retweeted_text = $retweeted->{"text"};
