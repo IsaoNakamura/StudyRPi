@@ -89,15 +89,18 @@ while(1){
                                         trim_user => "true",                                        # 0:ユーザ情報を含む
                                         include_entities => "false",                                # 0:entities情報が含まれない
                                         contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
-                                        page => 1,
+                                        page => 0,
                                     }
                                 );
-
+            my $next_since_id = 0;
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
                 
                 # Link取得
                 my $id = $tweet_ref->{"id"};
+                if($next_since_id < $id ){
+                    $next_since_id = $id;
+                }
                 my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
 
                 # 日付取得
@@ -223,12 +226,6 @@ while(1){
                         text => $post_text
                     ]);
                 my $res = Furl->new->request($req);
-
-                $vipBCH->{$keys_BCH[$i]}->{"since_id"} = int($id);
-                if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
-                    print "FileWriteError. vipBCH.\n";
-                    next;
-                }
                 
                 if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
                     print "FileWriteError. $keys_BCH[$i].\n";
@@ -236,6 +233,13 @@ while(1){
                 }
 
                 sleep(3);
+            }
+            if($next_since_id>0){
+                $vipBCH->{$keys_BCH[$i]}->{"since_id"} = $next_since_id;
+                if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
+                    print "FileWriteError. vipBCH.\n";
+                    next;
+                }
             }
         }
     };
