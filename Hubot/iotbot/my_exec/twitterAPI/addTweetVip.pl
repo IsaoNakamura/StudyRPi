@@ -87,28 +87,28 @@ for(my $i=0;$i<@{$res_users};$i++){
 }
 
 my $vipBCH;
-if(addUserJson(\$vipBCH, $filePath, $name, $include_rts, $since_id, $imgURL)!=0){
-    print "addUserError. vipBCH.\n";
+#if(addUserJson(\$vipBCH, $filePath, $name, $include_rts, $since_id, $imgURL)!=0){
+#    print "addUserError. vipBCH.\n";
+#    exit -1;
+#}
+
+if(readJson(\$vipBCH, $filePath)!=0){
+    print "FileReadError. vipBCH.\n";
     exit -1;
 }
 
-#if(readJson(\$vipBCH, $filePath)!=0){
-#    print "FileReadError. vipBCH.\n";
-#    exit -1;
-#}
+$vipBCH->{$name}->{"include_rts"} = $include_rts;
+if(int($since_id)!=0){
+    $vipBCH->{$name}->{"since_id"} = int($since_id);
+}
+if($imgURL ne ""){
+    $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
+}
 
-#$vipBCH->{$name}->{"include_rts"} = $include_rts;
-#if(int($since_id)!=0){
-#    $vipBCH->{$name}->{"since_id"} = int($since_id);
-#}
-#if($imgURL ne ""){
-#    $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
-#}
-
-#if(writeJson(\$vipBCH, $filePath, ">")!=0){
-#    print "FileWriteError. vipBCH.\n";
-#    exit -1;
-#}
+if(writeJson(\$vipBCH, $filePath, ">")!=0){
+    print "FileWriteError. vipBCH.\n";
+    exit -1;
+}
 
 exit 0;
 
