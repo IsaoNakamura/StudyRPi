@@ -86,7 +86,8 @@ for(my $i=0;$i<@{$res_users};$i++){
     }
 }
 
-my $vipBCH = {};
+my $vipBCH;
+my %{$vipBCH;} = {};
 
 open( INOUT, '+>', $filePath) || exit(-1);
 local $/ = undef;
