@@ -48,6 +48,24 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /vipadd (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
+      command = "#{path}addTweetVip.pl"
+      filePath = "#{path}vipBCH.json"
+      param = arg if arg?
+      # name include_rts since_id $imgURL
+      command = "#{command} #{filePath} #{param}"
+      msg.send "exec addTweetVip()"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /btcstart (.*)|btcstart/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]
