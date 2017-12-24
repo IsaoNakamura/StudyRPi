@@ -37,11 +37,23 @@ use HTTP::Request::Common;
 
 use DateTime::Format::HTTP;
 
-my $host = shift;
-my $token = shift;
-my $channel = shift;
-my $cycle_sec = shift;
-my $stopCode = shift;
+#my $host = shift;
+#my $token = shift;
+#my $channel = shift;
+#my $cycle_sec = shift;
+#my $stopCode = shift;
+
+my $authSlack;
+if(readJson(\$authSlack, "./my_exec/twitterAPI/AuthSlack.json")!=0){
+    print "FileReadError. authTwitter.\n";
+    exit -1;
+}
+
+my $host = $authSlack->{"host"};
+my $token = $authSlack->{"token"};
+my $channel = $authSlack->{"channel"};
+my $cycle_sec = 60;
+my $stopCode = "./DEST/StopCode.txt";
 
 if(-e $stopCode){
     unlink $stopCode;
@@ -73,7 +85,7 @@ while(1){
         my @keys_BCH = keys %{$vipBCH};
 
         for(my $i=0; $i<@keys_BCH; $i++){
-            # print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            print "keys_BCH[$i]:$keys_BCH[$i]\n";
             #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
             #if($keys_BCH[$i] ne "hoge"){
             #    next;
@@ -219,6 +231,7 @@ while(1){
                     getHttpStrArray(\@array, $tweet_text, 0);
                     for(my $k=0;$k<@array;$k++){
                         $post_text = $post_text . $array[$k] . "\n";
+                        print $array[$k] . "\n";
                     }
                 }else{
                     $post_text = $rt_date . "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
@@ -226,6 +239,7 @@ while(1){
                     getHttpStrArray(\@array, $rt_text, 0);
                     for(my $k=0;$k<@array;$k++){
                         $post_text = $post_text . $array[$k] . "\n";
+                        print $array[$k] . "\n";
                     }
                 }
                 
@@ -247,11 +261,12 @@ while(1){
                 sleep(3);
             }
             if($next_since_id>0){
+                print "since_id=$next_since_id\n";
                 $vipBCH->{$keys_BCH[$i]}->{"since_id"} = $next_since_id;
-                if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
-                    print "FileWriteError. vipBCH.\n";
-                    next;
-                }
+                #if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
+                #    print "FileWriteError. vipBCH.\n";
+                #    next;
+                #}
             }
         }
     };
