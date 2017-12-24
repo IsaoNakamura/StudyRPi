@@ -44,7 +44,7 @@ use DateTime::Format::HTTP;
 #my $stopCode = shift;
 
 my $authSlack;
-if(readJson(\$authSlack, "./my_exec/twitterAPI/AuthSlack.json")!=0){
+if(readJson(\$authSlack, "./AuthSlack.json")!=0){
     print "FileReadError. authTwitter.\n";
     exit -1;
 }
