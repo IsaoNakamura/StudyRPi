@@ -120,20 +120,6 @@ while(1){
                     my $text = $tweet_ref->{"text"};
                     # print $text . "\n";
                     $tweet_text = $text ."\n";
-                    
-                    # http抜き出し
-                    my $beg_pos = index($text, "http");
-                    if($beg_pos != -1){
-                        my $end_pos = index($text, "\s");
-                        if($end_pos==-1){
-                            $end_pos = index($text, "　");
-                            if($end_pos==-1){
-                                $end_pos = index($text, "\n");
-                            }
-                        }
-                        if($end_pos != -1){
-                        }
-                    }
                 }
 
                 # 添付ファイルURL取得
