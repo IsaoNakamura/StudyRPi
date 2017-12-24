@@ -90,6 +90,7 @@ my $vipBCH;
 %{$vipBCH} = {};
 
 open( OUT, '+>', $filePath) || exit(-1);
+binmode(OUT, ":utf8");
 local $/ = undef;
 my $json_text = <OUT>;
 
@@ -103,7 +104,7 @@ if($imgURL ne ""){
     $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
 }
 
-binmode(OUT, ":utf8");
+
 print OUT to_json($vipBCH, {pretty=>1});
 
 close(OUT);
