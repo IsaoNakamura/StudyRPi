@@ -141,6 +141,7 @@ while(1){
                 }
 
                 # 引用元取得
+                my $quoted_text = "";
                 if( exists $tweet_ref->{"quoted_status"} ){
                     my $quoted = $tweet_ref->{"quoted_status"};
                     if( exists $quoted->{"text"} ){
@@ -148,11 +149,11 @@ while(1){
                             my $quoted_date = $quoted->{"created_at"};
                             my $quoted_date_jst="";
                             convertTimeTZtoJST(\$quoted_date_jst, $quoted_date);
-                            my $quoted_text = $quoted->{"text"};
-                            $tweet_text =  $tweet_text . "> " . $quoted_date_jst . "\n";
-                            my @strArray = split(/\n/, $quoted_text);
+                            $quoted_text =  $quoted_text . "> " . $quoted_date_jst . "\n";
+                            my $text = $quoted->{"text"};
+                            my @strArray = split(/\n/, $text);
                             for(my $k=0; $k<@strArray; $k++){
-                                $tweet_text =  $tweet_text . "> ". $strArray[$k] . "\n";
+                                $quoted_text =  $quoted_text . "> ". $strArray[$k] . "\n";
                             }
                         }
                     }
@@ -212,9 +213,9 @@ while(1){
 
                 my $post_text = "";
                 if($rt_quoted eq ""){
-                    $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n" . $extended_text;
+                    $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n" . $quoted_text . $extended_text;
                 }else{
-                    $post_text = "```\n" . $tweet_link . $rt_text . $rt_quoted . "```\n" . $rt_extended;
+                    $post_text = "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
                 }
                 
                 my $req = POST ($host,
