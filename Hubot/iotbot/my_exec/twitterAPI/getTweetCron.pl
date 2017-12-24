@@ -107,6 +107,8 @@ while(1){
                                         page => 0,
                                     }
                                 );
+            my $timeline_num = @{$res_timeline};
+            print "timeline_num=$timeline_num\n";
             my $next_since_id = 0;
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
@@ -117,6 +119,7 @@ while(1){
                     $next_since_id = $id;
                 }
                 my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
+                print $tweet_link;
 
                 # 日付取得
                 my $tweet_date = "";
