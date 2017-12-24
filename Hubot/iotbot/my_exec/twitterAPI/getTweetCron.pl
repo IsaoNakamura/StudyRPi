@@ -37,26 +37,25 @@ use HTTP::Request::Common;
 
 use DateTime::Format::HTTP;
 
-#my $host = shift;
-#my $token = shift;
-#my $channel = shift;
-#my $cycle_sec = shift;
-#my $stopCode = shift;
+my $host = shift;
+my $token = shift;
+my $channel = shift;
+my $cycle_sec = shift;
+my $stopCode = shift;
 
-#my $env_path="./my_exec/twitterAPI";
-my $env_path=".";
+my $env_path="./my_exec/twitterAPI";
+#my $env_path=".";
 
-my $authSlack;
-if(readJson(\$authSlack, "$env_path/AuthSlack.json")!=0){
-    print "FileReadError. authTwitter.\n";
-    exit -1;
-}
-
-my $host = $authSlack->{"host"};
-my $token = $authSlack->{"token"};
-my $channel = $authSlack->{"channel"};
-my $cycle_sec = 60;
-my $stopCode = "$env_path/DEST/StopCode.txt";
+#my $authSlack;
+#if(readJson(\$authSlack, "$env_path/AuthSlack.json")!=0){
+#    print "FileReadError. authTwitter.\n";
+#    exit -1;
+#}
+#my $host = $authSlack->{"host"};
+#my $token = $authSlack->{"token"};
+#my $channel = $authSlack->{"channel"};
+#my $cycle_sec = 60;
+#my $stopCode = "$env_path/DEST/StopCode.txt";
 
 if(-e $stopCode){
     unlink $stopCode;
@@ -88,7 +87,7 @@ while(1){
         my @keys_BCH = keys %{$vipBCH};
 
         for(my $i=0; $i<@keys_BCH; $i++){
-            print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            #print "keys_BCH[$i]:$keys_BCH[$i]\n";
             #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
             #if($keys_BCH[$i] ne "hoge"){
             #    next;
@@ -108,7 +107,7 @@ while(1){
                                     }
                                 );
             my $timeline_num = @{$res_timeline};
-            print "timeline_num=$timeline_num\n";
+            #print "timeline_num=$timeline_num\n";
             my $next_since_id = 0;
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
@@ -119,7 +118,7 @@ while(1){
                     $next_since_id = $id;
                 }
                 my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
-                print $tweet_link;
+                #print $tweet_link;
 
                 # 日付取得
                 my $tweet_date = "";
@@ -237,7 +236,7 @@ while(1){
                     getHttpStrArray(\@array, $tweet_text, 0);
                     for(my $k=0;$k<@array;$k++){
                         $post_text = $post_text . $array[$k] . "\n";
-                        print $array[$k] . "\n";
+                        #print $array[$k] . "\n";
                     }
                 }else{
                     $post_text = $rt_date . "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
@@ -245,7 +244,7 @@ while(1){
                     getHttpStrArray(\@array, $rt_text, 0);
                     for(my $k=0;$k<@array;$k++){
                         $post_text = $post_text . $array[$k] . "\n";
-                        print $array[$k] . "\n";
+                        #print $array[$k] . "\n";
                     }
                 }
                 
@@ -267,12 +266,12 @@ while(1){
                 sleep(3);
             }
             if($next_since_id>0){
-                print "since_id=$next_since_id\n";
+                #print "since_id=$next_since_id\n";
                 $vipBCH->{$keys_BCH[$i]}->{"since_id"} = $next_since_id;
-                #if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
-                #    print "FileWriteError. vipBCH.\n";
-                #    next;
-                #}
+                if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
+                    print "FileWriteError. vipBCH.\n";
+                    next;
+                }
             }
         }
     };
