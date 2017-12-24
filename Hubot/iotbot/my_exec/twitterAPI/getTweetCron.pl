@@ -103,7 +103,7 @@ while(1){
                                         trim_user => "true",                                        # 0:ユーザ情報を含む
                                         include_entities => "false",                                # 0:entities情報が含まれない
                                         contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
-                                        page => 0,
+                                        page => 1,
                                     }
                                 );
             my $timeline_num = @{$res_timeline};
