@@ -123,7 +123,7 @@ sub addUserJson {
        # save to Json.
        # utf8::encode($$hash_ref);
 
-       open (OUT, '+>', $filePath) || return(1);
+       open (OUT, '+>>', $filePath) || return(1);
        binmode(OUT, ":utf8");
        eval{
             local $/ = undef;
