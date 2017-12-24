@@ -260,7 +260,7 @@ while(1){
                 my $res = Furl->new->request($req);
                 
                 if(writeJson(\$tweet_ref, "$env_path/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
-                    print "FileWriteError. $keys_BCH[$i].\n";
+                    print "FileWriteError. " . "$env_path/DEST/$keys_BCH[$i]_tweet.json" ."\n";
                     next;
                 }
 
