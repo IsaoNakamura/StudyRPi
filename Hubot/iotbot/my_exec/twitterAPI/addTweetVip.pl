@@ -33,12 +33,13 @@ use DateTime::Format::HTTP;
 
 #my $filePath = shift;
 my $name = shift;
+my $include_rts = shift;#"true";
 
 #my $env_path="./my_exec/twitterAPI";
 my $env_path=".";
 
 my $filePath = "$env_path/vipBCH_test.json";
-my $include_rts = "true";
+
 my $since_id = 0;
 my $imgURL = "";
 
