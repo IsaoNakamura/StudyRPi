@@ -33,18 +33,14 @@ use DateTime::Format::HTTP;
 
 #my $filePath = shift;
 my $name = shift;
-#my $include_rts = shift;
-#my $since_id = shift;
-#my $imgURL = shift;
 
 #my $env_path="./my_exec/twitterAPI";
 my $env_path=".";
 
-my $filePath = "$env_path/vipBCH.json";
-#my $name = "test";
+my $filePath = "$env_path/vipBCH_test.json";
 my $include_rts = "true";
-my $since_id = int(943856201367937024);
-my $imgURL = "http://pbs.twimg.com/profile_images/935656084420796416/EbPqNQ11_normal.jpg";
+my $since_id = 0;
+my $imgURL = "";
 
 my $authTwitter;
 if(readJson(\$authTwitter, "$env_path/AuthTwitter.json")!=0){
@@ -72,7 +68,23 @@ if(writeJson(\$res_users, $name_users, ">")!=0){
     print "FileWriteError. $name_users.\n";
 }
 
-exit 0;
+for(my $i=0;$i<@{$res_users};$i++){
+    my $user_ref = $res_users->[$i];
+    if(!exists $user_ref->{"profile_image_url_https"}){
+        next;
+    }
+    if($name ne $user_ref->{"screen_name"}){
+        next;
+    }
+    if(exists $user_ref->{"profile_image_url_https"}){
+        $imgURL = $user_ref->{"profile_image_url_https"};
+    }
+    if(exists $user_ref->{"status"}){
+        if(exists $user_ref->{"status"}->{"id"}){
+            $since_id = $user_ref->{"status"}->{"id"};
+        }
+    }
+}
 
 my $vipBCH = {};
 
@@ -83,8 +95,12 @@ my $json_text = <INOUT>;
 $vipBCH = decode_json($json_text );
 
 $vipBCH->{$name}->{"include_rts"} = $include_rts;
-$vipBCH->{$name}->{"since_id"} = int($since_id);
-$vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
+if(int($since_id)!=0){
+    $vipBCH->{$name}->{"since_id"} = int($since_id);
+}
+if($imgURL ne ""){
+    $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
+}
 
 binmode(INOUT, ":utf8");
 print INOUT to_json($vipBCH, {pretty=>1});
