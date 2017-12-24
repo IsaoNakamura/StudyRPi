@@ -111,7 +111,7 @@ while(1){
                     my $jst_date="";
                     convertTimeTZtoJST(\$jst_date, $created_at);
                     # convertTimeGMTtoJST(\$jst, $created_at);
-                    $tweet_date .= "$jst_date\n";
+                    $tweet_date = "*" . "$jst_date" ."*" . "\n";
                 }
 
                 # 本文取得
@@ -161,6 +161,7 @@ while(1){
 
                 # RT元取得
                 my $rt_text = "";
+                my $rt_date = "";
                 my $rt_quoted = "";
                 my $rt_extended = "";
                 if( exists $tweet_ref->{"retweeted_status"} ){
@@ -170,8 +171,8 @@ while(1){
                             my $retweeted_date = $retweeted->{"created_at"};
                             my $retweeted_date_jst="";
                             convertTimeTZtoJST(\$retweeted_date_jst, $retweeted_date);
+                            $rt_date =  "*" . $retweeted_date_jst . "*" . "\n";
                             my $retweeted_text = $retweeted->{"text"};
-                            $rt_text =  $rt_text . $retweeted_date_jst . "\n";
                             $rt_text =  $rt_text . $retweeted_text . "\n";
 
                             # RT引用元取得
@@ -213,9 +214,9 @@ while(1){
 
                 my $post_text = "";
                 if($rt_quoted eq ""){
-                    $post_text = "```\n" . $tweet_link . $tweet_date . $tweet_text . "```\n" . $quoted_text . $extended_text;
+                    $post_text = $tweet_date . "```\n" . $tweet_link . $tweet_text . "```\n" . $quoted_text . $extended_text;
                 }else{
-                    $post_text = "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
+                    $post_text = $rt_date . "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
                 }
                 
                 my $req = POST ($host,
