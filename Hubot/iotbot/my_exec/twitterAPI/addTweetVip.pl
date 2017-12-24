@@ -33,7 +33,7 @@ use DateTime::Format::HTTP;
 
 my $filePath = shift;
 my $name = shift;
-my $include_rts = shift;#"true";
+my $include_rts = "true";
 
 my $env_path="./my_exec/twitterAPI";
 #my $env_path=".";
