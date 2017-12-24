@@ -235,6 +235,10 @@ while(1){
                     my @array = ();
                     getHttpStrArray(\@array, $tweet_text, 0);
                     for(my $k=0;$k<@array;$k++){
+                        my $beg_pos = index($array[$k], "https://t.co/");
+                        if($beg_pos==-1){
+                            next;
+                        }
                         $post_text = $post_text . $array[$k] . "\n";
                         #print $array[$k] . "\n";
                     }
@@ -243,6 +247,10 @@ while(1){
                     my @array = ();
                     getHttpStrArray(\@array, $rt_text, 0);
                     for(my $k=0;$k<@array;$k++){
+                        my $beg_pos = index($array[$k], "https://t.co/");
+                        if($beg_pos==-1){
+                            next;
+                        }
                         $post_text = $post_text . $array[$k] . "\n";
                         #print $array[$k] . "\n";
                     }
