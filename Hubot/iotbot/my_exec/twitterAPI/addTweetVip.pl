@@ -31,7 +31,6 @@ use HTTP::Request::Common;
 
 use DateTime::Format::HTTP;
 
-#my $filePath = shift;
 my $name = shift;
 my $include_rts = shift;#"true";
 
@@ -88,35 +87,62 @@ for(my $i=0;$i<@{$res_users};$i++){
 }
 
 my $vipBCH;
-if(readJson(\$vipBCH, $filePath)!=0){
-    print "FileReadError. vipBCH.\n";
+if(addUserJson(\$vipBCH, $filePath, $name, $include_rts, $since_id, $imgURL)!=0){
+    print "addUserError. vipBCH.\n";
     exit -1;
 }
 
-#%{$vipBCH} = {};
-#open( OUT, '+>', $filePath) || exit(-1);
-#binmode(OUT, ":utf8");
-#local $/ = undef;
-#my $json_text = <OUT>;
-#$vipBCH = decode_json($json_text );
+#if(readJson(\$vipBCH, $filePath)!=0){
+#    print "FileReadError. vipBCH.\n";
+#    exit -1;
+#}
 
-$vipBCH->{$name}->{"include_rts"} = $include_rts;
-if(int($since_id)!=0){
-    $vipBCH->{$name}->{"since_id"} = int($since_id);
-}
-if($imgURL ne ""){
-    $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
-}
+#$vipBCH->{$name}->{"include_rts"} = $include_rts;
+#if(int($since_id)!=0){
+#    $vipBCH->{$name}->{"since_id"} = int($since_id);
+#}
+#if($imgURL ne ""){
+#    $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
+#}
 
-#print OUT to_json($vipBCH, {pretty=>1});
-#close(OUT);
-
-if(writeJson(\$vipBCH, $filePath, ">")!=0){
-    print "FileWriteError. vipBCH.\n";
-    exit -1;
-}
+#if(writeJson(\$vipBCH, $filePath, ">")!=0){
+#    print "FileWriteError. vipBCH.\n";
+#    exit -1;
+#}
 
 exit 0;
+
+sub addUserJson {
+       my $hash_ref = shift; #OUT
+       my $filePath = shift; # IN
+       my $name = shift;
+       my $include_rts = shift;
+       my $since_id = shift;
+       my $imgURL = shift;
+
+       # save to Json.
+       # utf8::encode($$hash_ref);
+
+       open (OUT, '+>', $filePath) || return(1);
+       binmode(OUT, ":utf8");
+       eval{
+            local $/ = undef;
+            my $json_text = <OUT>;
+            $$hash_ref = decode_json($json_text );
+
+            $$hash_ref->{$name}->{"include_rts"} = $include_rts;
+            if(int($since_id)!=0){
+                $$hash_ref->{$name}->{"since_id"} = int($since_id);
+            }
+            if($imgURL ne ""){
+                $$hash_ref->{$name}->{"profile_image_url_https"} = $imgURL;
+            }
+       };
+
+       print OUT to_json($$hash_ref, {pretty=>1});
+       close(OUT);
+       return (0);
+}
 
 sub writeJson {
        my $hash_ref = shift; #IN
