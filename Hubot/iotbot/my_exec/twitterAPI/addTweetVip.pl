@@ -67,8 +67,9 @@ my $res_users =  $nt->lookup_users(
                     }
                 );
 
-if(writeJson(\$res_users, "$env_path/DEST/$name_users.json", ">")!=0){
-    print "FileWriteError. $name_users.json.\n";
+my $name_users = sprintf("%s/DEST/%s_users.json",$env_path,$name);
+if(writeJson(\$res_users, $name_users, ">")!=0){
+    print "FileWriteError. $name_users.\n";
 }
 
 exit 0;
