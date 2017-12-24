@@ -87,14 +87,17 @@ for(my $i=0;$i<@{$res_users};$i++){
 }
 
 my $vipBCH;
-%{$vipBCH} = {};
+if(readJson(\$vipBCH, $filePath)!=0){
+    print "FileReadError. vipBCH.\n";
+    exit -1;
+}
 
-open( OUT, '+>', $filePath) || exit(-1);
-binmode(OUT, ":utf8");
-local $/ = undef;
-my $json_text = <OUT>;
-
-$vipBCH = decode_json($json_text );
+#%{$vipBCH} = {};
+#open( OUT, '+>', $filePath) || exit(-1);
+#binmode(OUT, ":utf8");
+#local $/ = undef;
+#my $json_text = <OUT>;
+#$vipBCH = decode_json($json_text );
 
 $vipBCH->{$name}->{"include_rts"} = $include_rts;
 if(int($since_id)!=0){
@@ -104,10 +107,13 @@ if($imgURL ne ""){
     $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
 }
 
+#print OUT to_json($vipBCH, {pretty=>1});
+#close(OUT);
 
-print OUT to_json($vipBCH, {pretty=>1});
-
-close(OUT);
+if(writeJson(\$vipBCH, $filePath, ">")!=0){
+    print "FileWriteError. vipBCH.\n";
+    exit -1;
+}
 
 exit 0;
 
