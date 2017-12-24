@@ -44,7 +44,7 @@ my $filePath = "$env_path/vipBCH.json";
 #my $name = "test";
 my $include_rts = "true";
 my $since_id = int(943856201367937024);
-my $imgURL = "http://pbs.twimg.com/profile_images/935656084420796416/EbPqNQ11_normal.jpg"
+my $imgURL = "http://pbs.twimg.com/profile_images/935656084420796416/EbPqNQ11_normal.jpg";
 
 my $authTwitter;
 if(readJson(\$authTwitter, "$env_path/AuthTwitter.json")!=0){
