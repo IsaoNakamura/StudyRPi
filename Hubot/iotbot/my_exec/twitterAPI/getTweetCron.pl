@@ -43,8 +43,11 @@ use DateTime::Format::HTTP;
 #my $cycle_sec = shift;
 #my $stopCode = shift;
 
+#my $env_path="./my_exec/twitterAPI";
+my $env_path=".";
+
 my $authSlack;
-if(readJson(\$authSlack, "./AuthSlack.json")!=0){
+if(readJson(\$authSlack, "$env_path/AuthSlack.json")!=0){
     print "FileReadError. authTwitter.\n";
     exit -1;
 }
@@ -53,7 +56,7 @@ my $host = $authSlack->{"host"};
 my $token = $authSlack->{"token"};
 my $channel = $authSlack->{"channel"};
 my $cycle_sec = 60;
-my $stopCode = "./DEST/StopCode.txt";
+my $stopCode = "$env_path/DEST/StopCode.txt";
 
 if(-e $stopCode){
     unlink $stopCode;
@@ -61,7 +64,7 @@ if(-e $stopCode){
 }
 
 my $authTwitter;
-if(readJson(\$authTwitter, "./my_exec/twitterAPI/AuthTwitter.json")!=0){
+if(readJson(\$authTwitter, "$env_path/AuthTwitter.json")!=0){
     print "FileReadError. Auth.\n";
     exit -1;
 }
@@ -77,7 +80,7 @@ my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
 while(1){
     eval{
         my $vipBCH;
-        if(readJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json")!=0){
+        if(readJson(\$vipBCH, "$env_path/vipBCH.json")!=0){
             print "FileReadError. vipBCH.\n";
             exit -1;
         }
@@ -253,7 +256,7 @@ while(1){
                     ]);
                 my $res = Furl->new->request($req);
                 
-                if(writeJson(\$tweet_ref, "./my_exec/twitterAPI/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
+                if(writeJson(\$tweet_ref, "$env_path/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
                     print "FileWriteError. $keys_BCH[$i].\n";
                     next;
                 }
@@ -263,7 +266,7 @@ while(1){
             if($next_since_id>0){
                 print "since_id=$next_since_id\n";
                 $vipBCH->{$keys_BCH[$i]}->{"since_id"} = $next_since_id;
-                #if(writeJson(\$vipBCH, "./my_exec/twitterAPI/vipBCH.json", ">")!=0){
+                #if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
                 #    print "FileWriteError. vipBCH.\n";
                 #    next;
                 #}
