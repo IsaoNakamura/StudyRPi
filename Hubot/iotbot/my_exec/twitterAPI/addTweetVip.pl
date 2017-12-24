@@ -3,8 +3,7 @@
 use strict;
 
 use warnings;
-#use Getopt::Std;
-#use LWP::UserAgent;
+
 use JSON;
 
 use utf8;
@@ -13,41 +12,66 @@ use Encode;
 use Time::Local;
 use Time::Piece;
 
-#use GD::Graph::mixed;
-#use GD::Graph::colour qw( :files );
-#use GD::Text;
-
 #use List::Util qw(max min);
 use Fcntl;
 
 use Encode 'decode';
 use Encode 'encode';
 
-# use Net::SSL;
-# use Net::Twitter::Lite::WithAPIv1_1;
-# use Data::Dumper;
+use Net::SSL;
+use Net::Twitter::Lite::WithAPIv1_1;
 
 use Date::Manip;
 
-# use Mozilla::CA;
-# $ENV{HTTPS_CA_FILE} = Mozilla::CA::SSL_ca_file();
+use Mozilla::CA;
+$ENV{HTTPS_CA_FILE} = Mozilla::CA::SSL_ca_file();
 
-#use Furl;
-#use HTTP::Request::Common;
+use Furl;
+use HTTP::Request::Common;
 
 use DateTime::Format::HTTP;
 
 #my $filePath = shift;
-#my $name = shift;
+my $name = shift;
 #my $include_rts = shift;
 #my $since_id = shift;
 #my $imgURL = shift;
 
-my $filePath = "./vipBCH.json";
-my $name = "test";
+#my $env_path="./my_exec/twitterAPI";
+my $env_path=".";
+
+my $filePath = "$env_path/vipBCH.json";
+#my $name = "test";
 my $include_rts = "true";
 my $since_id = int(943856201367937024);
 my $imgURL = "http://pbs.twimg.com/profile_images/935656084420796416/EbPqNQ11_normal.jpg"
+
+my $authTwitter;
+if(readJson(\$authTwitter, "$env_path/AuthTwitter.json")!=0){
+    print "FileReadError. Auth.\n";
+    exit -1;
+}
+
+my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
+    consumer_key    =>  $authTwitter->{"consumer_key"},
+    consumer_secret =>  $authTwitter->{"consumer_secret"},
+    access_token    =>  $authTwitter->{"access_token"},
+    access_token_secret => $authTwitter->{"access_token_secret"},
+    ssl =>  1,
+);
+
+my $res_users =  $nt->lookup_users(
+                    {
+                        screen_name => $name,
+                        include_entities => 0,
+                    }
+                );
+
+if(writeJson(\$res_users, "$env_path/DEST/$name_users.json", ">")!=0){
+    print "FileWriteError. $name_users.json.\n";
+}
+
+exit 0;
 
 my $vipBCH = {};
 
