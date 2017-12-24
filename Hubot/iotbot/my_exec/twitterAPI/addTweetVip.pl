@@ -89,9 +89,9 @@ for(my $i=0;$i<@{$res_users};$i++){
 my $vipBCH;
 %{$vipBCH} = {};
 
-open( INOUT, '+>', $filePath) || exit(-1);
+open( OUT, '+>', $filePath) || exit(-1);
 local $/ = undef;
-my $json_text = <INOUT>;
+my $json_text = <OUT>;
 
 $vipBCH = decode_json($json_text );
 
@@ -103,10 +103,10 @@ if($imgURL ne ""){
     $vipBCH->{$name}->{"profile_image_url_https"} = $imgURL;
 }
 
-binmode(INOUT, ":utf8");
-print INOUT to_json($vipBCH, {pretty=>1});
+binmode(OUT, ":utf8");
+print OUT to_json($vipBCH, {pretty=>1});
 
-close(INOUT);
+close(OUT);
 
 exit 0;
 
