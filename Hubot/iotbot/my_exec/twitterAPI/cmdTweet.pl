@@ -20,9 +20,9 @@ $ENV{HTTPS_CA_FILE} = Mozilla::CA::SSL_ca_file();
 use Furl;
 use HTTP::Request::Common;
 
+my $envPath = shift;
 my $cmd = shift;
 my $value = shift;
-my $envPath = shift;
 
 my $filePath = "$envPath/DEST/cmdCode.json";
 
