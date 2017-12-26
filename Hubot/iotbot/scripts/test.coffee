@@ -20,7 +20,7 @@ module.exports = (robot) ->
       channel = msg.message.room
       cycle_sec = 60
       cycle_sec = arg if arg?
-      stop = "#{path}DEST/StopCode.txt"
+      stop = "#{path}DEST/cmdCode.json"
       command = "#{command} #{host} #{token} #{channel} #{cycle_sec} #{stop}"
       msg.send "exec getTweetCron()"
       @exec command, (error, stdout, stderr) ->
