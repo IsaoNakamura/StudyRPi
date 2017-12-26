@@ -11,11 +11,6 @@ use JSON;
 my $url = shift;
 my $dest = shift;
 
-
-# print "KEY=$opt_k\n";
-# print "URL=$url\n";
-# print "DEST=$dest\n";
-
 ####################################
 my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
