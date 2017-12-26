@@ -20,9 +20,11 @@ $ENV{HTTPS_CA_FILE} = Mozilla::CA::SSL_ca_file();
 use Furl;
 use HTTP::Request::Common;
 
-my $screen_name = shift;
 my $cmd = shift;
-my $filePath = shift;
+my $value = shift;
+my $envPath = shift;
+
+my $filePath = "$envPath/cmdCode.json";
 
 if(-e $filePath){
     print "Command-Request is exist. retry please. $filePath\n";
@@ -33,7 +35,8 @@ my %cmdCode = ();
 
 if($cmd eq "add"){
     my $authTwitter;
-    if(readJson(\$authTwitter, "./my_exec/twitterAPI/AuthTwitter.json")!=0){
+    #if(readJson(\$authTwitter, "./my_exec/twitterAPI/AuthTwitter.json")!=0){
+    if(readJson(\$authTwitter, "$envPath//AuthTwitter.json")!=0){
         print "FileReadError. Auth.\n";
         exit -1;
     }
@@ -47,7 +50,7 @@ if($cmd eq "add"){
     );
     my $res_users =  $nt->lookup_users(
                         {
-                            screen_name => $screen_name,
+                            screen_name => $value,
                             include_entities => 0,
                         }
                     );
@@ -63,7 +66,7 @@ if($cmd eq "add"){
         if(!exists $user_ref->{"profile_image_url_https"}){
             next;
         }
-        if($screen_name ne $user_ref->{"screen_name"}){
+        if($value ne $user_ref->{"screen_name"}){
             next;
         }
         
@@ -78,7 +81,7 @@ if($cmd eq "add"){
         if(exists $user_ref->{"name"}){
             $name = $user_ref->{"name"};
         }
-        $cmdCode{$cmd}->{"screen_name"} = $screen_name;
+        $cmdCode{$cmd}->{"screen_name"} = $value;
         $cmdCode{$cmd}->{"profile_image_url_https"} = $imgURL;
         $cmdCode{$cmd}->{"since_id"} = $since_id;
         $cmdCode{$cmd}->{"name"} = $name;
@@ -86,7 +89,9 @@ if($cmd eq "add"){
 
 
 }elsif($cmd eq "delete"){
-    $cmdCode{$cmd}->{"screen_name"} = $screen_name;
+    $cmdCode{$cmd}->{"screen_name"} = $value;
+}elsif($cmd eq "stop"){
+    $cmdCode{$cmd} = $value;
 }else{
 }
 
