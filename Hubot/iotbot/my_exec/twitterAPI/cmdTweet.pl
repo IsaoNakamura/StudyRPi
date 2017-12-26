@@ -24,7 +24,7 @@ my $cmd = shift;
 my $value = shift;
 my $envPath = shift;
 
-my $filePath = "$envPath/cmdCode.json";
+my $filePath = "$envPath/DEST/cmdCode.json";
 
 if(-e $filePath){
     print "Command-Request is exist. retry please. $filePath\n";
@@ -36,7 +36,7 @@ my %cmdCode = ();
 if($cmd eq "add"){
     my $authTwitter;
     #if(readJson(\$authTwitter, "./my_exec/twitterAPI/AuthTwitter.json")!=0){
-    if(readJson(\$authTwitter, "$envPath//AuthTwitter.json")!=0){
+    if(readJson(\$authTwitter, "$envPath/AuthTwitter.json")!=0){
         print "FileReadError. Auth.\n";
         exit -1;
     }
