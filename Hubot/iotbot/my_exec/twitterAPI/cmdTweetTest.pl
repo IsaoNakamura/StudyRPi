@@ -18,7 +18,7 @@ use Encode 'encode';
 
 
 my $env_path= shift;
-my $cmdCode = "$envPath/DEST/cmdCode.json";
+my $cmdCode = "$env_path/DEST/cmdCode.json";
 
 if(-e $cmdCode){
     print "Command-Request is exist. delete $cmdCode\n";
