@@ -59,7 +59,7 @@ my $env_path="./my_exec/twitterAPI";
 
 if(-e $cmdCode){
     unlink $cmdCode;
-    last;
+    exit -1;
 }
 
 my $authTwitter;
