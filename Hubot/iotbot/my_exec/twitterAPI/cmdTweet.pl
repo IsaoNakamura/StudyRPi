@@ -100,8 +100,9 @@ if(exists $cmdCode{$cmd}){
         print "FileSaveError. $filePath \n";
         exit -1;
     }
+    print "FileSaveSuccess. $cmd to $filePath \n";
 }
-
+_
 exit 0;
 
 
