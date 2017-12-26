@@ -30,17 +30,13 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
-  robot.respond /vipstop (.*)|vipstop/i, (msg) ->
+  robot.respond /vipstop/i, (msg) ->
     if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      channel = msg.message.room
       @exec = require('child_process').exec
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
-      command = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/bitflyerAPI/createStopCode.pl"
-      stop = "#{path}DEST/StopCode.txt"
-      stop = arg if arg?
-      command = "#{command} #{stop}"
-      msg.send "exec createStopCode() stop=#{stop} "
+      command = "#{path}cmdTweet.pl"
+      command = "#{command} #{path} stop hoge"
+      msg.send "exec Stop-Command."
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
         msg.send stdout if stdout?
@@ -53,12 +49,26 @@ module.exports = (robot) ->
       arg = msg.match[1]
       @exec = require('child_process').exec
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
-      command = "#{path}addTweetVip.pl"
-      filePath = "#{path}vipBCH.json"
+      command = "#{path}cmdTweet.pl"
       param = arg if arg?
-      # name include_rts since_id $imgURL
-      command = "#{command} #{filePath} #{param}"
-      msg.send "exec addTweetVip()"
+      command = "#{command} #{path} add #{param}"
+      msg.send "exec Add-Command."
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
+  robot.respond /vipdelete (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      arg = msg.match[1]
+      @exec = require('child_process').exec
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
+      command = "#{path}cmdTweet.pl"
+      param = arg if arg?
+      command = "#{command} #{path} delete #{param}"
+      msg.send "exec Delete-Command."
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
         msg.send stdout if stdout?
