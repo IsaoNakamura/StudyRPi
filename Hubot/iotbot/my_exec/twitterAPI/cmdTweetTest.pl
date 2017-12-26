@@ -21,12 +21,6 @@ my $env_path= shift;
 my $cmdCode = "$env_path/DEST/cmdCode.json";
 
 if(-e $cmdCode){
-    print "Command-Request is exist. delete $cmdCode\n";
-    unlink $cmdCode;
-    exit -1;
-}
-
-if(-e $cmdCode){
     print "recieved cmdCode:$cmdCode\n";
 
     my $cmd_ref;
