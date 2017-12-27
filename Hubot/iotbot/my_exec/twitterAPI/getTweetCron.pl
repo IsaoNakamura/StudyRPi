@@ -41,7 +41,7 @@ my $host = shift;
 my $token = shift;
 my $channel = shift;
 my $cycle_sec = shift;
-my $stopCode = shift;
+my $cmdCode = shift;
 
 my $env_path="./my_exec/twitterAPI";
 #my $env_path=".";
@@ -57,9 +57,9 @@ my $env_path="./my_exec/twitterAPI";
 #my $cycle_sec = 60;
 #my $stopCode = "$env_path/DEST/StopCode.txt";
 
-if(-e $stopCode){
-    unlink $stopCode;
-    last;
+if(-e $cmdCode){
+    unlink $cmdCode;
+    exit -1;
 }
 
 my $authTwitter;
@@ -284,10 +284,52 @@ while(1){
         }
     };
 
-    if(-e $stopCode){
-        print "recieved StopCode:$stopCode\n";
-        unlink $stopCode;
-        last;
+    if(-e $cmdCode){
+        print "recieved cmdCode:$cmdCode\n";
+
+        my $cmd_ref;
+        if(readJson(\$cmd_ref, $cmdCode)!=0){
+            print "FileReadError. $cmdCode \n";
+            next;
+        }
+
+        my $vipBCH;
+        if(readJson(\$vipBCH, "$env_path/vipBCH.json")!=0){
+            print "FileReadError. vipBCH.\n";
+            next;
+        }
+
+        my $isStop = 0;
+        if(exists $cmd_ref->{"add"}){
+            my $screen_name = $cmd_ref->{"add"}->{"screen_name"};
+            my $imgUrl      = $cmd_ref->{"add"}->{"profile_image_url_https"};
+            my $since_id    = $cmd_ref->{"add"}->{"since_id"};
+            my $name        = $cmd_ref->{"add"}->{"name"};
+
+            $vipBCH->{$screen_name}->{"include_rts"}="true";
+            $vipBCH->{$screen_name}->{"profile_image_url_https"}=$imgUrl;
+            $vipBCH->{$screen_name}->{"since_id"}=$since_id;
+            $vipBCH->{$screen_name}->{"name"}=$name;
+
+            if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
+                print "FileWriteError. vipBCH.\n";
+                next;
+            }
+        }elsif(exists $cmd_ref->{"delete"}){
+            my $screen_name = $cmd_ref->{"delete"}->{"screen_name"};
+            delete($vipBCH->{$screen_name});
+            if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
+                print "FileWriteError. vipBCH.\n";
+                next;
+            }
+        }elsif(exists $cmd_ref->{"stop"}){
+            $isStop = 1;
+        }
+
+        unlink $cmdCode;
+        if($isStop>0){
+            last;
+        }
     }
 
     sleep($cycle_sec);
