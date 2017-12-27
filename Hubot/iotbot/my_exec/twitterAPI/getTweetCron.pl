@@ -1,10 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
-
 use warnings;
-#use Getopt::Std;
-#use LWP::UserAgent;
+
 use JSON;
 
 use utf8;
@@ -13,11 +11,6 @@ use Encode;
 use Time::Local;
 use Time::Piece;
 
-#use GD::Graph::mixed;
-#use GD::Graph::colour qw( :files );
-#use GD::Text;
-
-#use List::Util qw(max min);
 use Fcntl;
 
 use Encode 'decode';
@@ -88,10 +81,6 @@ while(1){
 
         for(my $i=0; $i<@keys_BCH; $i++){
             #print "keys_BCH[$i]:$keys_BCH[$i]\n";
-            #print $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"} . "\n";
-            #if($keys_BCH[$i] ne "hoge"){
-            #    next;
-            #}
 
             my $res_timeline =  $nt->user_timeline(
                                     {
@@ -336,24 +325,7 @@ while(1){
 
 }
 
-
-
 exit 0;
-
-sub get_followers {  # Usage: @ids = get_followers($screen_name) ;
-    my %arg ;
-    $_[0] and $arg{'screen_name'} = $_[0] ;  # 省略時は自分になる
-    $arg{'cursor'} = -1 ;  # 1ページ目は -1 を指定
-    my @ids ;
-    while ($arg{'cursor'}){ # 一度に5000までしか取得できないのでcursorを書き換えながら取得を繰り返す
-        my $followers_ref = $nt->followers_ids({%arg}) ;
-        my $ids_ref = $followers_ref->{'ids'} ;
-        push @ids, @$ids_ref ;
-        $arg{'cursor'} = $followers_ref->{'next_cursor'} ;
-        print STDERR "Fetched: ids=", scalar @$ids_ref, ",next_cursor=$arg{'cursor'}\n" ;
-    }
-    return @ids ;
-} ;
 
 sub writeJson {
        my $hash_ref = shift; #IN
