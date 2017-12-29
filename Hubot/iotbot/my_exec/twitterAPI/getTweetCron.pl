@@ -220,7 +220,7 @@ while(1){
 
                 my $post_text = "";
                 if($rt_quoted eq ""){
-                    $post_text = $tweet_date . "```\n" . $tweet_link . $tweet_text . "```\n" . $quoted_text . $extended_text;
+                    $post_text = $tweet_date . "```\n" . $tweet_link . "\n" . $tweet_text . "```\n" . $quoted_text . $extended_text;
                     my @array = ();
                     getHttpStrArray(\@array, $tweet_text, 0);
                     for(my $k=0;$k<@array;$k++){
@@ -232,7 +232,7 @@ while(1){
                         #print $array[$k] . "\n";
                     }
                 }else{
-                    $post_text = $rt_date . "```\n" . $tweet_link . $rt_text . "```\n" . $rt_quoted . $rt_extended;
+                    $post_text = $rt_date . "```\n" . $tweet_link . "\n" . $rt_text . "```\n" . $rt_quoted . $rt_extended;
                     my @array = ();
                     getHttpStrArray(\@array, $rt_text, 0);
                     for(my $k=0;$k<@array;$k++){
@@ -243,6 +243,12 @@ while(1){
                         $post_text = $post_text . $array[$k] . "\n";
                         #print $array[$k] . "\n";
                     }
+                }
+
+                my $username = $keys_BCH[$i];
+                if( exists $vipBCH->{$keys_BCH[$i]}->{"name"} ){
+                    my $name = $vipBCH->{$keys_BCH[$i]}->{"name"};
+                    $username = $name . " @" . $keys_BCH[$i];
                 }
                 
                 my $req = POST ($host,
