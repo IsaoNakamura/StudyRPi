@@ -255,7 +255,7 @@ while(1){
                     'Content' => [
                         token => $token,
                         channel => $channel,
-                        username => $keys_BCH[$i],
+                        username => $username,
                         icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
                         text => $post_text
                     ]);
