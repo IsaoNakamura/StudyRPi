@@ -60,6 +60,24 @@ module.exports = (robot) ->
     else
       msg.send "get out !!"
 
+  robot.respond /vipadd (.*)/i, (msg) ->
+    if msg.message.user.name == "isaox"
+      args = msg.match[1].split(/\s/)
+      @exec = require('child_process').exec
+      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
+      command = "#{path}cmdTweet.pl"
+      # room_name = robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById( msg.message.room )
+      user = args[0]
+      room_id = robot.adapter.client.rtm.dataStore.getChannelOrGroupByName( args[1] ).id
+      command = "#{command} #{path} add #{user} #{room_id}"
+      msg.send "command: #{command}"
+      @exec command, (error, stdout, stderr) ->
+        msg.send error if error?
+        msg.send stdout if stdout?
+        msg.send stderr if stderr?
+    else
+      msg.send "get out !!"
+
   robot.respond /vipdelete (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
       arg = msg.match[1]

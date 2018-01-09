@@ -23,6 +23,7 @@ use HTTP::Request::Common;
 my $envPath = shift;
 my $cmd = shift;
 my $value = shift;
+my $channel_id = shift;
 
 my $filePath = "$envPath/DEST/cmdCode.json";
 
@@ -85,6 +86,7 @@ if($cmd eq "add"){
         $cmdCode{$cmd}->{"profile_image_url_https"} = $imgURL;
         $cmdCode{$cmd}->{"since_id"} = $since_id;
         $cmdCode{$cmd}->{"name"} = $name;
+        $cmdCode{$cmd}->{"channel_id"} = $channel_id;
     }
 
 
