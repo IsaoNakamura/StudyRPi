@@ -50,11 +50,6 @@ my $env_path="./my_exec/twitterAPI";
 #my $cycle_sec = 60;
 #my $stopCode = "$env_path/DEST/StopCode.txt";
 
-if(-e $cmdCode){
-    unlink $cmdCode;
-    exit -1;
-}
-
 my $authTwitter;
 if(readJson(\$authTwitter, "$env_path/AuthTwitter.json")!=0){
     print "FileReadError. Auth.\n";
@@ -250,11 +245,18 @@ while(1){
                     my $name = $vipBCH->{$keys_BCH[$i]}->{"name"};
                     $username = $name . " @" . $keys_BCH[$i];
                 }
+
+                my $send_channel = $channel;
+                if( exists $vipBCH->{$keys_BCH[$i]}->{"channel_id"} ){
+                    $send_channel = $vipBCH->{$keys_BCH[$i]}->{"channel_id"};
+                    # print "send_channel: $send_channel \n";
+                }
+
                 
                 my $req = POST ($host,
                     'Content' => [
                         token => $token,
-                        channel => $channel,
+                        channel => $send_channel,
                         username => $username,
                         icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
                         text => $post_text
@@ -305,6 +307,11 @@ while(1){
             $vipBCH->{$screen_name}->{"profile_image_url_https"}=$imgUrl;
             $vipBCH->{$screen_name}->{"since_id"}=$since_id;
             $vipBCH->{$screen_name}->{"name"}=$name;
+
+            if(exists $cmd_ref->{"add"}->{"channel_id"}){
+                my $channel_id = $cmd_ref->{"add"}->{"channel_id"};
+                $vipBCH->{$screen_name}->{"channel_id"}=$channel_id;
+            }
 
             if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
                 print "FileWriteError. vipBCH.\n";

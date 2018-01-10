@@ -25,6 +25,11 @@ my $cmd = shift;
 my $value = shift;
 my $channel_id = shift;
 
+#print "envPath=$envPath\n";
+#print "cmd=$cmd\n";
+#print "value=$value\n";
+#print "channel_id=$channel_id\n";
+
 my $filePath = "$envPath/DEST/cmdCode.json";
 
 if(-e $filePath){
