@@ -35,7 +35,7 @@ module.exports = (robot) ->
       @exec = require('child_process').exec
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
       command = "#{path}cmdTweet.pl"
-      command = "#{command} #{path} stop hoge"
+      command = "#{command} #{path} stop hoge hoge"
       msg.send "exec Stop-Command."
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
@@ -69,7 +69,7 @@ module.exports = (robot) ->
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
       command = "#{path}cmdTweet.pl"
       param = arg if arg?
-      command = "#{command} #{path} delete #{param}"
+      command = "#{command} #{path} delete #{param} hoge"
       msg.send "exec Delete-Command."
       @exec command, (error, stdout, stderr) ->
         msg.send error if error?
