@@ -46,22 +46,6 @@ module.exports = (robot) ->
 
   robot.respond /vipadd (.*)/i, (msg) ->
     if msg.message.user.name == "isaox"
-      arg = msg.match[1]
-      @exec = require('child_process').exec
-      path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
-      command = "#{path}cmdTweet.pl"
-      param = arg if arg?
-      command = "#{command} #{path} add #{param}"
-      msg.send "exec Add-Command."
-      @exec command, (error, stdout, stderr) ->
-        msg.send error if error?
-        msg.send stdout if stdout?
-        msg.send stderr if stderr?
-    else
-      msg.send "get out !!"
-
-  robot.respond /vipadd (.*)/i, (msg) ->
-    if msg.message.user.name == "isaox"
       args = msg.match[1].split(/\s/)
       @exec = require('child_process').exec
       path = "/home/pi/GitHub/StudyRPi/Hubot/iotbot/my_exec/twitterAPI/"
