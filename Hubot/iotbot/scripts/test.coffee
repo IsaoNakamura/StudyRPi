@@ -326,7 +326,7 @@ module.exports = (robot) ->
   robot.hear /isaox/i, (res) ->
     res.send "isaox? isaox is my master!!"
 
-  robot.hear /(くそが)|(くっそ)/i, (msg) ->
+  robot.hear /(くそがあああああ)|(くっそおおおおお)/i, (msg) ->
     kusoga_arry = ["https://pbs.twimg.com/media/C5k-X9aU4AAx2Pk.jpg:large","http://livedoor.blogimg.jp/guran2016_ms06/imgs/b/8/b8a2dc96-s.jpg"]
     kusoga_msg = msg.random kusoga_arry
     msg.send "#{kusoga_msg}"
