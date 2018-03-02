@@ -75,34 +75,33 @@ while(1){
         my @keys_BCH = keys %{$vipBCH};
 
         for(my $i=0; $i<@keys_BCH; $i++){
-            #print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            print "keys_BCH[$i]:$keys_BCH[$i]\n";
 
             my $res_timeline =  $nt->user_timeline(
                                     {
                                         screen_name => $keys_BCH[$i],
-                                        count       => 2,
+                                        count       => 1,
                                         since_id    => $vipBCH->{$keys_BCH[$i]}->{"since_id"},
                                         include_rts => $vipBCH->{$keys_BCH[$i]}->{"include_rts"},   # 0:RTが含まれない
-                                        exclude_replies => "true",                                  # 0:リプライを含む
+                                        exclude_replies => "false",                                  # 0:リプライを含む
                                         trim_user => "true",                                        # 0:ユーザ情報を含む
                                         include_entities => "false",                                # 0:entities情報が含まれない
                                         contributor_details => "false",                             # 0:貢献者のscreen_nameが含まれない
-                                        page => 0,
                                     }
                                 );
             my $timeline_num = @{$res_timeline};
-            #print "timeline_num=$timeline_num\n";
+            print "timeline_num=$timeline_num\n";
             my $next_since_id = 0;
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
-                
+
                 # Link取得
                 my $id = $tweet_ref->{"id"};
                 if($next_since_id < $id ){
                     $next_since_id = $id;
                 }
                 my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
-                #print $tweet_link;
+                print $tweet_link;
 
                 # 日付取得
                 my $tweet_date = "";
@@ -240,28 +239,36 @@ while(1){
                     }
                 }
 
+                my $reply_to = "";
+                if( exists $tweet_ref->{"in_reply_to_screen_name"} ){
+                    $reply_to = $tweet_ref->{"in_reply_to_screen_name"};
+                }
+
                 my $username = $keys_BCH[$i];
-                if( exists $vipBCH->{$keys_BCH[$i]}->{"name"} ){
-                    my $name = $vipBCH->{$keys_BCH[$i]}->{"name"};
-                    $username = $name . " @" . $keys_BCH[$i];
-                }
+                if( $reply_to eq "" ){
+                    if($reply_to eq $username){
+                        if( exists $vipBCH->{$keys_BCH[$i]}->{"name"} ){
+                            my $name = $vipBCH->{$keys_BCH[$i]}->{"name"};
+                            $username = $name . " @" . $keys_BCH[$i];
+                        }
 
-                my $send_channel = $channel;
-                if( exists $vipBCH->{$keys_BCH[$i]}->{"channel_id"} ){
-                    $send_channel = $vipBCH->{$keys_BCH[$i]}->{"channel_id"};
-                    # print "send_channel: $send_channel \n";
+                        my $send_channel = $channel;
+                        if( exists $vipBCH->{$keys_BCH[$i]}->{"channel_id"} ){
+                            $send_channel = $vipBCH->{$keys_BCH[$i]}->{"channel_id"};
+                            # print "send_channel: $send_channel \n";
+                        }
+                        
+                        my $req = POST ($host,
+                            'Content' => [
+                                token => $token,
+                                channel => $send_channel,
+                                username => $username,
+                                icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
+                                text => $post_text
+                            ]);
+                        my $res = Furl->new->request($req);
+                    }
                 }
-
-                
-                my $req = POST ($host,
-                    'Content' => [
-                        token => $token,
-                        channel => $send_channel,
-                        username => $username,
-                        icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
-                        text => $post_text
-                    ]);
-                my $res = Furl->new->request($req);
                 
                 if(writeJson(\$tweet_ref, "$env_path/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
                     print "FileWriteError. " . "$env_path/DEST/$keys_BCH[$i]_tweet.json" ."\n";
