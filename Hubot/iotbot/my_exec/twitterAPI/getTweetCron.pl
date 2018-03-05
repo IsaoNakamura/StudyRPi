@@ -75,14 +75,16 @@ while(1){
         my @keys_BCH = keys %{$vipBCH};
 
         for(my $i=0; $i<@keys_BCH; $i++){
-            print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            #print "keys_BCH[$i]:$keys_BCH[$i]\n";
+            my $username = $keys_BCH[$i];
+            
 
             my $res_timeline =  $nt->user_timeline(
                                     {
-                                        screen_name => $keys_BCH[$i],
+                                        screen_name => $username,
                                         count       => 1,
-                                        since_id    => $vipBCH->{$keys_BCH[$i]}->{"since_id"},
-                                        include_rts => $vipBCH->{$keys_BCH[$i]}->{"include_rts"},   # 0:RTが含まれない
+                                        since_id    => $vipBCH->{$username}->{"since_id"},
+                                        include_rts => $vipBCH->{$username}->{"include_rts"},   # 0:RTが含まれない
                                         exclude_replies => "false",                                  # 0:リプライを含む
                                         trim_user => "true",                                        # 0:ユーザ情報を含む
                                         include_entities => "false",                                # 0:entities情報が含まれない
@@ -90,18 +92,27 @@ while(1){
                                     }
                                 );
             my $timeline_num = @{$res_timeline};
-            print "timeline_num=$timeline_num\n";
+            #print "timeline_num=$timeline_num\n";
             my $next_since_id = 0;
             for(my $j=0; $j<@{$res_timeline}; $j++){
                 my $tweet_ref = \%{ $res_timeline->[$j] };
+
+                # 返信先取得
+                my $reply_to = "";
+                if( exists $tweet_ref->{"in_reply_to_screen_name"} ){
+                    $reply_to = $tweet_ref->{"in_reply_to_screen_name"};
+                    if(!defined $reply_to){
+                        $reply_to = "";
+                    }
+                }
 
                 # Link取得
                 my $id = $tweet_ref->{"id"};
                 if($next_since_id < $id ){
                     $next_since_id = $id;
                 }
-                my $tweet_link = "https://twitter.com/$keys_BCH[$i]/status/$id" . "\n";
-                print $tweet_link;
+                my $tweet_link = "https://twitter.com/$username/status/$id" . "\n";
+                #print $tweet_link;
 
                 # 日付取得
                 my $tweet_date = "";
@@ -211,67 +222,64 @@ while(1){
                         }
                     }
                 }
+             
+                if( ($reply_to eq "") || ($reply_to eq $username) ){
 
-                my $post_text = "";
-                if($rt_quoted eq ""){
-                    $post_text = $tweet_date . "```\n" . $tweet_link . "\n" . $tweet_text . "```\n" . $quoted_text . $extended_text;
-                    my @array = ();
-                    getHttpStrArray(\@array, $tweet_text, 0);
-                    for(my $k=0;$k<@array;$k++){
-                        my $beg_pos = index($array[$k], "https://t.co/");
-                        if($beg_pos!=-1){
-                            next;
+                    my $post_text = "";
+                    if($rt_quoted eq ""){
+                        $post_text = $tweet_date . "```\n" . $tweet_link . "\n" . $tweet_text . "```\n" . $quoted_text . $extended_text;
+                        my @array = ();
+                        getHttpStrArray(\@array, $tweet_text, 0);
+                        for(my $k=0;$k<@array;$k++){
+                            my $beg_pos = index($array[$k], "https://t.co/");
+                            if($beg_pos!=-1){
+                                next;
+                            }
+                            $post_text = $post_text . $array[$k] . "\n";
+                            #print $array[$k] . "\n";
                         }
-                        $post_text = $post_text . $array[$k] . "\n";
-                        #print $array[$k] . "\n";
+                    }else{
+                        $post_text = $rt_date . "```\n" . $tweet_link . "\n" . $rt_text . "```\n" . $rt_quoted . $rt_extended;
+                        my @array = ();
+                        getHttpStrArray(\@array, $rt_text, 0);
+                        for(my $k=0;$k<@array;$k++){
+                            my $beg_pos = index($array[$k], "https://t.co/");
+                            if($beg_pos!=-1){
+                                next;
+                            }
+                            $post_text = $post_text . $array[$k] . "\n";
+                            #print $array[$k] . "\n";
+                        }
                     }
+
+                    my $postname = $username;
+                    if( exists $vipBCH->{$username}->{"name"} ){
+                        my $name = $vipBCH->{$username}->{"name"};
+                        $postname = $name . " @" . $username;
+                    }
+
+                    my $send_channel = $channel;
+                    if( exists $vipBCH->{$username}->{"channel_id"} ){
+                        $send_channel = $vipBCH->{$username}->{"channel_id"};
+                        # print "send_channel: $send_channel \n";
+                    }
+                    
+                    my $req = POST ($host,
+                        'Content' => [
+                            token => $token,
+                            channel => $send_channel,
+                            username => $postname,
+                            icon_url => $vipBCH->{$username}->{"profile_image_url_https"},
+                            text => $post_text
+                        ]);
+                    my $res = Furl->new->request($req);
                 }else{
-                    $post_text = $rt_date . "```\n" . $tweet_link . "\n" . $rt_text . "```\n" . $rt_quoted . $rt_extended;
-                    my @array = ();
-                    getHttpStrArray(\@array, $rt_text, 0);
-                    for(my $k=0;$k<@array;$k++){
-                        my $beg_pos = index($array[$k], "https://t.co/");
-                        if($beg_pos!=-1){
-                            next;
-                        }
-                        $post_text = $post_text . $array[$k] . "\n";
-                        #print $array[$k] . "\n";
-                    }
-                }
-
-                my $reply_to = "";
-                if( exists $tweet_ref->{"in_reply_to_screen_name"} ){
-                    $reply_to = $tweet_ref->{"in_reply_to_screen_name"};
-                }
-
-                my $username = $keys_BCH[$i];
-                if( $reply_to eq "" ){
-                    if($reply_to eq $username){
-                        if( exists $vipBCH->{$keys_BCH[$i]}->{"name"} ){
-                            my $name = $vipBCH->{$keys_BCH[$i]}->{"name"};
-                            $username = $name . " @" . $keys_BCH[$i];
-                        }
-
-                        my $send_channel = $channel;
-                        if( exists $vipBCH->{$keys_BCH[$i]}->{"channel_id"} ){
-                            $send_channel = $vipBCH->{$keys_BCH[$i]}->{"channel_id"};
-                            # print "send_channel: $send_channel \n";
-                        }
-                        
-                        my $req = POST ($host,
-                            'Content' => [
-                                token => $token,
-                                channel => $send_channel,
-                                username => $username,
-                                icon_url => $vipBCH->{$keys_BCH[$i]}->{"profile_image_url_https"},
-                                text => $post_text
-                            ]);
-                        my $res = Furl->new->request($req);
-                    }
+                    #print "reply_to is not mine. $reply_to \n";
                 }
                 
-                if(writeJson(\$tweet_ref, "$env_path/DEST/$keys_BCH[$i]_tweet.json", ">")!=0){
-                    print "FileWriteError. " . "$env_path/DEST/$keys_BCH[$i]_tweet.json" ."\n";
+                my $tweetFileName = sprintf("%s/DEST/%s_tweet.json", $env_path, $username);
+                if(writeJson(\$tweet_ref, $tweetFileName, ">")!=0){
+                    print "FileWriteError. " . $tweetFileName ."\n";
                     next;
                 }
 
@@ -279,7 +287,7 @@ while(1){
             }
             if($next_since_id>0){
                 #print "since_id=$next_since_id\n";
-                $vipBCH->{$keys_BCH[$i]}->{"since_id"} = $next_since_id;
+                $vipBCH->{$username}->{"since_id"} = $next_since_id;
                 if(writeJson(\$vipBCH, "$env_path/vipBCH.json", ">")!=0){
                     print "FileWriteError. vipBCH.\n";
                     next;
