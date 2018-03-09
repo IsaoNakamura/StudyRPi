@@ -15,6 +15,8 @@ use HTTP::Request;
 
 use Digest::SHA qw(hmac_sha256_hex);
 
+use MyModule::UtilityJson;
+
 my $authFilePath = "./AuthBitflyer.json";
 my $dest = "./DEST/Balance.json";
 
@@ -33,7 +35,7 @@ if(!(-f $authFilePath)){
 }
 
 my $authBitflyer;
-if(readJson(\$authBitflyer, $authFilePath)!=0){
+if(MyModule::UtilityJson::readJson(\$authBitflyer, $authFilePath)!=0){
     print "FileReadError. Auth.\n";
     exit -1;
 }
@@ -71,44 +73,11 @@ my $content = $res->content;
 
 # convert UTF-8 binary to text
 utf8::decode($content); 
-
 my $content_ref = from_json($content);
 
-#print "MiddleRate:" . $content_ref->{"mid"} . "[BTC/JPY]\n";
-open (OUT, '>', $dest) || die('File Open Error');
-print OUT to_json($content_ref, {pretty=>1});
-close(OUT);
+if(MyModule::UtilityJson::writeJson(\$content_ref, $dest, ">")!=0){
+    print "FileSaveError. $dest\n";
+    exit -1;
+}
 
 exit 0;
-
-
-sub writeJson {
-       my $hash_ref = shift; #IN
-       my $filePath = shift; #IN
-       my $mode = shift;
-
-       # save to Json.
-       # utf8::encode($$hash_ref);
-
-       open (OUT, $mode, $filePath) || return(1);
-       binmode(OUT, ":utf8");
-       print OUT to_json($$hash_ref, {pretty=>1});
-       close(OUT);
-       return (0);
-}
-
-sub readJson {
-       my $hash_ref = shift; # OUT
-       my $filePath = shift; #IN
-
-       %{$$hash_ref} = ();
-
-       open( IN, '<', $filePath) || return(1);
-       eval{
-              local $/ = undef;
-              my $json_text = <IN>;
-              close(IN);
-              $$hash_ref = decode_json($json_text );
-       };
-       return (0);
-}
