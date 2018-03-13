@@ -18,6 +18,7 @@ use HTTP::Request;
 
 use Digest::SHA qw(hmac_sha256_hex);
 
+# BitflyerAPIでリクエストを発行する
 sub requestBitflyer{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -32,11 +33,19 @@ sub requestBitflyer{
     my $signature = hmac_sha256_hex($params, $$auth_ref->{"ACCESS-SECRET"});
 
     my $url = $endPoint . $path;
-    my $request = HTTP::Request->new($method, $url,[
-        'ACCESS-KEY' => $$auth_ref->{"ACCESS-KEY"},
-        'ACCESS-TIMESTAMP' => $timestamp,
-        'ACCESS-SIGN' => $signature
-    ]);
+    my $request = HTTP::Request->new
+                    (
+                        $method,
+                        $url,
+                        [
+                            'ACCESS-KEY'       => $$auth_ref->{"ACCESS-KEY"},
+                            'ACCESS-TIMESTAMP' => $timestamp,
+                            'ACCESS-SIGN'      => $signature,
+                            'Content-Type'     => 'application/json',
+                            'Content-Length'   => length($body)
+                        ],
+                        $body
+                    );
 
     $$userAgent_ref->agent('');
     my $res = $$userAgent_ref->request($request);
@@ -50,12 +59,13 @@ sub requestBitflyer{
     print $res->message  . "\n";
     
     my $content = $res->content;
-
-    $$resultJson_ref = decode_json($content);
-
+    if(length($content)>0)
+    {
+        $$resultJson_ref = decode_json($content);
+    }
     return(0);
 }
-
+ # 資産残高を取得
 sub getBalance{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -83,6 +93,7 @@ sub getBalance{
     return($ret_req);
 }
 
+# マーケットの一覧
 sub getMarkets{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -110,6 +121,7 @@ sub getMarkets{
     return($ret_req);
 }
 
+# Ticker
 sub getTicker{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -140,6 +152,63 @@ sub getTicker{
     return($ret_req);
 }
 
+# すべての注文をキャンセルする
+sub postCancelAllChildOrders{
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $bodyHash_ref   = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/cancelallchildorders";
+    my $method   = "POST";
+    my $body     = encode_json($bodyHash_ref);
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $resultJson;
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        \$resultJson,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+# 新規の親注文を出す（特殊注文）
+sub postSendParentOrder{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $bodyHash_ref   = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/sendparentorder";
+    my $method   = "POST";
+    my $body     = encode_json($bodyHash_ref);
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
 
 1;
 __END__
