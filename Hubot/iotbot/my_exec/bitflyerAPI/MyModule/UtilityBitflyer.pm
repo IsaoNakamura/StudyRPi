@@ -83,5 +83,33 @@ sub getBalance{
     return($ret_req);
 }
 
+sub getMarkets{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $body           = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/getmarkets";
+    my $method   = "GET";
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+
 1;
 __END__
