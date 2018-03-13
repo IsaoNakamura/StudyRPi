@@ -181,6 +181,35 @@ sub postCancelAllChildOrders{
     return($ret_req);
 }
 
+# 新規の親注文を出す
+sub postSendChildOrder{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $bodyHash_ref   = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/sendchildorder";
+    my $method   = "POST";
+    my $body     = encode_json($bodyHash_ref);
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path     . "\n";
+    print "method   = " . $method   . "\n";
+    print "body     = " . $body     . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
 # 新規の親注文を出す（特殊注文）
 sub postSendParentOrder{
     my $resultJson_ref = shift;

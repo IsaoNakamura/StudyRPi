@@ -1,10 +1,10 @@
 @echo off
-echo *****************************************
-echo * post CancelAllChildOrders to Bitflyer.
-echo *****************************************
+echo ***********************************
+echo * post SendChildOrder to Bitflyer.
+echo ***********************************
 
 SET CUR_DIR=.\
-SET EXEC_FILE=%CUR_DIR%postCancelAllChildOrders.pl
+SET EXEC_FILE=%CUR_DIR%postSendChildOrder.pl
 SET DEST=%CUR_DIR%DEST
 IF NOT EXIST %DEST% (
     MKDIR %DEST%

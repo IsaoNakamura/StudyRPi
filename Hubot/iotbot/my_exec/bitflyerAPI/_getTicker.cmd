@@ -1,7 +1,7 @@
 @echo off
-REM echo ***************************
-REM echo * get Ticker from Bitflyer.
-REM echo ***************************
+echo ***************************
+echo * get Ticker from Bitflyer.
+echo ***************************
 
 SET CUR_DIR=.\
 SET EXEC_FILE=%CUR_DIR%getTicker.pl

@@ -26,38 +26,18 @@ my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
-
-#my %bodyHash = ();
-
-
-my @orders = (
-                {
-                    "product_code"   => "FX_BTC_JPY",
-                    "condition_type" => "STOP_LIMIT",
-                    "side"           => "BUY",
-                    "price"          => 1000000,
-                    "trigger_price"  => 1000000,
-                    "size"           => 0.001
-                },
-                {
-                    "product_code"   => "FX_BTC_JPY",
-                    "condition_type" => "STOP_LIMIT",
-                    "side"           => "SELL",
-                    "price"          => 1000000,
-                    "trigger_price"  => 1000000,
-                    "size"           => 0.001
-                }
-            );
-
 my %bodyHash =  (
-    "order_method"     => "IFD",
+    "product_code"     => "FX_BTC_JPY",
+    "child_order_type" => "LIMIT",
+    "side"             => "BUY",
+    "price"            => 900000,
+    "size"             => 0.001,
     "minute_to_expire" => 10000,
-    "time_in_force" => "GTC",
-    "parameters" => [@orders]
+    "time_in_force"    => "GTC"
 );
 
 my $res_json;
-my $ret_req =   MyModule::UtilityBitflyer::postSendParentOrder(
+my $ret_req =   MyModule::UtilityBitflyer::postSendChildOrder(
                     \$res_json,
                     \$ua,
                     \$authBitflyer,

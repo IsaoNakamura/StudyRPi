@@ -1,7 +1,7 @@
 @echo off
-REM echo ***************************
-REM echo * post CancelAllChildOrders to Bitflyer.
-REM echo ***************************
+echo ************************************
+echo * post SendParentOrder to Bitflyer.
+echo ************************************
 
 SET CUR_DIR=.\
 SET EXEC_FILE=%CUR_DIR%postSendParentOrder.pl
