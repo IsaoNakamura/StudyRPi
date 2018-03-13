@@ -60,11 +60,11 @@ sub getBalance{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
     my $auth_ref       = shift;
-    my $body           = shift;
 
     my $endPoint = "https://api.bitflyer.jp";
     my $path     = "/v1/me/getbalance";
     my $method   = "GET";
+    my $body     = "";
 
     print "endPoint = " . $endPoint . "\n";
     print "path     = " . $path . "\n";
@@ -87,11 +87,41 @@ sub getMarkets{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
     my $auth_ref       = shift;
-    my $body           = shift;
 
     my $endPoint = "https://api.bitflyer.jp";
     my $path     = "/v1/getmarkets";
     my $method   = "GET";
+    my $body     = "";
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+sub getTicker{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/getticker";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?product_code=%s", $path, $product);
 
     print "endPoint = " . $endPoint . "\n";
     print "path     = " . $path . "\n";

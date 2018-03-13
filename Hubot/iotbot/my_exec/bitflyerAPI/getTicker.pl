@@ -9,7 +9,7 @@ use MyModule::UtilityJson;
 use MyModule::UtilityBitflyer;
 
 my $authFilePath = "./AuthBitflyer.json";
-my $dest = "./DEST/Markets.json";
+my $dest = "./DEST/Ticker.json";
 
 if(!(-f $authFilePath)){
     print "not exists AuthFile. $authFilePath\n";
@@ -27,10 +27,11 @@ $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 my $res_json;
-my $ret_req =   MyModule::UtilityBitflyer::getMarkets(
+my $ret_req =   MyModule::UtilityBitflyer::getTicker(
                     \$res_json,
                     \$ua,
                     \$authBitflyer,
+                    "FX_BTC_JPY"
                 );
 
 print "ret_req=$ret_req\n";

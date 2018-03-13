@@ -31,7 +31,6 @@ my $ret_req =   MyModule::UtilityBitflyer::getBalance(
                     \$res_json,
                     \$ua,
                     \$authBitflyer,
-                    ""
                 );
 
 print "ret_req=$ret_req\n";
