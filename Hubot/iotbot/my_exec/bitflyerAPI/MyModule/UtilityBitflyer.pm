@@ -56,7 +56,7 @@ sub requestBitflyer{
         print $error_msg;
         return(-1);
     }
-    print $res->message  . "\n";
+    #print $res->message  . "\n";
     
     my $content = $res->content;
     if(length($content)>0)
@@ -135,10 +135,10 @@ sub getTicker{
 
     $path = sprintf("%s?product_code=%s", $path, $product);
 
-    print "endPoint = " . $endPoint . "\n";
-    print "path     = " . $path . "\n";
-    print "method   = " . $method . "\n";
-    print "body     = " . $body . "\n";
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
 
     my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
                         $resultJson_ref,
