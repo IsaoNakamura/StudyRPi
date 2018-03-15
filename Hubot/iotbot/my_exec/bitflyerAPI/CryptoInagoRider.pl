@@ -72,11 +72,15 @@ print "$title\n";
 #    print "[$i]:" . $elem_id . " is clicked\n";
 #}
 
+my $ammount = 0.005;
 my $cycle_sec = 3;
+my $position = "NONE";
+my $cycle_cnt =0;
+
 my $sell_id = "sellVolumePerMeasurementTime";
 my $buy_id = "buyVolumePerMeasurementTime";
 
-my $position = "NONE";
+
 my $pos_best_bid = 0;
 my $pre_best_bid = 0;
 my $pre_sell = 0;
@@ -86,11 +90,10 @@ my $pre_effective = 0.0;
 my $threshold = 100.0;
 
 # 0に戻ろうとする特性をもつ(1サイクルにつきX%半減)
-
 my $pre_indicator = 0.0;
 my $force = 0.5;
 
-my $cycle_cnt =0;
+
 while(1){
     eval{
         # Ticker(相場)を取得
@@ -156,8 +159,29 @@ while(1){
                         # LONG維持
                     }else{
                         # LONG利確
-                        $position = "NONE";
-                        $profit = $pre_best_bid - $pos_best_bid;
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                            $position = "NONE";
+                            $profit = $pre_best_bid - $pos_best_bid;
+                            
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
                     }
                 }
             }elsif( $indicator < 0 && $pre_indicator < 0 ){
@@ -167,38 +191,197 @@ while(1){
                         # SHORT維持
                     }else{
                         # SHORT利確
-                        $position = "NONE";
-                        $profit = $pos_best_bid - $pre_best_bid;
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                            $position = "NONE";
+                            $profit = $pos_best_bid - $pre_best_bid;
+                            
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
                     }
                 }
             }else{
                 # 逆方向
                 if( $position eq "LONG" ){
                     # LONG利確(ドテンショート)
-                    $profit = $pre_best_bid - $pos_best_bid;
-                    $position = "SHORT";
-                    $pos_best_bid = $best_bid;
+                    {
+                        # LONG利確
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                            $position = "NONE";
+                            $profit = $pre_best_bid - $pos_best_bid;
+                            
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
+                    }
+                    {
+                        # SHORTエントリー
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            $position = "SHORT";
+                            $pos_best_bid = $best_bid;
+                            my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
+
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
+                    }
                 }elsif( $position eq "SHORT"){
                     # SHORT利確(ドテンロング)
-                    $profit = $pos_best_bid - $pre_best_bid;
-                    $position = "LONG";
-                    $pos_best_bid = $best_bid;
+                    {
+                        # SHORT利確
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                            $position = "NONE";
+                            $profit = $pos_best_bid - $pre_best_bid;
+
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
+                    }
+                    {
+                        # LONGエントリー
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            $position = "LONG";
+                            $pos_best_bid = $best_bid;
+                            my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
+
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
+                    }
                 }elsif($position eq "NONE"){
                     if($indicator > 0){
                         # LONGエントリー
-                        $position = "LONG";
-                        $pos_best_bid = $best_bid;
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            $position = "LONG";
+                            $pos_best_bid = $best_bid;
+                            my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
+
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
                     }else{
                         # SHORTエントリー
-                        $position = "SHORT";
-                        $pos_best_bid = $best_bid;
+                        my $res_json;
+                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                            \$res_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $ammount
+                                        );
+
+
+                        print "ret_req=$ret_req\n";
+                        if( $ret_req==0 ){
+                            # 注文成功
+                            $position = "SHORT";
+                            $pos_best_bid = $best_bid;
+                            my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
+
+                            print "writeJson. $fileName\n";
+                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                print "FileSaveError. $fileName\n";
+                                exit -1;
+                            }
+                        }
+
                     }
                 }
             }
         }
 
         # 情報出力
-        my $volume_str = sprintf("SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f(%3.0f): BID=%9d(%5d): %5s: PFT=%9d:\n"
+        my $volume_str = sprintf("[%05d]: SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f(%5.0f): BID=%9d(%5d): %5s: PFT=%9d:\n"
+            , $cycle_cnt
             , $sell_volume
             , $buy_volume
             , $effective

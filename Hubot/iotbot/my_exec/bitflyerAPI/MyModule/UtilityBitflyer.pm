@@ -163,10 +163,10 @@ sub postCancelAllChildOrders{
     my $method   = "POST";
     my $body     = encode_json($bodyHash_ref);
 
-    print "endPoint = " . $endPoint . "\n";
-    print "path     = " . $path . "\n";
-    print "method   = " . $method . "\n";
-    print "body     = " . $body . "\n";
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
 
     my $resultJson;
     my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
@@ -181,7 +181,7 @@ sub postCancelAllChildOrders{
     return($ret_req);
 }
 
-# 新規の親注文を出す
+# 新規の注文を出す
 sub postSendChildOrder{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -193,10 +193,10 @@ sub postSendChildOrder{
     my $method   = "POST";
     my $body     = encode_json($bodyHash_ref);
 
-    print "endPoint = " . $endPoint . "\n";
-    print "path     = " . $path     . "\n";
-    print "method   = " . $method   . "\n";
-    print "body     = " . $body     . "\n";
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path     . "\n";
+    #print "method   = " . $method   . "\n";
+    #print "body     = " . $body     . "\n";
 
     my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
                         $resultJson_ref,
@@ -222,10 +222,10 @@ sub postSendParentOrder{
     my $method   = "POST";
     my $body     = encode_json($bodyHash_ref);
 
-    print "endPoint = " . $endPoint . "\n";
-    print "path     = " . $path . "\n";
-    print "method   = " . $method . "\n";
-    print "body     = " . $body . "\n";
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
 
     my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
                         $resultJson_ref,
@@ -236,6 +236,71 @@ sub postSendParentOrder{
                         $path,
                         $body
                     );
+    return($ret_req);
+}
+
+
+# 成り行き買い注文
+sub longByMarket{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product_code   = shift; #銘柄
+    my $ammount        = shift; #数量
+
+    my %bodyHash =  (
+        "product_code"     => $product_code,
+        "child_order_type" => "MARKET",
+        "side"             => "BUY",
+        "size"             => $ammount,
+        "minute_to_expire" => 10000,
+        "time_in_force"    => "GTC"
+    );
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/sendchildorder";
+    my $method   = "POST";
+    my $body     = encode_json(\%bodyHash);
+
+    my $ret_req =   MyModule::UtilityBitflyer::postSendChildOrder(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        \%bodyHash
+                    );
+
+    return($ret_req);
+}
+
+# 成り行き売り注文
+sub shortByMarket{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product_code   = shift; #銘柄
+    my $ammount        = shift; #数量
+
+    my %bodyHash =  (
+        "product_code"     => $product_code,
+        "child_order_type" => "MARKET",
+        "side"             => "SELL",
+        "size"             => $ammount,
+        "minute_to_expire" => 10000,
+        "time_in_force"    => "GTC"
+    );
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/sendchildorder";
+    my $method   = "POST";
+    my $body     = encode_json(\%bodyHash);
+
+    my $ret_req =   MyModule::UtilityBitflyer::postSendChildOrder(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        \%bodyHash
+                    );
+
     return($ret_req);
 }
 
