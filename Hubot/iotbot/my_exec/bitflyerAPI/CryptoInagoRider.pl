@@ -62,15 +62,15 @@ my $title = $driver->get_title();
 $title = encode('Shift_JIS', $title);
 print "$title\n";
 
-#my $elements = $driver->find_elements("#chart_table_tbody input[type='checkbox']", "css");
-#for(my $i=1; $i<@{$elements}; $i++){
-#    my $elem_id = $elements->[$i]->get_attribute('id');
-#    if($elem_id eq "bitFlyer_BTCJPY_checkbox"){
-#        next;
-#    }
-#    $elements->[$i]->click();
-#    print "[$i]:" . $elem_id . " is clicked\n";
-#}
+my $elements = $driver->find_elements("#chart_table_tbody input[type='checkbox']", "css");
+for(my $i=1; $i<@{$elements}; $i++){
+    my $elem_id = $elements->[$i]->get_attribute('id');
+    if($elem_id eq "bitFlyer_BTCJPY_checkbox"){
+        next;
+    }
+    $elements->[$i]->click();
+    print "[$i]:" . $elem_id . " is clicked\n";
+}
 
 my $ammount = 0.005;
 my $cycle_sec = 3;
@@ -87,12 +87,12 @@ my $pre_sell = 0;
 my $pre_buy = 0;
 my $pre_effective = 0.0;
 
-my $threshold = 100.0;
+
 
 # 0に戻ろうとする特性をもつ(1サイクルにつきX%半減)
 my $pre_indicator = 0.0;
-my $force = 0.5;
-
+my $force = 0.6;
+my $threshold = 50.0;
 
 while(1){
     eval{
@@ -100,16 +100,16 @@ while(1){
         my $best_bid = 0;
         my $best_ask = 0;
         my $res_json;
-        my $ret_req =   MyModule::UtilityBitflyer::getTicker(
-                            \$res_json,
-                            \$ua,
-                            \$authBitflyer,
-                            "FX_BTC_JPY"
-                        );
-        if( $ret_req==0 ){
-            $best_bid = $res_json->{"best_bid"};
-            $best_ask = $res_json->{"best_ask"};
-        }
+        #my $ret_req =   MyModule::UtilityBitflyer::getTicker(
+        #                    \$res_json,
+        #                    \$ua,
+        #                    \$authBitflyer,
+        #                    "FX_BTC_JPY"
+        #                );
+        #if( $ret_req==0 ){
+        #    $best_bid = $res_json->{"best_bid"};
+        #    $best_ask = $res_json->{"best_ask"};
+        #}
 
         # イナゴフライヤーの値を取得
         my $sell_volume = $driver->find_element_by_id($sell_id)->get_text;
@@ -155,62 +155,87 @@ while(1){
             if( $indicator > 0 && $pre_indicator > 0){
                 # 両方正⇒同じ方向
                 if( $position eq "LONG" ){
-                    if($rate > 50.0){
+                    if($rate > $threshold){
                         # LONG維持
                     }else{
                         # LONG利確
-                        my $res_json;
-                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
-                                            \$res_json,
-                                            \$ua,
-                                            \$authBitflyer,
-                                            "FX_BTC_JPY",
-                                            $ammount
-                                        );
+                        my $retry_num = 0;
+                        while(1){
+                            my $res_json;
+                            my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                                \$res_json,
+                                                \$ua,
+                                                \$authBitflyer,
+                                                "FX_BTC_JPY",
+                                                $ammount
+                                            );
 
 
-                        print "ret_req=$ret_req\n";
-                        if( $ret_req==0 ){
-                            # 注文成功
-                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
-                            $position = "NONE";
-                            $profit = $pre_best_bid - $pos_best_bid;
-                            
-                            print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
+                            print "ret_req=$ret_req\n";
+                            if( $ret_req==0 ){
+                                # 注文成功
+                                my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                                $position = "NONE";
+                                $profit = $pre_best_bid - $pos_best_bid;
+                                
+                                print "writeJson. $fileName\n";
+                                #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                #    print "FileSaveError. $fileName\n";
+                                #    exit -1;
+                                #}
+                                last;
+                            }else{
+                                if($retry_num < 3){
+                                    sleep(1);
+                                    print "retry:$retry_num\n";
+                                }else{
+                                    exit -1;
+                                }
+                                $retry_num++;
                             }
                         }
+
                     }
                 }
             }elsif( $indicator < 0 && $pre_indicator < 0 ){
                 # 両方負⇒同じ方向
                 if( $position eq "SHORT" ){
-                    if($rate > 50.0){
+                    if($rate > $threshold){
                         # SHORT維持
                     }else{
                         # SHORT利確
-                        my $res_json;
-                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
-                                            \$res_json,
-                                            \$ua,
-                                            \$authBitflyer,
-                                            "FX_BTC_JPY",
-                                            $ammount
-                                        );
+                        my $retry_num = 0;
+                        while(1){
+                            my $res_json;
+                            my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                                \$res_json,
+                                                \$ua,
+                                                \$authBitflyer,
+                                                "FX_BTC_JPY",
+                                                $ammount
+                                            );
 
-                        print "ret_req=$ret_req\n";
-                        if( $ret_req==0 ){
-                            # 注文成功
-                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
-                            $position = "NONE";
-                            $profit = $pos_best_bid - $pre_best_bid;
-                            
-                            print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
+                            print "ret_req=$ret_req\n";
+                            if( $ret_req==0 ){
+                                # 注文成功
+                                my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                                $position = "NONE";
+                                $profit = $pos_best_bid - $pre_best_bid;
+                                
+                                print "writeJson. $fileName\n";
+                                #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                #    print "FileSaveError. $fileName\n";
+                                #    exit -1;
+                                #}
+                                last;
+                            }else{
+                                if($retry_num < 3){
+                                    sleep(1);
+                                    print "retry:$retry_num\n";
+                                }else{
+                                    exit -1;
+                                }
+                                $retry_num++;
                             }
                         }
                     }
@@ -221,27 +246,39 @@ while(1){
                     # LONG利確(ドテンショート)
                     {
                         # LONG利確
-                        my $res_json;
-                        my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
-                                            \$res_json,
-                                            \$ua,
-                                            \$authBitflyer,
-                                            "FX_BTC_JPY",
-                                            $ammount
-                                        );
+                        my $retry_num = 0;
+                        while(1){
+                            my $res_json;
+                            my $ret_req =   MyModule::UtilityBitflyer::shortByMarket(
+                                                \$res_json,
+                                                \$ua,
+                                                \$authBitflyer,
+                                                "FX_BTC_JPY",
+                                                $ammount
+                                            );
 
 
-                        print "ret_req=$ret_req\n";
-                        if( $ret_req==0 ){
-                            # 注文成功
-                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
-                            $position = "NONE";
-                            $profit = $pre_best_bid - $pos_best_bid;
-                            
-                            print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
+                            print "ret_req=$ret_req\n";
+                            if( $ret_req==0 ){
+                                # 注文成功
+                                my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                                $position = "NONE";
+                                $profit = $pre_best_bid - $pos_best_bid;
+                                
+                                print "writeJson. $fileName\n";
+                                #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                #    print "FileSaveError. $fileName\n";
+                                #    exit -1;
+                                #}
+                                last;
+                            }else{
+                                if($retry_num < 3){
+                                    sleep(1);
+                                    print "retry:$retry_num\n";
+                                }else{
+                                    exit -1;
+                                }
+                                $retry_num++;
                             }
                         }
                     }
@@ -265,36 +302,48 @@ while(1){
                             my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
 
                             print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
-                            }
+                            #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                            #    print "FileSaveError. $fileName\n";
+                            #    exit -1;
+                            #}
                         }
                     }
                 }elsif( $position eq "SHORT"){
                     # SHORT利確(ドテンロング)
                     {
                         # SHORT利確
-                        my $res_json;
-                        my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
-                                            \$res_json,
-                                            \$ua,
-                                            \$authBitflyer,
-                                            "FX_BTC_JPY",
-                                            $ammount
-                                        );
+                        my $retry_num = 0;
+                        while(1){
+                            my $res_json;
+                            my $ret_req =   MyModule::UtilityBitflyer::longByMarket(
+                                                \$res_json,
+                                                \$ua,
+                                                \$authBitflyer,
+                                                "FX_BTC_JPY",
+                                                $ammount
+                                            );
 
-                        print "ret_req=$ret_req\n";
-                        if( $ret_req==0 ){
-                            # 注文成功
-                            my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
-                            $position = "NONE";
-                            $profit = $pos_best_bid - $pre_best_bid;
+                            print "ret_req=$ret_req\n";
+                            if( $ret_req==0 ){
+                                # 注文成功
+                                my $fileName = sprintf("%05d_%s_RIKAKU.json",$cycle_cnt,$position);
+                                $position = "NONE";
+                                $profit = $pos_best_bid - $pre_best_bid;
 
-                            print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
+                                print "writeJson. $fileName\n";
+                                #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                                #    print "FileSaveError. $fileName\n";
+                                #    exit -1;
+                                #}
+                                last;
+                            }else{
+                                if($retry_num < 3){
+                                    sleep(1);
+                                    print "retry:$retry_num\n";
+                                }else{
+                                    exit -1;
+                                }
+                                $retry_num++;
                             }
                         }
                     }
@@ -317,10 +366,10 @@ while(1){
                             my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
 
                             print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
-                            }
+                            #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                            #    print "FileSaveError. $fileName\n";
+                            #    exit -1;
+                            #}
                         }
                     }
                 }elsif($position eq "NONE"){
@@ -343,10 +392,10 @@ while(1){
                             my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
 
                             print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
-                            }
+                            #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                            #    print "FileSaveError. $fileName\n";
+                            #    exit -1;
+                            #}
                         }
                     }else{
                         # SHORTエントリー
@@ -368,10 +417,10 @@ while(1){
                             my $fileName = sprintf("%05d_%s_ENTRY.json",$cycle_cnt,$position);
 
                             print "writeJson. $fileName\n";
-                            if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
-                                print "FileSaveError. $fileName\n";
-                                exit -1;
-                            }
+                            #if(MyModule::UtilityJson::writeJson(\$res_json, $fileName, ">")!=0){
+                            #    print "FileSaveError. $fileName\n";
+                            #    exit -1;
+                            #}
                         }
 
                     }
