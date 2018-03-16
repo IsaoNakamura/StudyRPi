@@ -20,8 +20,6 @@ use Selenium::Remote::Driver;
 
 use Data::Dumper;
 
-
-
 my $authFilePath = "./AuthBitflyer.json";
 my $dest = "./DEST/CryptoInagoRider.json";
 my $ammount = 0.005;
@@ -53,22 +51,23 @@ my $title = $driver->get_title();
 $title = encode('Shift_JIS', $title);
 print "$title\n";
 
-my $elements = $driver->find_elements("#chart_table_tbody input[type='checkbox']", "css");
-for(my $i=1; $i<@{$elements}; $i++){
-    my $elem_id = $elements->[$i]->get_attribute('id');
-    if($elem_id eq "bitFlyer_BTCJPY_checkbox"){
-        next;
-    }
-    $elements->[$i]->click();
-    print "[$i]:" . $elem_id . " is clicked\n";
-}
+#my $elements = $driver->find_elements("#chart_table_tbody input[type='checkbox']", "css");
+#for(my $i=1; $i<@{$elements}; $i++){
+#    my $elem_id = $elements->[$i]->get_attribute('id');
+#    if($elem_id eq "bitFlyer_BTCJPY_checkbox"){
+#        next;
+#    }
+#    $elements->[$i]->click();
+#    print "[$i]:" . $elem_id . " is clicked\n";
+#}
 
 # パラメタ
 my $cycle_sec = 3;
 my $rikaku_retry_num = 3;
 my $entry_retry_num = 0;
-my $force = 0.5;
-my $thresho
+my $force = 0.7;
+my $threshold = 80.0;
+my $execTrade = 0;
 
 # イナゴフライヤー取得部品ID
 my $sell_id = "sellVolumePerMeasurementTime";
@@ -98,30 +97,34 @@ while(1){
         # インジケータの値を算出(0に戻ろうとする特性をもつ(1サイクルにつきforce%半減))
         if(abs($indicator) < 0.0001){
             # 0なら維持
-        }
-        elsif($indicator>0.0){
-            # 正なら減らす
-            $indicator = $indicator * $force;
-            if($indicator<=0.0){
-                $indicator=0.0;
-            }
+            $indicator = 0.0;
         }else{
-            # 負なら増やす
+            # 減衰
             $indicator = $indicator * $force;
-            if($indicator>=0.0){
-                $indicator=0.0;
-            }
         }
         $indicator+=$effective;
 
         # インジケータの前回との比率を算出
         my $rate = 0.0;
+        my $delta = 0.0;
         if(abs($pre_indicator) > 0.0001){
-            $rate = ($indicator / $pre_indicator) * 100.0;
+            
+            
+            #$rate = $delta / $pre_indicator * 100.0;
+            $delta = $indicator - $pre_indicator;
+            if($pre_indicator<0.0 && $indicator>=0.0){
+                $rate =  $delta / $indicator * 100.0;
+            }elsif($pre_indicator>=0.0 && $indicator<0.0){
+                $rate =  $delta / $pre_indicator * 100.0;
+            }elsif($pre_indicator>=0.0 && $indicator>=0.0){
+                $rate = $delta / $indicator * 100.0;
+            }elsif($pre_indicator<0.0 && $indicator<0.0){
+                $rate = $delta / $indicator * 100.0 * -1.0;
+            }
         }
 
-        # 売買ロジック
-        if($cycle_cnt>=4){
+        # トレードロジック
+        if( ($cycle_cnt>=4) && ($execTrade==1) ){
             if( $position eq "LONG" ){
                 # LONGポジションの場合
                 if( $indicator > 0 && $pre_indicator > 0){
@@ -145,7 +148,6 @@ while(1){
                     # 前フレームから同じトレンド方向(下げ)の場合
                 }else{
                     # 前フレームからトレンドが反転した場合
-                    # LONG利確(ドテンショート)
                     {
                         # LONG利確
                         print "LONG-RIKAKU\n";
@@ -159,9 +161,9 @@ while(1){
                             exit -1;
                         }
                     }
-                    {
-                        # SHORTエントリー
-                        print "SHORT-ENTRY\n";
+                    if(abs($effective)>50){
+                        # ドテンSHORTエントリー
+                        print "SHORT-ENTRY(DOTEN)\n";
                         my $res_json;
                         if( sellMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -192,7 +194,6 @@ while(1){
                     }
                 }else{
                     # 前フレームからトレンドが反転した場合
-                    # SHORT利確(ドテンロング)
                     {
                         # SHORT利確
                         print "SHORT-RIKAKU\n";
@@ -206,9 +207,9 @@ while(1){
                             exit -1;
                         }
                     }
-                    {
-                        # LONGエントリー
-                        print "LONG-ENTRY\n";
+                    if(abs($effective)>50){
+                        # ドテンLONGエントリー
+                        print "LONG-ENTRY(DOTEN)\n";
                         my $res_json;
                         if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -221,12 +222,8 @@ while(1){
                 if( $indicator > 0 && $pre_indicator > 0){
                     # 前フレームから同じトレンド方向(上げ)の場合
                     # 強い上げが来た場合
-                }elsif( $indicator < 0 && $pre_indicator < 0 ){
-                    # 前フレームから同じトレンド方向(下げ)の場合
-                    # 強い下げが来た場合
-                }else{
-                    # 前フレームからトレンドが反転した場合
-                    if($indicator > 0){
+                    #if( (abs($effective)>100.0) && (abs($rate) > 200.0) ){
+                    if( abs($indicator)>100.0 ){
                         # LONGエントリー
                         print "LONG-ENTRY\n";
                         my $res_json;
@@ -235,7 +232,12 @@ while(1){
                             # LONGポジションへ
                             $position = "LONG";
                         }
-                    }else{
+                    }
+                }elsif( $indicator < 0 && $pre_indicator < 0 ){
+                    # 前フレームから同じトレンド方向(下げ)の場合
+                    # 強い下げが来た場合
+                    #if( (abs($effective)>100.0) && (abs($rate) > 200.0) ){
+                    if( abs($indicator)>100.0 ){
                         # SHORTエントリー
                         print "SHORT-ENTRY\n";
                         my $res_json;
@@ -243,6 +245,29 @@ while(1){
                             # 注文成功
                             # SHORTポジションへ
                             $position = "SHORT";
+                        }
+                    }
+                }else{
+                    # 前フレームからトレンドが反転した場合
+                    if(abs($effective)>50){
+                        if($indicator > 0){
+                            # LONGエントリー
+                            print "LONG-ENTRY(DOTEN)\n";
+                            my $res_json;
+                            if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                                # 注文成功
+                                # LONGポジションへ
+                                $position = "LONG";
+                            }
+                        }else{
+                            # SHORTエントリー
+                            print "SHORT-ENTRY(DOTEN)\n";
+                            my $res_json;
+                            if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                                # 注文成功
+                                # SHORTポジションへ
+                                $position = "SHORT";
+                            }
                         }
                     }
                 }
@@ -275,7 +300,7 @@ sub buyMarket{
 
     my $result = -1;
     my $retry_cnt = 0;
-    print "ammount=$ammount\n";
+
     while(1){
         my $ret_req =   MyModule::UtilityBitflyer::buyMarket(
                             $resultJson_ref,
@@ -308,7 +333,6 @@ sub sellMarket{
 
     my $result = -1;
     my $retry_cnt = 0;
-    print "ammount=$ammount\n";
     while(1){
         my $ret_req =   MyModule::UtilityBitflyer::sellMarket(
                             $resultJson_ref,
