@@ -241,7 +241,7 @@ sub postSendParentOrder{
 
 
 # 成り行き買い注文
-sub longByMarket{
+sub buyMarket{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
     my $auth_ref       = shift;
@@ -273,7 +273,7 @@ sub longByMarket{
 }
 
 # 成り行き売り注文
-sub shortByMarket{
+sub sellMarket{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
     my $auth_ref       = shift;
