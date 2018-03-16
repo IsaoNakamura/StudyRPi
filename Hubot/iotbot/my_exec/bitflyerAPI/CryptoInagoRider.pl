@@ -90,9 +90,10 @@ my $pre_effective = 0.0;
 
 
 # 0に戻ろうとする特性をもつ(1サイクルにつきX%半減)
+my $indicator = 0.0;
 my $pre_indicator = 0.0;
-my $force = 0.6;
-my $threshold = 50.0;
+my $force = 0.5;
+my $threshold = 80.0;
 
 while(1){
     eval{
@@ -122,8 +123,6 @@ while(1){
         my $profit = 0;
         
         # インジケータの値を算出
-        my $indicator = 0.0;
-        $indicator+=$effective;
         if(abs($indicator) < 0.0001){
             # 0なら維持
         }
@@ -143,6 +142,7 @@ while(1){
                 $indicator=0.0;
             }
         }
+        $indicator+=$effective;
 
         # インジケータの前回との比率を算出
         my $rate = 0.0;
@@ -282,6 +282,7 @@ while(1){
                             }
                         }
                     }
+                    sleep(1);
                     {
                         # SHORTエントリー
                         my $res_json;
@@ -347,6 +348,7 @@ while(1){
                             }
                         }
                     }
+                    sleep(1);
                     {
                         # LONGエントリー
                         my $res_json;
@@ -429,16 +431,16 @@ while(1){
         }
 
         # 情報出力
-        my $volume_str = sprintf("[%05d]: SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f(%5.0f): BID=%9d(%5d): %5s: PFT=%9d:\n"
+        my $volume_str = sprintf("[%05d]: SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f(%5.0f): %5s: BID=%9d(%5d): PFT=%9d:\n"
             , $cycle_cnt
             , $sell_volume
             , $buy_volume
             , $effective
             , $indicator
             , $rate
+            , $position
             , $best_bid
             , ($best_bid - $pre_best_bid)
-            , $position
             , $profit
         );
         print $volume_str;
