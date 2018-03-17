@@ -66,8 +66,8 @@ my $cycle_sec = 3;
 my $rikaku_retry_num = 3;
 my $entry_retry_num = 0;
 my $force = 0.7;
-my $threshold = 80.0;
-my $execTrade = 0;
+my $threshold = 50.0;
+my $execTrade = 1;
 
 # イナゴフライヤー取得部品ID
 my $sell_id = "sellVolumePerMeasurementTime";
@@ -108,8 +108,6 @@ while(1){
         my $rate = 0.0;
         my $delta = 0.0;
         if(abs($pre_indicator) > 0.0001){
-            
-            
             #$rate = $delta / $pre_indicator * 100.0;
             $delta = $indicator - $pre_indicator;
             if($pre_indicator<0.0 && $indicator>=0.0){
@@ -129,7 +127,7 @@ while(1){
                 # LONGポジションの場合
                 if( $indicator > 0 && $pre_indicator > 0){
                     # 前フレームから同じトレンド方向(上げ)の場合
-                    if($rate > $threshold){
+                    if( ($rate > ($threshold*-1.0)) || (abs($indicator) > 100.0 )){
                         # LONG維持
                     }else{
                         # LONG利確
@@ -177,7 +175,7 @@ while(1){
                     # 前フレームから同じトレンド方向(上げ)の場合
                 }elsif( $indicator < 0 && $pre_indicator < 0 ){
                     # 前フレームから同じトレンド方向(下げ)の場合
-                    if($rate > $threshold){
+                    if(($rate < $threshold) || (abs($indicator) > 100.0 )){
                         # SHORT維持
                     }else{
                         # SHORT利確
@@ -223,7 +221,7 @@ while(1){
                     # 前フレームから同じトレンド方向(上げ)の場合
                     # 強い上げが来た場合
                     #if( (abs($effective)>100.0) && (abs($rate) > 200.0) ){
-                    if( abs($indicator)>100.0 ){
+                    if( (abs($indicator)>100.0) || (abs($rate) > 100.0) ){
                         # LONGエントリー
                         print "LONG-ENTRY\n";
                         my $res_json;
@@ -237,7 +235,7 @@ while(1){
                     # 前フレームから同じトレンド方向(下げ)の場合
                     # 強い下げが来た場合
                     #if( (abs($effective)>100.0) && (abs($rate) > 200.0) ){
-                    if( abs($indicator)>100.0 ){
+                    if( (abs($indicator)>100.0) || (abs($rate) > 100.0) ){
                         # SHORTエントリー
                         print "SHORT-ENTRY\n";
                         my $res_json;
@@ -275,13 +273,14 @@ while(1){
         }
 
         # 情報出力
-        my $volume_str = sprintf("[%05d]: SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f(%5.0f): %5s:\n"
+        my $volume_str = sprintf("[%05d]: SELL=%7s vs BUY=%7s: EFE=%7.2f: IND=%7.2f: RATE=%5.0f: DLT=%5.0f: POS=%5s:\n"
             , $cycle_cnt
             , $sell_volume
             , $buy_volume
             , $effective
             , $indicator
             , $rate
+            , $delta
             , $position
         );
         print $volume_str;
