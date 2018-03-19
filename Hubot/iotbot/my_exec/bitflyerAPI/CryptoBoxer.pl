@@ -68,6 +68,9 @@ my $max = 0;#903500;
 my $short_entry = 0;
 my $long_entry = 0;
 my $profit_sum = 0;
+my $ema = 0;
+my $ema_cnt = 0;
+my $ema_tick_id = 0;
 
 # ポジション
 my $position = "NONE";
@@ -76,11 +79,14 @@ my $pre_position = $position;
 # 前値保存用
 my $pre_tick_id = 0;
 
+
+
 # メインループ
 my $cycle_cnt =0;
 while(1){
     #eval{
         # Ticker(相場)を取得
+        my $cur_value = 0;
         my $best_bid = 0;
         my $best_ask = 0;
         my $tick_id = 0;
@@ -106,7 +112,18 @@ while(1){
             next;
         }
         push(@tickerArray, $res_json);
-        $pre_tick_id = $tick_id;
+        $cur_value = int(($best_bid + $best_ask) / 2.0);
+        
+
+        # EMA
+        #print "EMA calc start.\n";
+        if( ($tick_id - $ema_tick_id) > 1800 ){
+            # 一分間ごとに計算する
+            $ema_cnt++;
+            $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
+            $ema_tick_id = $tick_id;
+        }
+        #print "EMA calc end.\n";
 
         # MAX,MIN初期値設定
         if($cycle_cnt==0){
@@ -184,24 +201,28 @@ while(1){
             if($position eq "NONE" && $countdown == 0){
                 my $noneRange = ($max - $min) / 8;
                 if(abs($best_ask-$max) < $noneRange){
-                    # SHORTエントリー
-                    print "SHORT-ENTRY:$best_ask\n";
-                    my $res_json;
-                    if( sellMarket(\$res_json, $entry_retry_num)==0 ){
-                        # 注文成功
-                        # SHORTポジションへ
-                        $position = "SHORT";
-                        $short_entry = $best_ask;
+                    if( ($best_ask - $ema) > 1000 ){
+                        # SHORTエントリー
+                        print "SHORT-ENTRY:$best_ask\n";
+                        my $res_json;
+                        if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                            # 注文成功
+                            # SHORTポジションへ
+                            $position = "SHORT";
+                            $short_entry = $best_ask;
+                        }
                     }
                 }elsif(abs($best_bid-$min) < $noneRange){
-                    # LONGエントリー
-                    print "LONG-ENTRY:$best_ask\n";
-                    my $res_json;
-                    if( buyMarket(\$res_json, $entry_retry_num)==0 ){
-                        # 注文成功
-                        # LONGポジションへ
-                        $position = "LONG";
-                        $long_entry = $best_bid;
+                    if( ($ema - $best_bid) > 1000 ){
+                        # LONGエントリー
+                        print "LONG-ENTRY:$best_ask\n";
+                        my $res_json;
+                        if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                            # 注文成功
+                            # LONGポジションへ
+                            $position = "LONG";
+                            $long_entry = $best_bid;
+                        }
                     }
                 }
             }elsif($position eq "SHORT"){
@@ -240,14 +261,16 @@ while(1){
                     }
 
                     if( ($min >= $best_bid)  && ($countdown == 0) ){
-                        # ドテンLONGエントリー
-                        print "DOTEN-LONG-ENTRY:$best_bid\n";
-                        my $res_json;
-                        if( buyMarket(\$res_json, $entry_retry_num)==0 ){
-                            # 注文成功
-                            # LONGポジションへ
-                            $position = "LONG";
-                            $long_entry = $best_bid;
+                        if( ($ema - $best_bid) > 1000 ){
+                            # ドテンLONGエントリー
+                            print "DOTEN-LONG-ENTRY:$best_bid\n";
+                            my $res_json;
+                            if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                                # 注文成功
+                                # LONGポジションへ
+                                $position = "LONG";
+                                $long_entry = $best_bid;
+                            }
                         }
                     }
                 }
@@ -281,14 +304,16 @@ while(1){
                     }
 
                     if( ($max <= $best_ask) && ($countdown == 0) ){
-                        # ドテンSHORTエントリー
-                        print "DOTEN-SHORT-ENTRY:$best_ask\n";
-                        my $res_json;
-                        if( sellMarket(\$res_json, $entry_retry_num)==0 ){
-                            # 注文成功
-                            # SHORTポジションへ
-                            $position = "SHORT";
-                            $short_entry = $best_ask;
+                        if( ($best_ask - $ema) > 1000 ){
+                            # ドテンSHORTエントリー
+                            print "DOTEN-SHORT-ENTRY:$best_ask\n";
+                            my $res_json;
+                            if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                                # 注文成功
+                                # SHORTポジションへ
+                                $position = "SHORT";
+                                $short_entry = $best_ask;
+                            }
                         }
                     }
                 }
@@ -302,15 +327,15 @@ while(1){
             MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
 
             my $array_cnt = @tickerArray;
-            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: RNG=%5d(%5d): POS=%5s: PRF=%5d: DWN=%3d: SUM=%5d TIME=%s: \n"
+            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: EMA=%7d(%5d): POS=%5s: PRF=%5d: DWN=%3d: SUM=%5d TIME=%s: \n"
                 , $cycle_cnt
                 , $tick_id
                 , $best_bid
                 , $best_ask
                 , $min
                 , $max
-                , $range
-                , ($max - $min)
+                , $ema
+                , ($cur_value - $ema )
                 , $position
                 , $profit
                 , $countdown
@@ -331,6 +356,7 @@ while(1){
         # 前値保存
         $pre_position = $position;
         $pre_range = $range;
+        $pre_tick_id = $tick_id;
 
     #};
     sleep($cycle_sec);
