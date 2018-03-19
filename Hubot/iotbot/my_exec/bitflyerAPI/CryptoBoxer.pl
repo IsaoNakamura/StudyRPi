@@ -197,11 +197,12 @@ while(1){
         }
 
         my $profit = 0;
+        my $emaRange = ($max - $min) / 4;
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
                 my $noneRange = ($max - $min) / 8;
                 if(abs($best_ask-$max) < $noneRange){
-                    if( ($best_ask - $ema) > 1000 ){
+                    if( ($best_ask - $ema) > $emaRange ){
                         # SHORTエントリー
                         print "SHORT-ENTRY:$best_ask\n";
                         my $res_json;
@@ -213,7 +214,7 @@ while(1){
                         }
                     }
                 }elsif(abs($best_bid-$min) < $noneRange){
-                    if( ($ema - $best_bid) > 1000 ){
+                    if( ($ema - $best_bid) > $emaRange ){
                         # LONGエントリー
                         print "LONG-ENTRY:$best_ask\n";
                         my $res_json;
@@ -261,7 +262,7 @@ while(1){
                     }
 
                     if( ($min >= $best_bid)  && ($countdown == 0) ){
-                        if( ($ema - $best_bid) > 1000 ){
+                        if( ($ema - $best_bid) > $emaRange ){
                             # ドテンLONGエントリー
                             print "DOTEN-LONG-ENTRY:$best_bid\n";
                             my $res_json;
@@ -304,7 +305,7 @@ while(1){
                     }
 
                     if( ($max <= $best_ask) && ($countdown == 0) ){
-                        if( ($best_ask - $ema) > 1000 ){
+                        if( ($best_ask - $ema) > $emaRange ){
                             # ドテンSHORTエントリー
                             print "DOTEN-SHORT-ENTRY:$best_ask\n";
                             my $res_json;
@@ -327,7 +328,7 @@ while(1){
             MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
 
             my $array_cnt = @tickerArray;
-            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: EMA=%7d(%5d): POS=%5s: PRF=%5d: DWN=%3d: SUM=%5d TIME=%s: \n"
+            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: EMA=%7d(DIF:%5d,RNG:%5d): POS=%5s: PRF=%5d: DWN=%3d: SUM=%5d TIME=%s: \n"
                 , $cycle_cnt
                 , $tick_id
                 , $best_bid
@@ -336,6 +337,7 @@ while(1){
                 , $max
                 , $ema
                 , ($cur_value - $ema )
+                , $emaRange
                 , $position
                 , $profit
                 , $countdown
