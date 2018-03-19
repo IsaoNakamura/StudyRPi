@@ -47,13 +47,13 @@ $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 my $cycle_sec = 0;
 my $rikaku_retry_num = 3;
 my $entry_retry_num = 0;
-my $execTrade = 1;
+my $execTrade = 0;
 
 
 # パラメタ:ライフサイクル
 # 100=約17秒
 # 1000=170秒=約3分
-my $range = 300;#4000;#5000;
+my $range = 5000;#4000;#5000;
 my $range_prm = 0.36;
 my $pre_range = $range;
 
@@ -121,11 +121,12 @@ while(1){
         }
 
         # レンジをMAX,MINから計算
-        $range = int(($max - $min) * $range_prm);
+        #$range = int(($max - $min) * $range_prm);
         #if($range_wrk > 300)
         #$X = $range / ($max - $min) = 9000 / 25000 = 0.36;
 
         if(@tickerArray > $range ){
+            $execTrade = 1;
             # Ticker配列がレンジ数を超えた場合
             my $doRecalc = 0;
             if($pre_range != $range){
@@ -301,7 +302,7 @@ while(1){
             MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
 
             my $array_cnt = @tickerArray;
-            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: RNG=%7d(%5d): POS=%5s: PRF=%7d: DWN=%3d: SUM=%7d TIME=%s: \n"
+            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: RNG=%5d(%5d): POS=%5s: PRF=%5d: DWN=%3d: SUM=%5d TIME=%s: \n"
                 , $cycle_cnt
                 , $tick_id
                 , $best_bid
