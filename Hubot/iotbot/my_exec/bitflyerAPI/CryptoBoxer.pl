@@ -60,8 +60,8 @@ my $countdown = $countNum;
 
 # 状態情報
 my @tickerArray;
-my $max = 0;
-my $min = 0;
+my $min = 0;#895869;
+my $max = 0;#903500;
 my $short_entry = 0;
 my $long_entry = 0;
 my $profit_sum = 0;
@@ -168,15 +168,24 @@ while(1){
             if($position eq "NONE" && $countdown == 0){
                 if(abs($best_ask-$max) < 1000){
                     # SHORTエントリー
-                    $position = "SHORT";
-                    $short_entry = $best_ask;
                     print "SHORT-ENTRY:$best_ask\n";
-                    
+                    my $res_json;
+                    if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                        # 注文成功
+                        # SHORTポジションへ
+                        $position = "SHORT";
+                        $short_entry = $best_ask;
+                    }
                 }elsif(abs($best_bid-$min) < 1000){
                     # LONGエントリー
-                    $position = "LONG";
-                    $long_entry = $best_bid;
                     print "LONG-ENTRY:$best_ask\n";
+                    my $res_json;
+                    if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                        # 注文成功
+                        # LONGポジションへ
+                        $position = "LONG";
+                        $long_entry = $best_bid;
+                    }
                 }
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $best_bid;
@@ -186,21 +195,42 @@ while(1){
                 if( $profit <= -$shortLC ){
                     # SHORTロスカット
                     print "SHORT-LOSSCUT:$best_bid($profit)\n";
-                    $position = "NONE";
-                    $short_entry = 0;
-                    $profit_sum += $profit;
+                    my $res_json;
+                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $profit_sum += $profit;
+                    }else{
+                        # 注文失敗
+                        exit -1;
+                    }
                 }elsif( ($min >= $best_bid) || ($profit >= $shortProfit ) ){
                     # SHORT利確
                     print "SHORT-RIKAKU:$best_bid($profit)\n";
-                    $position = "NONE";
-                    $short_entry = 0;
-                    $profit_sum += $profit;
+                    my $res_json;
+                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $profit_sum += $profit;
+                    }else{
+                        # 注文失敗
+                        exit -1;
+                    }
 
                     if( ($min >= $best_bid)  && ($countdown == 0) ){
                         # ドテンLONGエントリー
-                        $position = "LONG";
-                        $long_entry = $best_bid;
                         print "DOTEN-LONG-ENTRY:$best_bid\n";
+                        my $res_json;
+                        if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                            # 注文成功
+                            # LONGポジションへ
+                            $position = "LONG";
+                            $long_entry = $best_bid;
+                        }
                     }
                 }
             }elsif($position eq "LONG"){
@@ -211,21 +241,36 @@ while(1){
                 if( $profit <= -$longLC ){
                     # LONGロスカット
                     print "LONG-LOSSCUT:$best_ask($profit)\n";
-                    $position = "NONE";
-                    $long_entry = 0;
-                    $profit_sum += $profit;
+                    my $res_json;
+                    if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $long_entry = 0;
+                        $profit_sum += $profit;
+                    }
                 }elsif( ($max <= $best_ask) || ($profit >= $longProfit) ){
                     # LONG利確
                     print "LONG-RIKAKU:$best_ask($profit)\n";
-                    $position = "NONE";
-                    $long_entry = 0;
-                    $profit_sum += $profit;
+                    my $res_json;
+                    if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $long_entry = 0;
+                        $profit_sum += $profit;
+                    }
 
                     if( ($max <= $best_ask) && ($countdown == 0) ){
                         # ドテンSHORTエントリー
-                        $position = "SHORT";
-                        $short_entry = $best_ask;
                         print "DOTEN-SHORT-ENTRY:$best_ask\n";
+                        my $res_json;
+                        if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                            # 注文成功
+                            # SHORTポジションへ
+                            $position = "SHORT";
+                            $short_entry = $best_ask;
+                        }
                     }
                 }
             }
