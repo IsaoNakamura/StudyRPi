@@ -14,6 +14,8 @@ use Encode 'encode';
 use Date::Manip;
 use DateTime::Format::HTTP;
 
+use Time::Local;
+
 sub getDate {
        my $date_ref = shift; # OUT
 
