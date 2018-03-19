@@ -46,28 +46,32 @@ $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 my $cycle_sec = 0;
 my $rikaku_retry_num = 3;
 my $entry_retry_num = 0;
-my $force = 0.7;
-my $threshold = 50.0;
 my $execTrade = 1;
 
 
-# インジケータ
-my $indicator = 0.0;
+# パラメタ:ライフサイクル
+# 100=約17秒
+# 1000=170秒=約3分
+my $range = 5000;
 
-# 前値保存用
-my $pre_effective = 0.0;
-my $pre_indicator = 0.0;
+# パラメタ:MIN,MAX更新時の遊び時間
+my $countNum = 100;
+my $countdown = $countNum;
+
+# 状態情報
+my @tickerArray;
+my $max = 0;
+my $min = 0;
+my $short_entry = 0;
+my $long_entry = 0;
+my $profit_sum = 0;
 
 # ポジション
 my $position = "NONE";
 my $pre_position = $position;
 
-my %tickerHash;
-my $max = 863600;
-my $min = 859000;
-my $LC_VALUE = 1000;
-my $short_entry = 0;
-my $long_entry = 0;
+# 前値保存用
+my $pre_tick_id = 0;
 
 # メインループ
 my $cycle_cnt =0;
@@ -89,91 +93,170 @@ while(1){
             next;
         }
         
-        $best_bid = $res_json->{"best_bid"};
-        $best_ask = $res_json->{"best_ask"};
+        $best_bid = $res_json->{"best_bid"}; # 買値
+        $best_ask = $res_json->{"best_ask"}; # 売値(買値より高い)
         $tick_id = $res_json->{"tick_id"};
         $timestamp = $res_json->{"timestamp"};
-        if( exists $tickerHash{$tick_id}){
+
+        if($pre_tick_id eq $tick_id){
             next;
         }
-        $tickerHash{$tick_id} = $res_json;
+        #if( exists $tickerHash{$tick_id}){
+        #    next;
+        #}
+        #$tickerHash{$tick_id} = $res_json;
+        push(@tickerArray, $res_json);
+        $pre_tick_id = $tick_id;
+
+        # MAX,MIN初期値設定
+        if($cycle_cnt==0){
+            if($max==0){
+                $max = $best_ask;
+                $countdown = $countNum;
+            }
+            if($min==0){
+                $min = $best_bid;
+                $countdown = $countNum;
+            }
+        }
+
+        # MAX,MIN更新
+        if(@tickerArray > $range){
+            # Ticker配列がレンジ数を超えた場合
+            # 末尾を削除
+            my $shift_json = shift(@tickerArray);
+            my $shift_bid = $shift_json->{"best_bid"};
+            my $shift_ask = $shift_json->{"best_ask"};
+            if($shift_ask == $max || $shift_bid == $min){
+                # 削除したものがMAXまたはMINだった場合
+                # MAX,MINを再計算する
+                print "SHIFT($shift_bid,$shift_ask)\n";
+                for(my $i=0; $i<@tickerArray; $i++){
+                    my $elem_json = $tickerArray[$i];
+                    my $elem_bid = $elem_json->{"best_bid"};
+                    my $elem_ask = $elem_json->{"best_ask"};
+                    if($i==0){
+                        $max = $elem_ask;
+                        $min = $elem_bid;
+                        $countdown = $countNum;
+                        next;
+                    }
+                    if($max < $elem_ask){
+                        $max = $elem_ask;
+                        $countdown = $countNum;
+                    }
+                    if($min > $elem_bid){
+                        $min = $elem_bid;
+                        $countdown = $countNum;
+                    }
+                }
+                print "UPD($min,$max)\n";
+            }
+        }else{
+            if($max < $best_ask){
+                $max = $best_ask;
+                $countdown = $countNum;
+            }
+            if($min > $best_bid){
+                $min = $best_bid;
+                $countdown = $countNum;
+            }
+        }
 
         my $profit = 0;
-        if($position eq "NONE"){
-            if(abs($best_ask-$max) < 1000){
-                # SHORTエントリー
-                $position = "SHORT";
-                $short_entry = $best_ask;
-                print "SHORT-ENTRY:$best_ask\n";
-                
-            }elsif(abs($best_bid-$min) < 1000){
-                # LONGエントリー
-                $position = "LONG";
-                $long_entry = $best_bid;
-                print "LONG-ENTRY:$best_ask\n";
-            }
-        }elsif($position eq "SHORT"){
-            $profit = $short_entry - $best_bid;
-            #if( ($short_entry+$LC_VALUE) < $best_ask){
-            if( $profit <= -1000 ){
-                # SHORTロスカット
-                print "SHORT-LOSSCUT:$best_ask($profit)\n";
-                $position = "NONE";
-                $short_entry = 0;
-            #}elsif( ($min >= $best_bid) || ($profit >= 4000) ){
-            }elsif( $profit >= 4000 ){
-                {
+        if($execTrade==1){
+            if($position eq "NONE" && $countdown == 0){
+                if(abs($best_ask-$max) < 1000){
+                    # SHORTエントリー
+                    $position = "SHORT";
+                    $short_entry = $best_ask;
+                    print "SHORT-ENTRY:$best_ask\n";
+                    
+                }elsif(abs($best_bid-$min) < 1000){
+                    # LONGエントリー
+                    $position = "LONG";
+                    $long_entry = $best_bid;
+                    print "LONG-ENTRY:$best_ask\n";
+                }
+            }elsif($position eq "SHORT"){
+                $profit = $short_entry - $best_bid;
+                my $shortRange = $short_entry - $min;
+                my $shortProfit = $shortRange / 2;
+                my $shortLC = $shortRange / 2;
+                if( $profit <= -$shortLC ){
+                    # SHORTロスカット
+                    print "SHORT-LOSSCUT:$best_bid($profit)\n";
+                    $position = "NONE";
+                    $short_entry = 0;
+                    $profit_sum += $profit;
+                }elsif( ($min >= $best_bid) || ($profit >= $shortProfit ) ){
                     # SHORT利確
                     print "SHORT-RIKAKU:$best_bid($profit)\n";
                     $position = "NONE";
                     $short_entry = 0;
+                    $profit_sum += $profit;
+
+                    if( ($min >= $best_bid)  && ($countdown == 0) ){
+                        # ドテンLONGエントリー
+                        $position = "LONG";
+                        $long_entry = $best_bid;
+                        print "DOTEN-LONG-ENTRY:$best_bid\n";
+                    }
                 }
-                {
-                    # ドテンLONGエントリー
-                    $position = "LONG";
-                    $long_entry = $best_bid;
-                    print "DOTEN-LONG-ENTRY:$best_ask\n";
+            }elsif($position eq "LONG"){
+                $profit = $best_ask - $long_entry;
+                my $longRange = $max - $long_entry;
+                my $longProfit = $longRange / 2;
+                my $longLC = $longRange / 2;
+                if( $profit <= -$longLC ){
+                    # LONGロスカット
+                    print "LONG-LOSSCUT:$best_ask($profit)\n";
+                    $position = "NONE";
+                    $long_entry = 0;
+                    $profit_sum += $profit;
+                }elsif( ($max <= $best_ask) || ($profit >= $longProfit) ){
+                    # LONG利確
+                    print "LONG-RIKAKU:$best_ask($profit)\n";
+                    $position = "NONE";
+                    $long_entry = 0;
+                    $profit_sum += $profit;
+
+                    if( ($max <= $best_ask) && ($countdown == 0) ){
+                        # ドテンSHORTエントリー
+                        $position = "SHORT";
+                        $short_entry = $best_ask;
+                        print "DOTEN-SHORT-ENTRY:$best_ask\n";
+                    }
                 }
-            }
-        }elsif($position eq "LONG"){
-            $profit = $best_ask - $long_entry;
-            #if( ($long_entry-$LC_VALUE) > $best_bid){
-            if( $profit <= -1000 ){
-                # LONGロスカット
-                print "LONG-LOSSCUT:$best_bid($profit)\n";
-                $position = "NONE";
-                $long_entry = 0;
-            #}elsif( ($max >= $best_ask) || ($profit >= 4000) ){
-            }elsif( $profit >= 4000 ){
-                # LONG利確
-                print "LONG-RIKAKU:$best_ask($profit)\n";
-                $position = "NONE";
-                $long_entry = 0;
             }
         }
 
-        #if($max < $best_ask){
-        #    $max = $best_ask;
-        #}
-
-        #if($min > $best_bid){
-        #    $min = $best_bid;
-        #}
-
         #if($position ne $pre_position ){
             # 情報出力
-            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: POS=%5s: PRF=%7d: TIME=%s: \n"
+            my $array_cnt = @tickerArray;
+            my $info_str = sprintf("[%05d]: TID=%8d: BID=%7d: ASK=%7d: MIN=%7d: MAX=%7d: POS=%5s: PRF=%7d: DWN=%3d: SUM=%7d TIME=%s: \n"
                 , $cycle_cnt
                 , $tick_id
                 , $best_bid
                 , $best_ask
+                , $min
+                , $max
                 , $position
                 , $profit
+                , $countdown
+                , $profit_sum
                 , $timestamp
             );
             print $info_str;
         #}
 
+        # カウントダウン
+        if($countdown!=0){
+            $countdown--;
+            if($countdown<0){
+                $countdown = 0;
+            }
+        }
 
         # 前値保存
         $pre_position = $position;
