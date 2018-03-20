@@ -139,13 +139,18 @@ while(1){
             }
         }
 
+        if($execTrade==0){
+            if($cycle_cnt > 1800){
+                $execTrade=1;
+            }
+        }
+
         # レンジをMAX,MINから計算
         #$range = int(($max - $min) * $range_prm);
         #if($range_wrk > 300)
         #$X = $range / ($max - $min) = 9000 / 25000 = 0.36;
         my $isUpdateMinMax = 0;
         if(@tickerArray > $range ){
-            $execTrade = 1;
             # Ticker配列がレンジ数を超えた場合
 
             # 先頭を削除
@@ -190,13 +195,14 @@ while(1){
         }
 
         my $profit = 0;
+        my $maxminNear = ($max - $min) / 4;
         my $shortEmaFar = ($max - $ema) / 2;
         my $shortEmaNear = $shortEmaFar / 2;
         my $longEmaFar = ($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 2;
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
-                if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && ($best_ask - $ema) > $shortEmaFar ){
+                if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && (($max-$best_ask) < $maxminNear) ){
                     # EMA値より一定値上にあったら
                     # SHORTエントリー
                     print "ACK=SHORT-ENTRY,EMA=$ema,ASK=$best_ask,Far=$shortEmaFar\n";
@@ -207,7 +213,7 @@ while(1){
                         $position = "SHORT";
                         $short_entry = $best_ask;
                     }
-                }elsif( ($longEmaFar > $FAR_UNDER_LIMIT ) && ($ema - $best_bid) > $longEmaFar ){
+                }elsif( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && (($best_bid-$min) < $maxminNear) ){
                     # EMA値より一定値下にあったら
                     # LONGエントリー
                     print "ACK=LONG-ENTRY,EMA=$ema,BID=$best_bid,Far=$longEmaFar\n";
@@ -238,7 +244,6 @@ while(1){
                         exit -1;
                     }
                 }elsif( (abs($ema-$best_bid) < $shortEmaNear) || ($min >= $best_bid) || ($ema >= $best_bid) ){
-                #}elsif( abs($ema-$best_bid) < $shortEmaNear ){
                     # EMAに近づいたら、または、MIN,EMA以下
                     # MIN以下、EMAに近づいたら
                     # SHORT利確
@@ -284,7 +289,6 @@ while(1){
                         $countdown = $countNum;
                     }
                 }elsif( (abs($ema-$best_ask) < $longEmaNear) || ($max <= $best_ask) || ($ema <= $best_ask) ){
-                #}elsif( abs($ema-$best_ask) < $longEmaNear ){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
                     my $length = abs($ema-$best_ask);
