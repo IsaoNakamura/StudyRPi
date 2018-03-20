@@ -56,17 +56,15 @@ my $FAR_UNDER_LIMIT = 1000;
 # 100=約17秒
 # 1000=170秒=約3分
 my $range = 5000;#4000;#5000;
-my $range_prm = 0.36;
-my $pre_range = $range;
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $countNum = 30;
+my $countNum = 50;
 my $countdown = $countNum;
 
 # 状態情報
 my @tickerArray;
-my $min = 0;#895869;
-my $max = 0;#903500;
+my $min = 0;
+my $max = 0;
 my $short_entry = 0;
 my $long_entry = 0;
 my $profit_sum = 0;
@@ -80,8 +78,6 @@ my $pre_position = $position;
 
 # 前値保存用
 my $pre_tick_id = 0;
-
-
 
 # メインループ
 my $cycle_cnt =0;
@@ -118,14 +114,12 @@ while(1){
         
 
         # EMA
-        #print "EMA calc start.\n";
         if( ($tick_id - $ema_tick_id) > 1800 ){
             # 一分間ごとに計算する
             $ema_cnt++;
             $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
             $ema_tick_id = $tick_id;
         }
-        #print "EMA calc end.\n";
 
         # MAX,MIN初期値設定
         if($cycle_cnt==0){
@@ -139,16 +133,13 @@ while(1){
             }
         }
 
+        # トレード開始は一定数データをとってから
         if($execTrade==0){
             if($cycle_cnt > 1800){
                 $execTrade=1;
             }
         }
 
-        # レンジをMAX,MINから計算
-        #$range = int(($max - $min) * $range_prm);
-        #if($range_wrk > 300)
-        #$X = $range / ($max - $min) = 9000 / 25000 = 0.36;
         my $isUpdateMinMax = 0;
         if(@tickerArray > $range ){
             # Ticker配列がレンジ数を超えた場合
@@ -181,6 +172,8 @@ while(1){
                 }
             }
         }
+
+        # MIN/MAXを更新
         if($max < $best_ask){
             $max = $best_ask;
             $isUpdateMinMax++;
@@ -190,16 +183,17 @@ while(1){
             $isUpdateMinMax++;
         }
 
+        # 更新したらトレード無しサイクル数をセット
         if($isUpdateMinMax>0){
             $countdown = $countNum;
         }
 
         my $profit = 0;
-        my $maxminNear = ($max - $min) / 4;
+        my $maxminNear = ($max - $min) / 8;
         my $shortEmaFar = ($max - $ema) / 2;
-        my $shortEmaNear = $shortEmaFar / 2;
+        my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = ($ema - $min) / 2;
-        my $longEmaNear = $longEmaFar / 2;
+        my $longEmaNear = $longEmaFar / 4;
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
                 if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && (($max-$best_ask) < $maxminNear) ){
@@ -365,7 +359,6 @@ while(1){
 
         # 前値保存
         $pre_position = $position;
-        $pre_range = $range;
         $pre_tick_id = $tick_id;
 
     #};
