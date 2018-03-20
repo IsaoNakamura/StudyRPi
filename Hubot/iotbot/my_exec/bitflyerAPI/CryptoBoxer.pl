@@ -49,6 +49,8 @@ my $rikaku_retry_num = 3;
 my $entry_retry_num = 0;
 my $execTrade = 0;
 
+my $FAR_UNDER_LIMIT = 1000;
+
 
 # パラメタ:ライフサイクル
 # 100=約17秒
@@ -58,7 +60,7 @@ my $range_prm = 0.36;
 my $pre_range = $range;
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $countNum = 15;
+my $countNum = 30;
 my $countdown = $countNum;
 
 # 状態情報
@@ -188,30 +190,75 @@ while(1){
         }
 
         my $profit = 0;
-        my $emaRange = ($max - $min) / 4;
+        my $shortEmaFar = ($max - $ema) / 2;
+        my $shortEmaNear = $shortEmaFar / 2;
+        my $longEmaFar = ($ema - $min) / 2;
+        my $longEmaNear = $longEmaFar / 2;
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
-                my $noneRange = ($max - $min) / 8;
-                if(abs($best_ask-$max) < $noneRange){
-                    # MAXに値が近づいたら
-                    if( ($best_ask - $ema) > $emaRange ){
-                        # EMA値より上にあったら
-                        # SHORTエントリー
-                        print "ACK=SHORT-ENTRY,$best_ask\n";
-                        my $res_json;
-                        if( sellMarket(\$res_json, $entry_retry_num)==0 ){
-                            # 注文成功
-                            # SHORTポジションへ
-                            $position = "SHORT";
-                            $short_entry = $best_ask;
-                        }
+                if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && ($best_ask - $ema) > $shortEmaFar ){
+                    # EMA値より一定値上にあったら
+                    # SHORTエントリー
+                    print "ACK=SHORT-ENTRY,EMA=$ema,ASK=$best_ask,Far=$shortEmaFar\n";
+                    my $res_json;
+                    if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                        # 注文成功
+                        # SHORTポジションへ
+                        $position = "SHORT";
+                        $short_entry = $best_ask;
                     }
-                }elsif(abs($best_bid-$min) < $noneRange){
-                    # MINに値が近づいたら
-                    if( ($ema - $best_bid) > $emaRange ){
-                        # EMA値より下にあったら
-                        # LONGエントリー
-                        print "ACK=LONG-ENTRY,$best_ask\n";
+                }elsif( ($longEmaFar > $FAR_UNDER_LIMIT ) && ($ema - $best_bid) > $longEmaFar ){
+                    # EMA値より一定値下にあったら
+                    # LONGエントリー
+                    print "ACK=LONG-ENTRY,EMA=$ema,BID=$best_bid,Far=$longEmaFar\n";
+                    my $res_json;
+                    if( buyMarket(\$res_json, $entry_retry_num)==0 ){
+                        # 注文成功
+                        # LONGポジションへ
+                        $position = "LONG";
+                        $long_entry = $best_bid;
+                    }
+                }
+            }elsif($position eq "SHORT"){
+                $profit = $short_entry - $best_bid;
+                my $shortLC = $shortEmaFar + $shortEmaFar / 4;
+                if( $profit <= -$shortLC ){
+                    # SHORTロスカット
+                    print "ACK=SHORT-LOSSCUT,BID=$best_bid,PRF=$profit,LC=$shortLC\n";
+                    my $res_json;
+                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $profit_sum += $profit;
+                        $countdown = $countNum;
+                    }else{
+                        # 注文失敗
+                        exit -1;
+                    }
+                }elsif( (abs($ema-$best_bid) < $shortEmaNear) || ($min >= $best_bid) || ($ema >= $best_bid) ){
+                #}elsif( abs($ema-$best_bid) < $shortEmaNear ){
+                    # EMAに近づいたら、または、MIN,EMA以下
+                    # MIN以下、EMAに近づいたら
+                    # SHORT利確
+                    my $length = abs($ema-$best_bid);
+                    print "ACK=SHORT-RIKAKU, MIN=$min, EMA=$ema, BID=$best_bid, LNG=$length, NEAR=$shortEmaNear\n";
+                    my $res_json;
+                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $profit_sum += $profit;
+                    }else{
+                        # 注文失敗
+                        exit -1;
+                    }
+
+                    if( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && ($countdown == 0) ){
+                        # ドテンLONGエントリー
+                        print "ACK=DOTEN-LONG-ENTRY,EMA=$ema,BID=$best_bid,Far=$longEmaFar\n";
                         my $res_json;
                         if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -221,66 +268,12 @@ while(1){
                         }
                     }
                 }
-            }elsif($position eq "SHORT"){
-                $profit = $short_entry - $best_bid;
-                my $shortRange = $short_entry - $min;
-                my $shortProfit = $shortRange / 2;
-                my $shortLC = $shortRange / 2;
-                if( $profit <= -$shortLC ){
-                    # SHORTロスカット
-                    print "ACK=SHORT-LOSSCUT,$best_bid($profit)\n";
-                    my $res_json;
-                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
-                        # 注文成功
-                        # ノーポジションへ
-                        $position = "NONE";
-                        $short_entry = 0;
-                        $profit_sum += $profit;
-                        $countdown = $countNum;
-                    }else{
-                        # 注文失敗
-                        exit -1;
-                    }
-                }elsif( (abs($ema-$best_bid) < $emaRange) || ($min >= $best_bid) || ($ema >= $best_bid) ){
-                #}elsif( abs($ema-$best_bid) < $emaRange ){
-                    # EMAに近づいたら、または、MIN,EMA以下
-                    # MIN以下、EMAに近づいたら
-                    # SHORT利確
-                    print "ACK=SHORT-RIKAKU,$best_bid($profit)\n";
-                    my $res_json;
-                    if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
-                        # 注文成功
-                        # ノーポジションへ
-                        $position = "NONE";
-                        $short_entry = 0;
-                        $profit_sum += $profit;
-                    }else{
-                        # 注文失敗
-                        exit -1;
-                    }
-
-                    if( ($min >= $best_bid)  && ($countdown == 0) ){
-                        if( ($ema - $best_bid) > $emaRange ){
-                            # ドテンLONGエントリー
-                            print "ACK=DOTEN-LONG-ENTRY,$best_bid\n";
-                            my $res_json;
-                            if( buyMarket(\$res_json, $entry_retry_num)==0 ){
-                                # 注文成功
-                                # LONGポジションへ
-                                $position = "LONG";
-                                $long_entry = $best_bid;
-                            }
-                        }
-                    }
-                }
             }elsif($position eq "LONG"){
                 $profit = $best_ask - $long_entry;
-                my $longRange = $max - $long_entry;
-                my $longProfit = $longRange / 2;
-                my $longLC = $longRange / 2;
+                my $longLC = $longEmaFar + $longEmaFar / 4;
                 if( $profit <= -$longLC ){
                     # LONGロスカット
-                    print "ACK=LONG-LOSSCUT,$best_ask($profit)\n";
+                    print "ACK=LONG-LOSSCUT,ASK=$best_ask,PRF=$profit,LC=$longLC\n";
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -290,11 +283,12 @@ while(1){
                         $profit_sum += $profit;
                         $countdown = $countNum;
                     }
-                }elsif( (abs($ema-$best_ask) < $emaRange) || ($max <= $best_ask) || ($ema <= $best_ask) ){
-                #}elsif( abs($ema-$best_ask) < $emaRange ){
+                }elsif( (abs($ema-$best_ask) < $longEmaNear) || ($max <= $best_ask) || ($ema <= $best_ask) ){
+                #}elsif( abs($ema-$best_ask) < $longEmaNear ){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
-                    print "ACK=LONG-RIKAKU,$best_ask($profit)\n";
+                    my $length = abs($ema-$best_ask);
+                    print "ACK=LONG-RIKAKU, MAX=$max, EMA=$ema, ASK=$best_ask, LNG=$length, NEAR=$longEmaNear\n";
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -304,17 +298,15 @@ while(1){
                         $profit_sum += $profit;
                     }
 
-                    if( ($max <= $best_ask) && ($countdown == 0) ){
-                        if( ($best_ask - $ema) > $emaRange ){
-                            # ドテンSHORTエントリー
-                            print "ACK=DOTEN-SHORT-ENTRY,$best_ask\n";
-                            my $res_json;
-                            if( sellMarket(\$res_json, $entry_retry_num)==0 ){
-                                # 注文成功
-                                # SHORTポジションへ
-                                $position = "SHORT";
-                                $short_entry = $best_ask;
-                            }
+                    if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && ($countdown == 0) ){
+                        # ドテンSHORTエントリー
+                        print "ACK=DOTEN-SHORT-ENTRY,EMA=$ema,ASK=$best_ask,Far=$shortEmaFar\n";
+                        my $res_json;
+                        if( sellMarket(\$res_json, $entry_retry_num)==0 ){
+                            # 注文成功
+                            # SHORTポジションへ
+                            $position = "SHORT";
+                            $short_entry = $best_ask;
                         }
                     }
                 }
@@ -329,10 +321,13 @@ while(1){
             
             my $short_entry = $ema;
             my $long_entry = $ema;
+            my $near = 0;
             if($position eq "SHORT"){
                 $short_entry = $best_bid;
+                $near = $shortEmaNear;
             }elsif($position eq "LONG"){
                 $long_entry = $best_ask;
+                $near = $longEmaNear;
             }
             my $array_cnt = @tickerArray;
             my $info_str = sprintf("SEQ=%05d,TID=%8d,BID=%7d,ASK=%7d,MIN=%7d,MAX=%7d,EMA=%7d,SHORT=%7d,LONG=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,TIME=%s\n"
@@ -346,7 +341,7 @@ while(1){
                 , $short_entry
                 , $long_entry
                 , ($cur_value - $ema )
-                , $emaRange
+                , $near
                 , $position
                 , $profit
                 , $countdown
