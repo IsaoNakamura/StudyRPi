@@ -141,29 +141,17 @@ while(1){
         #$range = int(($max - $min) * $range_prm);
         #if($range_wrk > 300)
         #$X = $range / ($max - $min) = 9000 / 25000 = 0.36;
-
+        my $isUpdateMinMax = 0;
         if(@tickerArray > $range ){
             $execTrade = 1;
             # Ticker配列がレンジ数を超えた場合
-            my $doRecalc = 0;
-            if($pre_range != $range){
-                # RANGEが変更された場合
-                my $beg_idx = 0;#($range - 1);
-                my $end_idx = (@tickerArray - 1) - ($range - 1);
-                splice(@tickerArray, $beg_idx, $end_idx );
-                $doRecalc = 1;
-            }else{
-                # 先頭を削除
-                my $shift_json = shift(@tickerArray);
-                my $shift_bid = $shift_json->{"best_bid"};
-                my $shift_ask = $shift_json->{"best_ask"};
-                if($shift_ask == $max || $shift_bid == $min){
-                    # 削除したものがMAXまたはMINだった場合
-                    $doRecalc = 1;
-                }
-            }
 
-            if($doRecalc>0){
+            # 先頭を削除
+            my $shift_json = shift(@tickerArray);
+            my $shift_bid = $shift_json->{"best_bid"};
+            my $shift_ask = $shift_json->{"best_ask"};
+            if($shift_ask == $max || $shift_bid == $min){
+                # 削除したものがMAXまたはMINだった場合
                 # MAX,MINを再計算する
                 for(my $i=0; $i<@tickerArray; $i++){
                     my $elem_json = $tickerArray[$i];
@@ -172,28 +160,31 @@ while(1){
                     if($i==0){
                         $max = $elem_ask;
                         $min = $elem_bid;
-                        $countdown = $countNum;
+                        $isUpdateMinMax++;
                         next;
                     }
                     if($max < $elem_ask){
                         $max = $elem_ask;
-                        $countdown = $countNum;
+                        $isUpdateMinMax++;
                     }
                     if($min > $elem_bid){
                         $min = $elem_bid;
-                        $countdown = $countNum;
+                        $isUpdateMinMax++;
                     }
                 }
             }
-        }else{
-            if($max < $best_ask){
-                $max = $best_ask;
-                $countdown = $countNum;
-            }
-            if($min > $best_bid){
-                $min = $best_bid;
-                $countdown = $countNum;
-            }
+        }
+        if($max < $best_ask){
+            $max = $best_ask;
+            $isUpdateMinMax++;
+        }
+        if($min > $best_bid){
+            $min = $best_bid;
+            $isUpdateMinMax++;
+        }
+
+        if($isUpdateMinMax>0){
+            $countdown = $countNum;
         }
 
         my $profit = 0;
@@ -241,7 +232,7 @@ while(1){
                         $position = "NONE";
                         $short_entry = 0;
                         $profit_sum += $profit;
-                        $countdown = 50;
+                        $countdown = $countNum;
                     }else{
                         # 注文失敗
                         exit -1;
@@ -290,7 +281,7 @@ while(1){
                         $position = "NONE";
                         $long_entry = 0;
                         $profit_sum += $profit;
-                        $countdown = 50;
+                        $countdown = $countNum;
                     }
                 }elsif( ($max <= $best_ask) || ($profit >= $longProfit) ){
                     # LONG利確
