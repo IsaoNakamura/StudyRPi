@@ -40,12 +40,9 @@ my $ua = new LWP::UserAgent;
 $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
-
-
-
 # パラメタ
 my $cycle_sec = 0;
-my $rikaku_retry_num = 3;
+my $rikaku_retry_num = 10;
 my $entry_retry_num = 0;
 my $execTrade = 0;
 
@@ -273,7 +270,7 @@ while(1){
                         $countdown = $countNum;
                     }else{
                         # 注文失敗
-                        exit -1;
+                        last;
                     }
                 }elsif( (abs($ema-$best_bid) < $shortEmaNear) || ($min >= $best_bid) || ($ema >= $best_bid) ){
                     # EMAに近づいたら、または、MIN,EMA以下
@@ -290,7 +287,7 @@ while(1){
                         $profit_sum += $profit;
                     }else{
                         # 注文失敗
-                        exit -1;
+                        last;
                     }
 
                     if( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && ($countdown == 0) ){
