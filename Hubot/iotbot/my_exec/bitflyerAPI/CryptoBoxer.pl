@@ -440,14 +440,12 @@ while(1){
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%4d,RNG=%4d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,XKP=%2d,NKP=%2d,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,XKP=%2d,NKP=%2d,TIME=%s\n"
                 , $cycle_cnt
-                , $tick_id
                 , $cur_value
                 , $min
                 , $max
                 , $ema
-                , ($cur_value - $ema )
                 , $near
                 , $position
                 , $profit
