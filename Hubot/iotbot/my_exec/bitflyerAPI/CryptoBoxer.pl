@@ -446,7 +446,7 @@ while(1){
                 , $min
                 , $max
                 , $ema
-                , $near
+                , ($cur_value - $ema )
                 , $position
                 , $profit
                 , $countdown
