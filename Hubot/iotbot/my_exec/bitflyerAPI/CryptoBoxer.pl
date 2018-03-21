@@ -81,11 +81,13 @@ my $pre_tick_id = 0;
 my $pre_min = 0;
 my $pre_max = 0;
 my $pre_ema = 0;
+my $pre_value = 0;
+my $pre_delta = 0;
 
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tBID\tASK\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tRATE\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -120,21 +122,15 @@ while(1){
         $best_ask = $res_json->{"best_ask"}; # 売値(買値より高い)
         $tick_id = $res_json->{"tick_id"};
         my $volume = $res_json->{"volume_by_product"};
-        my $cur_value = $res_json->{"ltp"};#
+        $cur_value = $res_json->{"ltp"};
         my $total_bid_depth = $res_json->{"total_bid_depth"};
         my $total_ask_depth = $res_json->{"total_ask_depth"};
         my $timestamp_utc = $res_json->{"timestamp"};
         MyModule::UtilityTime::convertTimeGMTtoJST(\$timestamp, $timestamp_utc);
 
-        #my $res_info = sprintf("BID=%7d, ASK=%7d, CUR=%7d, VOL=%7d, BDPT=%7d, ADPT=%7d\n"
-        #                    ,$best_bid
-        #                    ,$best_ask
-        #                    ,$cur_value
-        #                    ,$volume
-        #                    ,$total_bid_depth
-        #                    ,$total_ask_depth
-        #                );
-        #print $res_info;
+
+
+
 
         if($pre_tick_id eq $tick_id){
             next;
@@ -163,6 +159,16 @@ while(1){
                 $countdown = 100;#$countNum;
             }
         }
+
+        my $delta = ($cur_value - $pre_value) + $pre_delta * 0.5;
+        my $rate = $delta / ($max-$min) * 100;
+
+        my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
+                            ,$cur_value
+                            ,$delta
+                            ,$rate
+                        );
+        #print $res_info;
 
         # トレード開始は一定数データをとってから
         if($execTrade==0){
@@ -367,11 +373,10 @@ while(1){
             ($pre_ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%3.2f\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
-                , $best_bid
-                , $best_ask
+                , $cur_value
                 , $min
                 , $max
                 , $ema
@@ -383,16 +388,16 @@ while(1){
                 , $profit
                 , $countdown
                 , $profit_sum
+                , $rate
                 , $oldest
                 , $timestamp
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,TID=%8d,BID=%7d,ASK=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%3.2f,TIME=%s\n"
                 , $cycle_cnt
                 , $tick_id
-                , $best_bid
-                , $best_ask
+                , $cur_value
                 , $min
                 , $max
                 , $ema
@@ -402,9 +407,10 @@ while(1){
                 , $profit
                 , $countdown
                 , $profit_sum
+                , $rate
                 , $timestamp
             ); 
-            #print $info_str;
+            print $info_str;
         }
 
         # カウントダウン
@@ -421,6 +427,8 @@ while(1){
         $pre_min = $min;
         $pre_max = $max;
         $pre_ema = $ema;
+        $pre_value = $cur_value;
+        $pre_delta = $delta;
 
     #};
 
