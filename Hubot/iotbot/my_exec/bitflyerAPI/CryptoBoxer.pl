@@ -81,6 +81,9 @@ my $pre_ema = 0;
 my $pre_value = 0;
 my $pre_delta = 0;
 
+my $max_keep = 0;
+my $min_keep = 0;
+
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
@@ -125,16 +128,11 @@ while(1){
         my $timestamp_utc = $res_json->{"timestamp"};
         MyModule::UtilityTime::convertTimeGMTtoJST(\$timestamp, $timestamp_utc);
 
-
-
-
-
         if($pre_tick_id eq $tick_id){
             next;
         }
         push(@tickerArray, $res_json);
         
-
         # EMA
         my $isMinit = 0;
         if( ($tick_id - $ema_tick_id) > 1800 ){
@@ -160,11 +158,11 @@ while(1){
         my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
         my $rate = ($delta / (($max-$min) / 2)) * 100;
 
-        my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
-                            ,$cur_value
-                            ,$delta
-                            ,$rate
-                        );
+        #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
+        #                    ,$cur_value
+        #                    ,$delta
+        #                    ,$rate
+        #                );
         #print $res_info;
 
         # トレード開始は一定数データをとってから
@@ -229,12 +227,36 @@ while(1){
         my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = ($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 4;
+
+        if($position eq "NONE" && $countdown == 0){
+            if(($max-$best_ask) < $maxminNear){
+                $max_keep++;
+            }else{
+                $max_keep--;
+                if($max_keep<0){
+                    $max_keep = 0;
+                }
+            }
+            if(($best_bid-$min) < $maxminNear){
+                $min_keep++;
+            }else{
+                $min_keep--;
+                if($min_keep<0){
+                    $min_keep = 0;
+                }
+            }
+        }else{
+            $max_keep = 0;
+            $min_keep = 0;
+        }
+
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
                 if( 
                     ($shortEmaFar > $FAR_UNDER_LIMIT ) && 
                     (($best_ask - $ema) > $shortEmaFar) && 
-                    (($max-$best_ask) < $maxminNear)
+                    (($max-$best_ask) < $maxminNear) &&
+                    ($max_keep >= 50)
                 ){
                     # EMA値より一定値上にあったら
                     # SHORTエントリー
@@ -249,7 +271,8 @@ while(1){
                 }elsif(
                     ($longEmaFar > $FAR_UNDER_LIMIT ) &&
                     (($ema - $best_bid) > $longEmaFar) &&
-                    (($best_bid-$min) < $maxminNear)
+                    (($best_bid-$min) < $maxminNear) &&
+                    ($min_keep > 50)
                 ){
                     # EMA値より一定値下にあったら
                     # LONGエントリー
@@ -394,7 +417,7 @@ while(1){
             ($pre_ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5.1f\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5.1f\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -410,12 +433,14 @@ while(1){
                 , $countdown
                 , $profit_sum
                 , $rate
+                , $max_keep
+                , $min_keep
                 , $oldest
                 , $timestamp
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%4d,RNG=%4d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,XKP=%2d,NKP=%2d,TIME=%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -429,6 +454,8 @@ while(1){
                 , $countdown
                 , $profit_sum
                 , $rate
+                , $max_keep
+                , $min_keep
                 , $timestamp
             ); 
             print $info_str;
