@@ -58,7 +58,7 @@ my $FAR_UNDER_LIMIT = 1000;
 my $range = 5000;#4000;#5000;
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $countNum = 50;
+my $countNum = 300;
 my $countdown = $countNum;
 
 # 状態情報
@@ -78,6 +78,15 @@ my $pre_position = $position;
 
 # 前値保存用
 my $pre_tick_id = 0;
+my $pre_min = 0;
+my $pre_max = 0;
+my $pre_ema = 0;
+
+my $stopCodeFile = "./StopCode.txt";
+my $logFilePath = './CryptoBoxer.log';
+open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
+my $header_str = "SEQ\tTID\tBID\tASK\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tTIME\n";
+print OUT $header_str;
 
 # メインループ
 my $cycle_cnt =0;
@@ -90,31 +99,53 @@ while(1){
         my $tick_id = 0;
         my $timestamp = "";
         my $res_json;
-        if( MyModule::UtilityBitflyer::getTicker(
-                                                    \$res_json,
-                                                    \$ua,
-                                                    \$authBitflyer,
-                                                    "FX_BTC_JPY"
-                                                )!=0
-        ){
+        my $isNext = -1;
+        eval{
+            if( MyModule::UtilityBitflyer::getTicker(
+                                                        \$res_json,
+                                                        \$ua,
+                                                        \$authBitflyer,
+                                                        "FX_BTC_JPY"
+                                                    )==0
+            ){
+                #next;
+                $isNext = 0;
+            }
+        };
+        if($isNext!=0){
             next;
         }
         
         $best_bid = $res_json->{"best_bid"}; # 買値
         $best_ask = $res_json->{"best_ask"}; # 売値(買値より高い)
         $tick_id = $res_json->{"tick_id"};
-        my $timestamp_wrk = $res_json->{"timestamp"};
-        MyModule::UtilityTime::convertTimeGMTtoJST(\$timestamp, $timestamp_wrk);
+        my $volume = $res_json->{"volume_by_product"};
+        my $cur_value = $res_json->{"ltp"};#
+        my $total_bid_depth = $res_json->{"total_bid_depth"};
+        my $total_ask_depth = $res_json->{"total_ask_depth"};
+        my $timestamp_utc = $res_json->{"timestamp"};
+        MyModule::UtilityTime::convertTimeGMTtoJST(\$timestamp, $timestamp_utc);
+
+        #my $res_info = sprintf("BID=%7d, ASK=%7d, CUR=%7d, VOL=%7d, BDPT=%7d, ADPT=%7d\n"
+        #                    ,$best_bid
+        #                    ,$best_ask
+        #                    ,$cur_value
+        #                    ,$volume
+        #                    ,$total_bid_depth
+        #                    ,$total_ask_depth
+        #                );
+        #print $res_info;
 
         if($pre_tick_id eq $tick_id){
             next;
         }
         push(@tickerArray, $res_json);
-        $cur_value = int(($best_bid + $best_ask) / 2.0);
         
 
         # EMA
+        my $isMinit = 0;
         if( ($tick_id - $ema_tick_id) > 1800 ){
+            $isMinit = 1;
             # 一分間ごとに計算する
             $ema_cnt++;
             $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
@@ -135,7 +166,8 @@ while(1){
 
         # トレード開始は一定数データをとってから
         if($execTrade==0){
-            if($cycle_cnt > 1800){
+            if($cycle_cnt > $range){
+                print "START TRADE. cycle_cnt=$cycle_cnt, range=$range\n";
                 $execTrade=1;
             }
         }
@@ -199,7 +231,7 @@ while(1){
                 if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && (($max-$best_ask) < $maxminNear) ){
                     # EMA値より一定値上にあったら
                     # SHORTエントリー
-                    print "ACK=SHORT-ENTRY,EMA=$ema,ASK=$best_ask,Far=$shortEmaFar\n";
+                    print "ACK=SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n";
                     my $res_json;
                     if( sellMarket(\$res_json, $entry_retry_num)==0 ){
                         # 注文成功
@@ -210,7 +242,7 @@ while(1){
                 }elsif( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && (($best_bid-$min) < $maxminNear) ){
                     # EMA値より一定値下にあったら
                     # LONGエントリー
-                    print "ACK=LONG-ENTRY,EMA=$ema,BID=$best_bid,Far=$longEmaFar\n";
+                    print "ACK=LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
                     my $res_json;
                     if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                         # 注文成功
@@ -224,7 +256,7 @@ while(1){
                 my $shortLC = $shortEmaFar + $shortEmaFar / 4;
                 if( $profit <= -$shortLC ){
                     # SHORTロスカット
-                    print "ACK=SHORT-LOSSCUT,BID=$best_bid,PRF=$profit,LC=$shortLC\n";
+                    print "ACK=SHORT-LOSSCUT, BID=$best_bid, PRF=$profit, LC=$shortLC\n";
                     my $res_json;
                     if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -242,7 +274,7 @@ while(1){
                     # MIN以下、EMAに近づいたら
                     # SHORT利確
                     my $length = abs($ema-$best_bid);
-                    print "ACK=SHORT-RIKAKU, MIN=$min, EMA=$ema, BID=$best_bid, LNG=$length, NEAR=$shortEmaNear\n";
+                    print "ACK=SHORT-RIKAKU, BID=$best_bid, PRF=$profit, MIN=$min, EMA=$ema, LNG=$length, NEAR=$shortEmaNear\n";
                     my $res_json;
                     if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -257,7 +289,7 @@ while(1){
 
                     if( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && ($countdown == 0) ){
                         # ドテンLONGエントリー
-                        print "ACK=DOTEN-LONG-ENTRY,EMA=$ema,BID=$best_bid,Far=$longEmaFar\n";
+                        print "ACK=DOTEN-LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
                         my $res_json;
                         if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -272,7 +304,7 @@ while(1){
                 my $longLC = $longEmaFar + $longEmaFar / 4;
                 if( $profit <= -$longLC ){
                     # LONGロスカット
-                    print "ACK=LONG-LOSSCUT,ASK=$best_ask,PRF=$profit,LC=$longLC\n";
+                    print "ACK=LONG-LOSSCUT, ASK=$best_ask, PRF=$profit, LC=$longLC\n";
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -286,7 +318,7 @@ while(1){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
                     my $length = abs($ema-$best_ask);
-                    print "ACK=LONG-RIKAKU, MAX=$max, EMA=$ema, ASK=$best_ask, LNG=$length, NEAR=$longEmaNear\n";
+                    print "ACK=LONG-RIKAKU, ASK=$best_ask, PRF=$profit, MAX=$max, EMA=$ema, LNG=$length, NEAR=$longEmaNear\n";
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -298,7 +330,7 @@ while(1){
 
                     if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && ($countdown == 0) ){
                         # ドテンSHORTエントリー
-                        print "ACK=DOTEN-SHORT-ENTRY,EMA=$ema,ASK=$best_ask,Far=$shortEmaFar\n";
+                        print "ACK=DOTEN-SHORT-ENTRY, ASK=$best_ask, EMA=$ema, FAR=$shortEmaFar\n";
                         my $res_json;
                         if( sellMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -311,24 +343,31 @@ while(1){
             }
         }
 
-        #if($position ne $pre_position ){
-            # 情報出力
-            my $oldest = "";
-            my $oldest_wrk = $tickerArray[0]->{"timestamp"};
-            MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
-            
-            my $short_entry = $ema;
-            my $long_entry = $ema;
-            my $near = 0;
-            if($position eq "SHORT"){
-                $short_entry = $best_bid;
-                $near = $shortEmaNear;
-            }elsif($position eq "LONG"){
-                $long_entry = $best_ask;
-                $near = $longEmaNear;
-            }
-            my $array_cnt = @tickerArray;
-            my $info_str = sprintf("SEQ=%05d,TID=%8d,BID=%7d,ASK=%7d,MIN=%7d,MAX=%7d,EMA=%7d,SHORT=%7d,LONG=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,TIME=%s\n"
+
+        # 情報出力
+        my $oldest = "";
+        my $oldest_wrk = $tickerArray[0]->{"timestamp"};
+        MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
+        
+        my $short_entry = $ema;
+        my $long_entry = $ema;
+        my $near = 0;
+        if($position eq "SHORT"){
+            $short_entry = $best_bid;
+            $near = $shortEmaNear;
+        }elsif($position eq "LONG"){
+            $long_entry = $best_ask;
+            $near = $longEmaNear;
+        }
+
+        if(
+            ($position ne $pre_position) ||
+            ($pre_min != $pre_min) ||
+            ($pre_max != $pre_max) ||
+            ($pre_ema != $pre_ema) ||
+            ($isMinit > 0)
+        ){
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $best_bid
@@ -345,9 +384,28 @@ while(1){
                 , $countdown
                 , $profit_sum
                 , $oldest
+                , $timestamp
             );
-            print $info_str;
-        #}
+            print OUT $log_str;
+
+            my $info_str = sprintf("SEQ=%05d,TID=%8d,BID=%7d,ASK=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,TIME=%s\n"
+                , $cycle_cnt
+                , $tick_id
+                , $best_bid
+                , $best_ask
+                , $min
+                , $max
+                , $ema
+                , ($cur_value - $ema )
+                , $near
+                , $position
+                , $profit
+                , $countdown
+                , $profit_sum
+                , $timestamp
+            ); 
+            #print $info_str;
+        }
 
         # カウントダウン
         if($countdown!=0){
@@ -360,11 +418,23 @@ while(1){
         # 前値保存
         $pre_position = $position;
         $pre_tick_id = $tick_id;
+        $pre_min = $min;
+        $pre_max = $max;
+        $pre_ema = $ema;
 
     #};
+
+    if(-e $stopCodeFile){
+        print "recieved stopCode:$stopCodeFile\n";
+        unlink $stopCodeFile;
+        last;
+    }
+
     sleep($cycle_sec);
     $cycle_cnt++;
 }
+
+close OUT;
 
 sub buyMarket{
     my $resultJson_ref = shift;
