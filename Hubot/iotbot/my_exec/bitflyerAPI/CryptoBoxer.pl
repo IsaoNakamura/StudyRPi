@@ -55,7 +55,7 @@ my $FAR_UNDER_LIMIT = 1000;
 my $range = 5000;#4000;#5000;
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $countNum = 300;
+my $countNum = 100;
 my $countdown = $countNum;
 
 # 状態情報
@@ -157,8 +157,8 @@ while(1){
             }
         }
 
-        my $delta = ($cur_value - $pre_value) + $pre_delta * 0.5;
-        my $rate = $delta / ($max-$min) * 100;
+        my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
+        my $rate = ($delta / (($max-$min) / 2)) * 100;
 
         my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
                             ,$cur_value
@@ -231,7 +231,11 @@ while(1){
         my $longEmaNear = $longEmaFar / 4;
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
-                if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && (($max-$best_ask) < $maxminNear) ){
+                if( 
+                    ($shortEmaFar > $FAR_UNDER_LIMIT ) && 
+                    (($best_ask - $ema) > $shortEmaFar) && 
+                    (($max-$best_ask) < $maxminNear)
+                ){
                     # EMA値より一定値上にあったら
                     # SHORTエントリー
                     print "ACK=SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n";
@@ -242,7 +246,11 @@ while(1){
                         $position = "SHORT";
                         $short_entry = $best_ask;
                     }
-                }elsif( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && (($best_bid-$min) < $maxminNear) ){
+                }elsif(
+                    ($longEmaFar > $FAR_UNDER_LIMIT ) &&
+                    (($ema - $best_bid) > $longEmaFar) &&
+                    (($best_bid-$min) < $maxminNear)
+                ){
                     # EMA値より一定値下にあったら
                     # LONGエントリー
                     print "ACK=LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
@@ -272,7 +280,11 @@ while(1){
                         # 注文失敗
                         last;
                     }
-                }elsif( (abs($ema-$best_bid) < $shortEmaNear) || ($min >= $best_bid) || ($ema >= $best_bid) ){
+                }elsif( 
+                    (abs($ema-$best_bid) < $shortEmaNear) || 
+                    #($min >= $best_bid) || 
+                    ($ema >= $best_bid) 
+                ){
                     # EMAに近づいたら、または、MIN,EMA以下
                     # MIN以下、EMAに近づいたら
                     # SHORT利確
@@ -290,7 +302,11 @@ while(1){
                         last;
                     }
 
-                    if( ($longEmaFar > $FAR_UNDER_LIMIT ) && (($ema - $best_bid) > $longEmaFar) && ($countdown == 0) ){
+                    if(
+                        ($longEmaFar > $FAR_UNDER_LIMIT ) &&
+                        (($ema - $best_bid) > $longEmaFar) &&
+                        ($countdown == 0)
+                    ){
                         # ドテンLONGエントリー
                         print "ACK=DOTEN-LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
                         my $res_json;
@@ -317,7 +333,11 @@ while(1){
                         $profit_sum += $profit;
                         $countdown = $countNum;
                     }
-                }elsif( (abs($ema-$best_ask) < $longEmaNear) || ($max <= $best_ask) || ($ema <= $best_ask) ){
+                }elsif(
+                    (abs($ema-$best_ask) < $longEmaNear) ||
+                    #($max <= $best_ask) ||
+                    ($ema <= $best_ask)
+                ){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
                     my $length = abs($ema-$best_ask);
@@ -331,7 +351,11 @@ while(1){
                         $profit_sum += $profit;
                     }
 
-                    if( ($shortEmaFar > $FAR_UNDER_LIMIT ) && (($best_ask - $ema) > $shortEmaFar) && ($countdown == 0) ){
+                    if(
+                        ($shortEmaFar > $FAR_UNDER_LIMIT ) &&
+                        (($best_ask - $ema) > $shortEmaFar) &&
+                        ($countdown == 0)
+                    ){
                         # ドテンSHORTエントリー
                         print "ACK=DOTEN-SHORT-ENTRY, ASK=$best_ask, EMA=$ema, FAR=$shortEmaFar\n";
                         my $res_json;
@@ -370,7 +394,7 @@ while(1){
             ($pre_ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%3.2f\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5.1f\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -391,7 +415,7 @@ while(1){
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%3.2f,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,TID=%8d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,RNG=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,TIME=%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
