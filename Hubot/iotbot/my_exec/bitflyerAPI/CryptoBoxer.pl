@@ -55,7 +55,7 @@ my $FAR_UNDER_LIMIT = 1000;
 my $range = 5000;#4000;#5000;
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $countNum = 100;
+my $countNum = 120;
 my $countdown = $countNum;
 
 # 状態情報
@@ -87,7 +87,7 @@ my $min_keep = 0;
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tRATE\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tRATE\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -135,7 +135,7 @@ while(1){
         
         # EMA
         my $isMinit = 0;
-        if( ($tick_id - $ema_tick_id) > 1800 ){
+        if( abs($tick_id - $ema_tick_id) > 1800 ){
             $isMinit = 1;
             # 一分間ごとに計算する
             $ema_cnt++;
@@ -147,11 +147,11 @@ while(1){
         if($cycle_cnt==0){
             if($max==0){
                 $max = $best_ask;
-                $countdown = 100;#$countNum;
+                #$countdown = 100;#$countNum;
             }
             if($min==0){
                 $min = $best_bid;
-                $countdown = 100;#$countNum;
+                #$countdown = 100;#$countNum;
             }
         }
 
@@ -191,16 +191,16 @@ while(1){
                     if($i==0){
                         $max = $elem_ask;
                         $min = $elem_bid;
-                        $isUpdateMinMax++;
+                        #$isUpdateMinMax++;
                         next;
                     }
                     if($max < $elem_ask){
                         $max = $elem_ask;
-                        $isUpdateMinMax++;
+                        #$isUpdateMinMax++;
                     }
                     if($min > $elem_bid){
                         $min = $elem_bid;
-                        $isUpdateMinMax++;
+                        #$isUpdateMinMax++;
                     }
                 }
             }
@@ -298,7 +298,7 @@ while(1){
                         $position = "NONE";
                         $short_entry = 0;
                         $profit_sum += $profit;
-                        $countdown = $countNum;
+                        #$countdown = $countNum;
                     }else{
                         # 注文失敗
                         last;
@@ -354,7 +354,7 @@ while(1){
                         $position = "NONE";
                         $long_entry = 0;
                         $profit_sum += $profit;
-                        $countdown = $countNum;
+                        #$countdown = $countNum;
                     }
                 }elsif(
                     (abs($ema-$best_ask) < $longEmaNear) ||
