@@ -47,7 +47,7 @@ my $entry_retry_num = 0;
 my $execTrade = 0;
 
 my $FAR_UNDER_LIMIT = 1000;
-
+my $LC_RATE = 0.2;
 
 # パラメタ:ライフサイクル
 # 100=約17秒
@@ -223,9 +223,9 @@ while(1){
 
         my $profit = 0;
         my $maxminNear = ($max - $min) / 8;
-        my $shortEmaFar = ($max - $ema) / 2;
+        my $shortEmaFar = abs($max - $ema) / 2;
         my $shortEmaNear = $shortEmaFar / 4;
-        my $longEmaFar = ($ema - $min) / 2;
+        my $longEmaFar = abs($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 4;
 
         if($position eq "NONE" && $countdown == 0){
@@ -252,13 +252,13 @@ while(1){
 
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
-                if( 
-                    ($shortEmaFar > $FAR_UNDER_LIMIT ) && 
-                    (($best_ask - $ema) > $shortEmaFar) && 
-                    (($max-$best_ask) < $maxminNear) &&
-                    ($max_keep >= 50)
+                if( # SHORTエントリー条件
+                    ($shortEmaFar > $FAR_UNDER_LIMIT ) &&   # 売値とEMAの差が最小値より大きい
+                    ($best_ask > $ema)                 &&   # 売値がEMAより大きい
+                    (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
+                    (($max-$best_ask) < $maxminNear)   &&   # 売値とMAXが一定値より近い
+                    ($max_keep >= 50)                       # 売値がMAX付近を一定時間維持
                 ){
-                    # EMA値より一定値上にあったら
                     # SHORTエントリー
                     print "ACK=SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n";
                     my $res_json;
@@ -268,13 +268,13 @@ while(1){
                         $position = "SHORT";
                         $short_entry = $best_ask;
                     }
-                }elsif(
-                    ($longEmaFar > $FAR_UNDER_LIMIT ) &&
-                    (($ema - $best_bid) > $longEmaFar) &&
-                    (($best_bid-$min) < $maxminNear) &&
-                    ($min_keep > 50)
+                }elsif( # LONGエントリー条件
+                    ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
+                    ($best_bid < $ema)                 &&   # EMAが買値より大きい
+                    (($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
+                    (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
+                    ($min_keep > 50)                        # 買値がMIN付近を一定時間維持
                 ){
-                    # EMA値より一定値下にあったら
                     # LONGエントリー
                     print "ACK=LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
                     my $res_json;
@@ -287,8 +287,8 @@ while(1){
                 }
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $best_bid;
-                my $shortLC = $shortEmaFar + $shortEmaFar / 4;
-                if( $profit <= -$shortLC ){
+                my $shortLC = $short_entry * (1.0 + $LC_RATE);
+                if( $best_bid >= $shortLC ){
                     # SHORTロスカット
                     print "ACK=SHORT-LOSSCUT, BID=$best_bid, PRF=$profit, LC=$shortLC\n";
                     my $res_json;
@@ -343,8 +343,8 @@ while(1){
                 }
             }elsif($position eq "LONG"){
                 $profit = $best_ask - $long_entry;
-                my $longLC = $longEmaFar + $longEmaFar / 4;
-                if( $profit <= -$longLC ){
+                my $longLC = $long_entry * (1.0 - $LC_RATE);
+                if( $best_ask <= $longLC ){
                     # LONGロスカット
                     print "ACK=LONG-LOSSCUT, ASK=$best_ask, PRF=$profit, LC=$longLC\n";
                     my $res_json;
@@ -399,14 +399,14 @@ while(1){
         my $oldest_wrk = $tickerArray[0]->{"timestamp"};
         MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
         
-        my $short_entry = $ema;
-        my $long_entry = $ema;
+        my $short = $ema;
+        my $long = $ema;
         my $near = 0;
         if($position eq "SHORT"){
-            $short_entry = $best_bid;
+            $short = $best_bid;
             $near = $shortEmaNear;
         }elsif($position eq "LONG"){
-            $long_entry = $best_ask;
+            $long = $best_ask;
             $near = $longEmaNear;
         }
 
@@ -424,8 +424,8 @@ while(1){
                 , $min
                 , $max
                 , $ema
-                , $short_entry
-                , $long_entry
+                , $short
+                , $long
                 , ($cur_value - $ema )
                 , $near
                 , $position
