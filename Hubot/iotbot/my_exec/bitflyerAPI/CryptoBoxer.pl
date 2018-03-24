@@ -47,7 +47,7 @@ my $entry_retry_num = 0;
 my $execTrade = 0;
 
 my $FAR_UNDER_LIMIT = 1000;
-my $LC_RATE = 0.2;
+my $LC_RATE = 0.005;
 
 # パラメタ:ライフサイクル
 # 100=約17秒
