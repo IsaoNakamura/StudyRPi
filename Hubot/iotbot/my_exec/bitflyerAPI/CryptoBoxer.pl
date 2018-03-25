@@ -42,7 +42,7 @@ $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 # パラメタ
 my $cycle_sec = 0;
-my $rikaku_retry_num = 30;
+my $rikaku_retry_num = 100;
 my $entry_retry_num = 0;
 my $execTrade = 0;
 
@@ -68,6 +68,8 @@ my $profit_sum = 0;
 my $ema = 0;
 my $ema_cnt = 0;
 my $ema_tick_id = 0;
+my $short_tick = 0;
+my $long_tick = 0;
 
 # ポジション
 my $position = "NONE";
@@ -274,6 +276,7 @@ while(1){
                         # SHORTポジションへ
                         $position = "SHORT";
                         $short_entry = $best_ask;
+                        $short_tick = $tick_id;
                     }
                 }elsif( # LONGエントリー条件
                     ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
@@ -290,6 +293,7 @@ while(1){
                         # LONGポジションへ
                         $position = "LONG";
                         $long_entry = $best_bid;
+                        $long_tick = $tick_id;
                     }
                 }
             }elsif($position eq "SHORT"){
@@ -304,6 +308,7 @@ while(1){
                         # ノーポジションへ
                         $position = "NONE";
                         $short_entry = 0;
+                        $short_tick = 0;
                         $profit_sum += $profit;
                         #$countdown = $countNum;
                     }else{
@@ -313,7 +318,8 @@ while(1){
                 }elsif( 
                     (abs($ema-$best_bid) < $shortEmaNear) || 
                     # ($min >= $best_bid) || 
-                    ($ema >= $best_bid) 
+                    ($ema >= $best_bid) ||
+                    ( abs($tick_id-$short_tick) > (1800*15) && ($profit >= 5000 ) )
                 ){
                     # EMAに近づいたら、または、MIN,EMA以下
                     # MIN以下、EMAに近づいたら
@@ -326,6 +332,7 @@ while(1){
                         # ノーポジションへ
                         $position = "NONE";
                         $short_entry = 0;
+                        $short_tick = 0;
                         $profit_sum += $profit;
                     }else{
                         # 注文失敗
@@ -345,6 +352,7 @@ while(1){
                             # LONGポジションへ
                             $position = "LONG";
                             $long_entry = $best_bid;
+                            $long_tick = $tick_id;
                         }
                     }
                 }
@@ -360,13 +368,15 @@ while(1){
                         # ノーポジションへ
                         $position = "NONE";
                         $long_entry = 0;
+                        $long_tick = 0;
                         $profit_sum += $profit;
                         #$countdown = $countNum;
                     }
                 }elsif(
                     (abs($ema-$best_ask) < $longEmaNear) ||
                     # ($max <= $best_ask) ||
-                    ($ema <= $best_ask)
+                    ($ema <= $best_ask) ||
+                    ( abs($tick_id-$long_tick) > (1800*15) && ($profit >= 5000 ) )
                 ){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
@@ -378,6 +388,7 @@ while(1){
                         # ノーポジションへ
                         $position = "NONE";
                         $long_entry = 0;
+                        $long_tick = 0;
                         $profit_sum += $profit;
                     }
 
@@ -394,6 +405,7 @@ while(1){
                             # SHORTポジションへ
                             $position = "SHORT";
                             $short_entry = $best_ask;
+                            $short_tick = $tick_id;
                         }
                     }
                 }
