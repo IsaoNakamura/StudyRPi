@@ -42,7 +42,7 @@ $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 # パラメタ
 my $cycle_sec = 0;
-my $rikaku_retry_num = 10;
+my $rikaku_retry_num = 30;
 my $entry_retry_num = 0;
 my $execTrade = 0;
 
@@ -87,7 +87,7 @@ my $min_keep = 0;
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tEMA\tSHORT\tLONG\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tRATE\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -156,7 +156,9 @@ while(1){
         }
 
         my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
-        my $rate = ($delta / (($max-$min) / 2)) * 100;
+        if($cycle_cnt==0){
+            $delta = 0;
+        }
 
         #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
         #                    ,$cur_value
@@ -219,6 +221,10 @@ while(1){
         # 更新したらトレード無しサイクル数をセット
         if($isUpdateMinMax>0){
             $countdown = $countNum;
+            # 増加指数が一定数を超えたらトレード無しサイクル数を加算
+            if(abs($delta) >= 2000){
+                $countdown += int($countNum*1.5);
+            }
         }
 
         my $profit = 0;
@@ -228,6 +234,7 @@ while(1){
         my $longEmaFar = abs($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 4;
 
+        # MIN/MAX付近での定着指数を算出
         if($position eq "NONE" && $countdown == 0){
             if(($max-$best_ask) < $maxminNear){
                 $max_keep++;
@@ -253,11 +260,11 @@ while(1){
         if($execTrade==1){
             if($position eq "NONE" && $countdown == 0){
                 if( # SHORTエントリー条件
-                    ($shortEmaFar > $FAR_UNDER_LIMIT ) &&   # 売値とEMAの差が最小値より大きい
-                    ($best_ask > $ema)                 &&   # 売値がEMAより大きい
+                    ($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
+                    ($best_ask > $ema)                  &&   # 売値がEMAより大きい
                     (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
-                    (($max-$best_ask) < $maxminNear)   &&   # 売値とMAXが一定値より近い
-                    ($max_keep >= 50)                       # 売値がMAX付近を一定時間維持
+                    (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
+                    ($max_keep >= 50)                        # 売値がMAX付近を一定時間維持
                 ){
                     # SHORTエントリー
                     print "ACK=SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n";
@@ -305,7 +312,7 @@ while(1){
                     }
                 }elsif( 
                     (abs($ema-$best_bid) < $shortEmaNear) || 
-                    #($min >= $best_bid) || 
+                    # ($min >= $best_bid) || 
                     ($ema >= $best_bid) 
                 ){
                     # EMAに近づいたら、または、MIN,EMA以下
@@ -358,7 +365,7 @@ while(1){
                     }
                 }elsif(
                     (abs($ema-$best_ask) < $longEmaNear) ||
-                    #($max <= $best_ask) ||
+                    # ($max <= $best_ask) ||
                     ($ema <= $best_ask)
                 ){
                     # EMAに近づいたら、または、MAX,EMA以上
@@ -417,22 +424,22 @@ while(1){
             ($pre_ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5.1f\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
                 , $min
                 , $max
-                , $ema
                 , $short
                 , $long
+                , $ema
                 , ($cur_value - $ema )
                 , $near
                 , $position
                 , $profit
                 , $countdown
                 , $profit_sum
-                , $rate
+                , $delta
                 , $max_keep
                 , $min_keep
                 , $oldest
@@ -440,7 +447,7 @@ while(1){
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,RATE=%5.1f,XKP=%2d,NKP=%2d,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,DLT=%5d,XKP=%2d,NKP=%2d,TIME=%s\n"
                 , $cycle_cnt
                 , $cur_value
                 , $min
@@ -451,7 +458,7 @@ while(1){
                 , $profit
                 , $countdown
                 , $profit_sum
-                , $rate
+                , $delta
                 , $max_keep
                 , $min_keep
                 , $timestamp
