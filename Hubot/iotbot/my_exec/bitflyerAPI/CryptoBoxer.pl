@@ -13,26 +13,37 @@ use JSON;
 
 use LWP::UserAgent;
 
+use Furl;
+use HTTP::Request::Common;
+
 use MyModule::UtilityJson;
 use MyModule::UtilityBitflyer;
 use MyModule::UtilityTime;
 
-use Selenium::Remote::Driver;
-
-use Data::Dumper;
-
-my $authFilePath = "./AuthBitflyer.json";
+my $authBitflyerFilePath = "./AuthBitflyer.json";
+my $authSlackFilePath = "./AuthSlack.json";
 my $dest = "./DEST/CryptoInagoRider.json";
 my $ammount = 0.005;
 
-if(!(-f $authFilePath)){
-    print "not exists AuthFile. $authFilePath\n";
+if(!(-f $authBitflyerFilePath)){
+    print "not exists AuthFile. $authBitflyerFilePath\n";
+    exit -1;
+}
+
+if(!(-f $authSlackFilePath)){
+    print "not exists AuthFile. $authSlackFilePath\n";
     exit -1;
 }
 
 my $authBitflyer;
-if(MyModule::UtilityJson::readJson(\$authBitflyer, $authFilePath)!=0){
-    print "FileReadError. Auth.\n";
+if(MyModule::UtilityJson::readJson(\$authBitflyer, $authBitflyerFilePath)!=0){
+    print "FileReadError. Auth of Bitflyer.\n";
+    exit -1;
+}
+
+my $authSlack;
+if(MyModule::UtilityJson::readJson(\$authSlack, $authSlackFilePath)!=0){
+    print "FileReadError. Auth of Slack.\n";
     exit -1;
 }
 
@@ -93,6 +104,7 @@ my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tDIF\tRNG\tPOS\tPRF\
 print OUT $header_str;
 
 # メインループ
+postSlack("IDLE-START.\n");
 my $cycle_cnt =0;
 while(1){
     #eval{
@@ -172,7 +184,8 @@ while(1){
         # トレード開始は一定数データをとってから
         if($execTrade==0){
             if($cycle_cnt > $range){
-                print "START TRADE. cycle_cnt=$cycle_cnt, range=$range\n";
+                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$range);
+                postSlack($start_msg);
                 $execTrade=1;
             }
         }
@@ -269,7 +282,7 @@ while(1){
                     ($max_keep >= 50)                        # 売値がMAX付近を一定時間維持
                 ){
                     # SHORTエントリー
-                    print "ACK=SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n";
+                    postSlack("SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
                     my $res_json;
                     if( sellMarket(\$res_json, $entry_retry_num)==0 ){
                         # 注文成功
@@ -277,6 +290,8 @@ while(1){
                         $position = "SHORT";
                         $short_entry = $best_ask;
                         $short_tick = $tick_id;
+                    }else{
+                        postSlack("SHORT-ENTRY IS FAILED!!\n");
                     }
                 }elsif( # LONGエントリー条件
                     ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
@@ -286,7 +301,7 @@ while(1){
                     ($min_keep > 50)                        # 買値がMIN付近を一定時間維持
                 ){
                     # LONGエントリー
-                    print "ACK=LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
+                    postSlack("LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
                     my $res_json;
                     if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                         # 注文成功
@@ -294,6 +309,8 @@ while(1){
                         $position = "LONG";
                         $long_entry = $best_bid;
                         $long_tick = $tick_id;
+                    }else{
+                        postSlack("LONG-ENTRY IS FAILED!!\n");
                     }
                 }
             }elsif($position eq "SHORT"){
@@ -301,7 +318,7 @@ while(1){
                 my $shortLC = $short_entry * (1.0 + $LC_RATE);
                 if( $best_bid >= $shortLC ){
                     # SHORTロスカット
-                    print "ACK=SHORT-LOSSCUT, BID=$best_bid, PRF=$profit, LC=$shortLC\n";
+                    postSlack("SHORT-LOSSCUT, BID=$best_bid, PRF=$profit, LC=$shortLC\n");
                     my $res_json;
                     if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -311,8 +328,10 @@ while(1){
                         $short_tick = 0;
                         $profit_sum += $profit;
                         #$countdown = $countNum;
+                        postSlack("SHORT-LOSSCUT IS SUCCESSED!!, PROFIT=$profit, PROFIT_SUM=$profit_sum\n");
                     }else{
                         # 注文失敗
+                        postSlack("SHORT-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
                         last;
                     }
                 }elsif( 
@@ -325,7 +344,7 @@ while(1){
                     # MIN以下、EMAに近づいたら
                     # SHORT利確
                     my $length = abs($ema-$best_bid);
-                    print "ACK=SHORT-RIKAKU, BID=$best_bid, PRF=$profit, MIN=$min, EMA=$ema, LNG=$length, NEAR=$shortEmaNear\n";
+                    postSlack("SHORT-RIKAKU, BID=$best_bid, PRF=$profit, MIN=$min, EMA=$ema, LNG=$length, NEAR=$shortEmaNear\n");
                     my $res_json;
                     if( buyMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -334,8 +353,10 @@ while(1){
                         $short_entry = 0;
                         $short_tick = 0;
                         $profit_sum += $profit;
+                        postSlack("SHORT-RIKAKU IS SUCCESSED!!, PROFIT=$profit, PROFIT_SUM=$profit_sum\n");
                     }else{
                         # 注文失敗
+                        postSlack("SHORT-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
                         last;
                     }
 
@@ -345,7 +366,7 @@ while(1){
                         ($countdown == 0)
                     ){
                         # ドテンLONGエントリー
-                        print "ACK=DOTEN-LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n";
+                        postSlack("DOTEN-LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
                         my $res_json;
                         if( buyMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -353,6 +374,8 @@ while(1){
                             $position = "LONG";
                             $long_entry = $best_bid;
                             $long_tick = $tick_id;
+                        }else{
+                            postSlack("DOTEN-LONG-ENTRY IS FAILED!!\n");
                         }
                     }
                 }
@@ -361,7 +384,7 @@ while(1){
                 my $longLC = $long_entry * (1.0 - $LC_RATE);
                 if( $best_ask <= $longLC ){
                     # LONGロスカット
-                    print "ACK=LONG-LOSSCUT, ASK=$best_ask, PRF=$profit, LC=$longLC\n";
+                    postSlack("LONG-LOSSCUT, ASK=$best_ask, PRF=$profit, LC=$longLC\n");
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -371,6 +394,10 @@ while(1){
                         $long_tick = 0;
                         $profit_sum += $profit;
                         #$countdown = $countNum;
+                        postSlack("LONG-LOSSCUT IS SUCCESSED!!, PROFIT=$profit, PROFIT_SUM=$profit_sum\n");
+                    }else{
+                        postSlack("LONG-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
+                        last;
                     }
                 }elsif(
                     (abs($ema-$best_ask) < $longEmaNear) ||
@@ -381,7 +408,7 @@ while(1){
                     # EMAに近づいたら、または、MAX,EMA以上
                     # LONG利確
                     my $length = abs($ema-$best_ask);
-                    print "ACK=LONG-RIKAKU, ASK=$best_ask, PRF=$profit, MAX=$max, EMA=$ema, LNG=$length, NEAR=$longEmaNear\n";
+                    postSlack("LONG-RIKAKU, ASK=$best_ask, PRF=$profit, MAX=$max, EMA=$ema, LNG=$length, NEAR=$longEmaNear\n");
                     my $res_json;
                     if( sellMarket(\$res_json, $rikaku_retry_num)==0 ){
                         # 注文成功
@@ -390,6 +417,10 @@ while(1){
                         $long_entry = 0;
                         $long_tick = 0;
                         $profit_sum += $profit;
+                        postSlack("LONG-RIKAKU IS SUCCESSED!!, PROFIT=$profit, PROFIT_SUM=$profit_sum\n");
+                    }else{
+                        postSlack("LONG-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
+                        last;
                     }
 
                     if(
@@ -398,7 +429,7 @@ while(1){
                         ($countdown == 0)
                     ){
                         # ドテンSHORTエントリー
-                        print "ACK=DOTEN-SHORT-ENTRY, ASK=$best_ask, EMA=$ema, FAR=$shortEmaFar\n";
+                        postSlack("DOTEN-SHORT-ENTRY, ASK=$best_ask, EMA=$ema, FAR=$shortEmaFar\n");
                         my $res_json;
                         if( sellMarket(\$res_json, $entry_retry_num)==0 ){
                             # 注文成功
@@ -406,6 +437,8 @@ while(1){
                             $position = "SHORT";
                             $short_entry = $best_ask;
                             $short_tick = $tick_id;
+                        }else{
+                            postSlack("DOTEN-SHORT-ENTRY IS FAILED!!\n");
                         }
                     }
                 }
@@ -498,7 +531,7 @@ while(1){
     #};
 
     if(-e $stopCodeFile){
-        print "recieved stopCode:$stopCodeFile\n";
+        postSlack("recieved stopCode. PROFIT_SUM=$profit_sum\n");
         unlink $stopCodeFile;
         last;
     }
@@ -572,6 +605,21 @@ sub sellMarket{
         $retry_cnt++;
     }
     return($result);
+}
+
+sub postSlack{
+    my $post_text = shift;
+    print $post_text;
+
+    my $req = POST ($authSlack->{"host"},
+        'Content' => [
+            token    => $authSlack->{"token"},
+            channel  => $authSlack->{"channel"},
+            username => $authSlack->{"username"},
+            icon_url => $authSlack->{"icon_url"},
+            text     => $post_text
+        ]);
+    my $res = Furl->new->request($req);
 }
 
 1;
