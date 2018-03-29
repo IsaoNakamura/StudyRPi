@@ -82,6 +82,10 @@ my $RANGE = 5000;#4000;#5000;
 # パラメタ:MIN,MAX更新時の遊び時間
 my $COUNTUP = 120;
 
+my $EMA_SAMPLE_NUM = 60;
+my $STDDEV_SAMPLE_NUM = 60;
+my $CANDLE_LIMIT = 200;
+
 # 状態情報
 my @tickerArray;
 my $countdown = $COUNTUP;
@@ -115,12 +119,17 @@ my $min_keep = 0;
 my $high_value = 0;
 my $low_value  = 0;
 
+my $stddev = 0;
+my $ma = 0;
+my $boll_high = 0;
+my $boll_low = 0;
+
 my @candleArray = ();
 
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tMA\tB_H\tB_L\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -215,29 +224,62 @@ while(1){
 
         if( $isMinit > 0 ){
             # 一分間ごとに計算する
-            # EMA
-            my $last_ema = 0;
-            for(my $i=0; $i<@candleArray; $i++){
-                my $elem = $candleArray[$i];
-                my $elem_value = $elem->{"LAST"};
-                my $elem_cnt = $i + 1;
-                my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
-                $last_ema = $elem_ema;
+            if(@candleArray >= $CANDLE_LIMIT ){
+                # 一番古い先頭を削除
+                my $shift_candle = shift(@candleArray);
             }
-            $ema = int($cur_value * 2 / ($sample_cnt+1) + $last_ema * ($sample_cnt+1-2) / ($sample_cnt + 1));
-
-            # ローソク足オブジェクト
+            # キャンドルオブジェクト追加
             my %candle = (
                 "LAST" => $cur_value,
                 "HIGH" => $high_value,
                 "LOW"  => $low_value,
-                "EMA"  => $ema
             );
             push(@candleArray, \%candle);
 
             # HIGH/LOWをリセット
             $high_value = 0;
             $low_value = 0;
+
+            # EMA
+            {
+                my $beg_idx = 0;
+                if(@candleArray >= $EMA_SAMPLE_NUM){
+                    $beg_idx = @candleArray - $EMA_SAMPLE_NUM;
+                }
+                my $last_ema = 0;
+                my $elem_cnt = 0;
+                for(my $i=$beg_idx; $i<@candleArray; $i++){
+                    $elem_cnt++;
+                    my $elem = $candleArray[$i];
+                    my $elem_value = $elem->{"LAST"};
+                    my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+                    $last_ema = $elem_ema;
+                }
+                $ema = $last_ema;
+            }
+
+            # 標準偏差、移動平均、ボリンジャーバンド
+            {
+                my $beg_idx = 0;
+                if(@candleArray >= $STDDEV_SAMPLE_NUM){
+                    $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
+                }
+                my $value_sum = 0;
+                my $square_sum = 0;
+                my $elem_cnt = 0;
+                for(my $i=$beg_idx; $i<@candleArray; $i++){
+                    $elem_cnt++;
+                    my $elem = $candleArray[$i];
+                    my $elem_value = $elem->{"LAST"};
+                    $value_sum+=$elem_value;
+                    $square_sum+=($elem_value*$elem_value);
+                }
+                $stddev = sqrt( ($elem_cnt * $square_sum) - ($value_sum * $value_sum) / ($elem_cnt * ($elem_cnt + 1)) );
+                $ma = int($value_sum / $elem_cnt);
+                $boll_high = int($ma + (2*$stddev));
+                $boll_low = int($ma - (2*$stddev));
+            }
+
         }
 
         #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
@@ -392,7 +434,7 @@ while(1){
                         postSlack("SHORT-LOSSCUT, PRF=$profit, SUM=$profit_sum, BID=$best_bid, LC=$shortLC\n");
                     }else{
                         # 注文失敗
-                        postSlack("SHORT-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
+                        postSlack("SHORT-LOSSCUT IS FAILED!!\n");
                         #last;
                     }
                 }elsif( 
@@ -418,7 +460,7 @@ while(1){
                         postSlack("SHORT-RIKAKU, PRF=$profit, SUM=$profit_sum, BID=$best_bid, MIN=$min, EMA=$ema, LEN=$length, NEAR=$shortEmaNear\n");
                     }else{
                         # 注文失敗
-                        postSlack("SHORT-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
+                        postSlack("SHORT-RIKAKU IS FAILED!!\n");
                         #last;
                     }
 
@@ -456,7 +498,7 @@ while(1){
                         $profit_sum += $profit;
                         postSlack("LONG-LOSSCUT, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, LC=$longLC\n");
                     }else{
-                        postSlack("LONG-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
+                        postSlack("LONG-LOSSCUT IS FAILED!!\n");
                         #last;
                     }
                 }elsif(
@@ -479,7 +521,7 @@ while(1){
                         $profit_sum += $profit;
                         postSlack("LONG-RIKAKU, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, MAX=$max, EMA=$ema, LEN=$length, NEAR=$longEmaNear\n");
                     }else{
-                        postSlack("LONG-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
+                        postSlack("LONG-RIKAKU IS FAILED!!\n");
                         #last;
                     }
 
@@ -529,7 +571,7 @@ while(1){
             ($ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -538,6 +580,9 @@ while(1){
                 , $short
                 , $long
                 , $ema
+                , $ma
+                , $boll_high
+                , $boll_low
                 , ($cur_value - $ema )
                 , $near
                 , $position
