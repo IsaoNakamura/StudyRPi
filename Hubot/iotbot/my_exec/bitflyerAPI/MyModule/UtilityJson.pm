@@ -19,7 +19,7 @@ sub writeJson {
        my $mode = shift;
 
        # save to Json.
-       # utf8::encode($$hash_ref);
+       #utf8::encode($$hash_ref);
 
        open (OUT, $mode, $filePath) || return(1);
        binmode(OUT, ":utf8");

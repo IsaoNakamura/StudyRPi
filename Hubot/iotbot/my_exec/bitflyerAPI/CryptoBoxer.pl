@@ -16,6 +16,8 @@ use LWP::UserAgent;
 use Furl;
 use HTTP::Request::Common;
 
+use HTTP::Date;
+
 use MyModule::UtilityJson;
 use MyModule::UtilityBitflyer;
 use MyModule::UtilityTime;
@@ -95,6 +97,8 @@ my $short_tick = 0;
 my $long_tick = 0;
 my $execTrade = 0;
 
+my $ema2 = 0;
+
 # ポジション
 my $position = "NONE";
 my $pre_position = $position;
@@ -107,8 +111,15 @@ my $pre_ema = 0;
 my $pre_value = 0;
 my $pre_delta = 0;
 
+my $pre_time;
+
 my $max_keep = 0;
 my $min_keep = 0;
+
+my $high_value = 0;
+my $low_value  = 0;
+
+my @candleArray = ();
 
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
@@ -120,6 +131,22 @@ print OUT $header_str;
 postSlack("IDLE-START.\n");
 my $cycle_cnt =0;
 while(1){
+
+        # 1分間に更新
+        my $isMinit = 0;
+        my $time = localtime();
+        if($cycle_cnt==0){
+            $pre_time = $time;
+        }else{
+            my $now = str2time($time);
+            my $pre = str2time($pre_time);
+            my $diff = $now - $pre;
+            if($diff>=60){
+                $pre_time = $time;
+                $isMinit = 1;
+            }
+        }
+
     #eval{
         # Ticker(相場)を取得
         my $cur_value = 0;
@@ -159,30 +186,70 @@ while(1){
             next;
         }
         push(@tickerArray, $res_json);
-        
-        # EMA
-        my $isMinit = 0;
-        if( abs($tick_id - $ema_tick_id) > 1800 ){
-            $isMinit = 1;
-            # 一分間ごとに計算する
-            $ema_cnt++;
-            $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
-            $ema_tick_id = $tick_id;
-        }
 
-        # MAX,MIN初期値設定
+        # 価格の差を算出
+        my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
+        
         if($cycle_cnt==0){
+            # MAX,MIN初期値設定
             if($max==0){
                 $max = $best_ask;
             }
             if($min==0){
                 $min = $best_bid;
             }
+
+            $delta = 0;
+
+            $high_value = $cur_value;
+            $low_value = $cur_value;
+        }else{
+            if($high_value==0){
+                $high_value = $cur_value;
+            }elsif($high_value < $cur_value){
+                $high_value = $cur_value;
+            }
+
+            if($low_value==0){
+                $low_value = $cur_value;
+            }elsif($low_value > $cur_value){
+                $low_value = $cur_value;
+            }
         }
 
-        my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
-        if($cycle_cnt==0){
-            $delta = 0;
+        if( $isMinit > 0 ){
+            # 一分間ごとに計算する
+            # EMA
+            $ema_cnt++;
+            $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
+            $ema_tick_id = $tick_id;
+
+            # EMA2
+            my $candle_cnt = @candleArray;
+            my $sample_cnt = $candle_cnt + 1;
+            $ema2 = int($cur_value * 2 / ($sample_cnt+1));
+            if($candle_cnt>0){
+                my $last_candle = $candleArray[$candle_cnt-1];
+                my $last_ema = $last_candle->{"EMA"};
+                $ema2 = int($ema2 + $last_ema * ($sample_cnt+1-2) / ($sample_cnt + 1));
+            }
+
+            # ローソク足
+            my %candle = (
+                "LAST" => $cur_value,
+                "HIGH" => $high_value,
+                "LOW"  => $low_value,
+                "EMA"  => $ema2
+            );
+            push(@candleArray, \%candle);
+            if(@candleArray > 60 ){
+                # 一番古い先頭を削除
+                my $shift_candle = shift(@candleArray);
+            }
+
+            # HIGH/LOWをリセット
+            $high_value = 0;
+            $low_value = 0;
         }
 
         #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
@@ -195,13 +262,12 @@ while(1){
         # トレード開始は一定数データをとってから
         if($execTrade==0){
             if($cycle_cnt > $RANGE){
-                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-                postSlack($start_msg);
-                $execTrade=1;
+                #my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+                #postSlack($start_msg);
+                #$execTrade=1;
             }
         }
 
-        my $isUpdateMinMax = 0;
         if(@tickerArray > $RANGE ){
             # Ticker配列がレンジ数を超えた場合
 
@@ -219,22 +285,20 @@ while(1){
                     if($i==0){
                         $max = $elem_ask;
                         $min = $elem_bid;
-                        #$isUpdateMinMax++;
                         next;
                     }
                     if($max < $elem_ask){
                         $max = $elem_ask;
-                        #$isUpdateMinMax++;
                     }
                     if($min > $elem_bid){
                         $min = $elem_bid;
-                        #$isUpdateMinMax++;
                     }
                 }
             }
         }
 
         # MIN/MAXを更新
+        my $isUpdateMinMax = 0;
         if($max < $best_ask){
             $max = $best_ask;
             $isUpdateMinMax++;
@@ -477,7 +541,7 @@ while(1){
             ($pre_ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -486,6 +550,7 @@ while(1){
                 , $short
                 , $long
                 , $ema
+                , $ema2
                 , ($cur_value - $ema )
                 , $near
                 , $position
@@ -540,6 +605,12 @@ while(1){
 
     if(-e $stopCodeFile){
         postSlack("recieved stopCode. PROFIT_SUM=$profit_sum\n");
+
+        my %candleHash =   ( "candleArray" => \@candleArray );
+        if(MyModule::UtilityJson::writeJson(\\%candleHash, ".\\candleHash.json", ">")!=0){
+            print "FileWriteError. candleHash.\n";
+        }
+
         unlink $stopCodeFile;
         last;
     }
@@ -619,15 +690,15 @@ sub postSlack{
     my $post_text = shift;
     print $post_text;
 
-    my $req = POST ($authSlack->{"host"},
-        'Content' => [
-            token    => $authSlack->{"token"},
-            channel  => $authSlack->{"channel"},
-            username => $authSlack->{"username"},
-            icon_url => $authSlack->{"icon_url"},
-            text     => $post_text
-        ]);
-    my $res = Furl->new->request($req);
+    #my $req = POST ($authSlack->{"host"},
+    #    'Content' => [
+    #        token    => $authSlack->{"token"},
+    #        channel  => $authSlack->{"channel"},
+    #        username => $authSlack->{"username"},
+    #        icon_url => $authSlack->{"icon_url"},
+    #        text     => $post_text
+    #    ]);
+    #my $res = Furl->new->request($req);
 }
 
 1;
