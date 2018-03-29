@@ -55,7 +55,7 @@ $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 # パラメタ
 my $CYCLE_SLEEP = 0;
-my $RIKAKU_RETRY_NUM = 100;
+my $RIKAKU_RETRY_NUM = 0;
 my $ENTRY_RETRY_NUM = 0;
 
 my $FAR_UNDER_LIMIT = 1000;
@@ -92,12 +92,13 @@ my $long_entry = 0;
 my $profit_sum = 0;
 my $ema = 0;
 my $ema_cnt = 0;
-my $ema_tick_id = 0;
 my $short_tick = 0;
 my $long_tick = 0;
 my $execTrade = 0;
 
+my $ema1 = 0;
 my $ema2 = 0;
+my $ema3 = 0;
 
 # ポジション
 my $position = "NONE";
@@ -124,7 +125,7 @@ my @candleArray = ();
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tEMA2\tEMA3\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -221,12 +222,16 @@ while(1){
             # 一分間ごとに計算する
             # EMA
             $ema_cnt++;
-            $ema = int($cur_value * 2 / ($ema_cnt+1) + $ema * ($ema_cnt+1-2) / ($ema_cnt + 1));
-            $ema_tick_id = $tick_id;
+            $ema1 = int($cur_value * 2 / ($ema_cnt+1) + $ema1 * ($ema_cnt+1-2) / ($ema_cnt + 1));
+
+            my $candle_cnt = @candleArray;
+            if($candle_cnt >= 60 ){
+                # 一番古い先頭を削除
+                my $shift_candle = shift(@candleArray);
+            }
+            my $sample_cnt = $candle_cnt + 1;
 
             # EMA2
-            my $candle_cnt = @candleArray;
-            my $sample_cnt = $candle_cnt + 1;
             $ema2 = int($cur_value * 2 / ($sample_cnt+1));
             if($candle_cnt>0){
                 my $last_candle = $candleArray[$candle_cnt-1];
@@ -234,18 +239,27 @@ while(1){
                 $ema2 = int($ema2 + $last_ema * ($sample_cnt+1-2) / ($sample_cnt + 1));
             }
 
-            # ローソク足
+            # EMA3
+            my $last_ema3 = 0;
+            for(my $i=0; $i<@candleArray; $i++){
+                my $elem = $candleArray[$i];
+                my $elem_value = $elem->{"LAST"};
+                my $elem_cnt = $i + 1;
+                my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema3 * ($elem_cnt+1-2) / ($elem_cnt + 1));
+                $last_ema3 = $elem_ema;
+            }
+            $ema3 = int($cur_value * 2 / ($sample_cnt+1) + $last_ema3 * ($sample_cnt+1-2) / ($sample_cnt + 1));
+
+            $ema = $ema3;
+
+            # ローソク足オブジェクト
             my %candle = (
                 "LAST" => $cur_value,
                 "HIGH" => $high_value,
                 "LOW"  => $low_value,
-                "EMA"  => $ema2
+                "EMA"  => $ema3
             );
             push(@candleArray, \%candle);
-            if(@candleArray > 60 ){
-                # 一番古い先頭を削除
-                my $shift_candle = shift(@candleArray);
-            }
 
             # HIGH/LOWをリセット
             $high_value = 0;
@@ -262,9 +276,9 @@ while(1){
         # トレード開始は一定数データをとってから
         if($execTrade==0){
             if($cycle_cnt > $RANGE){
-                #my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-                #postSlack($start_msg);
-                #$execTrade=1;
+                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+                postSlack($start_msg);
+                $execTrade=1;
             }
         }
 
@@ -272,9 +286,9 @@ while(1){
             # Ticker配列がレンジ数を超えた場合
 
             # 先頭を削除
-            my $shift_json = shift(@tickerArray);
-            my $shift_bid = $shift_json->{"best_bid"};
-            my $shift_ask = $shift_json->{"best_ask"};
+            my $shift_ticker = shift(@tickerArray);
+            my $shift_bid = $shift_ticker->{"best_bid"};
+            my $shift_ask = $shift_ticker->{"best_ask"};
             if($shift_ask == $max || $shift_bid == $min){
                 # 削除したものがMAXまたはMINだった場合
                 # MAX,MINを再計算する
@@ -405,7 +419,7 @@ while(1){
                     }else{
                         # 注文失敗
                         postSlack("SHORT-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
-                        last;
+                        #last;
                     }
                 }elsif( 
                     (abs($ema-$best_bid) < $shortEmaNear) || 
@@ -431,7 +445,7 @@ while(1){
                     }else{
                         # 注文失敗
                         postSlack("SHORT-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
-                        last;
+                        #last;
                     }
 
                     if(
@@ -469,7 +483,7 @@ while(1){
                         postSlack("LONG-LOSSCUT, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, LC=$longLC\n");
                     }else{
                         postSlack("LONG-LOSSCUT IS FAILED!! EXIT CryptoBoxer!!\n");
-                        last;
+                        #last;
                     }
                 }elsif(
                     (abs($ema-$best_ask) < $longEmaNear) ||
@@ -492,7 +506,7 @@ while(1){
                         postSlack("LONG-RIKAKU, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, MAX=$max, EMA=$ema, LEN=$length, NEAR=$longEmaNear\n");
                     }else{
                         postSlack("LONG-RIKAKU IS FAILED!! EXIT CryptoBoxer!!\n");
-                        last;
+                        #last;
                     }
 
                     if(
@@ -536,12 +550,12 @@ while(1){
 
         if(
             ($position ne $pre_position) ||
-            ($pre_min != $pre_min) ||
-            ($pre_max != $pre_max) ||
-            ($pre_ema != $pre_ema) ||
+            ($min != $pre_min) ||
+            ($max != $pre_max) ||
+            ($ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -549,8 +563,9 @@ while(1){
                 , $max
                 , $short
                 , $long
-                , $ema
+                , $ema1
                 , $ema2
+                , $ema3
                 , ($cur_value - $ema )
                 , $near
                 , $position
@@ -690,15 +705,15 @@ sub postSlack{
     my $post_text = shift;
     print $post_text;
 
-    #my $req = POST ($authSlack->{"host"},
-    #    'Content' => [
-    #        token    => $authSlack->{"token"},
-    #        channel  => $authSlack->{"channel"},
-    #        username => $authSlack->{"username"},
-    #        icon_url => $authSlack->{"icon_url"},
-    #        text     => $post_text
-    #    ]);
-    #my $res = Furl->new->request($req);
+    my $req = POST ($authSlack->{"host"},
+        'Content' => [
+            token    => $authSlack->{"token"},
+            channel  => $authSlack->{"channel"},
+            username => $authSlack->{"username"},
+            icon_url => $authSlack->{"icon_url"},
+            text     => $post_text
+        ]);
+    my $res = Furl->new->request($req);
 }
 
 1;
