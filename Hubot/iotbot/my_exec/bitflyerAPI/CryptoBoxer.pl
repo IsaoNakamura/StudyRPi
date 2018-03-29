@@ -91,14 +91,9 @@ my $short_entry = 0;
 my $long_entry = 0;
 my $profit_sum = 0;
 my $ema = 0;
-my $ema_cnt = 0;
 my $short_tick = 0;
 my $long_tick = 0;
 my $execTrade = 0;
-
-my $ema1 = 0;
-my $ema2 = 0;
-my $ema3 = 0;
 
 # ポジション
 my $position = "NONE";
@@ -125,7 +120,7 @@ my @candleArray = ();
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tEMA2\tEMA3\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -221,43 +216,22 @@ while(1){
         if( $isMinit > 0 ){
             # 一分間ごとに計算する
             # EMA
-            $ema_cnt++;
-            $ema1 = int($cur_value * 2 / ($ema_cnt+1) + $ema1 * ($ema_cnt+1-2) / ($ema_cnt + 1));
-
-            my $candle_cnt = @candleArray;
-            if($candle_cnt >= 60 ){
-                # 一番古い先頭を削除
-                my $shift_candle = shift(@candleArray);
-            }
-            my $sample_cnt = $candle_cnt + 1;
-
-            # EMA2
-            $ema2 = int($cur_value * 2 / ($sample_cnt+1));
-            if($candle_cnt>0){
-                my $last_candle = $candleArray[$candle_cnt-1];
-                my $last_ema = $last_candle->{"EMA"};
-                $ema2 = int($ema2 + $last_ema * ($sample_cnt+1-2) / ($sample_cnt + 1));
-            }
-
-            # EMA3
-            my $last_ema3 = 0;
+            my $last_ema = 0;
             for(my $i=0; $i<@candleArray; $i++){
                 my $elem = $candleArray[$i];
                 my $elem_value = $elem->{"LAST"};
                 my $elem_cnt = $i + 1;
-                my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema3 * ($elem_cnt+1-2) / ($elem_cnt + 1));
-                $last_ema3 = $elem_ema;
+                my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+                $last_ema = $elem_ema;
             }
-            $ema3 = int($cur_value * 2 / ($sample_cnt+1) + $last_ema3 * ($sample_cnt+1-2) / ($sample_cnt + 1));
-
-            $ema = $ema3;
+            $ema = int($cur_value * 2 / ($sample_cnt+1) + $last_ema * ($sample_cnt+1-2) / ($sample_cnt + 1));
 
             # ローソク足オブジェクト
             my %candle = (
                 "LAST" => $cur_value,
                 "HIGH" => $high_value,
                 "LOW"  => $low_value,
-                "EMA"  => $ema3
+                "EMA"  => $ema
             );
             push(@candleArray, \%candle);
 
@@ -555,7 +529,7 @@ while(1){
             ($ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -563,9 +537,7 @@ while(1){
                 , $max
                 , $short
                 , $long
-                , $ema1
-                , $ema2
-                , $ema3
+                , $ema
                 , ($cur_value - $ema )
                 , $near
                 , $position
