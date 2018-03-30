@@ -74,6 +74,7 @@ my $PROFIT_LIMIT = 5000;
 
 my $PROFIT_MAX = 10000;
 
+
 # パラメタ:ライフサイクル
 # 100=約17秒
 # 1000=170秒=約3分
@@ -83,7 +84,6 @@ my $RANGE = 5000;#4000;#5000;
 my $COUNTUP = 120;
 
 my $EMA_SAMPLE_NUM = 60;
-my $STDDEV_SAMPLE_NUM = 60;
 my $CANDLE_LIMIT = 200;
 
 # 状態情報
@@ -120,18 +120,18 @@ my $high_value = 0;
 my $low_value  = 0;
 
 my $stddev = 0;
-my $stddev_high = 0;
 my $ma = 0;
 my $boll_high = 0;
 my $boll_low = 0;
 my $wvf = 0;
+my $isVIX = 0;
 
 my @candleArray = ();
 
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tMA\tB_H\tB_L\tWVF\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -149,8 +149,18 @@ while(1){
             my $pre = str2time($pre_time);
             my $diff = $now - $pre;
             if($diff>=60){
+                #print "diff=$diff, $time, $pre_time\n";
                 $pre_time = $time;
                 $isMinit = 1;
+            }
+        }
+
+        # トレード開始は一定数データをとってから
+        if($execTrade==0){
+            if($cycle_cnt > $RANGE){
+                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+                postSlack($start_msg);
+                $execTrade=1;
             }
         }
 
@@ -263,38 +273,17 @@ while(1){
             $min = $best_bid;
             $isUpdateMinMax++;
         }
+        # 更新したらトレード無しサイクル数をセット
+        if($isUpdateMinMax>0){
+            $countdown = $COUNTUP;
+            # 増加指数が一定数を超えたらトレード無しサイクル数を加算
+            #if(abs($delta) >= $DELTA_LIMIT){
+            #    $countdown += int($COUNTUP*1.5);
+            #}
+        }
 
         if( $isMinit > 0 ){
             # 一分間ごとに計算する
-            if(@candleArray >= $CANDLE_LIMIT ){
-                # 一番古い先頭を削除
-                my $shift_candle = shift(@candleArray);
-                my $shift_stddev = $shift_candle->{"STDDEV"};
-                if($shift_stddev >= $stddev_high){
-                    my $beg_idx = 0;
-                    if(@candleArray >= $STDDEV_SAMPLE_NUM){
-                        $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
-                    }
-                    for(my $i=$beg_idx; $i<@candleArray; $i++){
-                        my $elem = $candleArray[$i];
-                        my $elem_stddev = $elem->{"STDDEV"};
-                        if($i==0){
-                            $stddev_high = $elem_stddev;
-                        }else{
-                            if($stddev_high < $elem_stddev){
-                                $stddev_high = $elem_stddev;
-                            }
-                        }
-                    }
-                }
-            }
-            # キャンドルオブジェクト追加
-            my %candle = (
-                "LAST" => $cur_value,
-                "HIGH" => $high_value,
-                "LOW"  => $low_value,
-            );
-            push(@candleArray, \%candle);
 
             # EMA
             {
@@ -311,45 +300,56 @@ while(1){
                     my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
                     $last_ema = $elem_ema;
                 }
-                $ema = $last_ema;
+                $elem_cnt++;
+                $ema = int($cur_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
             }
 
             # 標準偏差、移動平均、ボリンジャーバンド
             {
-                my $beg_idx = 0;
-                if(@candleArray >= $STDDEV_SAMPLE_NUM){
-                    $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
+                my $highest_last = 0;
+                getHighestCandle(\$highest_last, "LAST", \@candleArray, 22);
+                if($highest_last>0){
+                    $wvf = (($highest_last - $low_value) / $highest_last) * 100;
+                    # print "wvf=$wvf, highest_last=$highest_last, low_value=$low_value\n";
                 }
-                my $value_sum = 0;
-                my $square_sum = 0;
-                my $elem_cnt = 0;
-                for(my $i=$beg_idx; $i<@candleArray; $i++){
-                    $elem_cnt++;
-                    my $elem = $candleArray[$i];
-                    my $elem_value = $elem->{"LAST"};
-                    $value_sum+=$elem_value;
-                    $square_sum+=($elem_value*$elem_value);
-                }
-                $stddev = sqrt( ( ($elem_cnt * $square_sum) - ($value_sum * $value_sum) ) / ($elem_cnt * ($elem_cnt + 1) ) );
-                if($stddev_high<$stddev){
-                    $stddev_high = $stddev;
-                }
-                
-                $ma = int($value_sum / $elem_cnt);
-                $boll_high = int($ma + (2*$stddev));
-                $boll_low = int($ma - (2*$stddev));
 
-                my $highest = $max;
-                if($max < $stddev_high){
-                    $highest = $stddev_high;
-                }
-                $wvf = (($highest - $low_value) / $highest) * 100;
+                getStdevCandle(\$stddev, \$ma, "VIX", \@candleArray, 20);
+                $boll_high = $ma + (2*$stddev);
+                $boll_low = $ma - (2*$stddev);
 
-                $candle{"STDDEV"} = $stddev;
-                $candle{"BOLL_HIGH"} = $boll_high;
-                $candle{"BOLL_LOW"} = $boll_low;
-                $candle{"WVF"} = $wvf;
+                my $rangeHigh = 0;
+                getHighestCandle(\$rangeHigh, "VIX", \@candleArray, 50);
+                $rangeHigh = $rangeHigh * 0.85;
+
+                if($wvf>0){
+                    if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
+                        if($execTrade>0){
+                            postSlack("VIX ALERT !! wvf=$wvf, BOLL_HIGH=$boll_high, rangeHigh=$rangeHigh\n");
+                            $countdown += int($COUNTUP+$COUNTUP*$wvf);
+                        }
+                        $isVIX = 1;
+                    }else{
+                        $isVIX = 0;
+                    }
+                }
             }
+
+            if(@candleArray >= $CANDLE_LIMIT ){
+                # 一番古い先頭を削除
+                my $shift_candle = shift(@candleArray);
+            }
+            # キャンドルオブジェクト追加
+            my %candle = (
+                "LAST"      => $cur_value,
+                "HIGH"      => $high_value,
+                "LOW"       => $low_value,
+                "EMA"       => $ema,
+                "STDDEV"    => $stddev,
+                "BOLL_HIGH" => $boll_high,
+                "BOLL_LOW"  => $boll_low,
+                "VIX"       => $wvf
+            );
+            push(@candleArray, \%candle);
 
             # HIGH/LOWをリセット
             $high_value = 0;
@@ -363,26 +363,8 @@ while(1){
         #                );
         #print $res_info;
 
-        # トレード開始は一定数データをとってから
-        if($execTrade==0){
-            if($cycle_cnt > $RANGE){
-                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-                postSlack($start_msg);
-                $execTrade=1;
-            }
-        }
-
-        # 更新したらトレード無しサイクル数をセット
-        if($isUpdateMinMax>0){
-            $countdown = $COUNTUP;
-            # 増加指数が一定数を超えたらトレード無しサイクル数を加算
-            if(abs($delta) >= $DELTA_LIMIT){
-                $countdown += int($COUNTUP*1.5);
-            }
-        }
-
         my $profit = 0;
-        my $maxminNear = ($max - $min) / 8;
+        my $maxminNear = ($max - $min) / 6;
         my $shortEmaFar = abs($max - $ema) / 2;
         my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = abs($ema - $min) / 2;
@@ -418,7 +400,8 @@ while(1){
                     ($best_ask > $ema)                  &&   # 売値がEMAより大きい
                     (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
                     (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                    ($max_keep >= $KEEP_LIMIT)               # 売値がMAX付近を一定時間維持
+                    #($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                    ($isVIX <= 0)                            # VIX値が低い
                 ){
                     # SHORTエントリー
                     my $res_json;
@@ -437,7 +420,8 @@ while(1){
                     ($best_bid < $ema)                 &&   # EMAが買値より大きい
                     (($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
                     (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                    ($min_keep > $KEEP_LIMIT)               # 買値がMIN付近を一定時間維持
+                    #($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                    ($isVIX <= 0)                            # VIX値が低い
                 ){
                     # LONGエントリー
                     my $res_json;
@@ -497,25 +481,6 @@ while(1){
                         postSlack("SHORT-RIKAKU IS FAILED!!\n");
                         #last;
                     }
-
-                    if(
-                        ($longEmaFar > $FAR_UNDER_LIMIT ) &&
-                        (($ema - $best_bid) > $longEmaFar) &&
-                        ($countdown == 0)
-                    ){
-                        # ドテンLONGエントリー
-                        postSlack("DOTEN-LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
-                        my $res_json;
-                        if( buyMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
-                            # 注文成功
-                            # LONGポジションへ
-                            $position = "LONG";
-                            $long_entry = $best_bid;
-                            $long_tick = $tick_id;
-                        }else{
-                            postSlack("DOTEN-LONG-ENTRY IS FAILED!!\n");
-                        }
-                    }
                 }
             }elsif($position eq "LONG"){
                 $profit = $best_ask - $long_entry;
@@ -558,25 +523,6 @@ while(1){
                         postSlack("LONG-RIKAKU IS FAILED!!\n");
                         #last;
                     }
-
-                    if(
-                        ($shortEmaFar > $FAR_UNDER_LIMIT ) &&
-                        (($best_ask - $ema) > $shortEmaFar) &&
-                        ($countdown == 0)
-                    ){
-                        # ドテンSHORTエントリー
-                        postSlack("DOTEN-SHORT-ENTRY, ASK=$best_ask, EMA=$ema, FAR=$shortEmaFar\n");
-                        my $res_json;
-                        if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
-                            # 注文成功
-                            # SHORTポジションへ
-                            $position = "SHORT";
-                            $short_entry = $best_ask;
-                            $short_tick = $tick_id;
-                        }else{
-                            postSlack("DOTEN-SHORT-ENTRY IS FAILED!!\n");
-                        }
-                    }
                 }
             }
         }
@@ -605,7 +551,7 @@ while(1){
             ($ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -614,10 +560,7 @@ while(1){
                 , $short
                 , $long
                 , $ema
-                , $ma
-                , $boll_high
-                , $boll_low
-                , $wvf
+                , ($wvf*$isVIX)
                 , ($cur_value - $ema )
                 , $near
                 , $position
@@ -632,12 +575,13 @@ while(1){
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,DLT=%5d,XKP=%2d,NKP=%2d,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,VIX=%5.1f,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,DLT=%5d,XKP=%2d,NKP=%2d,TIME=%s\n"
                 , $cycle_cnt
                 , $cur_value
                 , $min
                 , $max
                 , $ema
+                , ($wvf*$isVIX)
                 , ($cur_value - $ema )
                 , $position
                 , $profit
@@ -766,6 +710,74 @@ sub postSlack{
             text     => $post_text
         ]);
     my $res = Furl->new->request($req);
+}
+
+sub getStdevCandle{
+    my $stddev_ref = shift;
+    my $ma_ref = shift;
+    my $attr_str = shift;
+    my $candleArray_ref = shift;
+    my $sample_num = shift;
+
+    my $beg_idx = 0;
+    my $array_cnt = @{$candleArray_ref};
+    if($array_cnt >= $sample_num){
+        $beg_idx = $array_cnt - $sample_num;
+    }
+
+    my $value_sum = 0;
+    my $square_sum = 0;
+    my $elem_cnt = 0;
+    for(my $i=$beg_idx; $i<$array_cnt; $i++){
+        $elem_cnt++;
+        my $elem = $candleArray_ref->[$i];
+        my $elem_value = $elem->{$attr_str};
+
+        $value_sum+=$elem_value;
+        $square_sum+=($elem_value*$elem_value);
+    }
+
+    if($elem_cnt>0){
+        $$stddev_ref = sqrt( ( ($elem_cnt * $square_sum) - ($value_sum * $value_sum) ) / ($elem_cnt * ($elem_cnt + 1) ) );
+        $$ma_ref = $value_sum / $elem_cnt;
+    }else{
+        $$stddev_ref = 0;
+        $$ma_ref = 0;
+    }
+
+    return(0);
+}
+
+sub getHighestCandle{
+    my $highest_ref = shift;
+    my $attr_str = shift;
+    my $candleArray_ref = shift;
+    my $sample_num = shift;
+
+    my $beg_idx = 0;
+    my $array_cnt = @{$candleArray_ref};
+    if($array_cnt >= $sample_num){
+        $beg_idx = $array_cnt - $sample_num;
+    }
+
+    my $elem_cnt = 0;
+    my $highest = 0;
+    for(my $i=$beg_idx; $i<$array_cnt; $i++){
+        $elem_cnt++;
+        my $elem = $candleArray_ref->[$i];
+        my $elem_value = $elem->{$attr_str};
+
+        if($i==$beg_idx){
+            $highest = $elem_value;
+        }else{
+            if($highest < $elem_value){
+                $highest = $elem_value;
+            }
+        }
+    }
+    $$highest_ref = $highest;
+
+    return(0);
 }
 
 1;
