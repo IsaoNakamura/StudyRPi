@@ -120,16 +120,18 @@ my $high_value = 0;
 my $low_value  = 0;
 
 my $stddev = 0;
+my $stddev_high = 0;
 my $ma = 0;
 my $boll_high = 0;
 my $boll_low = 0;
+my $wvf = 0;
 
 my @candleArray = ();
 
 my $stopCodeFile = "./StopCode.txt";
 my $logFilePath = './CryptoBoxer.log';
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tMA\tB_H\tB_L\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tMA\tB_H\tB_L\tWVF\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -222,82 +224,6 @@ while(1){
             }
         }
 
-        if( $isMinit > 0 ){
-            # 一分間ごとに計算する
-            if(@candleArray >= $CANDLE_LIMIT ){
-                # 一番古い先頭を削除
-                my $shift_candle = shift(@candleArray);
-            }
-            # キャンドルオブジェクト追加
-            my %candle = (
-                "LAST" => $cur_value,
-                "HIGH" => $high_value,
-                "LOW"  => $low_value,
-            );
-            push(@candleArray, \%candle);
-
-            # HIGH/LOWをリセット
-            $high_value = 0;
-            $low_value = 0;
-
-            # EMA
-            {
-                my $beg_idx = 0;
-                if(@candleArray >= $EMA_SAMPLE_NUM){
-                    $beg_idx = @candleArray - $EMA_SAMPLE_NUM;
-                }
-                my $last_ema = 0;
-                my $elem_cnt = 0;
-                for(my $i=$beg_idx; $i<@candleArray; $i++){
-                    $elem_cnt++;
-                    my $elem = $candleArray[$i];
-                    my $elem_value = $elem->{"LAST"};
-                    my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
-                    $last_ema = $elem_ema;
-                }
-                $ema = $last_ema;
-            }
-
-            # 標準偏差、移動平均、ボリンジャーバンド
-            {
-                my $beg_idx = 0;
-                if(@candleArray >= $STDDEV_SAMPLE_NUM){
-                    $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
-                }
-                my $value_sum = 0;
-                my $square_sum = 0;
-                my $elem_cnt = 0;
-                for(my $i=$beg_idx; $i<@candleArray; $i++){
-                    $elem_cnt++;
-                    my $elem = $candleArray[$i];
-                    my $elem_value = $elem->{"LAST"};
-                    $value_sum+=$elem_value;
-                    $square_sum+=($elem_value*$elem_value);
-                }
-                $stddev = sqrt( ($elem_cnt * $square_sum) - ($value_sum * $value_sum) / ($elem_cnt * ($elem_cnt + 1)) );
-                $ma = int($value_sum / $elem_cnt);
-                $boll_high = int($ma + (2*$stddev));
-                $boll_low = int($ma - (2*$stddev));
-            }
-
-        }
-
-        #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
-        #                    ,$cur_value
-        #                    ,$delta
-        #                    ,$rate
-        #                );
-        #print $res_info;
-
-        # トレード開始は一定数データをとってから
-        if($execTrade==0){
-            if($cycle_cnt > $RANGE){
-                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-                postSlack($start_msg);
-                $execTrade=1;
-            }
-        }
-
         if(@tickerArray > $RANGE ){
             # Ticker配列がレンジ数を超えた場合
 
@@ -336,6 +262,114 @@ while(1){
         if($min > $best_bid){
             $min = $best_bid;
             $isUpdateMinMax++;
+        }
+
+        if( $isMinit > 0 ){
+            # 一分間ごとに計算する
+            if(@candleArray >= $CANDLE_LIMIT ){
+                # 一番古い先頭を削除
+                my $shift_candle = shift(@candleArray);
+                my $shift_stddev = $shift_candle->{"STDDEV"};
+                if($shift_stddev >= $stddev_high){
+                    my $beg_idx = 0;
+                    if(@candleArray >= $STDDEV_SAMPLE_NUM){
+                        $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
+                    }
+                    for(my $i=$beg_idx; $i<@candleArray; $i++){
+                        my $elem = $candleArray[$i];
+                        my $elem_stddev = $elem->{"STDDEV"};
+                        if($i==0){
+                            $stddev_high = $elem_stddev;
+                        }else{
+                            if($stddev_high < $elem_stddev){
+                                $stddev_high = $elem_stddev;
+                            }
+                        }
+                    }
+                }
+            }
+            # キャンドルオブジェクト追加
+            my %candle = (
+                "LAST" => $cur_value,
+                "HIGH" => $high_value,
+                "LOW"  => $low_value,
+            );
+            push(@candleArray, \%candle);
+
+            # EMA
+            {
+                my $beg_idx = 0;
+                if(@candleArray >= $EMA_SAMPLE_NUM){
+                    $beg_idx = @candleArray - $EMA_SAMPLE_NUM;
+                }
+                my $last_ema = 0;
+                my $elem_cnt = 0;
+                for(my $i=$beg_idx; $i<@candleArray; $i++){
+                    $elem_cnt++;
+                    my $elem = $candleArray[$i];
+                    my $elem_value = $elem->{"LAST"};
+                    my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+                    $last_ema = $elem_ema;
+                }
+                $ema = $last_ema;
+            }
+
+            # 標準偏差、移動平均、ボリンジャーバンド
+            {
+                my $beg_idx = 0;
+                if(@candleArray >= $STDDEV_SAMPLE_NUM){
+                    $beg_idx = @candleArray - $STDDEV_SAMPLE_NUM;
+                }
+                my $value_sum = 0;
+                my $square_sum = 0;
+                my $elem_cnt = 0;
+                for(my $i=$beg_idx; $i<@candleArray; $i++){
+                    $elem_cnt++;
+                    my $elem = $candleArray[$i];
+                    my $elem_value = $elem->{"LAST"};
+                    $value_sum+=$elem_value;
+                    $square_sum+=($elem_value*$elem_value);
+                }
+                $stddev = sqrt( ( ($elem_cnt * $square_sum) - ($value_sum * $value_sum) ) / ($elem_cnt * ($elem_cnt + 1) ) );
+                if($stddev_high<$stddev){
+                    $stddev_high = $stddev;
+                }
+                
+                $ma = int($value_sum / $elem_cnt);
+                $boll_high = int($ma + (2*$stddev));
+                $boll_low = int($ma - (2*$stddev));
+
+                my $highest = $max;
+                if($max < $stddev_high){
+                    $highest = $stddev_high;
+                }
+                $wvf = (($highest - $low_value) / $highest) * 100;
+
+                $candle{"STDDEV"} = $stddev;
+                $candle{"BOLL_HIGH"} = $boll_high;
+                $candle{"BOLL_LOW"} = $boll_low;
+                $candle{"WVF"} = $wvf;
+            }
+
+            # HIGH/LOWをリセット
+            $high_value = 0;
+            $low_value = 0;
+        }
+
+        #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
+        #                    ,$cur_value
+        #                    ,$delta
+        #                    ,$rate
+        #                );
+        #print $res_info;
+
+        # トレード開始は一定数データをとってから
+        if($execTrade==0){
+            if($cycle_cnt > $RANGE){
+                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+                postSlack($start_msg);
+                $execTrade=1;
+            }
         }
 
         # 更新したらトレード無しサイクル数をセット
@@ -571,7 +605,7 @@ while(1){
             ($ema != $pre_ema) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -583,6 +617,7 @@ while(1){
                 , $ma
                 , $boll_high
                 , $boll_low
+                , $wvf
                 , ($cur_value - $ema )
                 , $near
                 , $position
