@@ -58,7 +58,7 @@ my $CYCLE_SLEEP = 0;
 my $RIKAKU_RETRY_NUM = 0;
 my $ENTRY_RETRY_NUM = 0;
 
-my $FAR_UNDER_LIMIT = 1000;
+my $FAR_UNDER_LIMIT = 2000;
 my $LC_RATE = 0.005;
 
 # エントリーしてから利確する時間が長引いた場合の処理用
@@ -128,14 +128,20 @@ my $isVIX = 0;
 
 my @candleArray = ();
 
+my $begin_time = "";
+if(MyModule::UtilityTime::getDate(\$begin_time)!=0){
+    print "failed to getDate()\n";
+}
+
 my $stopCodeFile = "./StopCode.txt";
-my $logFilePath = './CryptoBoxer.log';
+
+my $logFilePath = "./CryptoBoxer_$begin_time.log";
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
 my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
-postSlack("IDLE-START.\n");
+postSlack("IDLE-START. $begin_time\n");
 my $cycle_cnt =0;
 while(1){
 
@@ -314,21 +320,29 @@ while(1){
                 }
 
                 getStdevCandle(\$stddev, \$ma, "VIX", \@candleArray, 20);
-                $boll_high = $ma + (2*$stddev);
-                $boll_low = $ma - (2*$stddev);
+                $boll_high = $ma + (2.0*$stddev);
+                $boll_low = $ma - (2.0*$stddev);
 
                 my $rangeHigh = 0;
                 getHighestCandle(\$rangeHigh, "VIX", \@candleArray, 50);
-                $rangeHigh = $rangeHigh * 0.85;
+                $rangeHigh = $rangeHigh * 0.85;#0.75;
 
                 if($wvf>0){
                     if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
                         if($execTrade>0){
-                            postSlack("VIX ALERT !! wvf=$wvf, BOLL_HIGH=$boll_high, rangeHigh=$rangeHigh\n");
+                            if($isVIX==0){
+                                my $vix_str = sprintf("VIX ALERT ON!! wvf=%3.1f\n",$wvf);
+                                postSlack($vix_str);
+                            }
                             $countdown += int($COUNTUP+$COUNTUP*$wvf);
                         }
                         $isVIX = 1;
                     }else{
+                        if($execTrade>0){
+                            if($isVIX>0){
+                                postSlack("VIX ALERT OFF.\n");
+                            }
+                        }
                         $isVIX = 0;
                     }
                 }
@@ -439,7 +453,10 @@ while(1){
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $best_bid;
                 my $shortLC = $short_entry * (1.0 + $LC_RATE);
-                if( $best_bid >= $shortLC ){
+                if( 
+                    ($best_bid >= $shortLC) ||
+                    ( ($isVIX > 0) && ($profit < 0) )
+                ){
                     # SHORTロスカット
                     my $res_json;
                     if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
@@ -485,7 +502,10 @@ while(1){
             }elsif($position eq "LONG"){
                 $profit = $best_ask - $long_entry;
                 my $longLC = $long_entry * (1.0 - $LC_RATE);
-                if( $best_ask <= $longLC ){
+                if(
+                    ($best_ask <= $longLC) ||
+                    ( ($isVIX > 0) && ($profit < 0) )
+                ){
                     # LONGロスカット
                     my $res_json;
                     if( sellMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
@@ -618,7 +638,7 @@ while(1){
         postSlack("recieved stopCode. PROFIT_SUM=$profit_sum\n");
 
         my %candleHash =   ( "candleArray" => \@candleArray );
-        if(MyModule::UtilityJson::writeJson(\\%candleHash, ".\\candleHash.json", ">")!=0){
+        if(MyModule::UtilityJson::writeJson(\\%candleHash, "./candleHash_$begin_time.json", ">")!=0){
             print "FileWriteError. candleHash.\n";
         }
 
