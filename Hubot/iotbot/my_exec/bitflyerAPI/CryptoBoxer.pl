@@ -24,7 +24,6 @@ use MyModule::UtilityTime;
 
 my $authBitflyerFilePath = "./AuthBitflyer.json";
 my $authSlackFilePath = "./AuthSlack.json";
-my $dest = "./DEST/CryptoInagoRider.json";
 my $ammount = 0.005;
 
 if(!(-f $authBitflyerFilePath)){
@@ -58,7 +57,7 @@ my $CYCLE_SLEEP = 0;
 my $RIKAKU_RETRY_NUM = 0;
 my $ENTRY_RETRY_NUM = 0;
 
-my $FAR_UNDER_LIMIT = 2000;
+my $FAR_UNDER_LIMIT = 1500;
 my $LC_RATE = 0.005;
 
 # エントリーしてから利確する時間が長引いた場合の処理用
@@ -83,12 +82,15 @@ my $RANGE = 5000;#4000;#5000;
 # パラメタ:MIN,MAX更新時の遊び時間
 my $COUNTUP = 120;
 
+my $VIX_CNTUP = 300;
+
 my $EMA_SAMPLE_NUM = 60;
 my $CANDLE_LIMIT = 200;
 
 # 状態情報
 my @tickerArray;
-my $countdown = $COUNTUP;
+my $minmax_cntdwn = $COUNTUP;
+my $vix_cntdwn = 0;
 my $min = 0;
 my $max = 0;
 my $short_entry = 0;
@@ -125,11 +127,12 @@ my $boll_high = 0;
 my $boll_low = 0;
 my $wvf = 0;
 my $isVIX = 0;
+my $pre_isVIX = 0;
 
 my @candleArray = ();
 
 my $begin_time = "";
-if(MyModule::UtilityTime::getDate(\$begin_time)!=0){
+if(MyModule::UtilityTime::getTime(\$begin_time)!=0){
     print "failed to getDate()\n";
 }
 
@@ -137,7 +140,7 @@ my $stopCodeFile = "./StopCode.txt";
 
 my $logFilePath = "./CryptoBoxer_$begin_time.log";
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tDLT\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tVDWN\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
 # メインループ
@@ -281,10 +284,10 @@ while(1){
         }
         # 更新したらトレード無しサイクル数をセット
         if($isUpdateMinMax>0){
-            $countdown = $COUNTUP;
+            $minmax_cntdwn = $COUNTUP;
             # 増加指数が一定数を超えたらトレード無しサイクル数を加算
             #if(abs($delta) >= $DELTA_LIMIT){
-            #    $countdown += int($COUNTUP*1.5);
+            #    $minmax_cntdwn += int($COUNTUP*1.5);
             #}
         }
 
@@ -330,20 +333,29 @@ while(1){
                 if($wvf>0){
                     if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
                         if($execTrade>0){
-                            if($isVIX==0){
+                            $isVIX = 1;
+                            if($wvf >= 1.0){
+                                $vix_cntdwn = int($VIX_CNTUP*$wvf);
+                            }else{
+                                $vix_cntdwn = $VIX_CNTUP;
+                            }
+                            if($pre_isVIX==0){
                                 my $vix_str = sprintf("VIX ALERT ON!! wvf=%3.1f\n",$wvf);
                                 postSlack($vix_str);
                             }
-                            $countdown += int($COUNTUP+$COUNTUP*$wvf);
                         }
-                        $isVIX = 1;
                     }else{
                         if($execTrade>0){
-                            if($isVIX>0){
-                                postSlack("VIX ALERT OFF.\n");
+                            if($pre_isVIX>0){
+                                if($vix_cntdwn==0){
+                                    $isVIX = 0;
+                                    postSlack("VIX ALERT OFF.\n");
+                                }else{
+                                    $isVIX = 1;
+                                    postSlack("VIX ALERT KEEP. cntdwn=$vix_cntdwn\n");
+                                }
                             }
-                        }
-                        $isVIX = 0;
+                       }
                     }
                 }
             }
@@ -385,7 +397,7 @@ while(1){
         my $longEmaNear = $longEmaFar / 4;
 
         # MIN/MAX付近での定着指数を算出
-        if($position eq "NONE" && $countdown == 0){
+        if($position eq "NONE" && $minmax_cntdwn == 0){
             if(($max-$best_ask) < $maxminNear){
                 $max_keep++;
             }else{
@@ -408,47 +420,68 @@ while(1){
         }
 
         if($execTrade==1){
-            if($position eq "NONE" && $countdown == 0){
-                if( # SHORTエントリー条件
-                    ($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
-                    ($best_ask > $ema)                  &&   # 売値がEMAより大きい
-                    (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
-                    (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                    #($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
-                    ($isVIX <= 0)                            # VIX値が低い
-                ){
-                    # SHORTエントリー
-                    my $res_json;
-                    if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
-                        # 注文成功
-                        postSlack("SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
-                        # SHORTポジションへ
-                        $position = "SHORT";
-                        $short_entry = $best_ask;
-                        $short_tick = $tick_id;
-                    }else{
-                        postSlack("SHORT-ENTRY IS FAILED!!\n");
+            if($position eq "NONE" ){
+                if($isVIX <= 0){
+                    # VIX-OFF
+                    if( # SHORTエントリー条件
+                        ($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
+                        ($best_ask > $ema)                  &&   # 売値がEMAより大きい
+                        (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
+                        (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
+                        ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                        ($minmax_cntdwn == 0)               
+                    ){
+                        # SHORTエントリー
+                        my $res_json;
+                        if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
+                            # 注文成功
+                            postSlack("SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
+                            # SHORTポジションへ
+                            $position = "SHORT";
+                            $short_entry = $best_ask;
+                            $short_tick = $tick_id;
+                        }else{
+                            postSlack("SHORT-ENTRY IS FAILED!!\n");
+                        }
+                    }elsif( # LONGエントリー条件
+                        ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
+                        ($best_bid < $ema)                 &&   # EMAが買値より大きい
+                        (($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
+                        (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
+                        ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                        ($minmax_cntdwn == 0)               
+                    ){
+                        # LONGエントリー
+                        my $res_json;
+                        if( buyMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
+                            # 注文成功
+                            postSlack("LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
+                            # LONGポジションへ
+                            $position = "LONG";
+                            $long_entry = $best_bid;
+                            $long_tick = $tick_id;
+                        }else{
+                            postSlack("LONG-ENTRY IS FAILED!!\n");
+                        }
                     }
-                }elsif( # LONGエントリー条件
-                    ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
-                    ($best_bid < $ema)                 &&   # EMAが買値より大きい
-                    (($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
-                    (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                    #($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
-                    ($isVIX <= 0)                            # VIX値が低い
-                ){
-                    # LONGエントリー
-                    my $res_json;
-                    if( buyMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
-                        # 注文成功
-                        postSlack("LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
-                        # LONGポジションへ
-                        $position = "LONG";
-                        $long_entry = $best_bid;
-                        $long_tick = $tick_id;
-                    }else{
-                        postSlack("LONG-ENTRY IS FAILED!!\n");
+                }else{
+=pod
+                    # VIX-ON
+                    if($isVIX != $pre_isVIX){
+                        # SHORTエントリー(VIX)
+                        my $res_json;
+                        if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
+                            # 注文成功
+                            postSlack("SHORT-VIX-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
+                            # SHORTポジションへ
+                            $position = "SHORT_VIX";
+                            $short_entry = $best_ask;
+                            $short_tick = $tick_id;
+                        }else{
+                            postSlack("SHORT-VIX-ENTRY IS FAILED!!\n");
+                        }
                     }
+=cut
                 }
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $best_bid;
@@ -476,7 +509,7 @@ while(1){
                     (abs($ema-$best_bid) < $shortEmaNear) || 
                     # ($min >= $best_bid) || 
                     ($ema >= $best_bid) ||
-                    ($profit >= $PROFIT_MAX) ||
+                    # ($profit >= $PROFIT_MAX) ||
                     ( abs($tick_id-$short_tick) > (1800*$RIKAKU_LIMIT_TIME) && ($profit >= $PROFIT_LIMIT ) )
                 ){
                     # EMAに近づいたら、または、MIN,EMA以下
@@ -524,7 +557,7 @@ while(1){
                     (abs($ema-$best_ask) < $longEmaNear) ||
                     # ($max <= $best_ask) ||
                     ($ema <= $best_ask) ||
-                    ($profit >= $PROFIT_MAX) ||
+                    #($profit >= $PROFIT_MAX) ||
                     ( abs($tick_id-$long_tick) > (1800*$RIKAKU_LIMIT_TIME) && ($profit >= $PROFIT_LIMIT ) )
                 ){
                     # EMAに近づいたら、または、MAX,EMA以上
@@ -544,6 +577,48 @@ while(1){
                         #last;
                     }
                 }
+            }elsif($position eq "SHORT_VIX"){
+                $profit = $short_entry - $best_bid;
+                my $shortLC = $short_entry * (1.0 + $LC_RATE);
+                if( 
+                    ($best_bid >= $shortLC)
+                ){
+                    # SHORT_VIXロスカット
+                    my $res_json;
+                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $short_tick = 0;
+                        $profit_sum += $profit;
+                        postSlack("SHORT-VIX-LOSSCUT, PRF=$profit, SUM=$profit_sum, BID=$best_bid, LC=$shortLC\n");
+                    }else{
+                        # 注文失敗
+                        postSlack("SHORT-VIX-LOSSCUT IS FAILED!!\n");
+                    }
+                }elsif(
+                    #($isVIX <= 0) &&
+                    #($minmax_cntdwn == 0) &&
+                    ($vix_cntdwn == 0)
+                ){
+=pod
+                    # SHORT_VIX利確
+                    my $res_json;
+                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                        # 注文成功
+                        # ノーポジションへ
+                        $position = "NONE";
+                        $short_entry = 0;
+                        $short_tick = 0;
+                        $profit_sum += $profit;
+                        postSlack("SHORT-VIX-RIKAKU, PRF=$profit, SUM=$profit_sum, BID=$best_bid\n");
+                    }else{
+                        # 注文失敗
+                        postSlack("SHORT-VIX-RIKAKU IS FAILED!!\n");
+                    }
+=cut
+                }
             }
         }
 
@@ -556,7 +631,7 @@ while(1){
         my $short = $ema;
         my $long = $ema;
         my $near = 0;
-        if($position eq "SHORT"){
+        if( ($position eq "SHORT") || ($position eq "SHORT_VIX") ){
             $short = $best_bid;
             $near = $shortEmaNear;
         }elsif($position eq "LONG"){
@@ -569,6 +644,7 @@ while(1){
             ($min != $pre_min) ||
             ($max != $pre_max) ||
             ($ema != $pre_ema) ||
+            ($isVIX != $pre_isVIX) ||
             ($isMinit > 0)
         ){
             my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
@@ -585,9 +661,9 @@ while(1){
                 , $near
                 , $position
                 , $profit
-                , $countdown
+                , $minmax_cntdwn
                 , $profit_sum
-                , $delta
+                , $vix_cntdwn
                 , $max_keep
                 , $min_keep
                 , $oldest
@@ -595,7 +671,7 @@ while(1){
             );
             print OUT $log_str;
 
-            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,VIX=%5.1f,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,DLT=%5d,XKP=%2d,NKP=%2d,TIME=%s\n"
+            my $info_str = sprintf("SEQ=%05d,CUR=%7d,MIN=%7d,MAX=%7d,EMA=%7d,VIX=%5.1f,DIF=%5d,POS=%5s,PRF=%5d,DWN=%3d,SUM=%5d,VDWN=%5d,XKP=%2d,NKP=%2d,TIME=%s\n"
                 , $cycle_cnt
                 , $cur_value
                 , $min
@@ -605,9 +681,9 @@ while(1){
                 , ($cur_value - $ema )
                 , $position
                 , $profit
-                , $countdown
+                , $minmax_cntdwn
                 , $profit_sum
-                , $delta
+                , $vix_cntdwn
                 , $max_keep
                 , $min_keep
                 , $timestamp
@@ -616,10 +692,16 @@ while(1){
         }
 
         # カウントダウン
-        if($countdown!=0){
-            $countdown--;
-            if($countdown<0){
-                $countdown = 0;
+        if($minmax_cntdwn!=0){
+            $minmax_cntdwn--;
+            if($minmax_cntdwn<0){
+                $minmax_cntdwn = 0;
+            }
+        }
+        if($vix_cntdwn!=0){
+            $vix_cntdwn--;
+            if($vix_cntdwn<0){
+                $vix_cntdwn = 0;
             }
         }
 
@@ -631,6 +713,7 @@ while(1){
         $pre_ema = $ema;
         $pre_value = $cur_value;
         $pre_delta = $delta;
+        $pre_isVIX = $isVIX;
 
     #};
 

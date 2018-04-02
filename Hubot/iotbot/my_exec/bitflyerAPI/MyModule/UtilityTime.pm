@@ -35,6 +35,25 @@ sub getDate {
        return (0);
 }
 
+sub getTime {
+       my $time_ref = shift; # OUT
+
+       my $sec;
+       my $min;
+       my $hour;
+       my $mday;
+       my $mon;
+       my $year;
+       my $wday;
+       my $yday;
+       my $isdst;
+
+       ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+       $$time_ref = sprintf("%04d-%02d-%02d_%02d%02d",$year+1900,$mon+1,$mday,$hour,$min);
+
+       return (0);
+}
+
 sub convertTimeGMTtoJST{
 	my $jst_ref	= shift; # OUT
 	my $gmt_str	= shift; #  IN
