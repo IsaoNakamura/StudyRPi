@@ -21,6 +21,7 @@ use HTTP::Date;
 use MyModule::UtilityJson;
 use MyModule::UtilityBitflyer;
 use MyModule::UtilityTime;
+use MyModule::UtilityCryptowatch;
 
 my $authBitflyerFilePath = "./AuthBitflyer.json";
 my $authSlackFilePath = "./AuthSlack.json";
@@ -99,7 +100,7 @@ my $profit_sum = 0;
 my $ema = 0;
 my $short_tick = 0;
 my $long_tick = 0;
-my $execTrade = 0;
+my $execTrade = 1;
 
 # ポジション
 my $position = "NONE";
@@ -143,6 +144,71 @@ open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
 my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tVDWN\tXKP\tNKP\tOLD\tTIME\n";
 print OUT $header_str;
 
+# 過去のキャンドルをCryptoWatchから取得
+{
+    my $symbol    = "btcfxjpy";
+    my $periods   = 60;
+    my $after     = time() - (30 * 60); # 30分前の値を取得
+    my $path      = "ohlc";
+    my $endPoint  = "https://api.cryptowat.ch/markets/bitflyer";
+
+    my $res_json;
+    if( MyModule::UtilityCryptowatch::getCandleStickAfter(
+                                                            \$res_json,
+                                                            \$ua,
+                                                            $symbol,
+                                                            $periods,
+                                                            $after,
+                                                            $path,
+                                                            $endPoint
+                                                        )!=0
+    ){
+        print "failed to getCandleStickAfter from Cryptowatch. \n";
+        exit -1;
+    }
+
+    my $candleArray_ref = $res_json->{"result"}->{"$periods"};
+    for(my $i=0; $i<@{$candleArray_ref}; $i++){
+        my $candle = $candleArray_ref->[$i];
+        #        [0],       [1],       [2],      [3],        [4],    [5]
+        #[ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume ]
+        my $close_time  = $candle->[0];
+        my $high_price  = $candle->[2];
+        my $low_price   = $candle->[3];
+        my $close_price = $candle->[4];
+
+        # VIX算出
+        my $vix = 0;
+        my $highest_last = 0;
+        getHighestCandle(\$highest_last, "LAST", \@candleArray, 22);
+        if($highest_last>0){
+            $vix = (($highest_last - $low_price) / $highest_last) * 100;
+        }
+
+        # キャンドルオブジェクト追加
+        my %candle = (
+            "TIME"      => $close_time,
+            "LAST"      => $close_price,
+            "HIGH"      => $high_price,
+            "LOW"       => $low_price,
+            "VIX"       => $vix
+        );
+        push(@candleArray, \%candle);
+    }
+
+    my $highest_high = 0;
+    getHighestCandle(\$highest_high, "HIGH", \@candleArray, 15);
+
+    my $lowest_low = 0;
+    getLowestCandle(\$lowest_low, "LOW", \@candleArray, 15);
+
+    $min = $lowest_low;
+    $max = $highest_high;
+}
+
+print "min=$min, max=$max\n";
+#exit 0;
+
 # メインループ
 postSlack("IDLE-START. $begin_time\n");
 my $cycle_cnt =0;
@@ -165,12 +231,9 @@ while(1){
         }
 
         # トレード開始は一定数データをとってから
-        if($execTrade==0){
-            if($cycle_cnt > $RANGE){
-                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-                postSlack($start_msg);
-                $execTrade=1;
-            }
+        if($execTrade==1){
+            my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+            postSlack($start_msg);
         }
 
     #eval{
@@ -242,7 +305,7 @@ while(1){
                 $low_value = $cur_value;
             }
         }
-
+=pod
         if(@tickerArray > $RANGE ){
             # Ticker配列がレンジ数を超えた場合
 
@@ -271,7 +334,7 @@ while(1){
                 }
             }
         }
-
+=cut
         # MIN/MAXを更新
         my $isUpdateMinMax = 0;
         if($max < $best_ask){
@@ -366,13 +429,10 @@ while(1){
             }
             # キャンドルオブジェクト追加
             my %candle = (
+                "TIME"      => $timestamp_utc,
                 "LAST"      => $cur_value,
                 "HIGH"      => $high_value,
                 "LOW"       => $low_value,
-                "EMA"       => $ema,
-                "STDDEV"    => $stddev,
-                "BOLL_HIGH" => $boll_high,
-                "BOLL_LOW"  => $boll_low,
                 "VIX"       => $wvf
             );
             push(@candleArray, \%candle);
@@ -879,6 +939,38 @@ sub getHighestCandle{
         }
     }
     $$highest_ref = $highest;
+
+    return(0);
+}
+
+sub getLowestCandle{
+    my $lowest_ref = shift;
+    my $attr_str = shift;
+    my $candleArray_ref = shift;
+    my $sample_num = shift;
+
+    my $beg_idx = 0;
+    my $array_cnt = @{$candleArray_ref};
+    if($array_cnt >= $sample_num){
+        $beg_idx = $array_cnt - $sample_num;
+    }
+
+    my $elem_cnt = 0;
+    my $lowest = 0;
+    for(my $i=$beg_idx; $i<$array_cnt; $i++){
+        $elem_cnt++;
+        my $elem = $candleArray_ref->[$i];
+        my $elem_value = $elem->{$attr_str};
+
+        if($i==$beg_idx){
+            $lowest = $elem_value;
+        }else{
+            if($lowest > $elem_value){
+                $lowest = $elem_value;
+            }
+        }
+    }
+    $$lowest_ref = $lowest;
 
     return(0);
 }
