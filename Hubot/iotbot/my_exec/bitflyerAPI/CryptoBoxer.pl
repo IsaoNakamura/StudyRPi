@@ -84,13 +84,13 @@ my $CANDLE_BUF = 60;
 # パラメタ:MIN,MAX更新時の遊び時間
 my $COUNTUP = 120;
 
-my $VIX_CNTUP = 300;
+my $VIX_CNTUP = 600;
 
 my $EMA_SAMPLE_NUM = 60;
 my $CANDLE_LIMIT = 200;
 
 # 状態情報
-my $minmax_cntdwn = $COUNTUP;
+my $minmax_cntdwn = 0;
 my $vix_cntdwn = 0;
 my $min = 0;
 my $max = 0;
@@ -121,11 +121,13 @@ my $min_keep = 0;
 my $high_value = 0;
 my $low_value  = 0;
 
+my $highest_last = 0;
 my $stddev = 0;
 my $ma = 0;
 my $boll_high = 0;
 my $boll_low = 0;
-my $wvf = 0;
+my $rangeHigh = 0;
+
 my $isVIX = 0;
 my $pre_isVIX = 0;
 
@@ -198,9 +200,12 @@ print OUT $header_str;
     my $lowest_low = 0;
     my $highest_high = 0;
     getLowHighestCandle(\$lowest_low, \$highest_high, \@candleArray, $RANGE);
-
-    $min = $lowest_low;
-    $max = $highest_high;
+    if($lowest_low!=0){
+        $min = $lowest_low;
+    }
+    if($highest_high!=0){
+        $max = $highest_high;
+    }
 }
 
 print "min=$min, max=$max\n";
@@ -211,21 +216,21 @@ postSlack("IDLE-START. $begin_time\n");
 my $cycle_cnt =0;
 while(1){
 
-        # 1分間に更新
-        my $isMinit = 0;
-        my $time = localtime();
-        if($cycle_cnt==0){
+    # 1分間に更新
+    my $isMinit = 0;
+    my $time = localtime();
+    if($cycle_cnt==0){
+        $pre_time = $time;
+    }else{
+        my $now = str2time($time);
+        my $pre = str2time($pre_time);
+        my $diff = $now - $pre;
+        if($diff>=60){
+            #print "diff=$diff, $time, $pre_time\n";
             $pre_time = $time;
-        }else{
-            my $now = str2time($time);
-            my $pre = str2time($pre_time);
-            my $diff = $now - $pre;
-            if($diff>=60){
-                #print "diff=$diff, $time, $pre_time\n";
-                $pre_time = $time;
-                $isMinit = 1;
-            }
+            $isMinit = 1;
         }
+    }
 
     #eval{
         # Ticker(相場)を取得
@@ -255,10 +260,10 @@ while(1){
         $best_bid = $res_json->{"best_bid"}; # 買値
         $best_ask = $res_json->{"best_ask"}; # 売値(買値より高い)
         $tick_id = $res_json->{"tick_id"};
-        my $volume = $res_json->{"volume_by_product"};
         $cur_value = $res_json->{"ltp"};
-        my $total_bid_depth = $res_json->{"total_bid_depth"};
-        my $total_ask_depth = $res_json->{"total_ask_depth"};
+        #my $volume = $res_json->{"volume_by_product"};
+        #my $total_bid_depth = $res_json->{"total_bid_depth"};
+        #my $total_ask_depth = $res_json->{"total_ask_depth"};
         my $timestamp_utc = $res_json->{"timestamp"};
         MyModule::UtilityTime::convertTimeGMTtoJST(\$timestamp, $timestamp_utc);
 
@@ -266,43 +271,16 @@ while(1){
             next;
         }
 
-        
-        if($cycle_cnt==0){
-            # MAX,MIN初期値設定
-            if($max==0){
-                $max = $best_ask;
-            }
-            if($min==0){
-                $min = $best_bid;
-            }
-
+        # 1分足キャンドル用最高低値更新
+        if($high_value==0){
             $high_value = $cur_value;
-            $low_value = $cur_value;
-        }else{
-            if($high_value==0){
-                $high_value = $cur_value;
-            }elsif($high_value < $cur_value){
-                $high_value = $cur_value;
-            }
-
-            if($low_value==0){
-                $low_value = $cur_value;
-            }elsif($low_value > $cur_value){
-                $low_value = $cur_value;
-            }
+        }elsif($high_value < $cur_value){
+            $high_value = $cur_value;
         }
-
-        if(@candleArray > $CANDLE_BUF ){
-            # Candle配列がバッファを超えた場合
-
-            # 先頭を削除
-            my $shift_candle = shift(@candleArray);
-
-            my $lowest_low = 0;
-            my $highest_high = 0;
-            getLowHighestCandle(\$lowest_low, \$highest_high, \@candleArray, $RANGE);
-            $min = $lowest_low;
-            $max = $highest_high;
+        if($low_value==0){
+            $low_value = $cur_value;
+        }elsif($low_value > $cur_value){
+            $low_value = $cur_value;
         }
 
         # MIN/MAXを更新
@@ -320,79 +298,67 @@ while(1){
             $minmax_cntdwn = $COUNTUP;
         }
 
-        if( $isMinit > 0 ){
-            # 一分間ごとに計算する
+        # EMA
+        $ema = getEmaCandle($cur_value, \@candleArray, $EMA_SAMPLE_NUM);
 
-            # EMA
-            {
-                my $beg_idx = 0;
-                if(@candleArray >= $EMA_SAMPLE_NUM){
-                    $beg_idx = @candleArray - $EMA_SAMPLE_NUM;
-                }
-                my $last_ema = 0;
-                my $elem_cnt = 0;
-                for(my $i=$beg_idx; $i<@candleArray; $i++){
-                    $elem_cnt++;
-                    my $elem = $candleArray[$i];
-                    my $elem_value = $elem->{"LAST"};
-                    my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
-                    $last_ema = $elem_ema;
-                }
-                $elem_cnt++;
-                $ema = int($cur_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+        # 一分間ごとに計算する
+        if( $isMinit > 0 ){
+            # 終値過去最大値を取得
+            getHighestCandle(\$highest_last, "LAST", \@candleArray, 22);
+
+            # VIX値の移動平均を取得
+            getStdevCandle(\$stddev, \$ma, "VIX", \@candleArray, 20);
+            $boll_high = $ma + (2.0*$stddev);
+            $boll_low  = $ma - (2.0*$stddev);
+
+            # VIX値の過去最大を取得
+            getHighestCandle(\$rangeHigh, "VIX", \@candleArray, 50);
+            $rangeHigh = $rangeHigh * 0.85;
+        }
+
+
+        # VIX
+        my $wvf = 0;
+        {   
+            if($highest_last > $high_value){
+                $wvf = (($highest_last - $low_value) / $highest_last) * 100;
+            }else{
+                $wvf = (($high_value - $low_value) / $high_value) * 100;
             }
 
-            # 標準偏差、移動平均、ボリンジャーバンド
-            {
-                my $highest_last = 0;
-                getHighestCandle(\$highest_last, "LAST", \@candleArray, 22);
-                if($highest_last>0){
-                    $wvf = (($highest_last - $low_value) / $highest_last) * 100;
-                    # print "wvf=$wvf, highest_last=$highest_last, low_value=$low_value\n";
-                }
-
-                getStdevCandle(\$stddev, \$ma, "VIX", \@candleArray, 20);
-                $boll_high = $ma + (2.0*$stddev);
-                $boll_low = $ma - (2.0*$stddev);
-
-                my $rangeHigh = 0;
-                getHighestCandle(\$rangeHigh, "VIX", \@candleArray, 50);
-                $rangeHigh = $rangeHigh * 0.85;#0.75;
-
-                if($wvf>0){
-                    if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
-                        if($execTrade>0){
-                            $isVIX = 1;
-                            if($wvf >= 1.0){
-                                $vix_cntdwn = int($VIX_CNTUP*$wvf);
+            if($wvf>0){
+                if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
+                    if($execTrade>0){
+                        $isVIX = 1;
+                        if($wvf >= 1.0){
+                            $vix_cntdwn = int($VIX_CNTUP*$wvf);
+                        }else{
+                            $vix_cntdwn = $VIX_CNTUP;
+                        }
+                        if($pre_isVIX==0){
+                            my $vix_str = sprintf("VIX ALERT ON!! wvf=%3.1f\n",$wvf);
+                            postSlack($vix_str);
+                        }
+                    }
+                }else{
+                    if($execTrade>0){
+                        if($pre_isVIX>0){
+                            if($vix_cntdwn==0){
+                                $isVIX = 0;
+                                postSlack("VIX ALERT OFF.\n");
                             }else{
-                                $vix_cntdwn = $VIX_CNTUP;
-                            }
-                            if($pre_isVIX==0){
-                                my $vix_str = sprintf("VIX ALERT ON!! wvf=%3.1f\n",$wvf);
-                                postSlack($vix_str);
+                                $isVIX = 1;
+                                #postSlack("VIX ALERT KEEP. cntdwn=$vix_cntdwn\n");
                             }
                         }
-                    }else{
-                        if($execTrade>0){
-                            if($pre_isVIX>0){
-                                if($vix_cntdwn==0){
-                                    $isVIX = 0;
-                                    postSlack("VIX ALERT OFF.\n");
-                                }else{
-                                    $isVIX = 1;
-                                    postSlack("VIX ALERT KEEP. cntdwn=$vix_cntdwn\n");
-                                }
-                            }
-                       }
                     }
                 }
             }
+        }
 
-            #if(@candleArray >= $CANDLE_LIMIT ){
-            #    # 一番古い先頭を削除
-            #    my $shift_candle = shift(@candleArray);
-            #}
+        if( $isMinit > 0 ){
+            # 一分間ごとに計算する
+
             # キャンドルオブジェクト追加
             my %candle = (
                 "TIME"      => $timestamp_utc,
@@ -416,15 +382,15 @@ while(1){
         }
 
         my $profit = 0;
-        my $maxminNear = ($max - $min) / 6;
+        my $maxminNear = ($max - $min) / 5;
         my $shortEmaFar = abs($max - $ema) / 2;
         my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = abs($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 4;
 
         # MIN/MAX付近での定着指数を算出
-        if($position eq "NONE" && $minmax_cntdwn == 0){
-            if(($max-$best_ask) < $maxminNear){
+        if($position eq "NONE"  && ($minmax_cntdwn == 0) ){
+            if( (($max-$best_ask) < $maxminNear)){
                 $max_keep++;
             }else{
                 $max_keep--;
@@ -432,7 +398,7 @@ while(1){
                     $max_keep = 0;
                 }
             }
-            if(($best_bid-$min) < $maxminNear){
+            if( (($best_bid-$min) < $maxminNear) ){
                 $min_keep++;
             }else{
                 $min_keep--;
@@ -445,14 +411,16 @@ while(1){
             $min_keep = 0;
         }
 
+        # トレードロジック
         if($execTrade==1){
             if($position eq "NONE" ){
                 if($isVIX <= 0){
                     # VIX-OFF
                     if( # SHORTエントリー条件
-                        ($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
                         ($best_ask > $ema)                  &&   # 売値がEMAより大きい
-                        (($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
+                        #($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
+                        #(($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
+                        (($best_ask - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
                         (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
                         ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
                         ($minmax_cntdwn == 0)               
@@ -470,9 +438,10 @@ while(1){
                             postSlack("SHORT-ENTRY IS FAILED!!\n");
                         }
                     }elsif( # LONGエントリー条件
-                        ($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
                         ($best_bid < $ema)                 &&   # EMAが買値より大きい
-                        (($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
+                        #($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
+                        #(($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
+                        (($ema - $best_bid) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
                         (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
                         ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
@@ -490,24 +459,6 @@ while(1){
                             postSlack("LONG-ENTRY IS FAILED!!\n");
                         }
                     }
-                }else{
-=pod
-                    # VIX-ON
-                    if($isVIX != $pre_isVIX){
-                        # SHORTエントリー(VIX)
-                        my $res_json;
-                        if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
-                            # 注文成功
-                            postSlack("SHORT-VIX-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
-                            # SHORTポジションへ
-                            $position = "SHORT_VIX";
-                            $short_entry = $best_ask;
-                            $short_tick = $tick_id;
-                        }else{
-                            postSlack("SHORT-VIX-ENTRY IS FAILED!!\n");
-                        }
-                    }
-=cut
                 }
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $best_bid;
@@ -603,54 +554,10 @@ while(1){
                         #last;
                     }
                 }
-            }elsif($position eq "SHORT_VIX"){
-                $profit = $short_entry - $best_bid;
-                my $shortLC = $short_entry * (1.0 + $LC_RATE);
-                if( 
-                    ($best_bid >= $shortLC)
-                ){
-                    # SHORT_VIXロスカット
-                    my $res_json;
-                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
-                        # 注文成功
-                        # ノーポジションへ
-                        $position = "NONE";
-                        $short_entry = 0;
-                        $short_tick = 0;
-                        $profit_sum += $profit;
-                        postSlack("SHORT-VIX-LOSSCUT, PRF=$profit, SUM=$profit_sum, BID=$best_bid, LC=$shortLC\n");
-                    }else{
-                        # 注文失敗
-                        postSlack("SHORT-VIX-LOSSCUT IS FAILED!!\n");
-                    }
-                }elsif(
-                    #($isVIX <= 0) &&
-                    #($minmax_cntdwn == 0) &&
-                    ($vix_cntdwn == 0)
-                ){
-=pod
-                    # SHORT_VIX利確
-                    my $res_json;
-                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
-                        # 注文成功
-                        # ノーポジションへ
-                        $position = "NONE";
-                        $short_entry = 0;
-                        $short_tick = 0;
-                        $profit_sum += $profit;
-                        postSlack("SHORT-VIX-RIKAKU, PRF=$profit, SUM=$profit_sum, BID=$best_bid\n");
-                    }else{
-                        # 注文失敗
-                        postSlack("SHORT-VIX-RIKAKU IS FAILED!!\n");
-                    }
-=cut
-                }
             }
         }
 
-
         # 情報出力
-        
         my $short = $ema;
         my $long = $ema;
         my $near = 0;
@@ -666,9 +573,12 @@ while(1){
             ($position ne $pre_position) ||
             ($min != $pre_min) ||
             ($max != $pre_max) ||
-            ($ema != $pre_ema) ||
+            #($ema != $pre_ema) ||
             ($isVIX != $pre_isVIX) ||
+            #($max_keep != 0) ||
+            #($min_keep != 0) ||
             ($isMinit > 0)
+            #1
         ){
             my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\n"
                 , $cycle_cnt
@@ -736,6 +646,30 @@ while(1){
         $pre_value = $cur_value;
         $pre_isVIX = $isVIX;
 
+        if($isMinit>0){
+            # キャンドル追加に伴い、MIN,MAXの更新
+            my $shift_idx = (@candleArray - $RANGE) - 1;
+            if($shift_idx>=0){
+                my $shift_candle = $candleArray[$shift_idx];
+                if( $shift_candle->{"HIGH"}==$max || $shift_candle->{"LOW"}==$min ){
+                    my $lowest_low = 0;
+                    my $highest_high = 0;
+                    getLowHighestCandle(\$lowest_low, \$highest_high, \@candleArray, $RANGE);
+                    if($lowest_low!=0){
+                        $min = $lowest_low;
+                    }
+                    if($highest_high!=0){
+                        $max = $highest_high;
+                    }
+                }
+            }
+        }
+
+        # Candle配列がバッファ数を超えた場合
+        if(@candleArray > $CANDLE_BUF ){
+            # 先頭を削除
+            my $shift_candle = shift(@candleArray);
+        }
     #};
 
     if(-e $stopCodeFile){
@@ -973,6 +907,31 @@ sub getLowHighestCandle{
     $$highest_ref = $highest;
 
     return(0);
+}
+
+sub getEmaCandle{
+    my $cur_value       = shift;
+    my $candleArray_ref = shift;
+    my $sample_num      = shift;
+
+    my $beg_idx = 0;
+    if(@{$candleArray_ref} >= $sample_num){
+        $beg_idx = @{$candleArray_ref} - $sample_num;
+    }
+    my $last_ema = 0;
+    my $elem_cnt = 0;
+    for(my $i=$beg_idx; $i<@{$candleArray_ref}; $i++){
+        $elem_cnt++;
+        my $elem = $candleArray_ref->[$i];
+        my $elem_value = $elem->{"LAST"};
+        my $elem_ema = int($elem_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+        $last_ema = $elem_ema;
+    }
+    $elem_cnt++;
+
+    my $ema = int($cur_value * 2 / ($elem_cnt+1) + $last_ema * ($elem_cnt+1-2) / ($elem_cnt + 1));
+
+    return($ema);
 }
 
 
