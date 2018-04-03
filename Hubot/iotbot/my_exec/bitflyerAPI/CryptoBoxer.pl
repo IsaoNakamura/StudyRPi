@@ -78,7 +78,8 @@ my $PROFIT_MAX = 10000;
 # パラメタ:ライフサイクル
 # 100=約17秒
 # 1000=170秒=約3分
-my $RANGE = 5000;#4000;#5000;
+my $RANGE = 15;#4000;#5000;
+my $CANDLE_BUF = 60;
 
 # パラメタ:MIN,MAX更新時の遊び時間
 my $COUNTUP = 120;
@@ -89,7 +90,6 @@ my $EMA_SAMPLE_NUM = 60;
 my $CANDLE_LIMIT = 200;
 
 # 状態情報
-my @tickerArray;
 my $minmax_cntdwn = $COUNTUP;
 my $vix_cntdwn = 0;
 my $min = 0;
@@ -100,7 +100,7 @@ my $profit_sum = 0;
 my $ema = 0;
 my $short_tick = 0;
 my $long_tick = 0;
-my $execTrade = 1;
+my $execTrade = 0;
 
 # ポジション
 my $position = "NONE";
@@ -112,7 +112,6 @@ my $pre_min = 0;
 my $pre_max = 0;
 my $pre_ema = 0;
 my $pre_value = 0;
-my $pre_delta = 0;
 
 my $pre_time;
 
@@ -141,14 +140,14 @@ my $stopCodeFile = "./StopCode.txt";
 
 my $logFilePath = "./CryptoBoxer_$begin_time.log";
 open( OUT, '>',$logFilePath) or die( "Cannot open filepath:$logFilePath $!" );
-my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tVDWN\tXKP\tNKP\tOLD\tTIME\n";
+my $header_str = "SEQ\tTID\tVAL\tMIN\tMAX\tSHORT\tLONG\tEMA\tVIX\tDIF\tRNG\tPOS\tPRF\tDWN\tSUM\tVDWN\tXKP\tNKP\tTIME\n";
 print OUT $header_str;
 
 # 過去のキャンドルをCryptoWatchから取得
 {
     my $symbol    = "btcfxjpy";
-    my $periods   = 60;
-    my $after     = time() - (30 * 60); # 30分前の値を取得
+    my $periods   = 60; # 1分足
+    my $after     = time() - ($CANDLE_BUF * 60); # CANDLE_BUF分前の値を取得
     my $path      = "ohlc";
     my $endPoint  = "https://api.cryptowat.ch/markets/bitflyer";
 
@@ -196,11 +195,9 @@ print OUT $header_str;
         push(@candleArray, \%candle);
     }
 
-    my $highest_high = 0;
-    getHighestCandle(\$highest_high, "HIGH", \@candleArray, 15);
-
     my $lowest_low = 0;
-    getLowestCandle(\$lowest_low, "LOW", \@candleArray, 15);
+    my $highest_high = 0;
+    getLowHighestCandle(\$lowest_low, \$highest_high, \@candleArray, $RANGE);
 
     $min = $lowest_low;
     $max = $highest_high;
@@ -228,12 +225,6 @@ while(1){
                 $pre_time = $time;
                 $isMinit = 1;
             }
-        }
-
-        # トレード開始は一定数データをとってから
-        if($execTrade==1){
-            my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
-            postSlack($start_msg);
         }
 
     #eval{
@@ -274,10 +265,7 @@ while(1){
         if($pre_tick_id eq $tick_id){
             next;
         }
-        push(@tickerArray, $res_json);
 
-        # 価格の差を算出
-        my $delta = ($cur_value - $pre_value) + ($pre_delta * 0.5);
         
         if($cycle_cnt==0){
             # MAX,MIN初期値設定
@@ -287,8 +275,6 @@ while(1){
             if($min==0){
                 $min = $best_bid;
             }
-
-            $delta = 0;
 
             $high_value = $cur_value;
             $low_value = $cur_value;
@@ -305,36 +291,20 @@ while(1){
                 $low_value = $cur_value;
             }
         }
-=pod
-        if(@tickerArray > $RANGE ){
-            # Ticker配列がレンジ数を超えた場合
+
+        if(@candleArray > $CANDLE_BUF ){
+            # Candle配列がバッファを超えた場合
 
             # 先頭を削除
-            my $shift_ticker = shift(@tickerArray);
-            my $shift_bid = $shift_ticker->{"best_bid"};
-            my $shift_ask = $shift_ticker->{"best_ask"};
-            if($shift_ask == $max || $shift_bid == $min){
-                # 削除したものがMAXまたはMINだった場合
-                # MAX,MINを再計算する
-                for(my $i=0; $i<@tickerArray; $i++){
-                    my $elem_json = $tickerArray[$i];
-                    my $elem_bid = $elem_json->{"best_bid"};
-                    my $elem_ask = $elem_json->{"best_ask"};
-                    if($i==0){
-                        $max = $elem_ask;
-                        $min = $elem_bid;
-                        next;
-                    }
-                    if($max < $elem_ask){
-                        $max = $elem_ask;
-                    }
-                    if($min > $elem_bid){
-                        $min = $elem_bid;
-                    }
-                }
-            }
+            my $shift_candle = shift(@candleArray);
+
+            my $lowest_low = 0;
+            my $highest_high = 0;
+            getLowHighestCandle(\$lowest_low, \$highest_high, \@candleArray, $RANGE);
+            $min = $lowest_low;
+            $max = $highest_high;
         }
-=cut
+
         # MIN/MAXを更新
         my $isUpdateMinMax = 0;
         if($max < $best_ask){
@@ -348,10 +318,6 @@ while(1){
         # 更新したらトレード無しサイクル数をセット
         if($isUpdateMinMax>0){
             $minmax_cntdwn = $COUNTUP;
-            # 増加指数が一定数を超えたらトレード無しサイクル数を加算
-            #if(abs($delta) >= $DELTA_LIMIT){
-            #    $minmax_cntdwn += int($COUNTUP*1.5);
-            #}
         }
 
         if( $isMinit > 0 ){
@@ -423,10 +389,10 @@ while(1){
                 }
             }
 
-            if(@candleArray >= $CANDLE_LIMIT ){
-                # 一番古い先頭を削除
-                my $shift_candle = shift(@candleArray);
-            }
+            #if(@candleArray >= $CANDLE_LIMIT ){
+            #    # 一番古い先頭を削除
+            #    my $shift_candle = shift(@candleArray);
+            #}
             # キャンドルオブジェクト追加
             my %candle = (
                 "TIME"      => $timestamp_utc,
@@ -440,14 +406,14 @@ while(1){
             # HIGH/LOWをリセット
             $high_value = 0;
             $low_value = 0;
-        }
 
-        #my $res_info = sprintf("CUR=%7d, DLT=%7d, RATE=%.2f\n"
-        #                    ,$cur_value
-        #                    ,$delta
-        #                    ,$rate
-        #                );
-        #print $res_info;
+            # トレード開始
+            if($execTrade==0 ){
+                $execTrade=1; 
+                my $start_msg = sprintf("START TRADE. cycle_cnt=%d, range=%d\n",$cycle_cnt,$RANGE);
+                postSlack($start_msg);
+            }
+        }
 
         my $profit = 0;
         my $maxminNear = ($max - $min) / 6;
@@ -684,9 +650,6 @@ while(1){
 
 
         # 情報出力
-        my $oldest = "";
-        my $oldest_wrk = $tickerArray[0]->{"timestamp"};
-        MyModule::UtilityTime::convertTimeGMTtoJST(\$oldest, $oldest_wrk);
         
         my $short = $ema;
         my $long = $ema;
@@ -707,7 +670,7 @@ while(1){
             ($isVIX != $pre_isVIX) ||
             ($isMinit > 0)
         ){
-            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\t%s\n"
+            my $log_str = sprintf("%05d\t%8d\t%7d\t%7d\t%7d\t%7d\t%7d\t%7d\t%5.1f\t%5d\t%5d\t%5s\t%5d\t%3d\t%5d\t%5d\t%2d\t%2d\t%s\n"
                 , $cycle_cnt
                 , $tick_id
                 , $cur_value
@@ -726,7 +689,6 @@ while(1){
                 , $vix_cntdwn
                 , $max_keep
                 , $min_keep
-                , $oldest
                 , $timestamp
             );
             print OUT $log_str;
@@ -772,7 +734,6 @@ while(1){
         $pre_max = $max;
         $pre_ema = $ema;
         $pre_value = $cur_value;
-        $pre_delta = $delta;
         $pre_isVIX = $isVIX;
 
     #};
@@ -974,5 +935,45 @@ sub getLowestCandle{
 
     return(0);
 }
+
+sub getLowHighestCandle{
+    my $lowest_ref = shift;
+    my $highest_ref = shift;
+    my $candleArray_ref = shift;
+    my $sample_num = shift;
+
+    my $beg_idx = 0;
+    my $array_cnt = @{$candleArray_ref};
+    if($array_cnt >= $sample_num){
+        $beg_idx = $array_cnt - $sample_num;
+    }
+
+    my $elem_cnt = 0;
+    my $lowest = 0;
+    my $highest = 0;
+    for(my $i=$beg_idx; $i<$array_cnt; $i++){
+        $elem_cnt++;
+        my $elem = $candleArray_ref->[$i];
+        my $elem_low = $elem->{"LOW"};
+        my $elem_high = $elem->{"HIGH"};
+
+        if($i==$beg_idx){
+            $lowest = $elem_low;
+            $highest = $elem_high;
+        }else{
+            if($lowest > $elem_low){
+                $lowest = $elem_low;
+            }
+            if($highest < $elem_high){
+                $highest = $elem_high;
+            }
+        }
+    }
+    $$lowest_ref = $lowest;
+    $$highest_ref = $highest;
+
+    return(0);
+}
+
 
 1;
