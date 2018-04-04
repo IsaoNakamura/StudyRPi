@@ -76,18 +76,15 @@ my $PROFIT_MAX = 10000;
 
 
 # パラメタ:ライフサイクル
-# 100=約17秒
-# 1000=170秒=約3分
-my $RANGE = 15;#4000;#5000;
-my $CANDLE_BUF = 60;
+my $RANGE = 30;#15;#分
+my $CANDLE_BUF = 60;#分
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $COUNTUP = 120;
+my $COUNTUP = 600;#120;
 
 my $VIX_CNTUP = 600;
 
 my $EMA_SAMPLE_NUM = 60;
-my $CANDLE_LIMIT = 200;
 
 # 状態情報
 my $minmax_cntdwn = 0;
@@ -418,11 +415,9 @@ while(1){
                     # VIX-OFF
                     if( # SHORTエントリー条件
                         ($best_ask > $ema)                  &&   # 売値がEMAより大きい
-                        #($shortEmaFar > $FAR_UNDER_LIMIT )  &&   # 売値とEMAの差が最小値より大きい
-                        #(($best_ask - $ema) > $shortEmaFar) &&   # 売値とEMAが一定値より遠い
                         (($best_ask - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
                         (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                        ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                        # ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # SHORTエントリー
@@ -439,11 +434,9 @@ while(1){
                         }
                     }elsif( # LONGエントリー条件
                         ($best_bid < $ema)                 &&   # EMAが買値より大きい
-                        #($longEmaFar > $FAR_UNDER_LIMIT )  &&   # EMAと買値の差が最小値より大きい
-                        #(($ema - $best_bid) > $longEmaFar) &&   # EMAと買値が一定値より遠い
                         (($ema - $best_bid) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
                         (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                        ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                        # ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # LONGエントリー
