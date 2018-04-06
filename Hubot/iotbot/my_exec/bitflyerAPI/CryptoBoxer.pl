@@ -751,7 +751,7 @@ sub buyMarket{
                     }
                 }
                 $retry_order_cnt++;
-                if($retry_order_cnt>0){
+                if($retry_order_cnt>10){
                     last;
                 }
             }
@@ -813,7 +813,7 @@ sub sellMarket{
                     }
                 }
                 $retry_order_cnt++;
-                if($retry_order_cnt>0){
+                if($retry_order_cnt>10){
                     last;
                 }
             }
