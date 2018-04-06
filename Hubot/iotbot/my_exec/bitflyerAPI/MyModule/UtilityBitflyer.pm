@@ -304,5 +304,67 @@ sub sellMarket{
     return($ret_req);
 }
 
+sub getExecutionsAcceptance{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+    my $acceptance_id  = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getexecutions";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?product_code=%s&child_order_acceptance_id=%s", $path, $product,$acceptance_id);
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+sub getChildOrdersAcceptance{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+    my $acceptance_id  = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getchildorders";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?product_code=%s&child_order_acceptance_id=%s", $path, $product,$acceptance_id);
+
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
 1;
 __END__

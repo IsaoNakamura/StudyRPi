@@ -47,6 +47,9 @@ my $ret_req =   MyModule::UtilityBitflyer::postSendChildOrder(
 
 print "ret_req=$ret_req\n";
 if( $ret_req==0 ){
+
+
+
     print "writeJson. $dest\n";
     if(MyModule::UtilityJson::writeJson(\$res_json, $dest, ">")!=0){
         print "FileSaveError. $dest\n";

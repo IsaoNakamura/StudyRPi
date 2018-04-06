@@ -58,7 +58,7 @@ my $CYCLE_SLEEP = 0;
 my $RIKAKU_RETRY_NUM = 0;
 my $ENTRY_RETRY_NUM = 0;
 
-my $FAR_UNDER_LIMIT = 2000;
+my $FAR_UNDER_LIMIT = 1000;
 my $LC_RATE = 0.005;
 
 # エントリーしてから利確する時間が長引いた場合の処理用
@@ -326,7 +326,7 @@ while(1){
             if($wvf>0){
                 if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
                     if($execTrade>0){
-                        $isVIX = 1;
+                        #$isVIX = 1;
                         if($wvf >= 1.0){
                             $vix_cntdwn = int($VIX_CNTUP*$wvf);
                         }else{
@@ -341,10 +341,10 @@ while(1){
                     if($execTrade>0){
                         if($pre_isVIX>0){
                             if($vix_cntdwn==0){
-                                $isVIX = 0;
+                                #$isVIX = 0;
                                 postSlack("VIX ALERT OFF.\n");
                             }else{
-                                $isVIX = 1;
+                                #$isVIX = 1;
                                 #postSlack("VIX ALERT KEEP. cntdwn=$vix_cntdwn\n");
                             }
                         }
@@ -417,17 +417,16 @@ while(1){
                         ($best_ask > $ema)                  &&   # 売値がEMAより大きい
                         (($best_ask - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
                         (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                        ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                        # ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # SHORTエントリー
                         my $res_json;
-                        if( sellMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
+                        if( sellMarket(\$res_json, \$short_entry, $ENTRY_RETRY_NUM)==0 ){
                             # 注文成功
-                            postSlack("SHORT-ENTRY, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
+                            postSlack("SHORT-ENTRY, ENTRY=$short_entry, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
                             # SHORTポジションへ
                             $position = "SHORT";
-                            $short_entry = $best_ask;
                             $short_tick = $tick_id;
                         }else{
                             postSlack("SHORT-ENTRY IS FAILED!!\n");
@@ -436,17 +435,16 @@ while(1){
                         ($best_bid < $ema)                 &&   # EMAが買値より大きい
                         (($ema - $best_bid) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
                         (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                        ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                        # ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # LONGエントリー
                         my $res_json;
-                        if( buyMarket(\$res_json, $ENTRY_RETRY_NUM)==0 ){
+                        if( buyMarket(\$res_json, \$long_entry, $ENTRY_RETRY_NUM)==0 ){
                             # 注文成功
-                            postSlack("LONG-ENTRY, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
+                            postSlack("LONG-ENTRY, ENTRY=$long_entry, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
                             # LONGポジションへ
                             $position = "LONG";
-                            $long_entry = $best_bid;
                             $long_tick = $tick_id;
                         }else{
                             postSlack("LONG-ENTRY IS FAILED!!\n");
@@ -462,14 +460,16 @@ while(1){
                 ){
                     # SHORTロスカット
                     my $res_json;
-                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                    my $short_exit = 0;
+                    if( buyMarket(\$res_json, \$short_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        $profit = $short_entry - $short_exit;
                         # ノーポジションへ
                         $position = "NONE";
                         $short_entry = 0;
                         $short_tick = 0;
                         $profit_sum += $profit;
-                        postSlack("SHORT-LOSSCUT, PRF=$profit, SUM=$profit_sum, BID=$best_bid, LC=$shortLC\n");
+                        postSlack("SHORT-LOSSCUT, PRF=$profit, SUM=$profit_sum, EXIT=$short_exit, BID=$best_bid, LC=$shortLC\n");
                     }else{
                         # 注文失敗
                         postSlack("SHORT-LOSSCUT IS FAILED!!\n");
@@ -488,14 +488,16 @@ while(1){
                     my $length = abs($ema-$best_bid);
                     
                     my $res_json;
-                    if( buyMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                    my $short_exit = 0;
+                    if( buyMarket(\$res_json, \$short_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        $profit = $short_entry - $short_exit;
                         # ノーポジションへ
                         $position = "NONE";
                         $short_entry = 0;
                         $short_tick = 0;
                         $profit_sum += $profit;
-                        postSlack("SHORT-RIKAKU, PRF=$profit, SUM=$profit_sum, BID=$best_bid, MIN=$min, EMA=$ema, LEN=$length, NEAR=$shortEmaNear\n");
+                        postSlack("SHORT-RIKAKU, PRF=$profit, SUM=$profit_sum, EXIT=$short_exit, BID=$best_bid, MIN=$min, EMA=$ema, LEN=$length, NEAR=$shortEmaNear\n");
                     }else{
                         # 注文失敗
                         postSlack("SHORT-RIKAKU IS FAILED!!\n");
@@ -511,14 +513,16 @@ while(1){
                 ){
                     # LONGロスカット
                     my $res_json;
-                    if( sellMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                    my $long_exit = 0;
+                    if( sellMarket(\$res_json, \$long_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        $profit = $long_exit - $long_entry;
                         # ノーポジションへ
                         $position = "NONE";
                         $long_entry = 0;
                         $long_tick = 0;
                         $profit_sum += $profit;
-                        postSlack("LONG-LOSSCUT, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, LC=$longLC\n");
+                        postSlack("LONG-LOSSCUT, PRF=$profit, SUM=$profit_sum, EXIT=$long_exit, ASK=$best_ask, LC=$longLC\n");
                     }else{
                         postSlack("LONG-LOSSCUT IS FAILED!!\n");
                         #last;
@@ -534,14 +538,16 @@ while(1){
                     # LONG利確
                     my $length = abs($ema-$best_ask);
                     my $res_json;
-                    if( sellMarket(\$res_json, $RIKAKU_RETRY_NUM)==0 ){
+                    my $long_exit = 0;
+                    if( sellMarket(\$res_json, \$long_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        $profit = $long_exit - $long_entry;
                         # ノーポジションへ
                         $position = "NONE";
                         $long_entry = 0;
                         $long_tick = 0;
                         $profit_sum += $profit;
-                        postSlack("LONG-RIKAKU, PRF=$profit, SUM=$profit_sum, ASK=$best_ask, MAX=$max, EMA=$ema, LEN=$length, NEAR=$longEmaNear\n");
+                        postSlack("LONG-RIKAKU, PRF=$profit, SUM=$profit_sum, EXIT=$long_exit, ASK=$best_ask, MAX=$max, EMA=$ema, LEN=$length, NEAR=$longEmaNear\n");
                     }else{
                         postSlack("LONG-RIKAKU IS FAILED!!\n");
                         #last;
@@ -685,6 +691,7 @@ close OUT;
 
 sub buyMarket{
     my $resultJson_ref = shift;
+    my $price_ref      = shift;
     my $retry_num      = shift;
 
     my $result = -1;
@@ -702,6 +709,27 @@ sub buyMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
+            sleep(2);
+            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                print "acceptance_id=$acceptance_id\n";
+
+                my $resOrders_json;
+                my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
+                                        \$resOrders_json,
+                                        \$ua,
+                                        \$authBitflyer,
+                                        "FX_BTC_JPY",
+                                        $acceptance_id
+                                    );
+                my $orders_cnt = @{$resOrders_json};
+                print "orders_cnt=$orders_cnt\n";
+                if($orders_cnt>0){
+                    my $order_ref = $resOrders_json->[0];
+                    $$price_ref = $order_ref->{"average_price"};
+                    print "price=$$price_ref\n";
+                }
+            }
             last;
         }else{
             if($retry_cnt <= $retry_num){
@@ -718,6 +746,7 @@ sub buyMarket{
 
 sub sellMarket{
     my $resultJson_ref = shift;
+    my $price_ref      = shift;
     my $retry_num      = shift;
 
     my $result = -1;
@@ -734,6 +763,27 @@ sub sellMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
+            sleep(2);
+            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                print "acceptance_id=$acceptance_id\n";
+
+                my $resOrders_json;
+                my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
+                                        \$resOrders_json,
+                                        \$ua,
+                                        \$authBitflyer,
+                                        "FX_BTC_JPY",
+                                        $acceptance_id
+                                    );
+                my $orders_cnt = @{$resOrders_json};
+                print "orders_cnt=$orders_cnt\n";
+                if($orders_cnt>0){
+                    my $order_ref = $resOrders_json->[0];
+                    $$price_ref = $order_ref->{"average_price"};
+                    print "price=$$price_ref\n";
+                }
+            }
             last;
         }else{
             if($retry_cnt <= $retry_num){
