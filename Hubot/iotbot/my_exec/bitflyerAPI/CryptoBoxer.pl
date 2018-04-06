@@ -66,7 +66,7 @@ my $LC_RATE = 0.005;
 my $RIKAKU_LIMIT_TIME = 30;
 
 # MIN/MAX位置を一定期間キープできるかの判断に使用
-my $KEEP_LIMIT = 50;
+my $KEEP_LIMIT = 100;#50;
 
 my $DELTA_LIMIT = 2000;
 
@@ -417,7 +417,7 @@ while(1){
                         ($best_ask > $ema)                  &&   # 売値がEMAより大きい
                         (($best_ask - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
                         (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                        # ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                        ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # SHORTエントリー
@@ -436,7 +436,7 @@ while(1){
                         ($best_bid < $ema)                 &&   # EMAが買値より大きい
                         (($ema - $best_bid) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
                         (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                        # ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                        ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # LONGエントリー
