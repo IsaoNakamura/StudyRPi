@@ -425,6 +425,9 @@ while(1){
                         if( sellMarket(\$res_json, \$short_entry, $ENTRY_RETRY_NUM)==0 ){
                             # 注文成功
                             postSlack("SHORT-ENTRY, ENTRY=$short_entry, ASK=$best_ask, EMA=$ema, Far=$shortEmaFar\n");
+                            if($short_entry==0){
+                                $short_entry = $best_ask;
+                            }
                             # SHORTポジションへ
                             $position = "SHORT";
                             $short_tick = $tick_id;
@@ -443,6 +446,9 @@ while(1){
                         if( buyMarket(\$res_json, \$long_entry, $ENTRY_RETRY_NUM)==0 ){
                             # 注文成功
                             postSlack("LONG-ENTRY, ENTRY=$long_entry, BID=$best_bid, EMA=$ema, FAR=$longEmaFar\n");
+                            if($long_entry==0){
+                                $long_entry = $best_bid;
+                            }
                             # LONGポジションへ
                             $position = "LONG";
                             $long_tick = $tick_id;
@@ -463,6 +469,9 @@ while(1){
                     my $short_exit = 0;
                     if( buyMarket(\$res_json, \$short_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        if($short_exit==0){
+                            $short_exit = $best_bid;
+                        }
                         $profit = $short_entry - $short_exit;
                         # ノーポジションへ
                         $position = "NONE";
@@ -491,6 +500,9 @@ while(1){
                     my $short_exit = 0;
                     if( buyMarket(\$res_json, \$short_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        if($short_exit==0){
+                            $short_exit = $best_bid;
+                        }
                         $profit = $short_entry - $short_exit;
                         # ノーポジションへ
                         $position = "NONE";
@@ -516,6 +528,9 @@ while(1){
                     my $long_exit = 0;
                     if( sellMarket(\$res_json, \$long_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        if($long_exit==0){
+                            $long_exit = $best_ask;
+                        }
                         $profit = $long_exit - $long_entry;
                         # ノーポジションへ
                         $position = "NONE";
@@ -541,6 +556,9 @@ while(1){
                     my $long_exit = 0;
                     if( sellMarket(\$res_json, \$long_exit, $RIKAKU_RETRY_NUM)==0 ){
                         # 注文成功
+                        if($long_exit==0){
+                            $long_exit = $best_ask;
+                        }
                         $profit = $long_exit - $long_entry;
                         # ノーポジションへ
                         $position = "NONE";
@@ -709,27 +727,35 @@ sub buyMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
-            sleep(2);
-            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
-                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
-                print "acceptance_id=$acceptance_id\n";
+            my $retry_order_cnt = 0;
+            while(1){
+                sleep(2);
+                if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                    my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                    print "acceptance_id=$acceptance_id\n";
 
-                my $resOrders_json;
-                my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
-                                        \$resOrders_json,
-                                        \$ua,
-                                        \$authBitflyer,
-                                        "FX_BTC_JPY",
-                                        $acceptance_id
-                                    );
-                my $orders_cnt = @{$resOrders_json};
-                print "orders_cnt=$orders_cnt\n";
-                if($orders_cnt>0){
-                    my $order_ref = $resOrders_json->[0];
-                    $$price_ref = $order_ref->{"average_price"};
-                    print "price=$$price_ref\n";
+                    my $resOrders_json;
+                    my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
+                                            \$resOrders_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $acceptance_id
+                                        );
+                    my $orders_cnt = @{$resOrders_json};
+                    print "orders_cnt=$orders_cnt\n";
+                    if($orders_cnt>0){
+                        my $order_ref = $resOrders_json->[0];
+                        $$price_ref = $order_ref->{"average_price"};
+                        print "price=$$price_ref\n";
+                    }
+                }
+                $retry_order_cnt++;
+                if($retry_order_cnt>0){
+                    last;
                 }
             }
+
             last;
         }else{
             if($retry_cnt <= $retry_num){
@@ -763,25 +789,32 @@ sub sellMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
-            sleep(2);
-            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
-                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
-                print "acceptance_id=$acceptance_id\n";
+            my $retry_order_cnt = 0;
+            while(1){
+                sleep(2);
+                if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                    my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                    print "acceptance_id=$acceptance_id\n";
 
-                my $resOrders_json;
-                my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
-                                        \$resOrders_json,
-                                        \$ua,
-                                        \$authBitflyer,
-                                        "FX_BTC_JPY",
-                                        $acceptance_id
-                                    );
-                my $orders_cnt = @{$resOrders_json};
-                print "orders_cnt=$orders_cnt\n";
-                if($orders_cnt>0){
-                    my $order_ref = $resOrders_json->[0];
-                    $$price_ref = $order_ref->{"average_price"};
-                    print "price=$$price_ref\n";
+                    my $resOrders_json;
+                    my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
+                                            \$resOrders_json,
+                                            \$ua,
+                                            \$authBitflyer,
+                                            "FX_BTC_JPY",
+                                            $acceptance_id
+                                        );
+                    my $orders_cnt = @{$resOrders_json};
+                    print "orders_cnt=$orders_cnt\n";
+                    if($orders_cnt>0){
+                        my $order_ref = $resOrders_json->[0];
+                        $$price_ref = $order_ref->{"average_price"};
+                        print "price=$$price_ref\n";
+                    }
+                }
+                $retry_order_cnt++;
+                if($retry_order_cnt>0){
+                    last;
                 }
             }
             last;
