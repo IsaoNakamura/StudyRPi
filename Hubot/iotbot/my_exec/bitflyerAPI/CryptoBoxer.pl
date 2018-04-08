@@ -359,20 +359,23 @@ while(1){
         # MIN/MAXを更新
         my $isUpdateMinMax = 0;
 
-        $max = $boll_high_last;
+        
         if($boll_high_last < $cur_value){
             if($max < $cur_value){
                 $max = $cur_value;
                 $isUpdateMinMax++;
             }
+        }else{
+            $max = $boll_high_last;
         }
 
-        $min = $boll_low_last;
         if($boll_low_last > $cur_value){
             if($min > $cur_value){
                 $min = $cur_value;
                 $isUpdateMinMax++;
             }
+        }else{
+            $min = $boll_low_last;
         }
 
         # 更新したらトレード無しサイクル数をセット
