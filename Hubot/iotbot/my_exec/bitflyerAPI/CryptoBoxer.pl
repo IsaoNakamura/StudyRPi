@@ -58,7 +58,7 @@ my $CYCLE_SLEEP = 0;
 my $RIKAKU_RETRY_NUM = 0;
 my $ENTRY_RETRY_NUM = 0;
 
-my $FAR_UNDER_LIMIT = 1000;
+my $FAR_UNDER_LIMIT = 2000;
 my $LC_RATE = 0.005;
 
 # エントリーしてから利確する時間が長引いた場合の処理用
@@ -68,19 +68,14 @@ my $RIKAKU_LIMIT_TIME = 30;
 # MIN/MAX位置を一定期間キープできるかの判断に使用
 my $KEEP_LIMIT = 100;#50;
 
-my $DELTA_LIMIT = 2000;
-
 my $PROFIT_LIMIT = 5000;
-
-my $PROFIT_MAX = 10000;
-
 
 # パラメタ:ライフサイクル
 my $RANGE = 30;#15;#分
 my $CANDLE_BUF = 60;#分
 
 # パラメタ:MIN,MAX更新時の遊び時間
-my $COUNTUP = 600;#120;
+my $COUNTUP = 300;#120;600
 
 my $VIX_CNTUP = 600;
 
@@ -326,7 +321,7 @@ while(1){
             if($wvf>0){
                 if( ($wvf >= $boll_high) || ($wvf >= $rangeHigh) ){
                     if($execTrade>0){
-                        #$isVIX = 1;
+                        $isVIX = 1;
                         if($wvf >= 1.0){
                             $vix_cntdwn = int($VIX_CNTUP*$wvf);
                         }else{
@@ -341,10 +336,10 @@ while(1){
                     if($execTrade>0){
                         if($pre_isVIX>0){
                             if($vix_cntdwn==0){
-                                #$isVIX = 0;
+                                $isVIX = 0;
                                 postSlack("VIX ALERT OFF.\n");
                             }else{
-                                #$isVIX = 1;
+                                $isVIX = 1;
                                 #postSlack("VIX ALERT KEEP. cntdwn=$vix_cntdwn\n");
                             }
                         }
@@ -379,7 +374,7 @@ while(1){
         }
 
         my $profit = 0;
-        my $maxminNear = ($max - $min) / 5;
+        my $maxminNear = ($max - $min) / 4;#5
         my $shortEmaFar = abs($max - $ema) / 2;
         my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = abs($ema - $min) / 2;
@@ -417,7 +412,7 @@ while(1){
                         ($best_ask > $ema)                  &&   # 売値がEMAより大きい
                         (($best_ask - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
                         (($max-$best_ask) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                        # ($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
+                        #($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # SHORTエントリー
@@ -438,7 +433,7 @@ while(1){
                         ($best_bid < $ema)                 &&   # EMAが買値より大きい
                         (($ema - $best_bid) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
                         (($best_bid-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                        # ($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
+                        #($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
                         # LONGエントリー
@@ -462,7 +457,7 @@ while(1){
                 my $shortLC = $short_entry * (1.0 + $LC_RATE);
                 if( 
                     ($best_bid >= $shortLC) ||
-                    ( ($isVIX > 0) && ($profit < 0) )
+                    ( ($isVIX > 0) && ($profit < -2000) )
                 ){
                     # SHORTロスカット
                     my $res_json;
@@ -488,7 +483,6 @@ while(1){
                     (abs($ema-$best_bid) < $shortEmaNear) || 
                     # ($min >= $best_bid) || 
                     ($ema >= $best_bid) ||
-                    # ($profit >= $PROFIT_MAX) ||
                     ( abs($tick_id-$short_tick) > (1800*$RIKAKU_LIMIT_TIME) && ($profit >= $PROFIT_LIMIT ) )
                 ){
                     # EMAに近づいたら、または、MIN,EMA以下
@@ -521,7 +515,7 @@ while(1){
                 my $longLC = $long_entry * (1.0 - $LC_RATE);
                 if(
                     ($best_ask <= $longLC) ||
-                    ( ($isVIX > 0) && ($profit < 0) )
+                    ( ($isVIX > 0) && ($profit < -2000) )
                 ){
                     # LONGロスカット
                     my $res_json;
@@ -546,7 +540,6 @@ while(1){
                     (abs($ema-$best_ask) < $longEmaNear) ||
                     # ($max <= $best_ask) ||
                     ($ema <= $best_ask) ||
-                    #($profit >= $PROFIT_MAX) ||
                     ( abs($tick_id-$long_tick) > (1800*$RIKAKU_LIMIT_TIME) && ($profit >= $PROFIT_LIMIT ) )
                 ){
                     # EMAに近づいたら、または、MAX,EMA以上
@@ -727,13 +720,12 @@ sub buyMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
-            my $retry_order_cnt = 0;
-            while(1){
-                sleep(2);
-                if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
-                    my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
-                    print "acceptance_id=$acceptance_id\n";
-
+            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                print "acceptance_id=$acceptance_id\n";
+                my $retry_order_cnt = 0;
+                while(1){
+                    sleep(1);
                     my $resOrders_json;
                     my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
                                             \$resOrders_json,
@@ -743,19 +735,20 @@ sub buyMarket{
                                             $acceptance_id
                                         );
                     my $orders_cnt = @{$resOrders_json};
-                    print "orders_cnt=$orders_cnt\n";
+                    
                     if($orders_cnt>0){
                         my $order_ref = $resOrders_json->[0];
                         $$price_ref = $order_ref->{"average_price"};
-                        print "price=$$price_ref\n";
+                        print "price=$$price_ref, retry=$retry_order_cnt\n";
+                        last;
+                    }
+                    $retry_order_cnt++;
+                    if($retry_order_cnt>180){
+                        print "timeout. retry=$retry_order_cnt\n";
+                        last;
                     }
                 }
-                $retry_order_cnt++;
-                if($retry_order_cnt>10){
-                    last;
-                }
             }
-
             last;
         }else{
             if($retry_cnt <= $retry_num){
@@ -789,13 +782,12 @@ sub sellMarket{
         $result = $ret_req;
         if( $ret_req==0 ){
             # 注文成功
-            my $retry_order_cnt = 0;
-            while(1){
-                sleep(2);
-                if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
-                    my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
-                    print "acceptance_id=$acceptance_id\n";
-
+            if(exists $$resultJson_ref->{"child_order_acceptance_id"}){
+                my $acceptance_id = $$resultJson_ref->{"child_order_acceptance_id"};
+                print "acceptance_id=$acceptance_id\n";
+                my $retry_order_cnt = 0;
+                while(1){
+                    sleep(1);
                     my $resOrders_json;
                     my $retOrders_req = MyModule::UtilityBitflyer::getChildOrdersAcceptance(
                                             \$resOrders_json,
@@ -805,16 +797,18 @@ sub sellMarket{
                                             $acceptance_id
                                         );
                     my $orders_cnt = @{$resOrders_json};
-                    print "orders_cnt=$orders_cnt\n";
+                    
                     if($orders_cnt>0){
                         my $order_ref = $resOrders_json->[0];
                         $$price_ref = $order_ref->{"average_price"};
-                        print "price=$$price_ref\n";
+                        print "price=$$price_ref, retry=$retry_order_cnt\n";
+                        last;
                     }
-                }
-                $retry_order_cnt++;
-                if($retry_order_cnt>10){
-                    last;
+                    $retry_order_cnt++;
+                    if($retry_order_cnt>180){
+                        print "timeout. retry=$retry_order_cnt\n";
+                        last;
+                    }
                 }
             }
             last;

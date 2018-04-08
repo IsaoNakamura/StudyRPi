@@ -27,7 +27,7 @@ $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 # LONGエントリー
-=pod
+#=pod
 my $resBuy_json;
 my $retBuy_req = MyModule::UtilityBitflyer::sellMarket(
                     \$resBuy_json,
@@ -42,37 +42,46 @@ if( $retBuy_req!=0 ){
     exit -1;
 }
 my $acceptance_id = $resBuy_json->{"child_order_acceptance_id"};
-=cut
+#=cut
 
 
 #my $acceptance_id = "JRF20180406-115653-625548"; 
-my $acceptance_id = "JRF20180406-130857-275916";
+#my $acceptance_id = "JRF20180406-130857-275916";
 print "acceptance_id=$acceptance_id\n";
 
-my $res_json;
-my $ret_req =   MyModule::UtilityBitflyer::getChildOrdersAcceptance(
-                    \$res_json,
-                    \$ua,
-                    \$authBitflyer,
-                    "FX_BTC_JPY",
-                    $acceptance_id
-                );
+my $retry_cnt=0;
+while(1){
+    sleep(1);
+    my $res_json;
+    my $ret_req =   MyModule::UtilityBitflyer::getChildOrdersAcceptance(
+                        \$res_json,
+                        \$ua,
+                        \$authBitflyer,
+                        "FX_BTC_JPY",
+                        $acceptance_id
+                    );
 
-print "ret_req=$ret_req\n";
-if( $ret_req==0 ){
-    my $orders_cnt = @{$res_json};
-    print "orders_cnt=$orders_cnt\n";
-    if($orders_cnt>0){
-        my $order_ref = $res_json->[0];
-        my $price = $order_ref->{"average_price"};
-        print "price=$price\n";
+    print "ret_req=$ret_req, retry=$retry_cnt\n";
+    if( $ret_req==0 ){
+        my $orders_cnt = @{$res_json};
+        print "orders_cnt=$orders_cnt\n";
+        if($orders_cnt>0){
+            my $order_ref = $res_json->[0];
+            my $price = $order_ref->{"average_price"};
+            print "price=$price\n";
+            print "writeJson. $dest\n";
+            if(MyModule::UtilityJson::writeJson(\$res_json, $dest, ">")!=0){
+                print "FileSaveError. $dest\n";
+                exit -1;
+            }
+            last;
+        }
     }
-
-    print "writeJson. $dest\n";
-    if(MyModule::UtilityJson::writeJson(\$res_json, $dest, ">")!=0){
-        print "FileSaveError. $dest\n";
-        exit -1;
+    $retry_cnt++;
+    if($retry_cnt>10){
+        last;
     }
 }
+
 exit 0;
 
