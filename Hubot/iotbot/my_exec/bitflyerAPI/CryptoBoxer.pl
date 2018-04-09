@@ -74,7 +74,7 @@ my $CANDLE_BUF = 60;#分
 my $EMA_SAMPLE_NUM = 20;
 my $FAR_UNDER_LIMIT = 2000;
 my $KEEP_LIMIT = 100;#50;# MIN/MAX位置を一定期間キープできるかの判断に使用
-my $COUNTUP = 30;#300;#120;600# パラメタ:MIN,MAX更新時の遊び時間
+my $COUNTUP = 90;#300;#120;600# パラメタ:MIN,MAX更新時の遊び時間
 my $VIX_CNTUP = 600;
 
 postSlack("------------ PARAM --------------\n");
@@ -415,6 +415,8 @@ while(1){
         my $shortEmaNear = $shortEmaFar / 4;
         my $longEmaFar = abs($ema - $min) / 2;
         my $longEmaNear = $longEmaFar / 4;
+        my $bollOver = abs($boll_high_last - $ema) / 4;
+        my $bollUnder = abs($ema - $boll_low_last) / 4;
 
         # MIN/MAX付近での定着指数を算出
         if($position eq "NONE"  && ($minmax_cntdwn == 0) ){
@@ -445,12 +447,13 @@ while(1){
                 #if($isVIX <= 0){
                     # VIX-OFF
                     if( # SHORTエントリー条件
-                        ($cur_value > $ema)                  &&   # 売値がEMAより大きい
-                        (($cur_value - $ema) > $FAR_UNDER_LIMIT) &&   # 売値とEMAが一定値より遠い
-                        (($max-$cur_value) < $maxminNear)    &&   # 売値とMAXが一定値より近い
-                        #( (($boll_high_last - $cur_value) < $bollNear) || ($boll_high_last < $cur_value ) ) &&
+                        #($cur_value > $ema)                  &&   # 売値がEMAより大きい
+                        ($cur_value > $boll_high_last  ) &&              # 現価格がBBHより高い
+                        (($cur_value - $ema) > $FAR_UNDER_LIMIT)      && # 現価格とEMAが一定値より遠い
+                        (($cur_value - $boll_high_last) > $bollOver ) && # 現価格がBBHより一定値より高い
+                        #(($max-$cur_value) < $maxminNear)    &&   # 売値とMAXが一定値より近い
                         #($max_keep >= $KEEP_LIMIT)          &&   # 売値がMAX付近を一定時間維持
-                        ($minmax_cntdwn == 0)               
+                        ($minmax_cntdwn == 0)                            # MIN/MAX更新カウントが0で落ち着いた
                     ){
                         # SHORTエントリー
                         my $res_json;
@@ -467,10 +470,11 @@ while(1){
                             postSlack("SHORT-ENTRY IS FAILED!!\n");
                         }
                     }elsif( # LONGエントリー条件
-                        ($cur_value < $ema)                 &&   # EMAが買値より大きい
-                        (($ema - $cur_value) > $FAR_UNDER_LIMIT) &&   # EMAと買値が一定値より遠い
-                        (($cur_value-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
-                        #( (($cur_value-$boll_low_last) < $bollNear) || ($boll_low_last > $cur_value ) ) &&
+                        #($cur_value < $ema)                 &&   # EMAが買値より大きい
+                        ($cur_value < $boll_low_last  ) &&               # 現価格がBBLより低い
+                        (($ema - $cur_value) > $FAR_UNDER_LIMIT) &&      # 現価格とEMAが一定値より遠い
+                        (($boll_low_last - $cur_value) > $bollUnder ) && # 現価格がBBLより一定値より低い
+                        #(($cur_value-$min) < $maxminNear)   &&   # 買値とMINが一定値より近い
                         #($min_keep > $KEEP_LIMIT)          &&   # 買値がMIN付近を一定時間維持
                         ($minmax_cntdwn == 0)               
                     ){
@@ -494,8 +498,9 @@ while(1){
                 $profit = $short_entry - $cur_value;
                 my $shortLC = $short_entry * (1.0 + $LC_RATE);
                 if( 
-                    ($cur_value >= $shortLC) ||
-                    ( ($isVIX > 0) && ($profit < -2000) )
+                    ($short_entry <= $ema) ||
+                    ($cur_value >= $shortLC) #||
+                    #( ($isVIX > 0) && ($profit < -2000) )
                 ){
                     # SHORTロスカット
                     my $res_json;
@@ -552,8 +557,9 @@ while(1){
                 $profit = $cur_value - $long_entry;
                 my $longLC = $long_entry * (1.0 - $LC_RATE);
                 if(
-                    ($cur_value <= $longLC) ||
-                    ( ($isVIX > 0) && ($profit < -2000) )
+                    ($long_entry >= $ema) ||
+                    ($cur_value <= $longLC) #||
+                    #( ($isVIX > 0) && ($profit < -2000) )
                 ){
                     # LONGロスカット
                     my $res_json;
