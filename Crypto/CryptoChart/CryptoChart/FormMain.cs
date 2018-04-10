@@ -29,9 +29,20 @@ namespace CryptoChart
         private Series m_series_ltp = null;
         private CandleBuffer m_candleBuf = null;
 
+        private int m_candleLength = 60; // チャート足、秒
+        private string m_productCode = "FX_BTC_JPY";
+        private string m_productCodeBitflyer = "FX_BTC_JPY";
+        private string m_productCodeCryptowatch = "btcfxjpy";
+
         public FormMain()
         {
             InitializeComponent();
+
+            m_candleBuf = new CandleBuffer();
+            if (m_candleBuf == null)
+            {
+                return;
+            }
 
             initChartArea();
 
@@ -78,7 +89,7 @@ namespace CryptoChart
 
                 m_series_ltp = new Series();
                 m_series_ltp.ChartType = SeriesChartType.Candlestick;
-                m_series_ltp.Color = Color.Red;
+                m_series_ltp.Color = Color.Green;
                 m_series_ltp.Name = "LAST";
 
 
@@ -94,15 +105,88 @@ namespace CryptoChart
             return result;
         }
 
-        private async void MainLoop()
+        private int updateChart()
+        {
+            int result = 0;
+            try
+            {
+                m_series_ltp.Points.Clear();
+                this.chart1.Series.Clear();
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = 1;
+                    return result;
+                }
+
+                int candle_cnt = 0;
+                double y_min = 0.0;
+                double y_max = 0.0;
+                foreach (Candlestick candle in m_candleBuf.getCandleList())
+                {
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    // High Low Open Closeの順番で配列を作成
+                    double[] values = new double[4]
+                    {
+                            candle.high,
+                            candle.low,
+                            candle.open,
+                            candle.last
+                    };
+
+                    // 日付、四本値の配列からDataPointのインスタンスを作成
+                    DataPoint dp = new DataPoint(candle_cnt, values);
+                    m_series_ltp.Points.Add(dp);
+
+                    // 表示範囲を算出
+                    if (candle_cnt == 0)
+                    {
+                        y_max = candle.high;
+                        y_min = candle.low;
+                    }
+                    else
+                    {
+                        if (y_max < candle.high)
+                        {
+                            y_max = candle.high;
+                        }
+
+                        if (y_min > candle.low)
+                        {
+                            y_min = candle.low;
+                        }
+                    }
+
+                    candle_cnt++;
+                }
+
+                m_area.AxisY.Minimum = y_min - 1000;
+                m_area.AxisY.Maximum = y_max + 1000;
+
+                this.chart1.Series.Add(m_series_ltp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        // 過去のキャンドルを取得
+        private async void getPastCandlestick()
         {
             try
             {
-                //Task<int> task = Task.Run<int>(new Func<int>(getTicker));
-                //int retTask = await task;
-
                 // Cryptowatchから過去のデータを取得
-                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync("btcfxjpy", 60, 60);
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_productCodeCryptowatch, m_candleLength, 60);
                 if (ohlc == null)
                 {
                     Console.WriteLine("failed to GetOhlcAfterAsync()");
@@ -128,29 +212,40 @@ namespace CryptoChart
                         continue;
                     }
 
-                    double closeTime  = candleFactor[0];
-                    double openPrice  = candleFactor[1];
-                    double highPrice  = candleFactor[2];
-                    double lowPrice   = candleFactor[3];
+                    double closeTime = candleFactor[0];
+                    double openPrice = candleFactor[1];
+                    double highPrice = candleFactor[2];
+                    double lowPrice = candleFactor[3];
                     double closePrice = candleFactor[4];
-                    double volume     = candleFactor[5];
-
-                    if (m_candleBuf == null)
-                    {
-                        m_candleBuf = new CandleBuffer();
-                        if (m_candleBuf == null)
-                        {
-                            continue;
-                        }
-                    }
+                    double volume = candleFactor[5];
 
                     DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
 
-                    if (m_candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString()) != 0)
+                    Candlestick candle = m_candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
+                    if (candle == null)
                     {
+                        Console.WriteLine("failed to addCandle.");
                         continue;
                     }
                 }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+            return;
+        }
+
+        private async void MainLoop()
+        {
+            try
+            {
+                // 過去のキャンドルを取得
+                getPastCandlestick();
 
                 // CandleStick用
                 double high_price = 0.0;
@@ -159,22 +254,24 @@ namespace CryptoChart
                 int pre_tick_id = 0;
                 DateTime prev = DateTime.Now;
                 int cycle_cnt = 0;
-                
+
+                Candlestick curCandle = null;
                 while (true)
                 {
                     // 一定時間経ったか算出
                     bool isMinit = false;
+                    
                     DateTime now = DateTime.Now;
                     TimeSpan span = now - prev;
                     double elapsed_time = span.TotalSeconds;
-                    if (elapsed_time >= 60.0) {
+                    if (elapsed_time >= m_candleLength) {
                         //Console.WriteLine(elapsed_time);
                         prev = now;
                         isMinit = true;
                     }
 
                     // Tickerを取得
-                    Ticker ticker = await Ticker.GetTickerAsync("FX_BTC_JPY");
+                    Ticker ticker = await Ticker.GetTickerAsync(m_productCodeBitflyer);
                     if (ticker == null)
                     {
                         continue;
@@ -209,91 +306,45 @@ namespace CryptoChart
                         low_price = cur_value;
                     }
 
-                    if (isMinit == true)
+                    if (isMinit == true || cycle_cnt == 0)
                     {
-                        if (m_candleBuf == null)
+                        // 新たなキャンドルを追加
+                        curCandle = m_candleBuf.addCandle(high_price, low_price, (high_price + low_price) / 2.0, cur_value, timestamp);
+                        if (curCandle == null)
                         {
-                            m_candleBuf = new CandleBuffer();
-                            if (m_candleBuf == null)
-                            {
-                                continue;
-                            }
-                        }
-
-                        if (m_candleBuf.addCandle(high_price, low_price, (high_price + low_price) / 2.0, cur_value, timestamp) != 0)
-                        {
-                            continue;
-                        }
-
-                        if (m_candleBuf.isFullBuffer())
-                        {
-                            m_series_ltp.Points.Clear();
-
-                            int candle_cnt = 0;
-                            double y_min = 0.0;
-                            double y_max = 0.0;
-                            foreach (Candlestick candle in m_candleBuf.getCandleList())
-                            {
-                                if (candle == null)
-                                {
-                                    continue;
-                                }
-
-                                // High Low Open Closeの順番で配列を作成
-                                double[] values = new double[4]
-                                {
-                                    candle.high,
-                                    candle.low,
-                                    candle.open,
-                                    candle.last
-                                };
-
-                                // 日付、四本値の配列からDataPointのインスタンスを作成
-                                DataPoint dp = new DataPoint(candle_cnt, values);
-                                m_series_ltp.Points.Add(dp);
-
-                                // 表示範囲を算出
-                                if (candle_cnt == 0)
-                                {
-                                    y_max = candle.high;
-                                    y_min = candle.low;
-                                }
-                                else
-                                {
-                                    if (y_max < candle.high)
-                                    {
-                                        y_max = candle.high;
-                                    }
-
-                                    if (y_min > candle.low)
-                                    {
-                                        y_min = candle.low;
-                                    }
-                                }
-                                  
-                                candle_cnt++;
-                            }
-
-                            
-                            m_area.AxisY.Minimum = y_min - 1000;
-                            m_area.AxisY.Maximum = y_max + 1000;
-
-                            this.chart1.Series.Clear();
-                            this.chart1.Series.Add(m_series_ltp);
+                            Console.WriteLine("failed to addCandle.");
+                            return;
                         }
 
                         // 最高値・最低値リセット
-                        high_price = 0.0;
-                        low_price = 0.0;
-
-                        Console.WriteLine("update candleBuffer.");
+                        if (isMinit)
+                        {
+                            high_price = 0.0;
+                            low_price = 0.0;
+                            Console.WriteLine("closed candle.");
+                        }
                     }
+                    else
+                    {
+                        // 現在のキャンドルを更新
+                        if (curCandle != null)
+                        {
+                            curCandle.high = high_price;
+                            curCandle.low = low_price;
+                            curCandle.open = (high_price + low_price) / 2.0;
+                            curCandle.last = cur_value;
+                            curCandle.timestamp = timestamp;
+                        }
+                    }
+
+                    // チャートの表示を更新
+                    updateChart();
+
 
                     pre_tick_id = ticker.tick_id;
 
                     System.Threading.Thread.Sleep(0);
                     cycle_cnt++;
-
                 }
             }
             catch (Exception ex)
