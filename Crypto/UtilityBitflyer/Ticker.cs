@@ -71,14 +71,14 @@ namespace UtilityBitflyer
             return;
         }
 
-        public static  async Task<Ticker> GetTickerAsync()
+        public static  async Task<Ticker> GetTickerAsync(string product_code)
         {
             Ticker retObj = null;
             try
             {
                 var method = "GET";
                 var path = "/v1/getticker";
-                var query = "";
+                var query = "?product_code=" + product_code;
                 using (var client = new HttpClient())
                 using (var request = new HttpRequestMessage(new HttpMethod(method), path + query))
                 {
@@ -86,6 +86,11 @@ namespace UtilityBitflyer
                     var message = await client.SendAsync(request);
                     var resJson = await message.Content.ReadAsStringAsync();
 
+                    if (message.IsSuccessStatusCode == false)
+                    {
+                        Console.WriteLine(message.RequestMessage);
+                        return null;
+                    }
 
                     retObj = JsonConvert.DeserializeObject<Ticker>(resJson);
                     if (retObj == null)

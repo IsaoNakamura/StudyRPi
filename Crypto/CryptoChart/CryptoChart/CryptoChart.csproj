@@ -85,6 +85,10 @@
       <Project>{670e0e8e-7e45-4430-8f97-ba2458a484b5}</Project>
       <Name>UtilityBitflyer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\UtilityCryptowatch\UtilityCryptowatch.csproj">
+      <Project>{4ed1624c-292d-4cb6-8815-689fb8156f85}</Project>
+      <Name>UtilityCryptowatch</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\UtilityTrade\UtilityTrade.csproj">
       <Project>{5d9028be-182e-4d93-9496-4078683e1a26}</Project>
       <Name>UtilityTrade</Name>

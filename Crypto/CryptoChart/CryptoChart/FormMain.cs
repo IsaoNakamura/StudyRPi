@@ -19,6 +19,7 @@ using System.Security.Cryptography;
 
 using UtilityBitflyer;
 using UtilityTrade;
+using UtilityCryptowatch;
 
 namespace CryptoChart
 {
@@ -100,6 +101,57 @@ namespace CryptoChart
                 //Task<int> task = Task.Run<int>(new Func<int>(getTicker));
                 //int retTask = await task;
 
+                // Cryptowatchから過去のデータを取得
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync("btcfxjpy", 60, 60);
+                if (ohlc == null)
+                {
+                    Console.WriteLine("failed to GetOhlcAfterAsync()");
+                    return;
+                }
+
+                if (ohlc.result == null)
+                {
+                    Console.WriteLine("ohlc's result is null");
+                    return;
+                }
+
+                if (ohlc.result.miniute == null)
+                {
+                    Console.WriteLine("ohlc's miniute is null");
+                    return;
+                }
+
+                foreach (List<double> candleFactor in ohlc.result.miniute)
+                {
+                    if (candleFactor == null)
+                    {
+                        continue;
+                    }
+
+                    double closeTime  = candleFactor[0];
+                    double openPrice  = candleFactor[1];
+                    double highPrice  = candleFactor[2];
+                    double lowPrice   = candleFactor[3];
+                    double closePrice = candleFactor[4];
+                    double volume     = candleFactor[5];
+
+                    if (m_candleBuf == null)
+                    {
+                        m_candleBuf = new CandleBuffer();
+                        if (m_candleBuf == null)
+                        {
+                            continue;
+                        }
+                    }
+
+                    DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
+
+                    if (m_candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString()) != 0)
+                    {
+                        continue;
+                    }
+                }
+
                 // CandleStick用
                 double high_price = 0.0;
                 double low_price = 0.0;
@@ -115,14 +167,14 @@ namespace CryptoChart
                     DateTime now = DateTime.Now;
                     TimeSpan span = now - prev;
                     double elapsed_time = span.TotalSeconds;
-                    if (elapsed_time >= 5.0) {
-                        Console.WriteLine(elapsed_time);
+                    if (elapsed_time >= 60.0) {
+                        //Console.WriteLine(elapsed_time);
                         prev = now;
                         isMinit = true;
                     }
 
                     // Tickerを取得
-                    Ticker ticker = await Ticker.GetTickerAsync();
+                    Ticker ticker = await Ticker.GetTickerAsync("FX_BTC_JPY");
                     if (ticker == null)
                     {
                         continue;
@@ -219,7 +271,6 @@ namespace CryptoChart
                                     }
                                 }
                                   
-
                                 candle_cnt++;
                             }
 
@@ -234,6 +285,8 @@ namespace CryptoChart
                         // 最高値・最低値リセット
                         high_price = 0.0;
                         low_price = 0.0;
+
+                        Console.WriteLine("update candleBuffer.");
                     }
 
                     pre_tick_id = ticker.tick_id;

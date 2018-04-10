@@ -66,7 +66,7 @@ namespace UtilityTrade
 
         public bool isFullBuffer()
         {
-            if (m_countLimit == getCandleCount())
+            if (m_countLimit <= getCandleCount())
             {
                 return true;
             }
