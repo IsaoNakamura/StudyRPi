@@ -51,7 +51,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tableLayoutPanel1);
             this.splitContainer1.Size = new System.Drawing.Size(800, 450);
-            this.splitContainer1.SplitterDistance = 166;
+            this.splitContainer1.SplitterDistance = 165;
             this.splitContainer1.TabIndex = 0;
             // 
             // tableLayoutPanel1
@@ -65,11 +65,12 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 86.44444F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.55556F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(630, 450);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(631, 450);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // chart1
             // 
+            this.chart1.BackColor = System.Drawing.Color.LightGray;
             chartArea1.Name = "ChartArea1";
             this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -81,7 +82,7 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(624, 382);
+            this.chart1.Size = new System.Drawing.Size(625, 382);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 

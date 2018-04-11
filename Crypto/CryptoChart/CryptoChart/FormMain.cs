@@ -27,11 +27,17 @@ namespace CryptoChart
     {
         private ChartArea m_area = null;
         private Series m_series_ltp = null;
+        private Series m_series_ema = null;
+        private Series m_series_bollHigh = null;
+        private Series m_series_bollLow = null;
         private CandleBuffer m_candleBuf = null;
 
         private int m_candleLength = 60; // チャート足、秒
         private string m_productCodeBitflyer = "FX_BTC_JPY";
         private string m_productCodeCryptowatch = "btcfxjpy";
+
+        private int m_ema_sample_num = 20;
+        private int m_bb_sample_num = 20;
 
         public FormMain()
         {
@@ -75,6 +81,8 @@ namespace CryptoChart
                 m_area.AxisY.Minimum = 718000;
                 m_area.AxisY.Maximum = 726000;
 
+                m_area.BackColor = Color.LightGray;
+
                 // 既定のグラフ領域の設定をクリアした後、設定する
                 this.chart1.ChartAreas.Clear();
                 this.chart1.ChartAreas.Add(m_area);
@@ -88,8 +96,42 @@ namespace CryptoChart
 
                 m_series_ltp = new Series();
                 m_series_ltp.ChartType = SeriesChartType.Candlestick;
-                m_series_ltp.Color = Color.Green;
-                m_series_ltp.Name = "LAST";
+                m_series_ltp.Color = Color.Black;
+                m_series_ltp.Name = "OHLC";
+
+                if (m_series_ema != null)
+                {
+                    m_series_ema.Dispose();
+                    m_series_ema = null;
+                }
+
+                m_series_ema = new Series();
+                m_series_ema.ChartType = SeriesChartType.Line;
+                m_series_ema.Color = Color.Aqua;
+                m_series_ema.Name = "EMA";
+
+                if (m_series_bollHigh != null)
+                {
+                    m_series_bollHigh.Dispose();
+                    m_series_bollHigh = null;
+                }
+
+                m_series_bollHigh = new Series();
+                m_series_bollHigh.ChartType = SeriesChartType.Line;
+                m_series_bollHigh.Color = Color.CornflowerBlue;
+                m_series_bollHigh.Name = "BOLL_HIGH";
+
+
+                if (m_series_bollLow != null)
+                {
+                    m_series_bollLow.Dispose();
+                    m_series_bollLow = null;
+                }
+
+                m_series_bollLow = new Series();
+                m_series_bollLow.ChartType = SeriesChartType.Line;
+                m_series_bollLow.Color = Color.MediumVioletRed;
+                m_series_bollLow.Name = "BOLL_LOW";
 
 
             }
@@ -110,6 +152,9 @@ namespace CryptoChart
             try
             {
                 m_series_ltp.Points.Clear();
+                m_series_ema.Points.Clear();
+                m_series_bollHigh.Points.Clear();
+                m_series_bollLow.Points.Clear();
                 this.chart1.Series.Clear();
 
                 if (!m_candleBuf.isFullBuffer())
@@ -141,6 +186,15 @@ namespace CryptoChart
                     DataPoint dp = new DataPoint(candle_cnt, values);
                     m_series_ltp.Points.Add(dp);
 
+                    DataPoint dp_ema = new DataPoint(candle_cnt, candle.ema);
+                    m_series_ema.Points.Add(dp_ema);
+
+                    DataPoint dp_bollHigh = new DataPoint(candle_cnt, candle.boll_high);
+                    m_series_bollHigh.Points.Add(dp_bollHigh);
+
+                    DataPoint dp_bollLow = new DataPoint(candle_cnt, candle.boll_low);
+                    m_series_bollLow.Points.Add(dp_bollLow);
+
                     // 表示範囲を算出
                     if (candle_cnt == 0)
                     {
@@ -168,6 +222,9 @@ namespace CryptoChart
 
                 
                 this.chart1.Series.Add(m_series_ltp);
+                this.chart1.Series.Add(m_series_ema);
+                this.chart1.Series.Add(m_series_bollHigh);
+                this.chart1.Series.Add(m_series_bollLow);
 
                 // Console.WriteLine("update Chart. y_min={0} y_max={1}", y_min, y_max);
             }
@@ -239,8 +296,52 @@ namespace CryptoChart
                         Console.WriteLine("failed to addCandle.");
                         continue;
                     }
+
+                    calcIndicator(ref candle);
+
                 }
 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int calcIndicator(ref Candlestick candle)
+        {
+            int result = 0;
+            try
+            {
+                if (candle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                // EMAを算出
+                double ema = 0.0;
+                if (m_candleBuf.calcEma(out ema, m_ema_sample_num) == 0)
+                {
+                    candle.ema = ema;
+                }
+
+                // 標準偏差、移動平均、ボリンジャーバンドを算出
+                double stddev = 0.0;
+                double ma = 0.0;
+                if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_bb_sample_num) == 0)
+                {
+                    candle.stddev = stddev;
+                    candle.ma = ma;
+
+                    candle.boll_high = ma + (2.0 * stddev);
+                    candle.boll_low  = ma - (2.0 * stddev);
+                }
             }
             catch (Exception ex)
             {
@@ -395,6 +496,8 @@ namespace CryptoChart
                             Console.WriteLine("failed to addCandle.");
                             return;
                         }
+                        calcIndicator(ref curCandle);
+
                         Console.WriteLine("add Candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
                             , curCandle.timestamp
                             , curCandle.open
@@ -418,6 +521,8 @@ namespace CryptoChart
                             curCandle.last = cur_value;
                             curCandle.timestamp = cur_timestamp.ToString();
                             //Console.WriteLine("update Candle. timestamp={0}, open={1}, cur={2}, high={3}, low={4}", cur_timestamp, open_price, cur_value, high_price, low_price);
+
+                            calcIndicator(ref curCandle);
                         }
                     }
 
