@@ -30,7 +30,12 @@ namespace CryptoChart
         private Series m_series_ema = null;
         private Series m_series_bollHigh = null;
         private Series m_series_bollLow = null;
+        private Series m_series_min = null;
+        private Series m_series_max = null;
         private CandleBuffer m_candleBuf = null;
+
+        private double m_min = 0.0;
+        private double m_max = 0.0;
 
         private int m_candleLength = 60; // チャート足、秒
         private string m_productCodeBitflyer = "FX_BTC_JPY";
@@ -96,7 +101,7 @@ namespace CryptoChart
 
                 m_series_ltp = new Series();
                 m_series_ltp.ChartType = SeriesChartType.Candlestick;
-                m_series_ltp.Color = Color.Black;
+                m_series_ltp.Color = Color.LightSeaGreen;
                 m_series_ltp.Name = "OHLC";
 
                 if (m_series_ema != null)
@@ -133,6 +138,27 @@ namespace CryptoChart
                 m_series_bollLow.Color = Color.MediumVioletRed;
                 m_series_bollLow.Name = "BOLL_LOW";
 
+                if (m_series_min != null)
+                {
+                    m_series_min.Dispose();
+                    m_series_min = null;
+                }
+
+                m_series_min = new Series();
+                m_series_min.ChartType = SeriesChartType.Line;
+                m_series_min.Color = Color.Red;
+                m_series_min.Name = "MIN";
+
+                if (m_series_max != null)
+                {
+                    m_series_max.Dispose();
+                    m_series_max = null;
+                }
+
+                m_series_max = new Series();
+                m_series_max.ChartType = SeriesChartType.Line;
+                m_series_max.Color = Color.Blue;
+                m_series_max.Name = "MAX";
 
             }
             catch (Exception ex)
@@ -155,6 +181,8 @@ namespace CryptoChart
                 m_series_ema.Points.Clear();
                 m_series_bollHigh.Points.Clear();
                 m_series_bollLow.Points.Clear();
+                m_series_min.Points.Clear();
+                m_series_max.Points.Clear();
                 this.chart1.Series.Clear();
 
                 if (!m_candleBuf.isFullBuffer())
@@ -195,6 +223,12 @@ namespace CryptoChart
                     DataPoint dp_bollLow = new DataPoint(candle_cnt, candle.boll_low);
                     m_series_bollLow.Points.Add(dp_bollLow);
 
+                    DataPoint dp_min = new DataPoint(candle_cnt, m_min);
+                    m_series_min.Points.Add(dp_min);
+
+                    DataPoint dp_max = new DataPoint(candle_cnt, m_max);
+                    m_series_max.Points.Add(dp_max);
+
                     // 表示範囲を算出
                     if (candle_cnt == 0)
                     {
@@ -217,14 +251,16 @@ namespace CryptoChart
                     candle_cnt++;
                 }
 
-                m_area.AxisY.Minimum = y_min - 1000;
-                m_area.AxisY.Maximum = y_max + 1000;
+                m_area.AxisY.Minimum = y_min - 100;
+                m_area.AxisY.Maximum = y_max + 100;
 
                 
                 this.chart1.Series.Add(m_series_ltp);
                 this.chart1.Series.Add(m_series_ema);
                 this.chart1.Series.Add(m_series_bollHigh);
                 this.chart1.Series.Add(m_series_bollLow);
+                this.chart1.Series.Add(m_series_min);
+                this.chart1.Series.Add(m_series_max);
 
                 // Console.WriteLine("update Chart. y_min={0} y_max={1}", y_min, y_max);
             }
@@ -341,6 +377,32 @@ namespace CryptoChart
 
                     candle.boll_high = ma + (2.0 * stddev);
                     candle.boll_low  = ma - (2.0 * stddev);
+
+                    // MAX更新
+                    if (candle.boll_high < candle.last)
+                    {
+                        if (m_max < candle.last)
+                        {
+                            m_max = candle.last;
+                        }
+                    }
+                    else
+                    {
+                        m_max = candle.boll_high;
+                    }
+
+                    // MIN更新
+                    if (candle.boll_low > candle.last)
+                    {
+                        if (m_min > candle.last)
+                        {
+                            m_min = candle.last;
+                        }
+                    }
+                    else
+                    {
+                        m_min = candle.boll_low;
+                    }
                 }
             }
             catch (Exception ex)
@@ -375,6 +437,17 @@ namespace CryptoChart
                 //  閉じたキャンドルでなければ更新することになる。
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 DateTime prev_timestamp = DateTime.Parse(curCandle.timestamp);
+
+                //m_max = curCandle.boll_high;
+                //if (curCandle.last > m_max)
+                //{
+                //    m_max = curCandle.last;
+                //}
+                //m_min = curCandle.boll_low;
+                //if (curCandle.last < m_min)
+                //{
+                //    m_min = curCandle.last;
+                //}
 
                 bool isLastConnect = false;
                 int pre_tick_id = 0;
@@ -496,7 +569,6 @@ namespace CryptoChart
                             Console.WriteLine("failed to addCandle.");
                             return;
                         }
-                        calcIndicator(ref curCandle);
 
                         Console.WriteLine("add Candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
                             , curCandle.timestamp
@@ -522,9 +594,16 @@ namespace CryptoChart
                             curCandle.timestamp = cur_timestamp.ToString();
                             //Console.WriteLine("update Candle. timestamp={0}, open={1}, cur={2}, high={3}, low={4}", cur_timestamp, open_price, cur_value, high_price, low_price);
 
-                            calcIndicator(ref curCandle);
                         }
                     }
+
+                    // インジケータ更新
+                    if (curCandle != null)
+                    {
+                        calcIndicator(ref curCandle);
+                    }
+
+                    // TODO:トレードロジック
 
                     // チャートの表示を更新
                     updateChart();
