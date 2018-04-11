@@ -278,7 +278,7 @@ namespace CryptoChart
                 DateTime prev_timestamp = DateTimeOffset.FromUnixTimeSeconds((long)lastCloseTime).LocalDateTime;
                 int cycle_cnt = 0;
 
-                Candlestick curCandle = null;
+                Candlestick curCandle = m_candleBuf.getLastCandle();
                 bool isLastConnect = false;
                 while (true)
                 {
@@ -310,10 +310,10 @@ namespace CryptoChart
                         {
                             Console.WriteLine("prev is closed. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
                             isClose = true;
+                            curCandle = null;
                         }
                         else
                         {
-                            curCandle = m_candleBuf.getLastCandle();
                             open_price = curCandle.open;
                             high_price = curCandle.high;
                             low_price = curCandle.low;
@@ -335,7 +335,7 @@ namespace CryptoChart
                         // キャンドルを閉じるべきか判断
                         if (prev_timestamp.Minute < cur_timestamp.Minute)
                         {
-                            Console.WriteLine("Need Close. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
+                            //Console.WriteLine("Need Close. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
                             prev_timestamp = cur_timestamp;
                             isClose = true;
                         }
