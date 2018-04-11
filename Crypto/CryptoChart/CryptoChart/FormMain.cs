@@ -264,22 +264,20 @@ namespace CryptoChart
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
                 }
-                //// 過去データから一番新しい(最後)タイムスタンプを取得
-                //List<double> candleLastFactor = ohlc.result.miniute.Last();
-                //double lastCloseTime  = candleLastFactor[0];
 
-                // CandleStick用
+                // CandleStick更新用
                 double open_price = 0.0;
                 double high_price = 0.0;
                 double low_price = 0.0;
 
-                int pre_tick_id = 0;
-                //DateTime prev_timestamp = DateTimeOffset.FromUnixTimeSeconds((long)lastCloseTime).LocalDateTime;
-                int cycle_cnt = 0;
-
+                // 過去のデータ群の最後のキャンドルを取得
+                //  閉じたキャンドルでなければ更新することになる。
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 DateTime prev_timestamp = DateTime.Parse(curCandle.timestamp);
+
                 bool isLastConnect = false;
+                int pre_tick_id = 0;
+                int cycle_cnt = 0;
                 while (true)
                 {
                     // Tickerを取得
@@ -375,6 +373,7 @@ namespace CryptoChart
 
                     if (isClose == true)
                     {
+                        // キャンドルを閉じる
                         if (curCandle != null)
                         {
                             // CloseTimeは現時刻を使用する。
