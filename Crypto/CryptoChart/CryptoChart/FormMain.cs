@@ -30,7 +30,6 @@ namespace CryptoChart
         private CandleBuffer m_candleBuf = null;
 
         private int m_candleLength = 60; // チャート足、秒
-        private string m_productCode = "FX_BTC_JPY";
         private string m_productCodeBitflyer = "FX_BTC_JPY";
         private string m_productCodeCryptowatch = "btcfxjpy";
 
@@ -224,9 +223,15 @@ namespace CryptoChart
                     double closePrice = candleFactor[4];
                     double volume = candleFactor[5];
 
+                    // Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
+                    //  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
+                    //  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
+                    // Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
+
+
                     // 2018/04/10 19:21:00
                     DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
-                    Console.WriteLine(timestamp);
+                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice);
 
                     Candlestick candle = m_candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
                     if (candle == null)
@@ -262,9 +267,10 @@ namespace CryptoChart
                 }
                 // 過去データから一番新しい(最後)タイムスタンプを取得
                 List<double> candleLastFactor = ohlc.result.miniute.Last();
-                double lastCloseTime = candleLastFactor[0];
+                double lastCloseTime  = candleLastFactor[0];
 
                 // CandleStick用
+                double open_price = 0.0;
                 double high_price = 0.0;
                 double low_price = 0.0;
 
@@ -273,10 +279,9 @@ namespace CryptoChart
                 int cycle_cnt = 0;
 
                 Candlestick curCandle = null;
+                bool isLastConnect = false;
                 while (true)
                 {
-
-
                     // Tickerを取得
                     Ticker ticker = await Ticker.GetTickerAsync(m_productCodeBitflyer);
                     if (ticker == null)
@@ -286,38 +291,58 @@ namespace CryptoChart
                     int tick_id = ticker.tick_id;
                     double cur_value = ticker.ltp;
 
-                    DateTime dateTimeUtc = DateTime.Parse(ticker.timestamp);// 2018-04-10T10:34:16.677 UTCタイム
-                    DateTime cur_timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
-
-
-                    // 過去取得したキャンドルデータと離れ過ぎていないかチェック
-                    TimeSpan span = cur_timestamp - prev_timestamp;
-                    double elapsed_time = span.TotalSeconds;
-                    if (elapsed_time >= 61.0)
-                    {
-                        Console.WriteLine("Too Far!!. elapsed={0}, prev={1}, cur={2}", elapsed_time, prev_timestamp.ToString(), cur_timestamp.ToString());
-                        break;
-                    }
-
-                    // 過去取得したキャンドルの方が新しくないかチェック
-                    if (prev_timestamp.Minute > cur_timestamp.Minute)
-                    {
-                        Console.WriteLine("prev is new. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
-                        continue;
-                    }
-
-                    // キャンドルを閉じるべきか判断
-                    bool isClose = false;
-                    if (prev_timestamp.Minute < cur_timestamp.Minute)
-                    {
-                        Console.WriteLine("Need Close. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
-                        prev_timestamp = cur_timestamp;
-                        isClose = true;
-                    }
-
                     if (pre_tick_id == tick_id)
                     {
                         continue;
+                    }
+
+                    DateTime dateTimeUtc = DateTime.Parse(ticker.timestamp);// 2018-04-10T10:34:16.677 UTCタイム
+                    DateTime cur_timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
+
+                    bool isClose = false;
+                    if (!isLastConnect)
+                    {
+                        // 過去取得した最後のキャンドルが閉じているかチェック
+                        //  過去最後のTimestampが10:14:00なら、10:13:00～10:13:59のキャンドル
+                        //  現時刻が10:14:00～なら過去最後のキャンドルは閉まっている
+                        //  現時刻が10:13:00～なら過去最後のキャンドルは閉まっていない
+                        if (prev_timestamp.Minute <= cur_timestamp.Minute)
+                        {
+                            Console.WriteLine("prev is closed. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
+                            isClose = true;
+                        }
+                        else
+                        {
+                            curCandle = m_candleBuf.getLastCandle();
+                            open_price = curCandle.open;
+                            high_price = curCandle.high;
+                            low_price = curCandle.low;
+
+                            Console.WriteLine("prev is not closed. prev={0}, cur={1}, open={2}, cur={3}, high={4}, low={5}"
+                                , prev_timestamp
+                                , cur_timestamp
+                                , open_price
+                                , cur_value
+                                , high_price
+                                , low_price
+                            );
+                        }
+                        prev_timestamp = cur_timestamp;
+                        isLastConnect = true;
+                    }
+                    else
+                    {
+                        // キャンドルを閉じるべきか判断
+                        if (prev_timestamp.Minute < cur_timestamp.Minute)
+                        {
+                            Console.WriteLine("Need Close. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
+                            prev_timestamp = cur_timestamp;
+                            isClose = true;
+                        }
+                        else
+                        {
+                            //Console.WriteLine("Need Open. prev={0}, cur={1}", prev_timestamp.ToString(), cur_timestamp.ToString());
+                        }
                     }
 
                     // 足の最高値更新
@@ -340,23 +365,41 @@ namespace CryptoChart
                         low_price = cur_value;
                     }
 
-                    if (isClose == true || cycle_cnt==0)
+                    if (isClose == true)
                     {
+                        if (curCandle != null)
+                        {
+                            Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                                , curCandle.timestamp
+                                , curCandle.open
+                                , curCandle.last
+                                , curCandle.high
+                                , curCandle.low
+                            );
+                        }
+
                         // 新たなキャンドルを追加
-                        Console.WriteLine("add Candle. timestamp={0}", cur_timestamp.ToString());
-                        curCandle = m_candleBuf.addCandle(high_price, low_price, (high_price + low_price) / 2.0, cur_value, cur_timestamp.ToString());
+                        open_price = cur_value;
+                        curCandle = m_candleBuf.addCandle(high_price, low_price, open_price, cur_value, cur_timestamp.ToString());
                         if (curCandle == null)
                         {
                             Console.WriteLine("failed to addCandle.");
                             return;
                         }
+                        Console.WriteLine("add Candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                            , curCandle.timestamp
+                            , curCandle.open
+                            , curCandle.last
+                            , curCandle.high
+                            , curCandle.low
+                        );
 
                         // 最高値・最低値リセット
                         if (isClose)
                         {
                             high_price = 0.0;
                             low_price = 0.0;
-                            Console.WriteLine("closed candle.");
+                            
                         }
                     }
                     else
@@ -364,13 +407,12 @@ namespace CryptoChart
                         // 現在のキャンドルを更新
                         if (curCandle != null)
                         {
-                            
                             curCandle.high = high_price;
                             curCandle.low = low_price;
-                            curCandle.open = (high_price + low_price) / 2.0;
+                            curCandle.open = open_price;
                             curCandle.last = cur_value;
                             curCandle.timestamp = cur_timestamp.ToString();
-                            // Console.WriteLine("update Candle. timestamp={0}", cur_timestamp);
+                            //Console.WriteLine("update Candle. timestamp={0}, open={1}, cur={2}, high={3}, low={4}", cur_timestamp, open_price, cur_value, high_price, low_price);
                         }
                     }
 
