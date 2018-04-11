@@ -75,7 +75,7 @@ my $EMA_SAMPLE_NUM = 20;
 my $FAR_UNDER_LIMIT = 2000;
 my $KEEP_LIMIT = 100;#50;# MIN/MAX位置を一定期間キープできるかの判断に使用
 my $COUNTUP = 90;#300;#120;600# パラメタ:MIN,MAX更新時の遊び時間
-my $VIX_CNTUP = 600;
+my $VIX_CNTUP = 900;#600;
 
 postSlack("------------ PARAM --------------\n");
 postSlack("FAR_UNDER_LIMIT= $FAR_UNDER_LIMIT\n");
@@ -327,7 +327,7 @@ while(1){
             }
 
             if($wvf>0){
-                if( ($wvf >= $boll_high_vix) || ($wvf >= $rangeHigh) ){
+                if( ($wvf >= 1.0) && (($wvf >= $boll_high_vix) || ($wvf >= $rangeHigh)) ){
                     if($execTrade>0){
                         $isVIX = 1;
                         if($wvf >= 1.0){
@@ -444,7 +444,7 @@ while(1){
         # トレードロジック
         if($execTrade==1){
             if($position eq "NONE" ){
-                #if($isVIX <= 0){
+                if($isVIX <= 0){
                     # VIX-OFF
                     if( # SHORTエントリー条件
                         #($cur_value > $ema)                  &&   # 売値がEMAより大きい
@@ -493,7 +493,7 @@ while(1){
                             postSlack("LONG-ENTRY IS FAILED!!\n");
                         }
                     }
-                #}
+                }
             }elsif($position eq "SHORT"){
                 $profit = $short_entry - $cur_value;
                 my $shortLC = $short_entry * (1.0 + $LC_RATE);

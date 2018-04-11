@@ -19,7 +19,7 @@ use LWP::UserAgent;
 sub getCandleStickAfter{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
-    my $symbol         = shift; # fxbtcjpy "FX_BTC_JPY"
+    my $symbol         = shift; # btcfxjpy "FX_BTC_JPY"
     my $periods        = shift; # 60 1m
     my $after          = shift; # #Unix-timestamp
     my $path           = shift; # ohlc
