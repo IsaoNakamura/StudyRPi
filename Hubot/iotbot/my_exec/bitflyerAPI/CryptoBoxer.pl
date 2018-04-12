@@ -72,7 +72,7 @@ my $RANGE = 30;#15;#分
 my $CANDLE_BUF = 60;#分
 
 my $EMA_SAMPLE_NUM = 20;
-my $FAR_UNDER_LIMIT = 2000;
+my $FAR_UNDER_LIMIT = 1000;
 my $KEEP_LIMIT = 100;#50;# MIN/MAX位置を一定期間キープできるかの判断に使用
 my $COUNTUP = 90;#300;#120;600# パラメタ:MIN,MAX更新時の遊び時間
 my $VIX_CNTUP = 900;#600;
