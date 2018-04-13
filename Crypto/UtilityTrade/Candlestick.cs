@@ -52,6 +52,46 @@ namespace UtilityTrade
             timestamp = _timestamp;
             return;
         }
+
+        // キャンドル終値がボリンジャー高バンド以上か判断
+        public bool isOverBBLast()
+        {
+            if (boll_high <= last)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル上値がボリンジャー高バンド以上か判断
+        public bool isOverBBHigh()
+        {
+            if (boll_high <= high)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル終値がボリンジャー低バンド以下か判断
+        public bool isUnderBBLast()
+        {
+            if (boll_low >= last)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル上値がボリンジャー高バンド以上か判断
+        public bool isOverBBLow()
+        {
+            if (boll_low <= low)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
     public class CandleBuffer
