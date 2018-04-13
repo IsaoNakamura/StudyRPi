@@ -57,13 +57,49 @@ namespace UtilityTrade
     public class CandleBuffer
     {
         private List<Candlestick> m_candleList { get; set; }
-        private int m_countLimit { get; set; }
+        public int m_buffer_num { get; set; }
 
         public CandleBuffer()
         {
             m_candleList = null;
-            m_countLimit = 60;
+            m_buffer_num = 60;
             return;
+        }
+
+        public static CandleBuffer createCandleBuffer
+        (
+            int buffer_num = 60
+        )
+        {
+            CandleBuffer result = null;
+            try
+            {
+                if (buffer_num <= 0)
+                {
+                    result = null;
+                    return result;
+                }
+
+                CandleBuffer buffer = new CandleBuffer();
+                if (buffer == null)
+                {
+                    result = null;
+                    return result;
+                }
+
+                buffer.m_buffer_num = buffer_num;
+
+                result = buffer;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = null;
+            }
+            finally
+            {
+            }
+            return result;
         }
 
         public int getCandleCount()
@@ -78,7 +114,7 @@ namespace UtilityTrade
 
         public bool isFullBuffer()
         {
-            if (m_countLimit <= getCandleCount())
+            if (m_buffer_num <= getCandleCount())
             {
                 return true;
             }
@@ -116,6 +152,11 @@ namespace UtilityTrade
                 if (m_candleList == null)
                 {
                     m_candleList = new List<Candlestick>();
+                    if (m_candleList == null)
+                    {
+                        result = null;
+                        return result;
+                    }
                 }
 
                 Candlestick candle = new Candlestick(_high, _low, _open, _last, _timestamp);
@@ -127,10 +168,10 @@ namespace UtilityTrade
                 m_candleList.Add(candle);
 
                 // 保持数を超えた場合
-                if (m_candleList.Count > m_countLimit)
+                if (m_candleList.Count > m_buffer_num)
                 {
                     // 何個消すか算出
-                    int remove_cnt = m_candleList.Count - m_countLimit;
+                    int remove_cnt = m_candleList.Count - m_buffer_num;
 
                     // 古いCandlestickから削除
                     m_candleList.RemoveRange(0, remove_cnt);

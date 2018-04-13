@@ -81,6 +81,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CryptoBoxer\CryptoBoxer.csproj">
+      <Project>{7a3e0d66-5ec1-4692-8a74-40fbccdff2a2}</Project>
+      <Name>CryptoBoxer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\UtilityBitflyer\UtilityBitflyer.csproj">
       <Project>{670e0e8e-7e45-4430-8f97-ba2458a484b5}</Project>
       <Name>UtilityBitflyer</Name>
