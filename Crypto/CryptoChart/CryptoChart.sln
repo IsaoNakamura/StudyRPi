@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityCryptowatch", "..\Ut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoBoxer", "..\CryptoBoxer\CryptoBoxer.csproj", "{7A3E0D66-5EC1-4692-8A74-40FBCCDFF2A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBasic", "..\UtilityBasic\UtilityBasic.csproj", "{65424DCF-378C-4EC9-BD5B-383D449219FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{7A3E0D66-5EC1-4692-8A74-40FBCCDFF2A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A3E0D66-5EC1-4692-8A74-40FBCCDFF2A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A3E0D66-5EC1-4692-8A74-40FBCCDFF2A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65424DCF-378C-4EC9-BD5B-383D449219FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65424DCF-378C-4EC9-BD5B-383D449219FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65424DCF-378C-4EC9-BD5B-383D449219FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65424DCF-378C-4EC9-BD5B-383D449219FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

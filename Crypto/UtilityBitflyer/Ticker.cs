@@ -11,10 +11,7 @@ using System.Net.Http.Headers;
 
 namespace UtilityBitflyer
 {
-    public class EndPoint
-    {
-        public static readonly Uri endpointUri = new Uri("https://api.bitflyer.jp");
-    }
+
 
     public class Ticker
     {
@@ -71,33 +68,32 @@ namespace UtilityBitflyer
             return;
         }
 
-        public static  async Task<Ticker> GetTickerAsync(string product_code)
+        public static async Task<Ticker> GetTickerAsync
+        (
+            string product_code
+        )
         {
             Ticker retObj = null;
             try
             {
-                var method = "GET";
-                var path = "/v1/getticker";
-                var query = "?product_code=" + product_code;
-                using (var client = new HttpClient())
-                using (var request = new HttpRequestMessage(new HttpMethod(method), path + query))
+                string method = "GET";
+                string path = "/v1/getticker";
+                string query = "?product_code=" + product_code;
+                string body = "";
+                path = path + query;
+
+                string resJson = await RequestBitflyer.Request(null, method, path, body);
+                if (resJson == null)
                 {
-                    client.BaseAddress = EndPoint.endpointUri;
-                    var message = await client.SendAsync(request);
-                    var resJson = await message.Content.ReadAsStringAsync();
+                    Console.WriteLine("failed to RequestBitflyer.");
+                    return null;
+                }
 
-                    if (message.IsSuccessStatusCode == false)
-                    {
-                        Console.WriteLine(message.RequestMessage);
-                        return null;
-                    }
-
-                    retObj = JsonConvert.DeserializeObject<Ticker>(resJson);
-                    if (retObj == null)
-                    {
-                        Console.WriteLine("Ticker's DeserializeObject is null.");
-                        return null;
-                    }
+                retObj = JsonConvert.DeserializeObject<Ticker>(resJson);
+                if (retObj == null)
+                {
+                    Console.WriteLine("Ticker's DeserializeObject is null.");
+                    return null;
                 }
             }
             catch (Exception ex)

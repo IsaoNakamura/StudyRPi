@@ -40,11 +40,20 @@ namespace CryptoChart
         {
             InitializeComponent();
 
-            m_boxer = Boxer.createBoxer(updateChart);
+            m_boxer = Boxer.createBoxer(updateView);
             if (m_boxer == null)
             {
+                Console.WriteLine("failed to createBoxer.");
                 return;
             }
+
+            if (m_boxer.loadAuthBitflyer(@".\AuthBitflyer.json") != 0)
+            {
+                Console.WriteLine("failed to loadAuthBitflyer.");
+                return;
+            }
+
+            
 
             initChartArea();
 
@@ -162,6 +171,25 @@ namespace CryptoChart
             }
             return result;
         }
+        private int updateView()
+        {
+            int result = 0;
+            try
+            {
+                updateCurrentInfoGrid();
+                updateChart();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
 
         private int updateChart()
         {
@@ -175,6 +203,12 @@ namespace CryptoChart
                 m_series_min.Points.Clear();
                 m_series_max.Points.Clear();
                 this.chart1.Series.Clear();
+
+                if (m_boxer == null)
+                {
+                    result = 1;
+                    return result;
+                }
 
                 CandleBuffer candleBuf = m_boxer.getCandleBuffer();
                 if (candleBuf == null)
@@ -275,5 +309,103 @@ namespace CryptoChart
             }
             return result;
         }
+
+        private int updateCurrentInfoGrid()
+        {
+            int result = 0;
+            try
+            {
+                this.CurrentInfoGrid.Rows.Clear();
+
+                if (m_boxer == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                CandleBuffer candleBuf = m_boxer.getCandleBuffer();
+                if (candleBuf == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                Candlestick curCandle = candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                {
+                    // 終値(現在値)
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "LAST";
+                    
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.last);
+                }
+
+                {
+                    // EMA
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.ema);
+                }
+
+                {
+                    // BOLL_H
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_H";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_high);
+                }
+
+                {
+                    // BOLL_L
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_L";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_low);
+                }
+
+                {
+                    // LASTとEMAとの差
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA_DIFF";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.last - curCandle.ema);
+                }
+
+                {
+                    // LASTのBOLL_H接近度
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "STATUS";
+                    double high_diff = curCandle.last - curCandle.boll_high;
+                    double low_diff = curCandle.last - curCandle.boll_low;
+                    if (high_diff > 0.0)
+                    {
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "BOLL_H OVER";
+                    }
+                    else if (low_diff < 0.0)
+                    {
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "BOLL_L UNDER";
+                    }
+                    else
+                    {
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "";
+                    }
+                    
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }

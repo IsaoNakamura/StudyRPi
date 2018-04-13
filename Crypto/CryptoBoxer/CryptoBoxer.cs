@@ -16,6 +16,9 @@ namespace CryptoBoxer
     {
         /* === パラメタ用  === */
 
+        // 売買量
+        private double m_amount { get; set; }
+
         // チャート足(秒)
         private int m_periods { get; set; }
 
@@ -34,21 +37,30 @@ namespace CryptoBoxer
         private CandleBuffer m_candleBuf { get; set; }
         public double m_min { get; set; }
         public double m_max { get; set; }
+        public string m_position { get; set; }
 
         // デリゲートメソッド
         private updateView UpdateViewDelegate { get; set; }
 
+        // 認証用
+        private AuthBitflyer m_authBitflyer { get; set; }
+
 
         private Boxer()
         {
+            m_amount = 0.001;
             m_periods = 60;
             m_product_bitflyer = null;
             m_product_cryptowatch = null;
             m_ema_sample_num = 20;
             m_boll_sample_num = 20;
             m_candleBuf = null;
+
             m_min = 0.0;
             m_max = 0.0;
+            m_position = "NONE";
+
+            m_authBitflyer = null;
             return;
         }
 
@@ -267,6 +279,13 @@ namespace CryptoBoxer
         {
             try
             {
+                //double accept_price = await SendChildOrder.SellMarketAcceptance(m_authBitflyer, m_product_bitflyer, m_amount);
+                //if (accept_price == 0.0)
+                //{
+                //    Console.WriteLine("failed to SellMarket()");
+                //    return;
+                //}
+
                 // Cryptowatchから過去のデータを取得
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_product_cryptowatch, m_periods, m_candleBuf.m_buffer_num);
                 if (applyCandlestick(ref ohlc) != 0)
@@ -462,5 +481,29 @@ namespace CryptoBoxer
             }
             return;
         }
+
+        public int loadAuthBitflyer(string filePath)
+        {
+            int result = 0;
+            try
+            {
+                m_authBitflyer = AuthBitflyer.createAuthBitflyer(filePath);
+                if (m_authBitflyer == null)
+                {
+                    result = -1;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }
