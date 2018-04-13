@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UtilityBasic\UtilityBasic.csproj">
+      <Project>{65424dcf-378c-4ec9-bd5b-383d449219fc}</Project>
+      <Name>UtilityBasic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UtilityBitflyer\UtilityBitflyer.csproj">
       <Project>{670e0e8e-7e45-4430-8f97-ba2458a484b5}</Project>
       <Name>UtilityBitflyer</Name>
