@@ -544,7 +544,7 @@ namespace CryptoBoxer
                     {//現在がBOLLにタッチしていない
                         int shortBollLv = prevCandle.getShortBollLevel();
                         if(shortBollLv>=0)
-                        {
+                        {// SHORTレベルが0以上で高い
                             if(!curCandle.isTrend())
                             {// 下降キャンドルの場合
                                 // NEED SHORT ENTRY
@@ -553,10 +553,9 @@ namespace CryptoBoxer
                             {// 上昇キャンドルの場合
                                 // 何もしない
                             }
-
                         }
                         else
-                        {
+                        {// SHORTレベルが低い
                             // 何もしない
                         }
                     }
