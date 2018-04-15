@@ -53,6 +53,157 @@ namespace UtilityTrade
             return;
         }
 
+        // トレンドを判断
+        //  trueなら上昇トレンド
+        //  falseなら下降
+        public bool isTrend()
+        {
+            if (open <= last)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public int getShortBollLevel()
+        {
+            int result = 0;
+
+            if(isTouchBollLow())
+            {//BOLL_LOWにタッチはSHORTすべきでない
+                result = -1;
+                return result;
+            }
+
+            if(!isTouchBollHigh())
+            {//BOLL_HIGHにタッチしてない場合はSHORTすべきでない
+                result = -1;
+                return result;
+            }
+
+            // ここからはBOLL_HIGHにタッチしている
+            if(isTrend())
+            {//上昇キャンドルの場合
+                if (boll_high <= low)
+                {//完全にキャンドルがBOLL_HIGHをOVERしてる
+                    // まだ上がる可能性が高い、SHORT超危険
+                    result = -3;
+                    return result;
+                }
+
+                if (boll_high <= open)
+                {
+                    // まだ上がる可能性が高い、SHORT危険
+                    result = -2;
+                    return result;
+                }
+
+                if (boll_high <= high)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (boll_high <= last)
+                {
+                    result = 0;
+                    return result;
+                }
+            }
+            else
+            {//下降トレンドの場合
+                if (boll_low >= low)
+                {
+                    result = 4;
+                    return result;
+                }
+
+                if (boll_low >= last)
+                {
+                    result = 3;
+                    return result;
+                }
+
+                if (boll_low >= open)
+                {
+                    result = 2;
+                    return result;
+                }
+
+                if (boll_low >= high)
+                {
+                    result = 1;
+                    return result;
+                }
+            }
+
+            return result;
+        }
+
+        public bool isTouchBollHigh()
+        {
+            if (boll_high <= high)
+            {
+                return true;
+            }
+
+            if (boll_high <= last)
+            {
+                return true;
+            }
+
+            if (boll_high <= open)
+            {
+                return true;
+            }
+
+            if (boll_high <= low)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isTouchBollLow()
+        {
+            if (boll_low >= low)
+            {
+                return true;
+            }
+
+            if (boll_low >= last)
+            {
+                return true;
+            }
+
+            if (boll_low >= open)
+            {
+                return true;
+            }
+
+            if (boll_low >= high)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool isTouchBollHighLow()
+        {
+            if(isTouchBollHigh())
+            {
+                return true;
+            }
+
+            if(isTouchBollLow())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         // キャンドル終値がボリンジャー高バンド以上か判断
         public bool isOverBBLast()
         {
@@ -84,7 +235,7 @@ namespace UtilityTrade
         }
 
         // キャンドル上値がボリンジャー高バンド以上か判断
-        public bool isOverBBLow()
+        public bool isUnderBBLow()
         {
             if (boll_low <= low)
             {
@@ -176,6 +327,26 @@ namespace UtilityTrade
             return m_candleList.Last();
         }
 
+        public Candlestick getCandle(int index)
+        {
+            int candle_cnt = getCandleCount();
+            if (candle_cnt <= 0)
+            {
+                return null;
+            }
+
+            if(index < 0)
+            {
+                return null;
+            }
+
+            if(index >= candle_cnt)
+            {
+                return null;
+            }
+
+            return m_candleList[index];
+        }
 
         public Candlestick addCandle
         (
@@ -348,5 +519,7 @@ namespace UtilityTrade
             }
             return result;
         }
+
+
     }
 }

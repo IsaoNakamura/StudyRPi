@@ -505,5 +505,81 @@ namespace CryptoBoxer
             return result;
         }
 
+        public int hoge()
+        {
+            int result = 0;
+            try
+            {
+                if(m_candleBuf==null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if(prevCandle==null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (prevCandle.isTouchBollHigh())
+                {//前回がBOLL_HIGHにタッチしている場合
+                    if(curCandle.isTouchBollHighLow())
+                    {//現在がBOLLのどちらかにタッチ
+                        // 何もしない
+                    }
+                    else
+                    {//現在がBOLLにタッチしていない
+                        int shortBollLv = prevCandle.getShortBollLevel();
+                        if(shortBollLv>=0)
+                        {
+                            if(!curCandle.isTrend())
+                            {// 下降キャンドルの場合
+                                // NEED SHORT ENTRY
+                            }
+                            else
+                            {// 上昇キャンドルの場合
+                                // 何もしない
+                            }
+
+                        }
+                        else
+                        {
+                            // 何もしない
+                        }
+                    }
+
+                }
+                else if (prevCandle.isTouchBollLow())
+                {
+                    //int longBollLv = prevCandle.getLongBollLevel();
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }
