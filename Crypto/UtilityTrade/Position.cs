@@ -1,0 +1,189 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UtilityTrade
+{
+    public class Position
+    {
+        public enum PositionState
+        {
+              NONE
+            , LONG
+            , SHORT
+        };
+
+        public enum OrderState
+        {
+             NONE
+           , ACTIVE
+           , COMPLETED
+        };
+
+        private PositionState state { get; set; }
+
+        private OrderState entry_state { get; set; }
+        public string entry_id { get; private set; }
+        public double entry_price { get; set; }
+
+        private OrderState exit_state { get; set; }
+        public string exit_id { get; set; }
+        public double exit_price { get; set; }
+
+        public Position()
+        {
+            init();
+            return;
+        }
+
+        public void init()
+        {
+            state = PositionState.NONE;
+
+            entry_state = OrderState.NONE;
+            entry_id = "";
+            entry_price = 0.0;
+
+
+            exit_state = OrderState.NONE;
+            exit_id = "";
+            exit_price = 0.0;
+
+            return;
+        }
+
+        public bool isOrderNone()
+        {
+            if (entry_state == OrderState.NONE && exit_state == OrderState.NONE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isEntryNone()
+        {
+            if (entry_state == OrderState.NONE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isEntryActive()
+        {
+            if (entry_state == OrderState.ACTIVE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isEntryCompleted()
+        {
+            if (entry_state == OrderState.COMPLETED)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isExitNone()
+        {
+            if (exit_state == OrderState.NONE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isExitActive()
+        {
+            if (exit_state == OrderState.ACTIVE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isExitCompleted()
+        {
+            if (exit_state == OrderState.COMPLETED)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isNone()
+        {
+            if (state == PositionState.NONE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isLong()
+        {
+            if (state == PositionState.LONG)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isShort()
+        {
+            if (state == PositionState.SHORT)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void entryLongOrder(string _acceptance_id)
+        {
+            entry_id = _acceptance_id;
+            entry_state = OrderState.ACTIVE;
+            state = PositionState.LONG;
+            return;
+        }
+
+        public void entryShortOrder(string _acceptance_id)
+        {
+            entry_id = _acceptance_id;
+            entry_state = OrderState.ACTIVE;
+            state = PositionState.SHORT;
+            return;
+        }
+
+        public void exitOrder(string _acceptance_id)
+        {
+            exit_id = _acceptance_id;
+            exit_state = OrderState.ACTIVE;
+        }
+
+        public void entry(double _entry_price)
+        {
+            entry_price = _entry_price;
+            entry_state = OrderState.COMPLETED;
+            return;
+        }
+
+        public void exit(double _exit_price)
+        {
+            exit_price = _exit_price;
+            exit_state = OrderState.COMPLETED;
+            return;
+        }
+
+        public void reject()
+        {
+            init();
+            return;
+        }
+    }
+}

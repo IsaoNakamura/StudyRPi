@@ -41,6 +41,12 @@ namespace UtilityBitflyer
         public string time_in_force { get; set; }
     }
 
+    public class GetchildorderResponse
+    {
+        public double average_price { get; set; }
+        public string child_order_state { get; set; }
+    }
+
 
     public class SendChildOrder
     {
@@ -370,5 +376,82 @@ namespace UtilityBitflyer
             }
             return retArray;
         }
+
+        // average_priceを返す　失敗すれば0.0
+        public static async Task<GetchildorderResponse> getChildOrderAveragePrice
+        (
+            AuthBitflyer auth,
+            string product_code,
+            string acceptance_id
+        )
+        {
+            GetchildorderResponse result = null;
+            try
+            {
+                JArray retArray = await getChildOrdersAcceptance(auth, product_code, acceptance_id);
+                if (retArray != null && retArray.Count > 0)
+                {
+                    bool isReject = false;
+                    bool isFullComp = true;
+                    double price = 0.0;
+                    string state = "";
+                    bool isFirst = true;
+                    foreach (JObject jobj in retArray)
+                    {
+                        JValue average_price = (JValue)jobj["average_price"];
+                        JValue child_order_state = (JValue)jobj["child_order_state"];
+                        if ((string)child_order_state != "COMPLETED")
+                        {
+                            isFullComp = false;
+                        }
+                        if ((string)child_order_state == "REJECTED")
+                        {
+                            isReject = true;
+                        }
+                        if (isFirst)
+                        {
+                            price = (double)average_price;
+                            state = (string)child_order_state;
+                            isFirst = false;
+                        }
+                    }
+
+                    if (isFullComp)
+                    {
+                        result = new GetchildorderResponse();
+                        if (result == null)
+                        {
+                            return result;
+                        }
+                        result.average_price = price;
+                        result.child_order_state = state;
+                    }
+                    else if (isReject)
+                    {
+                        result = new GetchildorderResponse();
+                        if (result == null)
+                        {
+                            return result;
+                        }
+                        result.average_price = 0.0;
+                        result.child_order_state = "REJECTED";
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("failed to getChildOrderAveragePrice.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = null;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }

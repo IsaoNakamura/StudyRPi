@@ -377,8 +377,8 @@ namespace CryptoChart
                 int prevLongBollLv = 0;
                 int curShortBollLv = 0;
                 int prevShortBollLv = 0;
-                bool isLong = m_boxer.isLongEntryChance(ref curLongBollLv, ref prevLongBollLv);
-                bool isShort = m_boxer.isShortEntryChance(ref curShortBollLv, ref prevShortBollLv);
+                bool isLong = m_boxer.isConditionLongEntry(ref curLongBollLv, ref prevLongBollLv);
+                bool isShort = m_boxer.isConditionShortEntry(ref curShortBollLv, ref prevShortBollLv);
 
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
