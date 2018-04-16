@@ -505,74 +505,242 @@ namespace CryptoBoxer
             return result;
         }
 
-        public int hoge()
+        public int trade()
         {
             int result = 0;
             try
             {
-                if(m_candleBuf==null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                if (!m_candleBuf.isFullBuffer())
-                {
-                    result = -1;
-                    return result;
-                }
-
-                int candle_cnt = m_candleBuf.getCandleCount();
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                int curIndex = candle_cnt - 1;
-
-                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
-                if(prevCandle==null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                if (prevCandle.isTouchBollHigh())
-                {//前回がBOLL_HIGHにタッチしている場合
-                    if(curCandle.isTouchBollHighLow())
-                    {//現在がBOLLのどちらかにタッチ
-                        // 何もしない
-                    }
-                    else
-                    {//現在がBOLLにタッチしていない
-                        int shortBollLv = prevCandle.getShortBollLevel();
-                        if(shortBollLv>=0)
-                        {// SHORTレベルが0以上で高い
-                            if(!curCandle.isTrend())
-                            {// 下降キャンドルの場合
-                                // NEED SHORT ENTRY
-                            }
-                            else
-                            {// 上昇キャンドルの場合
-                                // 何もしない
-                            }
-                        }
-                        else
-                        {// SHORTレベルが低い
-                            // 何もしない
-                        }
-                    }
-
-                }
-                else if (prevCandle.isTouchBollLow())
-                {
-                    //int longBollLv = prevCandle.getLongBollLevel();
-
-                }
-
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isShortEntryChance(ref int curShortBollLv, ref int prevShortBollLv)
+        {
+            bool result = true;
+            curShortBollLv = -5;
+            prevShortBollLv = -5;
+            try
+            {
+                if(m_candleBuf==null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if(prevCandle==null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                curShortBollLv = curCandle.getShortBollLevel();
+                prevShortBollLv = prevCandle.getShortBollLevel();
+
+
+                if (prevCandle.isTouchBollLow())
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollLow())
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!prevCandle.isTouchBollHigh())
+                {//前回がBOLL_HIGHにタッチしていない場合
+                }
+                //前回がBOLL_HIGHにタッチしている場合
+
+                if (prevShortBollLv < 0)
+                {//前回のSHORTレベルが低い
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                else
+                {//前回のSHORTレベルが0以上
+                    if (curCandle.isTouchBollHigh())
+                    {
+                        if (curShortBollLv <= 0)
+                        {// 現在のSHORTレベルが0以下
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {// 現在のSHORTレベルが0より高い
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        if (!curCandle.isTrend())
+                        {//下降キャンドルなら
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+                        else
+                        {//上昇キャンドルなら
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+                curShortBollLv = -5;
+                prevShortBollLv = -5;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isLongEntryChance(ref int curLongBollLv, ref int prevLongBollLv)
+        {
+            bool result = true;
+            curLongBollLv = -5;
+            prevLongBollLv = -5;
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                curLongBollLv = curCandle.getLongBollLevel();
+                prevLongBollLv = prevCandle.getLongBollLevel();
+
+                if (prevCandle.isTouchBollHigh())
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollHigh())
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!prevCandle.isTouchBollLow())
+                {//前回がBOLL_LOWにタッチしていない場合
+                    // LONGすべきでない
+                    result = false;
+                    return result;
+                }
+                //前回がBOLL_LOWにタッチしている場合
+
+
+                if (prevLongBollLv < 0)
+                {//前回のLONGレベルが低い
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                else
+                {//前回のLONGレベルが0以上
+                    if (curCandle.isTouchBollLow())
+                    {// 現在がBOLL_LOWをタッチしている場合
+                        if (curLongBollLv <= 0)
+                        {// 現在のLONGレベルが0以下
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {// 現在のLONGレベルが0より高い
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+                    }
+                    else
+                    {// 現在がBOLL_LOWをタッチしていない場合
+                        if (curCandle.isTrend())
+                        {//上昇キャンドルなら
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+                        else
+                        {//下降キャンドルなら
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+                curLongBollLv = -5;
+                prevLongBollLv = -5;
             }
             finally
             {

@@ -67,22 +67,22 @@ namespace UtilityTrade
 
         public int getShortBollLevel()
         {
-            int result = 0;
+            int result = -5;
 
             if(isTouchBollLow())
-            {//BOLL_LOWにタッチはSHORTすべきでない
-                result = -1;
+            {//BOLL_LOWにタッチしている場合はSHORTすべきでない
+                result = -5;
                 return result;
             }
 
-            if(!isTouchBollHigh())
+            if (!isTouchBollHigh())
             {//BOLL_HIGHにタッチしてない場合はSHORTすべきでない
-                result = -1;
+                result = -4;
                 return result;
             }
-
             // ここからはBOLL_HIGHにタッチしている
-            if(isTrend())
+
+            if (isTrend())
             {//上昇キャンドルの場合
                 if (boll_high <= low)
                 {//完全にキャンドルがBOLL_HIGHをOVERしてる
@@ -98,13 +98,13 @@ namespace UtilityTrade
                     return result;
                 }
 
-                if (boll_high <= high)
+                if (boll_high <= last)
                 {
                     result = -1;
                     return result;
                 }
 
-                if (boll_high <= last)
+                if (boll_high <= high)
                 {
                     result = 0;
                     return result;
@@ -112,27 +112,102 @@ namespace UtilityTrade
             }
             else
             {//下降トレンドの場合
-                if (boll_low >= low)
+                if (boll_high <= low)
                 {
-                    result = 4;
+                    result = 1;
                     return result;
                 }
 
-                if (boll_low >= last)
-                {
-                    result = 3;
-                    return result;
-                }
-
-                if (boll_low >= open)
+                if (boll_high <= last)
                 {
                     result = 2;
                     return result;
                 }
 
+                if (boll_high <= open)
+                {
+                    result = 3;
+                    return result;
+                }
+
+                if (boll_high <= high)
+                {
+                    result = 4;
+                    return result;
+                }
+            }
+
+            return result;
+        }
+
+        public int getLongBollLevel()
+        {
+            int result = -5;
+
+            if (isTouchBollHigh())
+            {//BOLL_HIGHにタッチしている場合はLONGすべきでない
+                result = -5;
+                return result;
+            }
+
+            if (!isTouchBollLow())
+            {//BOLL_LOWにタッチしてない場合はLONGすべきでない
+                result = -4;
+                return result;
+            }
+            // ここからはBOLL_LOWにタッチしている
+
+            if (!isTrend())
+            {//下降キャンドルの場合
+                if (boll_low >= high)
+                {//完全にキャンドルがBOLL_LOWをUNDERしてる
+                    // まだ下がる可能性が高い、LONG超危険
+                    result = -3;
+                    return result;
+                }
+
+                if (boll_low >= open)
+                {
+                    // まだ下がる可能性が高い、LONG危険
+                    result = -2;
+                    return result;
+                }
+
+                if (boll_low >= last)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (boll_low >= low)
+                {
+                    result = 0;
+                    return result;
+                }
+            }
+            else
+            {//上昇キャンドルの場合
                 if (boll_low >= high)
                 {
                     result = 1;
+                    return result;
+                }
+
+                if (boll_low >= last)
+                {
+                    result = 2;
+                    return result;
+                }
+
+                if (boll_low >= open)
+                {
+                    result = 3;
+                    return result;
+                }
+
+                if (boll_low >= low)
+                {
+                    result = 4;
                     return result;
                 }
             }

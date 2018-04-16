@@ -373,27 +373,49 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.last - curCandle.ema);
                 }
 
+                int curLongBollLv = 0;
+                int prevLongBollLv = 0;
+                int curShortBollLv = 0;
+                int prevShortBollLv = 0;
+                bool isLong = m_boxer.isLongEntryChance(ref curLongBollLv, ref prevLongBollLv);
+                bool isShort = m_boxer.isShortEntryChance(ref curShortBollLv, ref prevShortBollLv);
+
                 {
-                    // LASTのBOLL_H接近度
                     int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "STATUS";
-                    double high_diff = curCandle.last - curCandle.boll_high;
-                    double low_diff = curCandle.last - curCandle.boll_low;
-                    if (high_diff > 0.0)
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "IS_ENTRY";
+                    if (isLong)
                     {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "BOLL_H OVER";
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "LONG";
                     }
-                    else if (low_diff < 0.0)
+                    else if (isShort)
                     {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "BOLL_L UNDER";
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "SHORT";
                     }
                     else
                     {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "";
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
                     }
-                    
                 }
-
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PRE_LONG_LV";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = prevLongBollLv;
+                }
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_LONG_LV";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curLongBollLv;
+                }
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PRE_SHORT_LV";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = prevShortBollLv;
+                }
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_SHORT_LV";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curShortBollLv;
+                }
 
             }
             catch (Exception ex)
