@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.CurrentInfoGrid = new System.Windows.Forms.DataGridView();
@@ -44,6 +44,7 @@
             this.ProfitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.EntryLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ExitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.StopBoxerButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -77,6 +78,7 @@
             this.tableLayoutPanel2.ColumnCount = 1;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel2.Controls.Add(this.CurrentInfoGrid, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.StopBoxerButton, 0, 1);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -140,17 +142,17 @@
             // chart1
             // 
             this.chart1.BackColor = System.Drawing.Color.LightGray;
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
+            legend3.Name = "Legend1";
+            this.chart1.Legends.Add(legend3);
             this.chart1.Location = new System.Drawing.Point(3, 3);
             this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
+            series3.ChartArea = "ChartArea1";
+            series3.Legend = "Legend1";
+            series3.Name = "Series1";
+            this.chart1.Series.Add(series3);
             this.chart1.Size = new System.Drawing.Size(631, 356);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
@@ -215,6 +217,16 @@
             this.ExitLabel.ReadOnly = true;
             this.ExitLabel.Width = 54;
             // 
+            // StopBoxerButton
+            // 
+            this.StopBoxerButton.Location = new System.Drawing.Point(3, 366);
+            this.StopBoxerButton.Name = "StopBoxerButton";
+            this.StopBoxerButton.Size = new System.Drawing.Size(75, 23);
+            this.StopBoxerButton.TabIndex = 1;
+            this.StopBoxerButton.Text = "stop";
+            this.StopBoxerButton.UseVisualStyleBackColor = true;
+            this.StopBoxerButton.Click += new System.EventHandler(this.StopBoxerButton_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -223,6 +235,7 @@
             this.Controls.Add(this.splitContainer1);
             this.Name = "FormMain";
             this.Text = "Form1";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -251,6 +264,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn EntryLabel;
         private System.Windows.Forms.DataGridViewTextBoxColumn ExitLabel;
         private System.Windows.Forms.DataGridViewTextBoxColumn ProfitLabel;
+        private System.Windows.Forms.Button StopBoxerButton;
     }
 }
 

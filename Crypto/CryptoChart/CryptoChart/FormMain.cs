@@ -41,7 +41,7 @@ namespace CryptoChart
         {
             InitializeComponent();
 
-            m_boxer = Boxer.createBoxer(updateView, "FX_BTC_JPY", "btcfxjpy",900,60,20,20);
+            m_boxer = Boxer.createBoxer(updateView, @".\boxerConfig.json");
             if (m_boxer == null)
             {
                 Console.WriteLine("failed to createBoxer.");
@@ -53,8 +53,6 @@ namespace CryptoChart
                 Console.WriteLine("failed to loadAuthBitflyer.");
                 return;
             }
-
-            
 
             initChartArea();
 
@@ -530,5 +528,23 @@ namespace CryptoChart
             return result;
         }
 
+        private void StopBoxer()
+        {
+            if (m_boxer != null)
+            {
+                m_boxer.setStopFlag(true);
+            }
+        }
+
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopBoxer();
+            System.Threading.Thread.Sleep(3000);
+        }
+
+        private void StopBoxerButton_Click(object sender, EventArgs e)
+        {
+            StopBoxer();
+        }
     }
 }

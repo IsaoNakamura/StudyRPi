@@ -15,31 +15,8 @@ namespace CryptoBoxer
 
     public class Boxer
     {
-        /* === パラメタ用  === */
-
-        // 売買量
-        private double m_amount { get; set; }
-
-        // チャート足(秒)
-        private int m_periods { get; set; }
-
-        // プロダクトコード
-        private string m_product_bitflyer { get; set; }
-        private string m_product_cryptowatch { get; set; }
-
-        // EMAサンプリング数
-        public int m_ema_sample_num { get; set; }
-
-        // ボリンジャーバンドサンプリング数
-        public int m_boll_sample_num { get; set; }
-
-        // EMAと最低でもどれくらい離れたらEntryするかの値
-        public double m_ema_diff_far { get; set; }
-
-        // EMAと最低でもどれくらい近づいたらExitするかの値
-        public double m_ema_diff_near { get; set; }
-
-        /* =================== */
+        // 設定パラメタ
+        private BoxerConfig m_config { get; set; }
 
         // 状態用
         private CandleBuffer m_candleBuf { get; set; }
@@ -54,17 +31,15 @@ namespace CryptoBoxer
         // 認証用
         private AuthBitflyer m_authBitflyer { get; set; }
 
+        private bool m_stopFlag { get; set; }
+        public void setStopFlag(bool flag)
+        {
+            m_stopFlag = flag;
+        }
 
         private Boxer()
         {
-            m_amount = 0.001;
-            m_periods = 60;
-            m_product_bitflyer = null;
-            m_product_cryptowatch = null;
-            m_ema_sample_num = 20;
-            m_boll_sample_num = 20;
-            m_ema_diff_far = 500.0;
-            m_ema_diff_near = 100.0;
+            m_config = null;
 
             m_candleBuf = null;
 
@@ -75,6 +50,8 @@ namespace CryptoBoxer
             m_position = null;
 
             m_authBitflyer = null;
+
+            m_stopFlag = false;
             return;
         }
 
@@ -101,12 +78,8 @@ namespace CryptoBoxer
         public static Boxer createBoxer
         (
             updateView UpdateViewDelegate,
-            string  product_bitflyer    = "FX_BTC_JPY",
-            string  product_cryptowatch = "btcfxjpy",
-            int     periods             = 60,
-            int     buffer_num          = 60,
-            int     ema_sample_num      = 20,
-            int     boll_sample_num     = 20
+            string     configPath
+
         )
         {
             Boxer result = null;
@@ -119,7 +92,14 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                CandleBuffer candleBuf = CandleBuffer.createCandleBuffer(buffer_num);
+                BoxerConfig config = BoxerConfig.loadBoxerConfig(configPath);
+                if (config == null)
+                {
+                    result = null;
+                    return result;
+                }
+
+                CandleBuffer candleBuf = CandleBuffer.createCandleBuffer(config.buffer_num);
                 if (candleBuf == null)
                 {
                     result = null;
@@ -152,15 +132,11 @@ namespace CryptoBoxer
                 }
                 posArray.Add(position);
 
+                boxer.m_config              = config;
                 boxer.m_posArray            = posArray;
                 boxer.m_position            = position;
                 boxer.UpdateViewDelegate    = _UpdateViewDelegate;
                 boxer.m_candleBuf           = candleBuf;
-                boxer.m_product_bitflyer    = product_bitflyer;
-                boxer.m_product_cryptowatch = product_cryptowatch;
-                boxer.m_periods             = periods;
-                boxer.m_ema_sample_num      = ema_sample_num;
-                boxer.m_boll_sample_num     = boll_sample_num;
 
                 result = boxer;
             }
@@ -186,23 +162,8 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (m_position.isNone())
-                {
-                    result = "NONE";
-                    return result;
-                }
+                result = m_position.getPositionStateStr();
 
-                if (m_position.isLong())
-                {
-                    result = "LONG";
-                    return result;
-                }
-
-                if (m_position.isShort())
-                {
-                    result = "SHORT";
-                    return result;
-                }
             }
             catch (Exception ex)
             {
@@ -314,11 +275,11 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                List<List<double>> candles = ohlc.result.getResult(m_periods);
+                List<List<double>> candles = ohlc.result.getResult(m_config.periods);
 
                 if (candles == null)
                 {
-                    Console.WriteLine("ohlc's candle is null. periods={0}", m_periods);
+                    Console.WriteLine("ohlc's candle is null. periods={0}", m_config.periods);
                     result = -1;
                     return result;
                 }
@@ -383,7 +344,7 @@ namespace CryptoBoxer
 
                 // EMAを算出
                 double ema = 0.0;
-                if (m_candleBuf.calcEma(out ema, m_ema_sample_num) == 0)
+                if (m_candleBuf.calcEma(out ema, m_config.ema_sample_num) == 0)
                 {
                     candle.ema = ema;
                 }
@@ -391,7 +352,7 @@ namespace CryptoBoxer
                 // 標準偏差、移動平均、ボリンジャーバンドを算出
                 double stddev = 0.0;
                 double ma = 0.0;
-                if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_boll_sample_num) == 0)
+                if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_sample_num) == 0)
                 {
                     candle.stddev = stddev;
                     candle.ma = ma;
@@ -442,7 +403,7 @@ namespace CryptoBoxer
             try
             {
                 // Cryptowatchから過去のデータを取得
-                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_product_cryptowatch, m_periods, m_candleBuf.m_buffer_num * m_periods);
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, m_candleBuf.m_buffer_num * m_config.periods);
                 if (applyCandlestick(ref ohlc) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
@@ -465,7 +426,7 @@ namespace CryptoBoxer
                 while (true)
                 {
                     // Tickerを取得
-                    Ticker ticker = await Ticker.GetTickerAsync(m_product_bitflyer);
+                    Ticker ticker = await Ticker.GetTickerAsync(m_config.product_bitflyer);
                     if (ticker == null)
                     {
                         continue;
@@ -515,7 +476,7 @@ namespace CryptoBoxer
                         {
                             // 現時刻が過去最後のキャンドルの閉めと一緒もしくはそれ以降だった場合、過去最後のキャンドルは閉まっている
 
-                            nextCloseTime = nextCloseTime.AddSeconds(m_periods);
+                            nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
 
                             Console.WriteLine("prev is closed. next={0}, cur={1}, elapsed={2}", nextCloseTime, cur_timestamp, elapsed_sec);
                             isClose = true;
@@ -579,7 +540,7 @@ namespace CryptoBoxer
                             await tryExitOrder();
                         }
                         // 次の更新時間を更新
-                        nextCloseTime = nextCloseTime.AddSeconds(m_periods);
+                        nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
 
                         // 新たなキャンドルを追加
                         open_price = cur_value;
@@ -638,6 +599,12 @@ namespace CryptoBoxer
                     }
 
                     pre_tick_id = ticker.tick_id;
+
+                    if (m_stopFlag)
+                    {
+                        Console.WriteLine("recieved StopCode.");
+                        break;
+                    }
 
                     System.Threading.Thread.Sleep(0);
                     cycle_cnt++;
@@ -699,7 +666,7 @@ namespace CryptoBoxer
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
-                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                     if (retObj == null)
                     {
                         Console.WriteLine("failed to Long Entry Order");
@@ -714,7 +681,7 @@ namespace CryptoBoxer
                 {
                     //Console.WriteLine("Try Short Entry Order.");
 
-                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                     if (retObj == null)
                     {
                         Console.WriteLine("failed to Short Entry Order");
@@ -756,7 +723,7 @@ namespace CryptoBoxer
                 }
                 // ENTRYアクティブの場合
 
-                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_product_bitflyer, m_position.entry_id);
+                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
                 if(responce==null)
                 {
                     //Console.WriteLine("Order is not completed.");
@@ -827,7 +794,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Exit Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
                             Console.WriteLine("failed to Long Exit Order.");
@@ -842,7 +809,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Losscut Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
                             Console.WriteLine("failed to Long Losscut Order.");
@@ -860,7 +827,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Exit Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
                             Console.WriteLine("failed to Short Exit Order.");
@@ -875,7 +842,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Losscut Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_product_bitflyer, m_amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
                             Console.WriteLine("failed to Short Losscut Order.");
@@ -918,7 +885,7 @@ namespace CryptoBoxer
                 }
                 // EXITアクティブの場合
 
-                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_product_bitflyer, m_position.exit_id);
+                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.exit_id);
                 if (responce == null)
                 {
                     //Console.WriteLine("Order is not completed.");
@@ -986,7 +953,7 @@ namespace CryptoBoxer
                 }
 
                 double ema_diff = curCandle.ema - curCandle.last;
-                if (ema_diff <= m_ema_diff_near)
+                if (ema_diff <= m_config.ema_diff_near)
                 {
                     result = true;
                     return result;
@@ -1028,7 +995,7 @@ namespace CryptoBoxer
                 }
 
                 double ema_diff = curCandle.last - curCandle.ema;
-                if (ema_diff <= m_ema_diff_near)
+                if (ema_diff <= m_config.ema_diff_near)
                 {
                     result = true;
                     return result;
@@ -1160,7 +1127,7 @@ namespace CryptoBoxer
                 prevShortBollLv = prevCandle.getShortBollLevel();
 
                 double ema_diff = curCandle.last - curCandle.ema;
-                if (ema_diff < m_ema_diff_far)
+                if (ema_diff < m_config.ema_diff_far)
                 {
                     result = false;
                     return result;
@@ -1298,7 +1265,7 @@ namespace CryptoBoxer
                 prevLongBollLv = prevCandle.getLongBollLevel();
 
                 double ema_diff = curCandle.ema - curCandle.last;
-                if (ema_diff < m_ema_diff_far)
+                if (ema_diff < m_config.ema_diff_far)
                 {
                     result = false;
                     return result;
