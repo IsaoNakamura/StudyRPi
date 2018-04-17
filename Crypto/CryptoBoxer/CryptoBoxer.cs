@@ -527,13 +527,13 @@ namespace CryptoBoxer
                         {
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
-                            Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                                , curCandle.timestamp
-                                , curCandle.open
-                                , curCandle.last
-                                , curCandle.high
-                                , curCandle.low
-                            );
+                            //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                            //    , curCandle.timestamp
+                            //    , curCandle.open
+                            //    , curCandle.last
+                            //    , curCandle.high
+                            //    , curCandle.low
+                            //);
 
                             // ENTRY/ENTRYロジック
                             await tryEntryOrder();
@@ -551,13 +551,13 @@ namespace CryptoBoxer
                             return;
                         }
 
-                        Console.WriteLine("add candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                            , curCandle.timestamp
-                            , curCandle.open
-                            , curCandle.last
-                            , curCandle.high
-                            , curCandle.low
-                        );
+                        //Console.WriteLine("add candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                        //    , curCandle.timestamp
+                        //    , curCandle.open
+                        //    , curCandle.last
+                        //    , curCandle.high
+                        //    , curCandle.low
+                        //);
 
                         // 最高値・最低値リセット
                         high_price = 0.0;
@@ -946,17 +946,45 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                bool isOverEma = false;
                 if (curCandle.ema <= curCandle.last)
                 {
-                    result = true;
-                    return result;
+                    isOverEma = true;
                 }
 
+                bool isNearEma = false;
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff <= m_config.ema_diff_near)
                 {
-                    result = true;
-                    return result;
+                    isNearEma = true;
+                }
+
+                if (isNearEma || isOverEma)
+                {
+                    int curLastLv = curCandle.getLastLevel();
+                    int curOpenLv = curCandle.getOpenLevel();
+                    if (curCandle.isTrend())
+                    {//上昇キャンドルなら
+                        if (curLastLv == 4 && curOpenLv == 0)
+                        {// 大陽線
+                            // SKIP
+                            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {// 上髭
+                            // EXIT
+                            result = true;
+                            return result;
+                        }
+                    }
+                    else
+                    {//下降キャンドルなら
+                        // EXIT
+                        result = true;
+                        return result;
+                    }
                 }
             }
             catch (Exception ex)
@@ -988,17 +1016,45 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                bool isUnderEma = false;
                 if (curCandle.ema >= curCandle.last)
                 {
-                    result = true;
-                    return result;
+                    isUnderEma = true;
                 }
 
+                bool isNearEma = false;
                 double ema_diff = curCandle.last - curCandle.ema;
                 if (ema_diff <= m_config.ema_diff_near)
                 {
-                    result = true;
-                    return result;
+                    isNearEma = true;
+                }
+
+                if (isNearEma || isUnderEma)
+                {
+                    int curLastLv = curCandle.getLastLevel();
+                    int curOpenLv = curCandle.getOpenLevel();
+                    if (!curCandle.isTrend())
+                    {//下降キャンドルなら
+                        if (curLastLv == 0 && curOpenLv==4)
+                        {// 大陰線
+                            // SKIP
+                            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {//下髭
+                            // EXIT
+                            result = true;
+                            return result;
+                        }
+                    }
+                    else
+                    {//上昇キャンドルなら
+                        // EXIT
+                        result = true;
+                        return result;
+                    }
                 }
             }
             catch (Exception ex)
