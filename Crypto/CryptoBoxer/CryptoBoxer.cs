@@ -532,9 +532,9 @@ namespace CryptoBoxer
                         //Console.WriteLine("is close?. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
                         if (diff_sec<=0.0)
                         {
-                            // 前回より分の値が変化したら、分足を閉じる
+                            // 次の更新時間になったらキャンドルを閉じる
                             //Console.WriteLine("need close. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
-                            
+
                             isClose = true;
                         }
                     }
@@ -574,8 +574,9 @@ namespace CryptoBoxer
                                 , curCandle.low
                             );
 
-                            // ENTRYロジック
-                            //tryEntryOrder();
+                            // ENTRY/ENTRYロジック
+                            await tryEntryOrder();
+                            await tryExitOrder();
                         }
                         // 次の更新時間を更新
                         nextCloseTime = nextCloseTime.AddSeconds(m_periods);
@@ -622,12 +623,13 @@ namespace CryptoBoxer
                         calcIndicator(ref curCandle);
                     }
 
-                    // TODO:トレードロジック
                     //await tryEntryOrder();
-                    //await checkEntry();
                     //await tryExitOrder();
-                    //await checkExit();
-                    
+
+                    // 注文状況確認ロジック
+                    await checkEntry();
+                    await checkExit();
+
 
                     // 表示を更新
                     if (UpdateViewDelegate != null)
