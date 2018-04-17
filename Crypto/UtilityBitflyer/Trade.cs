@@ -78,7 +78,7 @@ namespace UtilityBitflyer
                 string resJson = await RequestBitflyer.Request(auth, method, path, body);
                 if (resJson == null)
                 {
-                    Console.WriteLine("failed to RequestBitflyer.");
+                    //Console.WriteLine("failed to RequestBitflyer.");
                     return null;
                 }
 
@@ -439,7 +439,7 @@ namespace UtilityBitflyer
                 }
                 else
                 {
-                    Console.WriteLine("failed to getChildOrderAveragePrice.");
+                    //Console.WriteLine("failed to getChildOrderAveragePrice.");
                 }
             }
             catch (Exception ex)

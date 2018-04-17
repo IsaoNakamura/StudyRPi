@@ -38,6 +38,12 @@
             this.AttributeValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.PositionHistoryGrid = new System.Windows.Forms.DataGridView();
+            this.PositionLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OrderLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ProfitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.EntryLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ExitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -46,6 +52,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.CurrentInfoGrid)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PositionHistoryGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -62,7 +69,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tableLayoutPanel1);
             this.splitContainer1.Size = new System.Drawing.Size(847, 486);
-            this.splitContainer1.SplitterDistance = 207;
+            this.splitContainer1.SplitterDistance = 206;
             this.splitContainer1.TabIndex = 0;
             // 
             // tableLayoutPanel2
@@ -76,7 +83,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 74.89712F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.10288F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(207, 486);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(206, 486);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // CurrentInfoGrid
@@ -97,8 +104,9 @@
             this.CurrentInfoGrid.ReadOnly = true;
             this.CurrentInfoGrid.RowTemplate.Height = 21;
             this.CurrentInfoGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.CurrentInfoGrid.Size = new System.Drawing.Size(201, 357);
+            this.CurrentInfoGrid.Size = new System.Drawing.Size(200, 357);
             this.CurrentInfoGrid.TabIndex = 0;
+            this.CurrentInfoGrid.TabStop = false;
             // 
             // AttributeType
             // 
@@ -119,13 +127,14 @@
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Controls.Add(this.chart1, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.PositionHistoryGrid, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 86.44444F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.55556F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(636, 486);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 74.4856F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.5144F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(637, 486);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // chart1
@@ -142,9 +151,69 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(630, 414);
+            this.chart1.Size = new System.Drawing.Size(631, 356);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
+            // 
+            // PositionHistoryGrid
+            // 
+            this.PositionHistoryGrid.AllowUserToAddRows = false;
+            this.PositionHistoryGrid.AllowUserToDeleteRows = false;
+            this.PositionHistoryGrid.AllowUserToResizeColumns = false;
+            this.PositionHistoryGrid.AllowUserToResizeRows = false;
+            this.PositionHistoryGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.PositionHistoryGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.PositionHistoryGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.PositionLabel,
+            this.OrderLabel,
+            this.ProfitLabel,
+            this.EntryLabel,
+            this.ExitLabel});
+            this.PositionHistoryGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PositionHistoryGrid.Location = new System.Drawing.Point(3, 365);
+            this.PositionHistoryGrid.MultiSelect = false;
+            this.PositionHistoryGrid.Name = "PositionHistoryGrid";
+            this.PositionHistoryGrid.ReadOnly = true;
+            this.PositionHistoryGrid.RowTemplate.Height = 21;
+            this.PositionHistoryGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.PositionHistoryGrid.Size = new System.Drawing.Size(631, 118);
+            this.PositionHistoryGrid.TabIndex = 1;
+            this.PositionHistoryGrid.TabStop = false;
+            // 
+            // PositionLabel
+            // 
+            this.PositionLabel.HeaderText = "POS";
+            this.PositionLabel.Name = "PositionLabel";
+            this.PositionLabel.ReadOnly = true;
+            this.PositionLabel.Width = 52;
+            // 
+            // OrderLabel
+            // 
+            this.OrderLabel.HeaderText = "ORDER";
+            this.OrderLabel.Name = "OrderLabel";
+            this.OrderLabel.ReadOnly = true;
+            this.OrderLabel.Width = 69;
+            // 
+            // ProfitLabel
+            // 
+            this.ProfitLabel.HeaderText = "PROFIT";
+            this.ProfitLabel.Name = "ProfitLabel";
+            this.ProfitLabel.ReadOnly = true;
+            this.ProfitLabel.Width = 70;
+            // 
+            // EntryLabel
+            // 
+            this.EntryLabel.HeaderText = "ENTRY";
+            this.EntryLabel.Name = "EntryLabel";
+            this.EntryLabel.ReadOnly = true;
+            this.EntryLabel.Width = 67;
+            // 
+            // ExitLabel
+            // 
+            this.ExitLabel.HeaderText = "EXIT";
+            this.ExitLabel.Name = "ExitLabel";
+            this.ExitLabel.ReadOnly = true;
+            this.ExitLabel.Width = 54;
             // 
             // FormMain
             // 
@@ -162,6 +231,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.CurrentInfoGrid)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PositionHistoryGrid)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -175,6 +245,12 @@
         private System.Windows.Forms.DataGridView CurrentInfoGrid;
         private System.Windows.Forms.DataGridViewTextBoxColumn AttributeType;
         private System.Windows.Forms.DataGridViewTextBoxColumn AttributeValue;
+        private System.Windows.Forms.DataGridView PositionHistoryGrid;
+        private System.Windows.Forms.DataGridViewTextBoxColumn PositionLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn OrderLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn EntryLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ExitLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ProfitLabel;
     }
 }
 

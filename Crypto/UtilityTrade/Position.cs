@@ -117,6 +117,38 @@ namespace UtilityTrade
             return false;
         }
 
+        public string getOrderStateStr()
+        {
+            string result = "NONE";
+
+            if (isExitActive())
+            {
+                result = "ACTIVE";
+            }
+            else if (isExitCompleted())
+            {
+                result = "COMPLETED";
+            }
+
+            return result;
+        }
+
+        public string getPositionStateStr()
+        {
+            string result = "NONE";
+
+            if (isLong())
+            {
+                result = "LONG";
+            }
+            else if (isShort())
+            {
+                result = "SHORT";
+            }
+
+            return result;
+        }
+
         public bool isNone()
         {
             if (state == PositionState.NONE)
@@ -184,6 +216,50 @@ namespace UtilityTrade
         {
             init();
             return;
+        }
+
+        public double calcProfit(double now_price)
+        {
+            double result = 0.0;
+
+            if (entry_state != OrderState.COMPLETED)
+            {
+                result = 0.0;
+                return result;
+            }
+
+            if (isLong())
+            {
+                result = now_price - entry_price;
+            }
+            else if (isShort())
+            {
+                result = entry_price - now_price;
+            }
+
+            return result;
+        }
+
+        public double getProfit()
+        {
+            double result = 0.0;
+
+            if (exit_state != OrderState.COMPLETED)
+            {
+                result = 0.0;
+                return result;
+            }
+
+            if (isLong())
+            {
+                result = exit_price - entry_price;
+            }
+            else if (isShort())
+            {
+                result = entry_price - exit_price;
+            }
+
+            return result;
         }
     }
 }

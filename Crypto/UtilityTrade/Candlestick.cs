@@ -65,74 +65,210 @@ namespace UtilityTrade
             return false;
         }
 
+        //public int getCandleType()
+        //{
+        //    int result = 0;
+
+        //    int last_level = getValueLevel(last, high, low);
+        //    int open_level = getValueLevel(open, high, low);
+
+        //    if (isTrend())
+        //    {
+        //        if (last_level == 4)
+        //        {
+        //            // 最高
+        //            if (open_level == 0)
+        //            {
+        //                // 丸坊主
+        //                // 上昇継続
+        //            }
+        //            else if (open_level == 1)
+        //            {
+        //                // 大陽線
+        //                // 上昇継続
+        //            }
+        //            else if (open_level == 2)
+        //            {
+        //                // 小陽線
+        //                // 上昇継続
+        //            }
+        //            else if (open_level == 3)
+        //            {
+        //                // 小陽線
+        //                // 上昇継続
+        //            }
+        //            else if (open_level == 4)
+        //            {
+        //                // 下髭陽線
+        //                // 上昇継続
+        //            }
+        //        }
+        //        else if(last_level == 3)
+        //        {
+        //            // 高
+        //        }
+        //        else if (last_level == 2)
+        //        {
+        //            // 中間
+        //        }
+        //        else if (last_level == 1)
+        //        {
+        //            // 低
+        //        }
+        //        else if (last_level == 0)
+        //        {
+        //            // 最低
+        //        }
+
+        //        // 小陽線
+        //        // 上昇したが動きは小さい
+
+        //        // 索引同時線
+        //        // 動いたが、結局終値と始値が同じ 方向転換の可能性
+
+        //        // 下髭陽線
+        //        // 一時大きく下げたが、大きく戻す 高い価格で終値がついていれば上昇の可能性あり
+
+        //        // 上髭陽線
+        //        // だいぶ押された。そろそろ上昇が終わる
+        //    }
+        //    else
+        //    {
+        //    }
+        //    return result;
+        //}
+
+        public int getLastLevel()
+        {
+            return getValueLevel(last, high, low);
+        }
+
+        public int getOpenLevel()
+        {
+            return getValueLevel(open, high, low);
+        }
+
+        private static int getValueLevel(double price, double high, double low)
+        {
+            int result = 0;
+
+            double length = high - low;
+            double pos = price - low;
+            double rate = pos / length * 100.0;
+
+            int level = 0;
+            if (rate >= 80.0)
+            {
+                level = 4;
+            }
+            else if (rate >= 60.0)
+            {
+                level = 3;
+            }
+            else if (rate >= 40.0)
+            {
+                level = 2;
+            }
+            else if (rate >= 20.0)
+            {
+                level = 1;
+            }
+            else
+            {
+                level = 0;
+            }
+
+            result = level;
+
+            return result;
+        }
+
         public int getShortBollLevel()
         {
-            int result = -5;
+            int result = -6;
 
             if(isTouchBollLow())
             {//BOLL_LOWにタッチしている場合はSHORTすべきでない
-                result = -5;
+                result = -6;
                 return result;
             }
 
             if (!isTouchBollHigh())
             {//BOLL_HIGHにタッチしてない場合はSHORTすべきでない
-                result = -4;
+                result = -5;
                 return result;
             }
             // ここからはBOLL_HIGHにタッチしている
+
+            int lastLv = getLastLevel();
 
             if (isTrend())
             {//上昇キャンドルの場合
                 if (boll_high <= low)
                 {//完全にキャンドルがBOLL_HIGHをOVERしてる
                     // まだ上がる可能性が高い、SHORT超危険
-                    result = -3;
+                    result = -4;
                     return result;
                 }
 
                 if (boll_high <= open)
-                {
+                {//下髭以外はBOLL_HIGHをOVERしてる
                     // まだ上がる可能性が高い、SHORT危険
-                    result = -2;
+                    result = -3;
                     return result;
                 }
 
                 if (boll_high <= last)
-                {
-                    result = -1;
-                    return result;
+                {//HIGHTとLASTがBOLL_HIGHをOVERしてる
+                    if (lastLv >= 2)
+                    {// 大陽線もしくは小陽線
+                        result = -2;
+                        return result;
+                    }
+                    else
+                    {// 上髭
+                        result = 0;
+                        return result;
+                    }
                 }
 
                 if (boll_high <= high)
-                {
-                    result = 0;
-                    return result;
+                {//上髭だけがBOLL_HIGHをOVERしてる
+                    if (lastLv >= 4)
+                    {// 大陽線
+                        result = -1;
+                        return result;
+                    }
+                    else
+                    {// 上髭
+                        result = 1;
+                        return result;
+                    }
                 }
             }
             else
             {//下降トレンドの場合
                 if (boll_high <= low)
                 {
-                    result = 1;
+                    result = 2;
                     return result;
                 }
 
                 if (boll_high <= last)
                 {
-                    result = 2;
+                    result = 3;
                     return result;
                 }
 
                 if (boll_high <= open)
                 {
-                    result = 3;
+                    result = 4;
                     return result;
                 }
 
                 if (boll_high <= high)
                 {
-                    result = 4;
+                    result = 5;
                     return result;
                 }
             }
@@ -142,72 +278,89 @@ namespace UtilityTrade
 
         public int getLongBollLevel()
         {
-            int result = -5;
+            int result = -6;
 
             if (isTouchBollHigh())
             {//BOLL_HIGHにタッチしている場合はLONGすべきでない
-                result = -5;
+                result = -6;
                 return result;
             }
 
             if (!isTouchBollLow())
             {//BOLL_LOWにタッチしてない場合はLONGすべきでない
-                result = -4;
+                result = -5;
                 return result;
             }
             // ここからはBOLL_LOWにタッチしている
+            int lastLv = getLastLevel();
 
             if (!isTrend())
             {//下降キャンドルの場合
                 if (boll_low >= high)
                 {//完全にキャンドルがBOLL_LOWをUNDERしてる
                     // まだ下がる可能性が高い、LONG超危険
-                    result = -3;
+                    result = -4;
                     return result;
                 }
 
                 if (boll_low >= open)
                 {
                     // まだ下がる可能性が高い、LONG危険
-                    result = -2;
+                    result = -3;
                     return result;
                 }
 
                 if (boll_low >= last)
                 {
-                    result = -1;
-                    return result;
+                    if (lastLv <= 2)
+                    {// 大陰線もしくは小陰線
+                        result = -2;
+                        return result;
+                    }
+                    else
+                    {// 下髭
+                        result = 0;
+                        return result;
+                    }
                 }
 
                 if (boll_low >= low)
                 {
-                    result = 0;
-                    return result;
+                    if (lastLv <= 0)
+                    {// 大陰線
+                        result = -1;
+                        return result;
+                    }
+                    else
+                    {// 下髭
+                        result = 1;
+                        return result;
+                    }
                 }
             }
             else
             {//上昇キャンドルの場合
                 if (boll_low >= high)
                 {
-                    result = 1;
+                    result = 2;
                     return result;
                 }
 
                 if (boll_low >= last)
                 {
-                    result = 2;
+                    result = 3;
                     return result;
                 }
 
                 if (boll_low >= open)
                 {
-                    result = 3;
+                    result = 4;
                     return result;
                 }
 
                 if (boll_low >= low)
                 {
-                    result = 4;
+                    result = 5;
                     return result;
                 }
             }

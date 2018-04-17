@@ -64,7 +64,7 @@ namespace UtilityBitflyer
 
                     if (message.IsSuccessStatusCode == false)
                     {
-                        Console.WriteLine(message.RequestMessage);
+                        //Console.WriteLine(message.RequestMessage);
                         responce = null;
                         return responce;
                     }

@@ -33,6 +33,7 @@ namespace CryptoChart
         private Series m_series_bollLow = null;
         private Series m_series_min = null;
         private Series m_series_max = null;
+        private Series m_series_entry = null;
 
         private Boxer m_boxer = null;
 
@@ -160,6 +161,18 @@ namespace CryptoChart
                 m_series_max.Color = Color.Blue;
                 m_series_max.Name = "MAX";
 
+                
+                if (m_series_entry != null)
+                {
+                    m_series_entry.Dispose();
+                    m_series_entry = null;
+                }
+
+                m_series_entry = new Series();
+                m_series_entry.ChartType = SeriesChartType.Line;
+                m_series_entry.Color = Color.GreenYellow;
+                m_series_entry.Name = "ENTRY";
+
             }
             catch (Exception ex)
             {
@@ -178,6 +191,7 @@ namespace CryptoChart
             {
                 updateCurrentInfoGrid();
                 updateChart();
+                updatePositionHistoryGrid();
 
             }
             catch (Exception ex)
@@ -202,6 +216,7 @@ namespace CryptoChart
                 m_series_bollLow.Points.Clear();
                 m_series_min.Points.Clear();
                 m_series_max.Points.Clear();
+                m_series_entry.Points.Clear();
                 this.chart1.Series.Clear();
 
                 if (m_boxer == null)
@@ -219,6 +234,7 @@ namespace CryptoChart
 
                 double indicator_min = m_boxer.m_min;
                 double indicator_max = m_boxer.m_max;
+                double entry_price = m_boxer.getEntryPrice();
 
                 if (!candleBuf.isFullBuffer())
                 {
@@ -264,6 +280,13 @@ namespace CryptoChart
                     DataPoint dp_max = new DataPoint(candle_cnt, indicator_max);
                     m_series_max.Points.Add(dp_max);
 
+                    if (entry_price > double.Epsilon)
+                    {
+
+                        DataPoint dp_entry = new DataPoint(candle_cnt, entry_price);
+                        m_series_entry.Points.Add(dp_entry);
+                    }
+
                     // 表示範囲を算出
                     if (candle_cnt == 0)
                     {
@@ -296,6 +319,11 @@ namespace CryptoChart
                 this.chart1.Series.Add(m_series_bollLow);
                 this.chart1.Series.Add(m_series_min);
                 this.chart1.Series.Add(m_series_max);
+                if (entry_price > double.Epsilon)
+                {
+                    this.chart1.Series.Add(m_series_entry);
+                }
+                    
 
                 // Console.WriteLine("update Chart. y_min={0} y_max={1}", y_min, y_max);
             }
@@ -338,6 +366,27 @@ namespace CryptoChart
                 }
 
                 {
+                    // ポジション
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "POS";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = m_boxer.getPositionName();
+                }
+
+                {
+                    // Entry値
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "ENTRY";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", m_boxer.getEntryPrice());
+                }
+
+                {
+                    // 利益
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PROFIT";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", m_boxer.calcProfit());
+                }
+
+                {
                     // 終値(現在値)
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "LAST";
@@ -345,26 +394,26 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.last);
                 }
 
-                {
-                    // EMA
-                    int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.ema);
-                }
+                //{
+                //    // EMA
+                //    int idx = this.CurrentInfoGrid.Rows.Add();
+                //    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA";
+                //    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.ema);
+                //}
 
-                {
-                    // BOLL_H
-                    int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_H";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_high);
-                }
+                //{
+                //    // BOLL_H
+                //    int idx = this.CurrentInfoGrid.Rows.Add();
+                //    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_H";
+                //    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_high);
+                //}
 
-                {
-                    // BOLL_L
-                    int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_L";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_low);
-                }
+                //{
+                //    // BOLL_L
+                //    int idx = this.CurrentInfoGrid.Rows.Add();
+                //    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "BOLL_L";
+                //    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.boll_low);
+                //}
 
                 {
                     // LASTとEMAとの差
@@ -417,6 +466,62 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curShortBollLv;
                 }
 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        private int updatePositionHistoryGrid()
+        {
+            int result = 0;
+            try
+            {
+                this.PositionHistoryGrid.Rows.Clear();
+
+                if (m_boxer == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                List<Position> posArray = m_boxer.getPositionList();
+                if (posArray == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                foreach (Position pos in posArray.Reverse<Position>())
+                {
+                    if (pos == null)
+                    {
+                        continue;
+                    }
+                    int idx = this.PositionHistoryGrid.Rows.Add();
+
+                    // POS
+                    this.PositionHistoryGrid.Rows[idx].Cells[0].Value = pos.getPositionStateStr();
+
+                    // ORDER
+                    this.PositionHistoryGrid.Rows[idx].Cells[1].Value = pos.getOrderStateStr();
+
+                    // PROFIT
+                    this.PositionHistoryGrid.Rows[idx].Cells[2].Value = string.Format("{0:0}", pos.getProfit());
+
+
+                    // ENTRY
+                    this.PositionHistoryGrid.Rows[idx].Cells[3].Value = string.Format("{0:0}", pos.entry_price);
+
+                    // EXIT
+                    this.PositionHistoryGrid.Rows[idx].Cells[4].Value = string.Format("{0:0}", pos.exit_price);
+                }
             }
             catch (Exception ex)
             {
