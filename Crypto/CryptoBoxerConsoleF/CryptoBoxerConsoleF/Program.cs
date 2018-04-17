@@ -12,7 +12,17 @@ namespace CryptoBoxerConsoleF
     {
         static void Main(string[] args)
         {
-            Boxer m_boxer = Boxer.createBoxer(null);
+            Boxer m_boxer = Boxer.createBoxer(null,@"./boxerConfig.json");
+            if(m_boxer==null)
+            {
+                return;
+            }
+
+            if(m_boxer.loadAuthBitflyer(@"./AuthBitflyer.json")!=0)
+            {
+                return;
+            }
+
             m_boxer.MainLoop();
 
             while (true)
