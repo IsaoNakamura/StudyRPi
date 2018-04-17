@@ -93,6 +93,11 @@ namespace CryptoBoxer
             return m_posArray;
         }
 
+        public Position getPosition()
+        {
+            return m_position;
+        }
+
         public static Boxer createBoxer
         (
             updateView UpdateViewDelegate,
@@ -309,14 +314,16 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (ohlc.result.miniute == null)
+                List<List<double>> candles = ohlc.result.getResult(m_periods);
+
+                if (candles == null)
                 {
-                    Console.WriteLine("ohlc's miniute is null");
+                    Console.WriteLine("ohlc's candle is null. periods={0}", m_periods);
                     result = -1;
                     return result;
                 }
 
-                foreach (List<double> candleFactor in ohlc.result.miniute)
+                foreach (List<double> candleFactor in candles)
                 {
                     if (candleFactor == null)
                     {
@@ -435,7 +442,7 @@ namespace CryptoBoxer
             try
             {
                 // Cryptowatchから過去のデータを取得
-                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_product_cryptowatch, m_periods, m_candleBuf.m_buffer_num);
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_product_cryptowatch, m_periods, m_candleBuf.m_buffer_num * m_periods);
                 if (applyCandlestick(ref ohlc) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
@@ -450,7 +457,7 @@ namespace CryptoBoxer
                 // 過去のデータ群の最後のキャンドルを取得
                 //  閉じたキャンドルでなければ更新することになる。
                 Candlestick curCandle = m_candleBuf.getLastCandle();
-                DateTime prev_timestamp = DateTime.Parse(curCandle.timestamp);
+                DateTime nextCloseTime = DateTime.Parse(curCandle.timestamp);
 
                 bool isLastConnect = false;
                 int pre_tick_id = 0;
@@ -473,16 +480,19 @@ namespace CryptoBoxer
 
                     DateTime dateTimeUtc = DateTime.Parse(ticker.timestamp);// 2018-04-10T10:34:16.677 UTCタイム
                     DateTime cur_timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
-                    TimeSpan span = cur_timestamp - prev_timestamp;
-                    double elapsed_sec = span.TotalSeconds;
+
 
                     bool isClose = false;
                     if (!isLastConnect)
                     {
+
                         // 過去取得した最後のキャンドルが閉じているかチェック
                         //  過去最後のTimestampが10:14:00なら、10:13:00～10:13:59のキャンドル
                         //  現時刻が10:14:00～なら過去最後のキャンドルは閉まっている
                         //  現時刻が10:13:00～なら過去最後のキャンドルは閉まっていない
+
+                        TimeSpan span = cur_timestamp - nextCloseTime;
+                        double elapsed_sec = span.TotalSeconds;
 
                         if (elapsed_sec < 0)
                         {
@@ -491,8 +501,8 @@ namespace CryptoBoxer
                             high_price = curCandle.high;
                             low_price = curCandle.low;
 
-                            Console.WriteLine("prev is not closed. prev={0}, cur={1}, elapsed={2}, open={3}, cur={4}, high={5}, low={6}"
-                                , prev_timestamp
+                            Console.WriteLine("prev is not closed. next={0}, cur={1}, elapsed={2}, open={3}, cur={4}, high={5}, low={6}"
+                                , nextCloseTime
                                 , cur_timestamp
                                 , elapsed_sec
                                 , open_price
@@ -504,27 +514,28 @@ namespace CryptoBoxer
                         else
                         {
                             // 現時刻が過去最後のキャンドルの閉めと一緒もしくはそれ以降だった場合、過去最後のキャンドルは閉まっている
-                            Console.WriteLine("prev is closed. prev={0}, cur={1}, elapsed={2}", prev_timestamp.ToString(), cur_timestamp.ToString(), elapsed_sec);
+
+                            nextCloseTime = nextCloseTime.AddSeconds(m_periods);
+
+                            Console.WriteLine("prev is closed. next={0}, cur={1}, elapsed={2}", nextCloseTime, cur_timestamp, elapsed_sec);
                             isClose = true;
                             curCandle = null;
                         }
-                        prev_timestamp = cur_timestamp;
                         isLastConnect = true;
                     }
                     else
                     {
+                        TimeSpan diff = nextCloseTime - cur_timestamp;
+                        double diff_sec = diff.TotalSeconds;
+
                         // キャンドルを閉じるべきか判断
-                        //Console.WriteLine("is close?. prev={0}, cur={1}, elapsed={2}", prev_timestamp, cur_timestamp, elapsed_sec);
-                        if ((prev_timestamp.Minute != cur_timestamp.Minute) && (elapsed_sec > 0.0))
+                        //Console.WriteLine("is close?. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
+                        if (diff_sec<=0.0)
                         {
                             // 前回より分の値が変化したら、分足を閉じる
-                            //Console.WriteLine("need close. prev={0}, cur={1}, elapsed={2}", prev_timestamp, cur_timestamp, elapsed_sec);
-                            prev_timestamp = cur_timestamp;
+                            //Console.WriteLine("need close. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
+                            
                             isClose = true;
-                        }
-                        else
-                        {
-                            //Console.WriteLine("keep open. prev={0}, cur={1}, elapsed={2}", prev_timestamp, cur_timestamp, elapsed_sec);
                         }
                     }
 
@@ -553,19 +564,21 @@ namespace CryptoBoxer
                         // キャンドルを閉じる
                         if (curCandle != null)
                         {
-                            // CloseTimeは現時刻を使用する。
-                            curCandle.timestamp = cur_timestamp.ToString();
-                            //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                            //    , curCandle.timestamp
-                            //    , curCandle.open
-                            //    , curCandle.last
-                            //    , curCandle.high
-                            //    , curCandle.low
-                            //);
+                            // CloseTimeは次の更新時間を使用する。
+                            curCandle.timestamp = nextCloseTime.ToString();
+                            Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                                , curCandle.timestamp
+                                , curCandle.open
+                                , curCandle.last
+                                , curCandle.high
+                                , curCandle.low
+                            );
 
                             // ENTRYロジック
                             //tryEntryOrder();
                         }
+                        // 次の更新時間を更新
+                        nextCloseTime = nextCloseTime.AddSeconds(m_periods);
 
                         // 新たなキャンドルを追加
                         open_price = cur_value;
@@ -576,13 +589,13 @@ namespace CryptoBoxer
                             return;
                         }
 
-                        //Console.WriteLine("add candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                        //    , curCandle.timestamp
-                        //    , curCandle.open
-                        //    , curCandle.last
-                        //    , curCandle.high
-                        //    , curCandle.low
-                        //);
+                        Console.WriteLine("add candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                            , curCandle.timestamp
+                            , curCandle.open
+                            , curCandle.last
+                            , curCandle.high
+                            , curCandle.low
+                        );
 
                         // 最高値・最低値リセット
                         high_price = 0.0;
@@ -610,10 +623,10 @@ namespace CryptoBoxer
                     }
 
                     // TODO:トレードロジック
-                    await tryEntryOrder();
-                    await checkEntry();
-                    await tryExitOrder();
-                    await checkExit();
+                    //await tryEntryOrder();
+                    //await checkEntry();
+                    //await tryExitOrder();
+                    //await checkExit();
                     
 
                     // 表示を更新

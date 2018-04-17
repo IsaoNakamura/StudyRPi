@@ -41,7 +41,7 @@ namespace CryptoChart
         {
             InitializeComponent();
 
-            m_boxer = Boxer.createBoxer(updateView);
+            m_boxer = Boxer.createBoxer(updateView, "FX_BTC_JPY", "btcfxjpy",900,60,20,20);
             if (m_boxer == null)
             {
                 Console.WriteLine("failed to createBoxer.");
@@ -365,6 +365,13 @@ namespace CryptoChart
                     return result;
                 }
 
+                Position pos = m_boxer.getPosition();
+                if (pos == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
                 {
                     // ポジション
                     int idx = this.CurrentInfoGrid.Rows.Add();
@@ -432,18 +439,7 @@ namespace CryptoChart
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "IS_ENTRY";
-                    if (isLong)
-                    {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "LONG";
-                    }
-                    else if (isShort)
-                    {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "SHORT";
-                    }
-                    else
-                    {
-                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
-                    }
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = pos.getPositionStateStr();
                 }
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();

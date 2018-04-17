@@ -69,6 +69,10 @@ namespace UtilityCryptowatch
         //public List<CandleFactor> miniute { get; set; }
         public List<List<double>> miniute { get; set; }
 
+        [JsonProperty("900")]
+        //public List<CandleFactor> miniute { get; set; }
+        public List<List<double>> fifteen_miniute { get; set; }
+
         //List<double> is CandleFactor
         //        [0],       [1],       [2],      [3],        [4],    [5]
         //[ CloseTime, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume ]
@@ -77,6 +81,19 @@ namespace UtilityCryptowatch
         {
             miniute = null;
             return;
+        }
+
+        public List<List<double>> getResult(int periods)
+        {
+            List<List<double>> result = null;
+            if (periods == 60)
+            {
+                result = miniute;
+            } else if (periods == 900)
+            {
+                result = fifteen_miniute;
+            }
+            return result;
         }
     }
 
@@ -99,7 +116,7 @@ namespace UtilityCryptowatch
         (
             string  symbol,         // 通貨シンボル、 FX_BTC_JPYならbtcfxjpyを指定する
             int     periods,        // 足指定、1分足なら60を指定する
-            long    after_minitue   // 現在から何分前の情報を取得するか
+            long    after_seconds  // 現在から何分前の情報を取得するか
         )
         {
             BitflyerOhlc retObj = null;
@@ -108,11 +125,11 @@ namespace UtilityCryptowatch
                 // 現在からafter_minitue分前のUnixTimeを算出する
                 DateTime now = DateTime.Now;
                 var dto = new DateTimeOffset(now.Ticks, new TimeSpan(+09, 00, 00));
-                long after_secound = dto.ToUnixTimeSeconds() - (after_minitue * 60);
+                long after_length = dto.ToUnixTimeSeconds() - after_seconds;
 
                 var method = "GET";
                 var path = "/markets/bitflyer/";
-                var query = "?periods=" + periods + "&after=" + after_secound;
+                var query = "?periods=" + periods + "&after=" + after_length;
                 using (var client = new HttpClient())
                 using (var request = new HttpRequestMessage(new HttpMethod(method), path + symbol + "/ohlc" + query))
                 {
