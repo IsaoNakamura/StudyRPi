@@ -37,6 +37,11 @@ namespace CryptoBoxer
             m_stopFlag = flag;
         }
 
+        public bool getStopFlag()
+        {
+            return m_stopFlag;
+        }
+
         private Boxer()
         {
             m_config = null;
@@ -527,13 +532,13 @@ namespace CryptoBoxer
                         {
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
-                            //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                            //    , curCandle.timestamp
-                            //    , curCandle.open
-                            //    , curCandle.last
-                            //    , curCandle.high
-                            //    , curCandle.low
-                            //);
+                            Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                                , curCandle.timestamp
+                                , curCandle.open
+                                , curCandle.last
+                                , curCandle.high
+                                , curCandle.low
+                            );
 
                             // ENTRY/ENTRYロジック
                             await tryEntryOrder();
@@ -599,6 +604,12 @@ namespace CryptoBoxer
                     }
 
                     pre_tick_id = ticker.tick_id;
+
+                    if( System.IO.File.Exists(@"./StopCode.txt") )
+                    {
+                        m_stopFlag = true;
+                        System.IO.File.Delete(@"./StopCode.txt");
+                    }
 
                     if (m_stopFlag)
                     {

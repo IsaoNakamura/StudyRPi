@@ -28,6 +28,11 @@ namespace CryptoBoxerConsoleF
             while (true)
             {
                 System.Threading.Thread.Sleep(1);
+                if(m_boxer.getStopFlag())
+                {
+                    break;
+                }
+
             }
         }
     }
