@@ -1263,67 +1263,35 @@ namespace CryptoBoxer
                 }
 
                 if (!prevCandle.isTouchBollHigh())
-                {//前回がBOLL_HIGHにタッチしていない場合
+                {
+                    //前回がBOLL_HIGHにタッチしていない場合
+                    result = false;
+                    return result;
                 }
                 //前回がBOLL_HIGHにタッチしている場合
 
                 if (prevShortBollLv < 0)
-                {//前回のSHORTレベルが低い
+                {
+                    //前回のSHORTレベルが低い
                     // 何もしない
                     result = false;
                     return result;
                 }
                 else
-                {//前回のSHORTレベルが0以上
+                {
+                    //前回のSHORTレベルが0以上
 
-                    if (curCandle.isTouchBollHigh())
-                    {
-                        if (curShortBollLv <= 0)
-                        {// 現在のSHORTレベルが0以下
-                            // 何もしない
-                            result = false;
-                            return result;
-                        }
-                        else
-                        {// 現在のSHORTレベルが0より高い
-                            // ENTRY
-                            result = true;
-                            return result;
-                        }
+                    if (curShortBollLv <= 0)
+                    {// 現在のSHORTレベルが0以下
+                     // 何もしない
+                        result = false;
+                        return result;
                     }
                     else
-                    {
-                        int curLastLv = curCandle.getLastLevel();
-                        if (!curCandle.isTrend())
-                        {//下降キャンドルなら
-                            if (curLastLv <= 2)
-                            {// 大陰線もしくは小陰線
-                                // ENTRY
-                                result = true;
-                                return result;
-                            }
-                            else
-                            {//下髭
-                                // 何もしない
-                                result = false;
-                                return result;
-                            }
-                        }
-                        else
-                        {//上昇キャンドルなら
-                            if (curLastLv >= 2)
-                            {// 大陽線もしくは小陽線
-                                // 何もしない
-                                result = false;
-                                return result;
-                            }
-                            else
-                            {// 上髭
-                                // ENTRY
-                                result = true;
-                                return result;
-                            }
-                        }
+                    {// 現在のSHORTレベルが0より高い
+                     // ENTRY
+                        result = true;
+                        return result;
                     }
                 }
             }
@@ -1400,7 +1368,8 @@ namespace CryptoBoxer
                 }
 
                 if (!prevCandle.isTouchBollLow())
-                {//前回がBOLL_LOWにタッチしていない場合
+                {
+                    //前回がBOLL_LOWにタッチしていない場合
                     // LONGすべきでない
                     result = false;
                     return result;
@@ -1409,61 +1378,29 @@ namespace CryptoBoxer
 
 
                 if (prevLongBollLv < 0)
-                {//前回のLONGレベルが低い
+                {
+                    //前回のLONGレベルが低い
                     // 何もしない
                     result = false;
                     return result;
                 }
                 else
-                {//前回のLONGレベルが0以上
-                    if (curCandle.isTouchBollLow())
-                    {// 現在がBOLL_LOWをタッチしている場合
-                        if (curLongBollLv <= 0)
-                        {// 現在のLONGレベルが0以下
-                            // 何もしない
-                            result = false;
-                            return result;
-                        }
-                        else
-                        {// 現在のLONGレベルが0より高い
-                            // ENTRY
-                            result = true;
-                            return result;
-                        }
+                {
+                    //前回のLONGレベルが0以上
+
+                    if (curLongBollLv <= 0)
+                    {
+                        // 現在のLONGレベルが0以下
+                        // 何もしない
+                        result = false;
+                        return result;
                     }
                     else
-                    {// 現在がBOLL_LOWをタッチしていない場合
-                        int curLastLv = curCandle.getLastLevel();
-                        if (curCandle.isTrend())
-                        {//上昇キャンドルなら
-                            if (curLastLv >= 2)
-                            {// 大陽線もしくは小陽線
-                                // ENTRY
-                                result = true;
-                                return result;
-                            }
-                            else
-                            {// 上髭
-                                // 何もしない
-                                result = false;
-                                return result;
-                            }
-                        }
-                        else
-                        {//下降キャンドルなら
-                            if (curLastLv <= 2)
-                            {// 大陰線もしくは小陰線
-                                // 何もしない
-                                result = false;
-                                return result;
-                            }
-                            else
-                            {// 下髭
-                                // ENTRY
-                                result = true;
-                                return result;
-                            }
-                        }
+                    {
+                        // 現在のLONGレベルが0より高い
+                        // ENTRY
+                        result = true;
+                        return result;
                     }
                 }
             }
