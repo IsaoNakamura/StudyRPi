@@ -25,6 +25,13 @@ namespace CryptoBoxer
         public Position m_position { get; set; }
         private List<Position> m_posArray { get; set; }
 
+        private int m_curShortBollLv { get; set; }
+        private int m_preShortBollLv { get; set; }
+
+        private int m_curLongBollLv { get; set; }
+        private int m_preLongBollLv { get; set; }
+
+
         // デリゲートメソッド
         private updateView UpdateViewDelegate { get; set; }
 
@@ -57,6 +64,11 @@ namespace CryptoBoxer
             m_authBitflyer = null;
 
             m_stopFlag = false;
+
+            m_curShortBollLv = -1;
+            m_preShortBollLv = -1;
+            m_curLongBollLv = -1;
+            m_preLongBollLv = -1;
             return;
         }
 
@@ -530,15 +542,44 @@ namespace CryptoBoxer
                         // キャンドルを閉じる
                         if (curCandle != null)
                         {
+                            bool trend = curCandle.isTrend();
+                            string candleTrend = "";
+                            int candleType = -1;
+                            if (trend)
+                            {
+                                candleTrend = " UP ";
+                                candleType = curCandle.getUpCandleType();
+                            }
+                            else
+                            {
+                                candleTrend = "DOWN";
+                                candleType = curCandle.getDownCandleType();
+                            }
+
+
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
-                            Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                                , curCandle.timestamp
-                                , curCandle.open
-                                , curCandle.last
-                                , curCandle.high
-                                , curCandle.low
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},diff={3:0},trend={4},type={5},curL={6},preL={7},curS={8},preS={9}"
+                                              , curCandle.timestamp
+                                              , curCandle.last
+                                              , curCandle.ema
+                                              , curCandle.last - curCandle.ema
+                                              , candleTrend
+                                              , candleType
+                                              , m_curLongBollLv
+                                              , m_preLongBollLv
+                                              , m_curShortBollLv
+                                              , m_preShortBollLv
                             );
+
+                            //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
+                            //    , curCandle.timestamp
+                            //    , curCandle.open
+                            //    , curCandle.last
+                            //    , curCandle.high
+                            //    , curCandle.low
+                            //);
+
 
                             // ENTRY/ENTRYロジック
                             //await tryEntryOrder();
@@ -675,6 +716,10 @@ namespace CryptoBoxer
                 int prevShortBollLv = 0;
                 bool isLong = isConditionLongEntry(ref curLongBollLv, ref prevLongBollLv);
                 bool isShort =isConditionShortEntry(ref curShortBollLv, ref prevShortBollLv);
+                m_curLongBollLv = curLongBollLv;
+                m_preLongBollLv = prevLongBollLv;
+                m_curShortBollLv = curShortBollLv;
+                m_preShortBollLv = prevShortBollLv;
 
                 if (isLong)
                 {
