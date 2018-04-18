@@ -65,12 +65,16 @@ namespace UtilityCryptowatch
 
     public class Result
     {
+        // 1分足
         [JsonProperty("60")]
-        //public List<CandleFactor> miniute { get; set; }
         public List<List<double>> miniute { get; set; }
 
+        // 5分足
+        [JsonProperty("300")]
+        public List<List<double>> five_miniute { get; set; }
+
+        // 15分足
         [JsonProperty("900")]
-        //public List<CandleFactor> miniute { get; set; }
         public List<List<double>> fifteen_miniute { get; set; }
 
         //List<double> is CandleFactor
@@ -89,7 +93,12 @@ namespace UtilityCryptowatch
             if (periods == 60)
             {
                 result = miniute;
-            } else if (periods == 900)
+            }
+            else if (periods == 300)
+            {
+                result = five_miniute;
+            }
+            else if (periods == 900)
             {
                 result = fifteen_miniute;
             }

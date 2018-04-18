@@ -541,8 +541,8 @@ namespace CryptoBoxer
                             );
 
                             // ENTRY/ENTRYロジック
-                            await tryEntryOrder();
-                            await tryExitOrder();
+                            //await tryEntryOrder();
+                            //await tryExitOrder();
                         }
                         // 次の更新時間を更新
                         nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
@@ -589,13 +589,16 @@ namespace CryptoBoxer
                         calcIndicator(ref curCandle);
                     }
 
-                    //await tryEntryOrder();
-                    //await tryExitOrder();
+                    // ENTRY/ENTRYロジック
+                    await tryEntryOrder();
+                    await tryExitOrder();
+
+                    // Losscutロジック
+                    await tryLosscutOrder();
 
                     // 注文状況確認ロジック
                     await checkEntry();
                     await checkExit();
-
 
                     // 表示を更新
                     if (UpdateViewDelegate != null)
@@ -816,21 +819,6 @@ namespace CryptoBoxer
                         Console.WriteLine("Long Exit Order ID = {0}", retObj.child_order_acceptance_id);
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
-                    else if (isConditionLongLosscut())
-                    {
-                        //Console.WriteLine("Try Long Losscut Order.");
-
-                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                        if (retObj == null)
-                        {
-                            Console.WriteLine("failed to Long Losscut Order.");
-                            result = -1;
-                            return result;
-                        }
-                        // 注文成功
-                        Console.WriteLine("Long Losscut Order ID = {0}", retObj.child_order_acceptance_id);
-                        m_position.exitOrder(retObj.child_order_acceptance_id);
-                    }
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
@@ -849,7 +837,68 @@ namespace CryptoBoxer
                         Console.WriteLine("Short Exit Order ID = {0}", retObj.child_order_acceptance_id);
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
-                    else if (isConditionShortLosscut())
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> tryLosscutOrder()
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isEntryCompleted())
+                {
+                    result = 1;
+                    return result;
+                }
+                // エントリーが完了している場合
+
+                if (!m_position.isExitNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // EXITが未だの場合
+
+
+                if (m_position.isLong())
+                {// LONGの場合
+
+                    if (isConditionLongLosscut())
+                    {
+                        //Console.WriteLine("Try Long Losscut Order.");
+
+                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                        if (retObj == null)
+                        {
+                            Console.WriteLine("failed to Long Losscut Order.");
+                            result = -1;
+                            return result;
+                        }
+                        // 注文成功
+                        Console.WriteLine("Long Losscut Order ID = {0}", retObj.child_order_acceptance_id);
+                        m_position.exitOrder(retObj.child_order_acceptance_id);
+                    }
+                }
+                else if (m_position.isShort())
+                {// SHORTの場合
+                    if (isConditionShortLosscut())
                     {
                         //Console.WriteLine("Try Short Losscut Order.");
 
