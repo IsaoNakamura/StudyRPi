@@ -20,6 +20,7 @@ namespace UtilityTrade
         public double ma { get; set; }
         public double boll_high { get; set; }
         public double boll_low { get; set; }
+        public double vola_ma { get; set; }
 
         public Candlestick()
         {
@@ -33,6 +34,7 @@ namespace UtilityTrade
             ma = 0.0;
             boll_high = 0.0;
             boll_low = 0.0;
+            vola_ma = 0.0;
             return;
         }
 
@@ -63,6 +65,20 @@ namespace UtilityTrade
                 return true;
             }
             return false;
+        }
+
+        public double getVolatility()
+        {
+            return (last - open);
+        }
+
+        public double getVolatilityRate()
+        {
+            if (vola_ma <= double.Epsilon)
+            {
+                
+            }
+            return ((getVolatility() / vola_ma) * 100.0);
         }
 
         public int getLastLevel()
@@ -794,6 +810,128 @@ namespace UtilityTrade
             return result;
         }
 
+        // ボラリティの移動平均を算出(最大～最小)
+        public int calcHighLowVolatility(out double ma, int sample_num)
+        {
+            int result = 0;
+            ma = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
 
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                double value_sum = 0.0;
+                double square_sum = 0.0;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    elem_cnt++;
+                    double elem_value = candle.high - candle.low;
+
+                    value_sum += elem_value;
+                    square_sum += (elem_value * elem_value);
+                }
+
+                if (elem_cnt > 0)
+                {
+                    ma = value_sum / elem_cnt;
+                }
+                else
+                {
+                    ma = 0.0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ma = 0.0;
+                }
+            }
+            return result;
+        }
+
+        // ボラリティの移動平均を算出(始値～終値)
+        public int calcVolatilityMA(out double ma, int sample_num)
+        {
+            int result = 0;
+            ma = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                double value_sum = 0.0;
+                double square_sum = 0.0;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    elem_cnt++;
+                    double elem_value = candle.getVolatility();
+
+                    value_sum += elem_value;
+                    square_sum += (elem_value * elem_value);
+                }
+
+                if (elem_cnt > 0)
+                {
+                    ma = value_sum / elem_cnt;
+                }
+                else
+                {
+                    ma = 0.0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ma = 0.0;
+                }
+            }
+            return result;
+        }
     }
 }

@@ -434,11 +434,7 @@ namespace CryptoChart
                 bool isLong = m_boxer.isConditionLongEntry(ref curLongBollLv, ref prevLongBollLv);
                 bool isShort = m_boxer.isConditionShortEntry(ref curShortBollLv, ref prevShortBollLv);
 
-                {
-                    int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "IS_ENTRY";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = pos.getPositionStateStr();
-                }
+
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PRE_LONG_LV";
@@ -458,6 +454,14 @@ namespace CryptoChart
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_SHORT_LV";
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curShortBollLv;
+                }
+
+                {
+                    double vola_rate = curCandle.getVolatilityRate();
+
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "VOLA";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", vola_rate);
                 }
 
             }

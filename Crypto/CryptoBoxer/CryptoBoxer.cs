@@ -403,6 +403,13 @@ namespace CryptoBoxer
                         m_min = candle.boll_low;
                     }
                 }
+
+                // ボラリティの移動平均を算出
+                double vola_ma = 0.0;
+                if (m_candleBuf.calcVolatilityMA(out vola_ma, m_config.boll_sample_num) == 0)
+                {
+                    candle.vola_ma = vola_ma;
+                }
             }
             catch (Exception ex)
             {
@@ -559,7 +566,7 @@ namespace CryptoBoxer
 
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},diff={3:0},trend={4},type={5},curL={6},preL={7},curS={8},preS={9}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},diff={3:0},trend={4},type={5},curL={6},preL={7},curS={8},preS={9},vola={10:0}"
                                               , curCandle.timestamp
                                               , curCandle.last
                                               , curCandle.ema
@@ -570,6 +577,7 @@ namespace CryptoBoxer
                                               , m_preLongBollLv
                                               , m_curShortBollLv
                                               , m_preShortBollLv
+                                              , curCandle.getVolatilityRate()
                             );
 
                             //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
