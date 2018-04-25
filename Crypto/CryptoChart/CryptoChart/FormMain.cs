@@ -35,6 +35,9 @@ namespace CryptoChart
         private Series m_series_max = null;
         private Series m_series_entry = null;
 
+        private ChartArea m_indicatorArea = null;
+        private Series m_series_vola = null;
+
         private Boxer m_boxer = null;
 
         public FormMain()
@@ -171,6 +174,43 @@ namespace CryptoChart
                 m_series_entry.Color = Color.GreenYellow;
                 m_series_entry.Name = "ENTRY";
 
+                // グラフ領域の設定
+                if (m_indicatorArea != null)
+                {
+                    m_indicatorArea.Dispose();
+                    m_indicatorArea = null;
+                }
+                m_indicatorArea = new ChartArea();
+
+                // 横軸（日付軸）の設定 
+                // DateTimeのままでは使えないので
+                //ToOADateメソッドでOLEオートメーション日付に変換
+                m_indicatorArea.AxisX.Title = "Number";
+                m_indicatorArea.AxisX.IntervalType = DateTimeIntervalType.Number;
+
+                // 縦軸（株価軸）の設定
+                m_indicatorArea.AxisY.Title = "%";
+                m_indicatorArea.AxisY.Minimum = 0.0;
+                m_indicatorArea.AxisY.Maximum = 100.0;
+
+                m_indicatorArea.BackColor = Color.LightGray;
+
+                // 既定のグラフ領域の設定をクリアした後、設定する
+                this.IndicatorChart.ChartAreas.Clear();
+                this.IndicatorChart.ChartAreas.Add(m_indicatorArea);
+
+
+                if (m_series_vola != null)
+                {
+                    m_series_vola.Dispose();
+                    m_series_vola = null;
+                }
+
+                m_series_vola = new Series();
+                m_series_vola.ChartType = SeriesChartType.Line;
+                m_series_vola.Color = Color.Purple;
+                m_series_vola.Name = "VOLA_RATE";
+
             }
             catch (Exception ex)
             {
@@ -190,6 +230,7 @@ namespace CryptoChart
                 updateCurrentInfoGrid();
                 updateChart();
                 updatePositionHistoryGrid();
+                updateIndicatorChart();
 
             }
             catch (Exception ex)
@@ -336,6 +377,91 @@ namespace CryptoChart
             return result;
         }
 
+        private int updateIndicatorChart()
+        {
+            int result = 0;
+            try
+            {
+                m_series_vola.Points.Clear();
+                this.IndicatorChart.Series.Clear();
+
+                if (m_boxer == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                CandleBuffer candleBuf = m_boxer.getCandleBuffer();
+                if (candleBuf == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+
+                if (!candleBuf.isFullBuffer())
+                {
+                    result = 1;
+                    return result;
+                }
+
+                int candle_cnt = 0;
+                double y_min = 0.0;
+                double y_max = 0.0;
+                foreach (Candlestick candle in candleBuf.getCandleList())
+                {
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    double vola_rate = Math.Floor(candle.getVolatilityRate());
+
+                    DataPoint dp_vola = new DataPoint(candle_cnt, vola_rate);
+                    m_series_vola.Points.Add(dp_vola);
+
+
+                    // 表示範囲を算出
+                    if (candle_cnt == 0)
+                    {
+                        y_max = vola_rate;
+                        y_min = 0.0;
+                    }
+                    else
+                    {
+                        if (y_max < vola_rate)
+                        {
+                            y_max = vola_rate;
+                        }
+
+                        if (y_min > vola_rate)
+                        {
+                            y_min = vola_rate;
+                        }
+                    }
+
+                    candle_cnt++;
+                }
+
+                m_indicatorArea.AxisY.Minimum = Math.Floor(y_min);
+                m_indicatorArea.AxisY.Maximum = Math.Floor(y_max);
+
+
+                this.IndicatorChart.Series.Add(m_series_vola);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+
         private int updateCurrentInfoGrid()
         {
             int result = 0;
@@ -455,15 +581,25 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_SHORT_LV";
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curShortBollLv;
                 }
+                {
+                    double vola = curCandle.getVolatility();
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "VOLA";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", vola);
+                }
+
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "VOLA_MA";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.vola_ma);
+                }
 
                 {
                     double vola_rate = curCandle.getVolatilityRate();
-
                     int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "VOLA";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", vola_rate);
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "VOLA_RATE";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}%", vola_rate);
                 }
-
             }
             catch (Exception ex)
             {

@@ -69,14 +69,14 @@ namespace UtilityTrade
 
         public double getVolatility()
         {
-            return (last - open);
+            return Math.Abs(last - open);
         }
 
         public double getVolatilityRate()
         {
             if (vola_ma <= double.Epsilon)
             {
-                
+                return 0.0;
             }
             return ((getVolatility() / vola_ma) * 100.0);
         }
@@ -300,22 +300,11 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getShortBollLevel()
+        public int getShortLevel()
         {
             int result = -1;
 
-            //if(isTouchBollLow())
-            //{//BOLL_LOWにタッチしている場合はSHORTすべきでない
-            //    result = -4;
-            //    return result;
-            //}
-
-            //if (!isTouchBollHigh())
-            //{//BOLL_HIGHにタッチしてない場合はSHORTすべきでない
-            //    result = -3;
-            //    return result;
-            //}
-            //// ここからはBOLL_HIGHにタッチしている
+            double vola_rate = getVolatilityRate();
 
             if (isTrend())
             {
@@ -328,15 +317,35 @@ namespace UtilityTrade
                 }
                 else if (up_type <= 2)
                 {
-                    // トレンド転換
-                    // 下降するかもSHORTできるかも
-                    result = 0;
+                    if (vola_rate >= 300.0)
+                    {
+                        // 大きいローソク
+                        // 上昇継続
+                        // SHORT危険
+                        result = -2;
+                    }
+                    else
+                    {
+                        // トレンド転換
+                        // 下降するかもSHORTできるかも
+                        result = 0;
+                    }
                 }
                 else
                 {
-                    // 上昇継続
-                    // SHORT危険
-                    result = -2;
+                    if (vola_rate <= 20.0)
+                    {
+                        // 小さいローソク
+                        // トレンド転換
+                        // 下降するかもSHORTできるかも
+                        result = 0;
+                    }
+                    else
+                    {
+                        // 上昇継続
+                        // SHORT危険
+                        result = -2;
+                    }
                 }
             }
             else
@@ -350,37 +359,46 @@ namespace UtilityTrade
                 }
                 else if (down_type <= 2)
                 {
-                    // トレンド転換
-                    // 上昇するかもSHORTは注意
-                    result = 1;
+                    if (vola_rate >= 300.0)
+                    {
+                        // 大きいローソク
+                        // 下降継続
+                        // SHORT推奨
+                        result = 2;
+                    }
+                    else
+                    {
+                        // トレンド転換
+                        // 上昇するかもSHORTは注意
+                        result = 1;
+                    }
                 }
                 else
                 {
-                    // 下降継続
-                    // SHORT推奨
-                    result = 2;
+                    if (vola_rate <= 20.0)
+                    {
+                        // 小さいローソク
+                        // トレンド転換
+                        // 上昇するかもSHORTは注意
+                        result = 1;
+                    }
+                    else
+                    {
+                        // 下降継続
+                        // SHORT推奨
+                        result = 2;
+                    }
                 }
             }
 
             return result;
         }
 
-        public int getLongBollLevel()
+        public int getLongLevel()
         {
             int result = -1;
 
-            //if (isTouchBollHigh())
-            //{//BOLL_HIGHにタッチしている場合はLONGすべきでない
-            //    result = -4;
-            //    return result;
-            //}
-
-            //if (!isTouchBollLow())
-            //{//BOLL_LOWにタッチしてない場合はLONGすべきでない
-            //    result = -3;
-            //    return result;
-            //}
-            //// ここからはBOLL_LOWにタッチしている
+            double vola_rate = getVolatilityRate();
 
             if (!isTrend())
             {
@@ -393,15 +411,35 @@ namespace UtilityTrade
                 }
                 else if (down_type <= 2)
                 {
-                    // トレンド転換
-                    // 上昇するかもLONGできるかも
-                    result = 0;
+                    if (vola_rate >= 300.0)
+                    {
+                        // 大きいローソク
+                        // 下降継続
+                        // LONG注意
+                        result = -2;
+                    }
+                    else
+                    {
+                        // トレンド転換
+                        // 上昇するかもLONGできるかも
+                        result = 0;
+                    }
                 }
                 else
                 {
-                    // 下降継続
-                    // LONG注意
-                    result = -2;
+                    if (vola_rate <= 20.0)
+                    {
+                        // 小さいローソク
+                        // トレンド転換
+                        // 上昇するかもLONGできるかも
+                        result = 0;
+                    }
+                    else
+                    {
+                        // 下降継続
+                        // LONG注意
+                        result = -2;
+                    }
                 }
             }
             else
@@ -415,20 +453,78 @@ namespace UtilityTrade
                 }
                 else if (up_type <= 2)
                 {
-                    // トレンド転換
-                    // 下降するかもLONG注意
-                    result = 1;
+                    if (vola_rate >= 300.0)
+                    {
+                        // 大きいローソク
+                        // 上昇継続
+                        // LONG推奨
+                        result = 2;
+                    }
+                    else
+                    {
+                        // トレンド転換
+                        // 下降するかもLONG注意
+                        result = 1;
+                    }
                 }
                 else
                 {
-                    // 上昇継続
-                    // LONG推奨
-                    result = 2;
+                    if (vola_rate <= 20.0)
+                    {
+                        // 小さいローソク
+                        // トレンド転換
+                        // 下降するかもLONG注意
+                        result = 1;
+                    }
+                    else
+                    {
+                        // 上昇継続
+                        // LONG推奨
+                        result = 2;
+                    }
                 }
             }
 
             return result;
         }
+
+        //public int getShortBollLevel()
+        //{
+        //    int result = -1;
+
+        //    int short_level = getShortLevel();
+
+
+        //    if (isTrend())
+        //    {
+        //        //上昇キャンドルの場合
+        //    }
+        //    else
+        //    {
+        //        //下降トレンドの場合
+        //    }
+
+        //    return result;
+        //}
+
+        //public int getLongBollLevel()
+        //{
+        //    int result = -1;
+
+        //    int long_level = getLongLevel();
+
+
+        //    if (isTrend())
+        //    {
+        //        //上昇キャンドルの場合
+        //    }
+        //    else
+        //    {
+        //        //下降トレンドの場合
+        //    }
+
+        //    return result;
+        //}
 
         public bool isTouchBollHigh()
         {
@@ -494,6 +590,17 @@ namespace UtilityTrade
             return false;
         }
 
+        // キャンドル始値がボリンジャー高バンド以上か判断
+        public bool isOverBBOpen()
+        {
+            if (boll_high <= open)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
         // キャンドル終値がボリンジャー高バンド以上か判断
         public bool isOverBBLast()
         {
@@ -504,10 +611,30 @@ namespace UtilityTrade
             return false;
         }
 
-        // キャンドル上値がボリンジャー高バンド以上か判断
+        // キャンドル高値がボリンジャー高バンド以上か判断
         public bool isOverBBHigh()
         {
             if (boll_high <= high)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル低値がボリンジャー高バンド以上か判断
+        public bool isOverBBLow()
+        {
+            if (boll_high <= low)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル始値がボリンジャー低バンド以下か判断
+        public bool isUnderBBOpen()
+        {
+            if (boll_low >= open)
             {
                 return true;
             }
@@ -524,8 +651,18 @@ namespace UtilityTrade
             return false;
         }
 
-        // キャンドル上値がボリンジャー高バンド以上か判断
+        // キャンドル低値がボリンジャー低バンド以上か判断
         public bool isUnderBBLow()
+        {
+            if (boll_low <= low)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // キャンドル高値がボリンジャー低バンド以上か判断
+        public bool isUnderBBHigh()
         {
             if (boll_low <= low)
             {

@@ -566,11 +566,12 @@ namespace CryptoBoxer
 
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},diff={3:0},trend={4},type={5},curL={6},preL={7},curS={8},preS={9},vola={10:0}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},vola={11:0}"
                                               , curCandle.timestamp
                                               , curCandle.last
-                                              , curCandle.ema
                                               , curCandle.last - curCandle.ema
+                                              , curCandle.boll_high - curCandle.last
+                                              , curCandle.last - curCandle.boll_low
                                               , candleTrend
                                               , candleType
                                               , m_curLongBollLv
@@ -639,15 +640,15 @@ namespace CryptoBoxer
                     }
 
                     // ENTRY/ENTRYロジック
-                    await tryEntryOrder();
-                    await tryExitOrder();
+                    //await tryEntryOrder();
+                    //await tryExitOrder();
 
                     // Losscutロジック
-                    await tryLosscutOrder();
+                    //await tryLosscutOrder();
 
                     // 注文状況確認ロジック
-                    await checkEntry();
-                    await checkExit();
+                    //await checkEntry();
+                    //await checkExit();
 
                     // 表示を更新
                     if (UpdateViewDelegate != null)
@@ -1292,8 +1293,8 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                curShortBollLv = curCandle.getShortBollLevel();
-                prevShortBollLv = prevCandle.getShortBollLevel();
+                curShortBollLv = curCandle.getShortLevel();
+                prevShortBollLv = prevCandle.getShortLevel();
 
                 double ema_diff = curCandle.last - curCandle.ema;
                 if (ema_diff < m_config.ema_diff_far)
@@ -1332,17 +1333,48 @@ namespace CryptoBoxer
                 }
                 else
                 {
-                    //前回のSHORTレベルが0以上
+                    if (prevShortBollLv <= 0)
+                    {
+                        //前回のSHORTレベルが0以下
+                        if (prevCandle.isTrend())
+                        {
+                            // 前回が上昇キャンドルの場合
+                            if (prevCandle.isOverBBOpen())
+                            {
+                                // キャンドル始値がボリンジャー高バンド以上にある
+                                // まだ上昇の可能性がある
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else
+                        {
+                            // 前回が下降キャンドルの場合
+                            if (prevCandle.isOverBBLast())
+                            {
+                                // キャンドル終値がボリンジャー高バンド以上にある
+                                // まだ上昇の可能性がある
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                    }
+
+                    //前回のSHORTレベルが0より大きい
 
                     if (curShortBollLv <= 0)
-                    {// 現在のSHORTレベルが0以下
-                     // 何もしない
+                    {
+                        // 現在のSHORTレベルが0以下
+                        // 何もしない
                         result = false;
                         return result;
                     }
                     else
-                    {// 現在のSHORTレベルが0より高い
-                     // ENTRY
+                    {
+                        // 現在のSHORTレベルが0より高い
+                        // ENTRY
                         result = true;
                         return result;
                     }
@@ -1398,8 +1430,8 @@ namespace CryptoBoxer
                     return result;
                 }               
 
-                curLongBollLv = curCandle.getLongBollLevel();
-                prevLongBollLv = prevCandle.getLongBollLevel();
+                curLongBollLv = curCandle.getLongLevel();
+                prevLongBollLv = prevCandle.getLongLevel();
 
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff < m_config.ema_diff_far)
@@ -1439,7 +1471,32 @@ namespace CryptoBoxer
                 }
                 else
                 {
-                    //前回のLONGレベルが0以上
+                    if (prevLongBollLv <= 0)
+                    {
+                        //前回のLONGレベルが0以下
+                        if (prevCandle.isTrend())
+                        {
+                            // 前回が上昇キャンドルの場合
+                            if (prevCandle.isUnderBBLast())
+                            {
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else
+                        {
+                            // 前回が下降キャンドルの場合
+                            if (prevCandle.isUnderBBOpen())
+                            {
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                    }
+
+                    //前回のLONGレベルが0より大きい
 
                     if (curLongBollLv <= 0)
                     {

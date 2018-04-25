@@ -28,14 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.CurrentInfoGrid = new System.Windows.Forms.DataGridView();
             this.AttributeType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AttributeValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.StopBoxerButton = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.PositionHistoryGrid = new System.Windows.Forms.DataGridView();
@@ -44,7 +48,7 @@
             this.ProfitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.EntryLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ExitLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.StopBoxerButton = new System.Windows.Forms.Button();
+            this.IndicatorChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -54,6 +58,7 @@
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PositionHistoryGrid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IndicatorChart)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -69,7 +74,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tableLayoutPanel1);
-            this.splitContainer1.Size = new System.Drawing.Size(847, 486);
+            this.splitContainer1.Size = new System.Drawing.Size(847, 764);
             this.splitContainer1.SplitterDistance = 206;
             this.splitContainer1.TabIndex = 0;
             // 
@@ -85,7 +90,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 74.89712F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.10288F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(206, 486);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(206, 764);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // CurrentInfoGrid
@@ -106,7 +111,7 @@
             this.CurrentInfoGrid.ReadOnly = true;
             this.CurrentInfoGrid.RowTemplate.Height = 21;
             this.CurrentInfoGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.CurrentInfoGrid.Size = new System.Drawing.Size(200, 357);
+            this.CurrentInfoGrid.Size = new System.Drawing.Size(200, 566);
             this.CurrentInfoGrid.TabIndex = 0;
             this.CurrentInfoGrid.TabStop = false;
             // 
@@ -124,36 +129,48 @@
             this.AttributeValue.ReadOnly = true;
             this.AttributeValue.Width = 42;
             // 
+            // StopBoxerButton
+            // 
+            this.StopBoxerButton.Location = new System.Drawing.Point(3, 575);
+            this.StopBoxerButton.Name = "StopBoxerButton";
+            this.StopBoxerButton.Size = new System.Drawing.Size(75, 23);
+            this.StopBoxerButton.TabIndex = 1;
+            this.StopBoxerButton.Text = "stop";
+            this.StopBoxerButton.UseVisualStyleBackColor = true;
+            this.StopBoxerButton.Click += new System.EventHandler(this.StopBoxerButton_Click);
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.chart1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.PositionHistoryGrid, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.PositionHistoryGrid, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.IndicatorChart, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 74.4856F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.5144F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(637, 486);
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(637, 764);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // chart1
             // 
             this.chart1.BackColor = System.Drawing.Color.LightGray;
-            chartArea3.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea3);
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
-            legend3.Name = "Legend1";
-            this.chart1.Legends.Add(legend3);
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(3, 3);
             this.chart1.Name = "chart1";
-            series3.ChartArea = "ChartArea1";
-            series3.Legend = "Legend1";
-            series3.Name = "Series1";
-            this.chart1.Series.Add(series3);
-            this.chart1.Size = new System.Drawing.Size(631, 356);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
+            this.chart1.Size = new System.Drawing.Size(631, 301);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 
@@ -172,13 +189,13 @@
             this.EntryLabel,
             this.ExitLabel});
             this.PositionHistoryGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PositionHistoryGrid.Location = new System.Drawing.Point(3, 365);
+            this.PositionHistoryGrid.Location = new System.Drawing.Point(3, 617);
             this.PositionHistoryGrid.MultiSelect = false;
             this.PositionHistoryGrid.Name = "PositionHistoryGrid";
             this.PositionHistoryGrid.ReadOnly = true;
             this.PositionHistoryGrid.RowTemplate.Height = 21;
             this.PositionHistoryGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.PositionHistoryGrid.Size = new System.Drawing.Size(631, 118);
+            this.PositionHistoryGrid.Size = new System.Drawing.Size(631, 144);
             this.PositionHistoryGrid.TabIndex = 1;
             this.PositionHistoryGrid.TabStop = false;
             // 
@@ -217,21 +234,28 @@
             this.ExitLabel.ReadOnly = true;
             this.ExitLabel.Width = 54;
             // 
-            // StopBoxerButton
+            // IndicatorChart
             // 
-            this.StopBoxerButton.Location = new System.Drawing.Point(3, 366);
-            this.StopBoxerButton.Name = "StopBoxerButton";
-            this.StopBoxerButton.Size = new System.Drawing.Size(75, 23);
-            this.StopBoxerButton.TabIndex = 1;
-            this.StopBoxerButton.Text = "stop";
-            this.StopBoxerButton.UseVisualStyleBackColor = true;
-            this.StopBoxerButton.Click += new System.EventHandler(this.StopBoxerButton_Click);
+            chartArea2.Name = "ChartArea1";
+            this.IndicatorChart.ChartAreas.Add(chartArea2);
+            this.IndicatorChart.Dock = System.Windows.Forms.DockStyle.Fill;
+            legend2.Name = "Legend1";
+            this.IndicatorChart.Legends.Add(legend2);
+            this.IndicatorChart.Location = new System.Drawing.Point(3, 310);
+            this.IndicatorChart.Name = "IndicatorChart";
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.IndicatorChart.Series.Add(series2);
+            this.IndicatorChart.Size = new System.Drawing.Size(631, 301);
+            this.IndicatorChart.TabIndex = 2;
+            this.IndicatorChart.Text = "chart2";
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(847, 486);
+            this.ClientSize = new System.Drawing.Size(847, 764);
             this.Controls.Add(this.splitContainer1);
             this.Name = "FormMain";
             this.Text = "Form1";
@@ -245,6 +269,7 @@
             this.tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PositionHistoryGrid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IndicatorChart)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -265,6 +290,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ExitLabel;
         private System.Windows.Forms.DataGridViewTextBoxColumn ProfitLabel;
         private System.Windows.Forms.Button StopBoxerButton;
+        private System.Windows.Forms.DataVisualization.Charting.Chart IndicatorChart;
     }
 }
 
