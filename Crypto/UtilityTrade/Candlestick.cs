@@ -21,6 +21,7 @@ namespace UtilityTrade
         public double boll_high { get; set; }
         public double boll_low { get; set; }
         public double vola_ma { get; set; }
+        public double ema_angle { get; set; }
 
         public Candlestick()
         {
@@ -35,6 +36,7 @@ namespace UtilityTrade
             boll_high = 0.0;
             boll_low = 0.0;
             vola_ma = 0.0;
+            ema_angle = 0.0;
             return;
         }
 
@@ -1055,6 +1057,84 @@ namespace UtilityTrade
                 {
                     ma = 0.0;
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ma = 0.0;
+                }
+            }
+            return result;
+        }
+
+        public int calcEmaAngleMA(out double ma, int sample_num)
+        {
+            int result = 0;
+            ma = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+
+                double value_sum = 0.0;
+                double square_sum = 0.0;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick end_candle = m_candleList[i];
+                    if (end_candle == null)
+                    {
+                        continue;
+                    }
+
+                    elem_cnt++;
+                    double elem_value = 0.0;
+
+                    if ((i - 5) >= 0)
+                    {
+                        Candlestick beg_candle = m_candleList[i-5];
+                        if (beg_candle == null)
+                        {
+                            result = -1;
+                            return result;
+                        }
+                        double ema_diff = (end_candle.ema - beg_candle.ema) / 5000.0 * 100.0;
+                        double tan = ema_diff / sample_num;
+                        double angle = Math.Atan(tan) * (180 / Math.PI);
+
+                        elem_value = angle;
+                    }
+                    value_sum += elem_value;
+                    square_sum += (elem_value * elem_value);
+                }
+
+                if (elem_cnt > 0)
+                {
+                    ma = value_sum / elem_cnt;
+                }
+                else
+                {
+                    ma = 0.0;
+                }
+                
             }
             catch (Exception ex)
             {

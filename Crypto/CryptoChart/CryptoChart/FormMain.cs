@@ -36,7 +36,7 @@ namespace CryptoChart
         private Series m_series_entry = null;
 
         private ChartArea m_indicatorArea = null;
-        private Series m_series_vola = null;
+        private Series m_series_indi = null;
 
         private Boxer m_boxer = null;
 
@@ -189,7 +189,7 @@ namespace CryptoChart
                 m_indicatorArea.AxisX.IntervalType = DateTimeIntervalType.Number;
 
                 // 縦軸（株価軸）の設定
-                m_indicatorArea.AxisY.Title = "%";
+                m_indicatorArea.AxisY.Title = "Value";
                 m_indicatorArea.AxisY.Minimum = 0.0;
                 m_indicatorArea.AxisY.Maximum = 100.0;
 
@@ -200,16 +200,16 @@ namespace CryptoChart
                 this.IndicatorChart.ChartAreas.Add(m_indicatorArea);
 
 
-                if (m_series_vola != null)
+                if (m_series_indi != null)
                 {
-                    m_series_vola.Dispose();
-                    m_series_vola = null;
+                    m_series_indi.Dispose();
+                    m_series_indi = null;
                 }
 
-                m_series_vola = new Series();
-                m_series_vola.ChartType = SeriesChartType.Line;
-                m_series_vola.Color = Color.Purple;
-                m_series_vola.Name = "VOLA_RATE";
+                m_series_indi = new Series();
+                m_series_indi.ChartType = SeriesChartType.Line;
+                m_series_indi.Color = Color.Purple;
+                m_series_indi.Name = "Indicator";
 
             }
             catch (Exception ex)
@@ -382,7 +382,7 @@ namespace CryptoChart
             int result = 0;
             try
             {
-                m_series_vola.Points.Clear();
+                m_series_indi.Points.Clear();
                 this.IndicatorChart.Series.Clear();
 
                 if (m_boxer == null)
@@ -415,28 +415,28 @@ namespace CryptoChart
                         continue;
                     }
 
-                    double vola_rate = Math.Floor(candle.getVolatilityRate());
+                    double value = Math.Floor(candle.ema_angle);
 
-                    DataPoint dp_vola = new DataPoint(candle_cnt, vola_rate);
-                    m_series_vola.Points.Add(dp_vola);
+                    DataPoint dp = new DataPoint(candle_cnt, value);
+                    m_series_indi.Points.Add(dp);
 
 
                     // 表示範囲を算出
                     if (candle_cnt == 0)
                     {
-                        y_max = vola_rate;
+                        y_max = value;
                         y_min = 0.0;
                     }
                     else
                     {
-                        if (y_max < vola_rate)
+                        if (y_max < value)
                         {
-                            y_max = vola_rate;
+                            y_max = value;
                         }
 
-                        if (y_min > vola_rate)
+                        if (y_min > value)
                         {
-                            y_min = vola_rate;
+                            y_min = value;
                         }
                     }
 
@@ -447,7 +447,7 @@ namespace CryptoChart
                 m_indicatorArea.AxisY.Maximum = Math.Floor(y_max);
 
 
-                this.IndicatorChart.Series.Add(m_series_vola);
+                this.IndicatorChart.Series.Add(m_series_indi);
 
             }
             catch (Exception ex)
@@ -552,6 +552,14 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA_DIFF";
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", curCandle.last - curCandle.ema);
                 }
+
+                {
+                    // EMAの角度
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "EMA_ANGLE";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0.0}", curCandle.ema_angle);
+                }
+
 
                 int curLongBollLv = 0;
                 int prevLongBollLv = 0;

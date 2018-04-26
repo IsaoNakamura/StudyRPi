@@ -410,6 +410,12 @@ namespace CryptoBoxer
                 {
                     candle.vola_ma = vola_ma;
                 }
+
+                double angle_ma = 0.0;
+                if (m_candleBuf.calcEmaAngleMA(out angle_ma, m_config.boll_sample_num) == 0)
+                {
+                    candle.ema_angle = angle_ma;
+                }
             }
             catch (Exception ex)
             {

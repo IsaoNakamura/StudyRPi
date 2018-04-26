@@ -1,6 +1,6 @@
 {
   "amount": 0.005,
-  "periods": 300,
+  "periods": 60,
   "product_bitflyer": "FX_BTC_JPY",
   "product_cryptowatch": "btcfxjpy",
   "ema_sample_num": 20,
