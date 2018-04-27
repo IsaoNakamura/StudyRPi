@@ -397,6 +397,14 @@ namespace CryptoChart
 
                     double elem_max = candle.boll_high;
                     double elem_min = candle.boll_low;
+                    if (candle.high > candle.boll_high)
+                    {
+                        elem_max = candle.high;
+                    }
+                    if (candle.low < candle.boll_low)
+                    {
+                        elem_min = candle.low;
+                    }
                     //if (candle.boll_high_top > candle.boll_high)
                     //{
                     //    elem_max = candle.boll_high_top;
@@ -658,34 +666,76 @@ namespace CryptoChart
                     this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0.0}", curCandle.ema_angle);
                 }
 
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_BB";
 
-                int curLongBollLv = 0;
-                int prevLongBollLv = 0;
-                int curShortBollLv = 0;
-                int prevShortBollLv = 0;
-                bool isLong = m_boxer.isConditionLongEntry(ref curLongBollLv, ref prevLongBollLv);
-                bool isShort = m_boxer.isConditionShortEntry(ref curShortBollLv, ref prevShortBollLv);
+                    if (curCandle == null)
+                    {
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
+                    }
+                    else
+                    {
+                        if (curCandle.isTouchBollHighLow())
+                        {
+                            this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "TOUCH";
+                        }
+                        else
+                        {
+                            this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
+                        }
+                    }
+                }
+
+                {
+                    int idx = this.CurrentInfoGrid.Rows.Add();
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PREV_BB";
+
+                    int curIndex = candleBuf.getCandleCount() - 1;
+
+                    Candlestick prevCandle = candleBuf.getCandle(curIndex - 1);
+                    Candlestick pastCandle = candleBuf.getCandle(curIndex - 2);
+                    if (prevCandle == null && pastCandle == null)
+                    {
+                        this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
+                    }
+                    else
+                    {
+                        if (prevCandle.isTouchBollHighLow())
+                        {
+                            this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "PREV_TOUCH";
+                        }
+                        else if (pastCandle.isTouchBollHighLow())
+                        {
+                            this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "PAST_TOUCH";
+                        }
+                        else
+                        {
+                            this.CurrentInfoGrid.Rows[idx].Cells[1].Value = "NONE";
+                        }
+                    }
+                }
 
 
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PRE_LONG_LV";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = prevLongBollLv;
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = m_boxer.m_preLongBollLv;
                 }
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_LONG_LV";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curLongBollLv;
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = m_boxer.m_curLongBollLv;
                 }
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PRE_SHORT_LV";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = prevShortBollLv;
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = m_boxer.m_preShortBollLv;
                 }
                 {
                     int idx = this.CurrentInfoGrid.Rows.Add();
                     this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "CUR_SHORT_LV";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = curShortBollLv;
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = m_boxer.m_curShortBollLv;
                 }
                 {
                     double vola = curCandle.getVolatility();
