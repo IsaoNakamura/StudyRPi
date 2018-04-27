@@ -35,6 +35,10 @@ namespace CryptoChart
         private Series m_series_max = null;
         private Series m_series_entry = null;
 
+        private Series m_series_bollHigh_top = null;
+        private Series m_series_bollLow_top = null;
+
+
         private ChartArea m_indicatorArea = null;
         private Series m_series_indi = null;
 
@@ -73,7 +77,7 @@ namespace CryptoChart
                     m_area.Dispose();
                     m_area = null;
                 }
-                m_area = new ChartArea();
+                m_area = new ChartArea("MainChart");
 
                 // 横軸（日付軸）の設定 
                 // DateTimeのままでは使えないので
@@ -88,11 +92,36 @@ namespace CryptoChart
                 m_area.AxisY.Minimum = 718000;
                 m_area.AxisY.Maximum = 726000;
 
+                m_area.AxisY.Interval = 4000;
+
                 m_area.BackColor = Color.LightGray;
+
+                // グラフ領域の設定
+                if (m_indicatorArea != null)
+                {
+                    m_indicatorArea.Dispose();
+                    m_indicatorArea = null;
+                }
+                m_indicatorArea = new ChartArea("IndicatorChart");
+
+                // 横軸（日付軸）の設定 
+                // DateTimeのままでは使えないので
+                //ToOADateメソッドでOLEオートメーション日付に変換
+                m_indicatorArea.AxisX.Title = "Number";
+                m_indicatorArea.AxisX.IntervalType = DateTimeIntervalType.Number;
+
+                // 縦軸（株価軸）の設定
+                m_indicatorArea.AxisY.Title = "Value";
+                m_indicatorArea.AxisY.Minimum = 0.0;
+                m_indicatorArea.AxisY.Maximum = 100.0;
+
+                m_indicatorArea.BackColor = Color.LightGray;
+
 
                 // 既定のグラフ領域の設定をクリアした後、設定する
                 this.chart1.ChartAreas.Clear();
                 this.chart1.ChartAreas.Add(m_area);
+                this.chart1.ChartAreas.Add(m_indicatorArea);
 
                 // データ系列を作成する
                 if (m_series_ltp != null)
@@ -122,7 +151,6 @@ namespace CryptoChart
                     m_series_bollHigh.Dispose();
                     m_series_bollHigh = null;
                 }
-
                 m_series_bollHigh = new Series();
                 m_series_bollHigh.ChartType = SeriesChartType.Line;
                 m_series_bollHigh.Color = Color.CornflowerBlue;
@@ -134,11 +162,31 @@ namespace CryptoChart
                     m_series_bollLow.Dispose();
                     m_series_bollLow = null;
                 }
-
                 m_series_bollLow = new Series();
                 m_series_bollLow.ChartType = SeriesChartType.Line;
                 m_series_bollLow.Color = Color.MediumVioletRed;
                 m_series_bollLow.Name = "BOLL_LOW";
+
+                if (m_series_bollHigh_top != null)
+                {
+                    m_series_bollHigh_top.Dispose();
+                    m_series_bollHigh_top = null;
+                }
+                m_series_bollHigh_top = new Series();
+                m_series_bollHigh_top.ChartType = SeriesChartType.Line;
+                m_series_bollHigh_top.Color = Color.DarkBlue;
+                m_series_bollHigh_top.Name = "BOLL_HIGH_TOP";
+
+
+                if (m_series_bollLow_top != null)
+                {
+                    m_series_bollLow_top.Dispose();
+                    m_series_bollLow_top = null;
+                }
+                m_series_bollLow_top = new Series();
+                m_series_bollLow_top.ChartType = SeriesChartType.Line;
+                m_series_bollLow_top.Color = Color.DarkRed;
+                m_series_bollLow_top.Name = "BOLL_LOW_TOP";
 
                 if (m_series_min != null)
                 {
@@ -174,30 +222,6 @@ namespace CryptoChart
                 m_series_entry.Color = Color.GreenYellow;
                 m_series_entry.Name = "ENTRY";
 
-                // グラフ領域の設定
-                if (m_indicatorArea != null)
-                {
-                    m_indicatorArea.Dispose();
-                    m_indicatorArea = null;
-                }
-                m_indicatorArea = new ChartArea();
-
-                // 横軸（日付軸）の設定 
-                // DateTimeのままでは使えないので
-                //ToOADateメソッドでOLEオートメーション日付に変換
-                m_indicatorArea.AxisX.Title = "Number";
-                m_indicatorArea.AxisX.IntervalType = DateTimeIntervalType.Number;
-
-                // 縦軸（株価軸）の設定
-                m_indicatorArea.AxisY.Title = "Value";
-                m_indicatorArea.AxisY.Minimum = 0.0;
-                m_indicatorArea.AxisY.Maximum = 100.0;
-
-                m_indicatorArea.BackColor = Color.LightGray;
-
-                // 既定のグラフ領域の設定をクリアした後、設定する
-                this.IndicatorChart.ChartAreas.Clear();
-                this.IndicatorChart.ChartAreas.Add(m_indicatorArea);
 
 
                 if (m_series_indi != null)
@@ -230,7 +254,6 @@ namespace CryptoChart
                 updateCurrentInfoGrid();
                 updateChart();
                 updatePositionHistoryGrid();
-                updateIndicatorChart();
 
             }
             catch (Exception ex)
@@ -249,14 +272,38 @@ namespace CryptoChart
             int result = 0;
             try
             {
+
+                this.chart1.Series.Clear();
+
+                updateCandleChart();
+                updateIndicatorChart();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+
+        private int updateCandleChart()
+        {
+            int result = 0;
+            try
+            {
                 m_series_ltp.Points.Clear();
                 m_series_ema.Points.Clear();
                 m_series_bollHigh.Points.Clear();
                 m_series_bollLow.Points.Clear();
+                m_series_bollHigh_top.Points.Clear();
+                m_series_bollLow_top.Points.Clear();
                 m_series_min.Points.Clear();
                 m_series_max.Points.Clear();
                 m_series_entry.Points.Clear();
-                this.chart1.Series.Clear();
 
                 if (m_boxer == null)
                 {
@@ -281,11 +328,27 @@ namespace CryptoChart
                     return result;
                 }
 
+                int candle_full_cnt = candleBuf.getCandleCount();
+                if (candle_full_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_full_cnt >= 100)
+                {
+                    beg_idx = candle_full_cnt - 100;
+                }
+
+
                 int candle_cnt = 0;
                 double y_min = 0.0;
                 double y_max = 0.0;
-                foreach (Candlestick candle in candleBuf.getCandleList())
+                //foreach (Candlestick candle in candleBuf.getCandleList())
+                for(int i=beg_idx; i< candle_full_cnt; i++)
                 {
+                    Candlestick candle = candleBuf.getCandle(i);
                     if (candle == null)
                     {
                         continue;
@@ -294,68 +357,88 @@ namespace CryptoChart
                     // High Low Open Closeの順番で配列を作成
                     double[] values = new double[4]
                     {
-                            candle.high,
-                            candle.low,
-                            candle.open,
-                            candle.last
+                            Math.Round(candle.high,0),
+                            Math.Round(candle.low,0),
+                            Math.Round(candle.open,0),
+                            Math.Round(candle.last,0)
                     };
 
                     // 日付、四本値の配列からDataPointのインスタンスを作成
                     DataPoint dp = new DataPoint(candle_cnt, values);
                     m_series_ltp.Points.Add(dp);
 
-                    DataPoint dp_ema = new DataPoint(candle_cnt, candle.ema);
+                    DataPoint dp_ema = new DataPoint(candle_cnt, Math.Round(candle.ema,0));
                     m_series_ema.Points.Add(dp_ema);
 
-                    DataPoint dp_bollHigh = new DataPoint(candle_cnt, candle.boll_high);
+                    DataPoint dp_bollHigh = new DataPoint(candle_cnt, Math.Round(candle.boll_high,0));
                     m_series_bollHigh.Points.Add(dp_bollHigh);
 
-                    DataPoint dp_bollLow = new DataPoint(candle_cnt, candle.boll_low);
+                    DataPoint dp_bollLow = new DataPoint(candle_cnt, Math.Round(candle.boll_low,0));
                     m_series_bollLow.Points.Add(dp_bollLow);
 
-                    DataPoint dp_min = new DataPoint(candle_cnt, indicator_min);
+                    DataPoint dp_bollHigh_top = new DataPoint(candle_cnt, Math.Round(candle.boll_high_top,0));
+                    m_series_bollHigh_top.Points.Add(dp_bollHigh_top);
+
+                    DataPoint dp_bollLow_top = new DataPoint(candle_cnt, Math.Round(candle.boll_low_top,0));
+                    m_series_bollLow_top.Points.Add(dp_bollLow_top);
+
+                    DataPoint dp_min = new DataPoint(candle_cnt, Math.Round(indicator_min,0));
                     m_series_min.Points.Add(dp_min);
 
-                    DataPoint dp_max = new DataPoint(candle_cnt, indicator_max);
+                    DataPoint dp_max = new DataPoint(candle_cnt, Math.Round(indicator_max,0));
                     m_series_max.Points.Add(dp_max);
 
                     if (entry_price > double.Epsilon)
                     {
 
-                        DataPoint dp_entry = new DataPoint(candle_cnt, entry_price);
+                        DataPoint dp_entry = new DataPoint(candle_cnt, Math.Round(entry_price,0));
                         m_series_entry.Points.Add(dp_entry);
                     }
+
+                    double elem_max = candle.boll_high;
+                    double elem_min = candle.boll_low;
+                    if (candle.boll_high_top > candle.boll_high)
+                    {
+                        elem_max = candle.boll_high_top;
+                    }
+                    if (candle.boll_low_top < candle.boll_low)
+                    {
+                        elem_min = candle.boll_low_top;
+                    }
+
 
                     // 表示範囲を算出
                     if (candle_cnt == 0)
                     {
-                        y_max = candle.high;
-                        y_min = candle.low;
+                        y_max = elem_max;
+                        y_min = elem_min;
                     }
                     else
                     {
-                        if (y_max < candle.high)
+                        if (y_max < elem_max)
                         {
-                            y_max = candle.high;
+                            y_max = elem_max;
                         }
 
-                        if (y_min > candle.low)
+                        if (y_min > elem_min)
                         {
-                            y_min = candle.low;
+                            y_min = elem_min;
                         }
                     }
 
                     candle_cnt++;
                 }
 
-                m_area.AxisY.Minimum = y_min - 100;
-                m_area.AxisY.Maximum = y_max + 100;
+                m_area.AxisY.Minimum = Math.Round(Math.Floor  ( (y_min - 1000 ) / 1000) * 1000);
+                m_area.AxisY.Maximum = Math.Round(Math.Ceiling( (y_max + 1000 ) / 1000) * 1000);
 
-                
+
                 this.chart1.Series.Add(m_series_ltp);
                 this.chart1.Series.Add(m_series_ema);
                 this.chart1.Series.Add(m_series_bollHigh);
                 this.chart1.Series.Add(m_series_bollLow);
+                this.chart1.Series.Add(m_series_bollHigh_top);
+                this.chart1.Series.Add(m_series_bollLow_top);
                 this.chart1.Series.Add(m_series_min);
                 this.chart1.Series.Add(m_series_max);
                 if (entry_price > double.Epsilon)
@@ -383,7 +466,6 @@ namespace CryptoChart
             try
             {
                 m_series_indi.Points.Clear();
-                this.IndicatorChart.Series.Clear();
 
                 if (m_boxer == null)
                 {
@@ -398,18 +480,32 @@ namespace CryptoChart
                     return result;
                 }
 
-
                 if (!candleBuf.isFullBuffer())
                 {
                     result = 1;
                     return result;
                 }
 
+                int candle_full_cnt = candleBuf.getCandleCount();
+                if (candle_full_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_full_cnt >= 100)
+                {
+                    beg_idx = candle_full_cnt - 100;
+                }
+
                 int candle_cnt = 0;
                 double y_min = 0.0;
                 double y_max = 0.0;
-                foreach (Candlestick candle in candleBuf.getCandleList())
+                //foreach (Candlestick candle in candleBuf.getCandleList())
+                for (int i = beg_idx; i < candle_full_cnt; i++)
                 {
+                    Candlestick candle = candleBuf.getCandle(i);
                     if (candle == null)
                     {
                         continue;
@@ -417,8 +513,8 @@ namespace CryptoChart
 
                     double value = Math.Floor(candle.ema_angle);
 
-                    DataPoint dp = new DataPoint(candle_cnt, value);
-                    m_series_indi.Points.Add(dp);
+                    DataPoint dp_angle = new DataPoint(candle_cnt, value);
+                    m_series_indi.Points.Add(dp_angle);
 
 
                     // 表示範囲を算出
@@ -443,11 +539,13 @@ namespace CryptoChart
                     candle_cnt++;
                 }
 
+                m_series_indi.ChartArea = "IndicatorChart";
+
                 m_indicatorArea.AxisY.Minimum = Math.Floor(y_min);
                 m_indicatorArea.AxisY.Maximum = Math.Floor(y_max);
 
 
-                this.IndicatorChart.Series.Add(m_series_indi);
+                this.chart1.Series.Add(m_series_indi);
 
             }
             catch (Exception ex)

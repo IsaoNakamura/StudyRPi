@@ -23,6 +23,9 @@ namespace UtilityTrade
         public double vola_ma { get; set; }
         public double ema_angle { get; set; }
 
+        public double boll_high_top { get; set; }
+        public double boll_low_top { get; set; }
+
         public Candlestick()
         {
             high = 0.0;
@@ -35,6 +38,8 @@ namespace UtilityTrade
             ma = 0.0;
             boll_high = 0.0;
             boll_low = 0.0;
+            boll_high_top = 0.0;
+            boll_low_top = 0.0;
             vola_ma = 0.0;
             ema_angle = 0.0;
             return;

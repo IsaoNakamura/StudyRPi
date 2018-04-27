@@ -360,61 +360,79 @@ namespace CryptoBoxer
                 }
 
                 // EMAを算出
-                double ema = 0.0;
-                if (m_candleBuf.calcEma(out ema, m_config.ema_sample_num) == 0)
                 {
-                    candle.ema = ema;
+                    double ema = 0.0;
+                    if (m_candleBuf.calcEma(out ema, m_config.ema_sample_num) == 0)
+                    {
+                        candle.ema = ema;
+                    }
                 }
 
                 // 標準偏差、移動平均、ボリンジャーバンドを算出
-                double stddev = 0.0;
-                double ma = 0.0;
-                if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_sample_num) == 0)
                 {
-                    candle.stddev = stddev;
-                    candle.ma = ma;
-
-                    candle.boll_high = ma + (2.0 * stddev);
-                    candle.boll_low = ma - (2.0 * stddev);
-
-                    // MAX更新
-                    if (candle.boll_high < candle.last)
+                    double stddev = 0.0;
+                    double ma = 0.0;
+                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_sample_num) == 0)
                     {
-                        if (m_max < candle.last)
+                        candle.stddev = stddev;
+                        candle.ma = ma;
+
+                        candle.boll_high = ma + (2.0 * stddev);
+                        candle.boll_low = ma - (2.0 * stddev);
+
+                        // MAX更新
+                        if (candle.boll_high < candle.last)
                         {
-                            m_max = candle.last;
+                            if (m_max < candle.last)
+                            {
+                                m_max = candle.last;
+                            }
+                        }
+                        else
+                        {
+                            m_max = candle.boll_high;
+                        }
+
+                        // MIN更新
+                        if (candle.boll_low > candle.last)
+                        {
+                            if (m_min > candle.last)
+                            {
+                                m_min = candle.last;
+                            }
+                        }
+                        else
+                        {
+                            m_min = candle.boll_low;
                         }
                     }
-                    else
-                    {
-                        m_max = candle.boll_high;
-                    }
+                }
 
-                    // MIN更新
-                    if (candle.boll_low > candle.last)
+                {
+                    double stddev = 0.0;
+                    double ma = 0.0;
+                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, 100) == 0)
                     {
-                        if (m_min > candle.last)
-                        {
-                            m_min = candle.last;
-                        }
-                    }
-                    else
-                    {
-                        m_min = candle.boll_low;
+                        candle.boll_high_top = ma + (2.0 * stddev);
+                        candle.boll_low_top = ma - (2.0 * stddev);
                     }
                 }
 
                 // ボラリティの移動平均を算出
-                double vola_ma = 0.0;
-                if (m_candleBuf.calcVolatilityMA(out vola_ma, m_config.boll_sample_num) == 0)
                 {
-                    candle.vola_ma = vola_ma;
+                    double vola_ma = 0.0;
+                    if (m_candleBuf.calcVolatilityMA(out vola_ma, m_config.boll_sample_num) == 0)
+                    {
+                        candle.vola_ma = vola_ma;
+                    }
                 }
 
-                double angle_ma = 0.0;
-                if (m_candleBuf.calcEmaAngleMA(out angle_ma, m_config.boll_sample_num) == 0)
                 {
-                    candle.ema_angle = angle_ma;
+                    double angle_ma = 0.0;
+                    if (m_candleBuf.calcEmaAngleMA(out angle_ma, m_config.boll_sample_num) == 0)
+                    {
+                        candle.ema_angle = angle_ma;
+                    }
                 }
             }
             catch (Exception ex)
