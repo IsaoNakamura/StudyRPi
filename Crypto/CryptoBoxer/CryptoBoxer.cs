@@ -408,15 +408,15 @@ namespace CryptoBoxer
                     }
                 }
 
-                {
-                    double stddev = 0.0;
-                    double ma = 0.0;
-                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, 100) == 0)
-                    {
-                        candle.boll_high_top = ma + (2.0 * stddev);
-                        candle.boll_low_top = ma - (2.0 * stddev);
-                    }
-                }
+                //{
+                //    double stddev = 0.0;
+                //    double ma = 0.0;
+                //    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, 100) == 0)
+                //    {
+                //        candle.boll_high_top = ma + (2.0 * stddev);
+                //        candle.boll_low_top = ma - (2.0 * stddev);
+                //    }
+                //}
 
                 // ボラリティの移動平均を算出
                 {
