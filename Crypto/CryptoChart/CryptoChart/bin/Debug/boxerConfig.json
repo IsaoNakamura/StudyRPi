@@ -1,11 +1,13 @@
 {
-  "amount": 0.005,
+  "amount": 0.01,
   "periods": 60,
   "product_bitflyer": "FX_BTC_JPY",
   "product_cryptowatch": "btcfxjpy",
-  "ema_sample_num": 100,
+  "ema_sample_num": 20,
   "boll_sample_num": 20,
-  "ema_diff_far": 1000.0,
+  "boll_top_sample_num": 100,
+  "ema_diff_far": 600.0,
   "ema_diff_near": 100.0,
-  "buffer_num": 200
+  "losscut_value": -5000,
+  "buffer_num": 60
 }

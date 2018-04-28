@@ -23,8 +23,8 @@ namespace UtilityTrade
         public double vola_ma { get; set; }
         public double ema_angle { get; set; }
 
-        //public double boll_high_top { get; set; }
-        //public double boll_low_top { get; set; }
+        public double boll_high_top { get; set; }
+        public double boll_low_top { get; set; }
 
         public Candlestick()
         {
@@ -38,8 +38,8 @@ namespace UtilityTrade
             ma = 0.0;
             boll_high = 0.0;
             boll_low = 0.0;
-            //boll_high_top = 0.0;
-            //boll_low_top = 0.0;
+            boll_high_top = 0.0;
+            boll_low_top = 0.0;
             vola_ma = 0.0;
             ema_angle = 0.0;
             return;
@@ -495,43 +495,6 @@ namespace UtilityTrade
             return result;
         }
 
-        //public int getShortBollLevel()
-        //{
-        //    int result = -1;
-
-        //    int short_level = getShortLevel();
-
-
-        //    if (isTrend())
-        //    {
-        //        //上昇キャンドルの場合
-        //    }
-        //    else
-        //    {
-        //        //下降トレンドの場合
-        //    }
-
-        //    return result;
-        //}
-
-        //public int getLongBollLevel()
-        //{
-        //    int result = -1;
-
-        //    int long_level = getLongLevel();
-
-
-        //    if (isTrend())
-        //    {
-        //        //上昇キャンドルの場合
-        //    }
-        //    else
-        //    {
-        //        //下降トレンドの場合
-        //    }
-
-        //    return result;
-        //}
 
         public bool isTouchBollHigh()
         {

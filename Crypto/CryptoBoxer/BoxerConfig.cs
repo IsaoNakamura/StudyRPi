@@ -30,10 +30,16 @@ namespace CryptoBoxer
         public int boll_sample_num { get; set; }
 
         [JsonProperty]
+        public int boll_top_sample_num { get; set; }
+
+        [JsonProperty]
         public double ema_diff_far { get; set; }
 
         [JsonProperty]
         public double ema_diff_near { get; set; }
+
+        [JsonProperty]
+        public double losscut_value { get; set; }
 
         [JsonProperty]
         public int buffer_num { get; set; }
@@ -46,8 +52,10 @@ namespace CryptoBoxer
             product_cryptowatch = null;
             ema_sample_num = 20;
             boll_sample_num = 20;
+            boll_top_sample_num = 100;
             ema_diff_far = 1000;
             ema_diff_near = 100;
+            losscut_value = -5000;
             buffer_num = 60;
             return;
         }

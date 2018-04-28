@@ -409,15 +409,15 @@ namespace CryptoBoxer
                     }
                 }
 
-                //{
-                //    double stddev = 0.0;
-                //    double ma = 0.0;
-                //    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, 100) == 0)
-                //    {
-                //        candle.boll_high_top = ma + (2.0 * stddev);
-                //        candle.boll_low_top = ma - (2.0 * stddev);
-                //    }
-                //}
+                {
+                    double stddev = 0.0;
+                    double ma = 0.0;
+                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_top_sample_num) == 0)
+                    {
+                        candle.boll_high_top = ma + (2.0 * stddev);
+                        candle.boll_low_top = ma - (2.0 * stddev);
+                    }
+                }
 
                 // ボラリティの移動平均を算出
                 {
@@ -591,6 +591,11 @@ namespace CryptoBoxer
 
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
+
+                            // ENTRY/EXITロジック
+                            await tryEntryOrder();
+                            await tryExitOrder();
+
                             Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},vola={11:0}"
                                               , curCandle.timestamp
                                               , curCandle.last
@@ -613,11 +618,6 @@ namespace CryptoBoxer
                             //    , curCandle.high
                             //    , curCandle.low
                             //);
-
-
-                            // ENTRY/EXITロジック
-                            await tryEntryOrder();
-                            //await tryExitOrder();
                         }
                         // 次の更新時間を更新
                         nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
@@ -666,7 +666,7 @@ namespace CryptoBoxer
 
                     // ENTRY/EXITロジック
                     //await tryEntryOrder();
-                    await tryExitOrder();
+                    //await tryExitOrder();
 
                     // Losscutロジック
                     await tryLosscutOrder();
@@ -1218,7 +1218,7 @@ namespace CryptoBoxer
                 }
 
                 double profit = curCandle.last - m_position.entry_price;
-                if (profit <= -4000)
+                if (profit <= m_config.losscut_value)
                 {
                     result = true;
                     return result;
@@ -1254,7 +1254,7 @@ namespace CryptoBoxer
                 }
 
                 double profit = m_position.entry_price - curCandle.last;
-                if (profit <= -4000)
+                if (profit <= m_config.losscut_value)
                 {
                     result = true;
                     return result;
@@ -1322,24 +1322,30 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-                if (!prevCandle.isTouchBollHigh())
+                if (!prevCandle.isOverBBLast())
                 {
-                    if (!pastCandle.isTouchBollHigh())
+                    if (!pastCandle.isOverBBLast())
                     {
                         result = false;
                         return result;
                     }
+                    Console.WriteLine("pastCandle's Last is Over BB_HIGH");
+                }
+                else
+                {
+                    Console.WriteLine("prevCandle's Last is Over BB_HIGH");
                 }
 
-
-                if (prevCandle.isTouchBollLow())
+                if(curCandle.boll_high < curCandle.boll_high_top)
                 {
+                    Console.WriteLine("not need short. boll_high is inside.");
                     result = false;
                     return result;
                 }
 
                 if (curCandle.isTouchBollLow())
                 {
+                    Console.WriteLine("not need short. curCandle is Touch BB_LOW");
                     result = false;
                     return result;
                 }
@@ -1347,6 +1353,7 @@ namespace CryptoBoxer
                 double ema_diff = curCandle.last - curCandle.ema;
                 if (ema_diff < m_config.ema_diff_far)
                 {
+                    Console.WriteLine("not need short. ema_diff is LOW. diff={0:0}",ema_diff);
                     result = false;
                     return result;
                 }
@@ -1354,6 +1361,7 @@ namespace CryptoBoxer
                 if (m_preShortBollLv < 0)
                 {
                     //前回のSHORTレベルが低い
+                    Console.WriteLine("not need short. m_preShortBollLv is LOW. Lv={0}", m_preShortBollLv);
                     // 何もしない
                     result = false;
                     return result;
@@ -1370,6 +1378,7 @@ namespace CryptoBoxer
                             {
                                 // キャンドル始値がボリンジャー高バンド以上にある
                                 // まだ上昇の可能性がある
+                                Console.WriteLine("not need short. prevCandle's open is Over BB_HIGH. Lv={0}", m_preShortBollLv);
                                 // 何もしない
                                 result = false;
                                 return result;
@@ -1382,6 +1391,7 @@ namespace CryptoBoxer
                             {
                                 // キャンドル終値がボリンジャー高バンド以上にある
                                 // まだ上昇の可能性がある
+                                Console.WriteLine("not need short. prevCandle's last is Over BB_HIGHLOW. Lv={0}", m_preShortBollLv);
                                 // 何もしない
                                 result = false;
                                 return result;
@@ -1394,6 +1404,7 @@ namespace CryptoBoxer
                     if (m_curShortBollLv <= 0)
                     {
                         // 現在のSHORTレベルが0以下
+                        Console.WriteLine("not need short. m_curShortBollLv is LOW. Lv={0}", m_curShortBollLv);
                         // 何もしない
                         result = false;
                         return result;
@@ -1401,6 +1412,7 @@ namespace CryptoBoxer
                     else
                     {
                         // 現在のSHORTレベルが0より高い
+                        Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
                         // ENTRY
                         result = true;
                         return result;
@@ -1468,17 +1480,30 @@ namespace CryptoBoxer
                 m_curLongBollLv = curCandle.getLongLevel();
                 m_preLongBollLv = prevCandle.getLongLevel();
 
-                if (!prevCandle.isTouchBollLow())
+                if (!prevCandle.isUnderBBLast())
                 {
-                    if (!pastCandle.isTouchBollLow())
+                    if (!pastCandle.isUnderBBLast())
                     {
                         result = false;
                         return result;
                     }
+                    Console.WriteLine("pastCandle's Last is Under BB_LOW");
+                }
+                else
+                {
+                    Console.WriteLine("prevCandle's Last is Under BB_LOW");
+                }
+
+                if (curCandle.boll_low > curCandle.boll_low_top)
+                {
+                    Console.WriteLine("not need short. boll_low is inside.");
+                    result = false;
+                    return result;
                 }
 
                 if (curCandle.isTouchBollHigh())
                 {
+                    Console.WriteLine("not need long. curCandle is Touch BB_HIGH");
                     result = false;
                     return result;
                 }
@@ -1486,6 +1511,7 @@ namespace CryptoBoxer
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff < m_config.ema_diff_far)
                 {
+                    Console.WriteLine("not need long. ema_diff is LOW. diff={0:0}", ema_diff);
                     result = false;
                     return result;
                 }
@@ -1494,6 +1520,7 @@ namespace CryptoBoxer
                 if (m_preLongBollLv < 0)
                 {
                     //前回のLONGレベルが低い
+                    Console.WriteLine("not need long. m_preLongBollLv is LOW. Lv={0}", m_preLongBollLv);
                     // 何もしない
                     result = false;
                     return result;
@@ -1509,6 +1536,7 @@ namespace CryptoBoxer
                             if (prevCandle.isUnderBBLast())
                             {
                                 // 何もしない
+                                Console.WriteLine("not need long. prevCandle's last is Under BB_LOW. Lv={0}", m_preLongBollLv);
                                 result = false;
                                 return result;
                             }
@@ -1519,6 +1547,7 @@ namespace CryptoBoxer
                             if (prevCandle.isUnderBBOpen())
                             {
                                 // 何もしない
+                                Console.WriteLine("not need long. prevCandle's open is Under BB_LOW. Lv={0}", m_preLongBollLv);
                                 result = false;
                                 return result;
                             }
@@ -1530,6 +1559,7 @@ namespace CryptoBoxer
                     if (m_curLongBollLv <= 0)
                     {
                         // 現在のLONGレベルが0以下
+                        Console.WriteLine("not need long. m_curLongBollLv is LOW. Lv={0}", m_curLongBollLv);
                         // 何もしない
                         result = false;
                         return result;
@@ -1537,6 +1567,7 @@ namespace CryptoBoxer
                     else
                     {
                         // 現在のLONGレベルが0より高い
+                        Console.WriteLine("need long. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
                         // ENTRY
                         result = true;
                         return result;
