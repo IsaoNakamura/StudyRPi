@@ -64,6 +64,10 @@
       <Project>{5d9028be-182e-4d93-9496-4078683e1a26}</Project>
       <Name>UtilityTrade</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UtilitySlackS\UtilitySlack.csproj">
+      <Project>{49B97E66-BBF4-4FD9-945E-2C5E0C8C56C2}</Project>
+      <Name>UtilitySlack</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

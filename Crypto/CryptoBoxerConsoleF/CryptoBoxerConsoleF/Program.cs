@@ -23,6 +23,11 @@ namespace CryptoBoxerConsoleF
                 return;
             }
 
+            if (m_boxer.loadAuthSlack(@"./AuthSlack.json") != 0)
+            {
+                return;
+            }
+
             m_boxer.MainLoop();
 
             while (true)

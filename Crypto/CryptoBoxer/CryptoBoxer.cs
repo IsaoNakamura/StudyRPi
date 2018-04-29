@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UtilityBitflyer;
 using UtilityTrade;
 using UtilityCryptowatch;
-
+using UtilitySlack;
 
 namespace CryptoBoxer
 {
@@ -25,6 +25,8 @@ namespace CryptoBoxer
         public Position m_position { get; set; }
         private List<Position> m_posArray { get; set; }
 
+        private double m_profitSum { get; set; }
+
         public int m_curShortBollLv { get; private set; }
         public int m_preShortBollLv { get; private set; }
 
@@ -37,6 +39,7 @@ namespace CryptoBoxer
 
         // 認証用
         private AuthBitflyer m_authBitflyer { get; set; }
+        private AuthSlack m_authSlack { get; set; }
 
         private bool m_stopFlag { get; set; }
         public void setStopFlag(bool flag)
@@ -69,6 +72,8 @@ namespace CryptoBoxer
             m_preShortBollLv = -1;
             m_curLongBollLv = -1;
             m_preLongBollLv = -1;
+
+            m_profitSum = 0.0;
 
             return;
         }
@@ -447,10 +452,19 @@ namespace CryptoBoxer
             return result;
         }
 
+        private async void postSlack(string text)
+        {
+            Console.WriteLine(text);
+            await PostMessage.Request(m_authSlack, text);
+        }
+
         public async void MainLoop()
         {
             try
             {
+                postSlack("START TRADE");
+                
+
                 // Cryptowatchから過去のデータを取得
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, m_candleBuf.m_buffer_num * m_config.periods);
                 if (applyCandlestick(ref ohlc) != 0)
@@ -594,7 +608,7 @@ namespace CryptoBoxer
 
                             // ENTRY/EXITロジック
                             await tryEntryOrder();
-                            await tryExitOrder();
+                            //await tryExitOrder();
 
                             Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},vola={11:0}"
                                               , curCandle.timestamp
@@ -666,7 +680,7 @@ namespace CryptoBoxer
 
                     // ENTRY/EXITロジック
                     //await tryEntryOrder();
-                    //await tryExitOrder();
+                    await tryExitOrder();
 
                     // Losscutロジック
                     await tryLosscutOrder();
@@ -691,7 +705,7 @@ namespace CryptoBoxer
 
                     if (m_stopFlag)
                     {
-                        Console.WriteLine("recieved StopCode.");
+                        postSlack("recieved StopCode.");
                         break;
                     }
 
@@ -732,6 +746,30 @@ namespace CryptoBoxer
             return result;
         }
 
+
+        public int loadAuthSlack(string filePath)
+        {
+            int result = 0;
+            try
+            {
+                m_authSlack = AuthSlack.createAuthSlack(filePath);
+                if (m_authSlack == null)
+                {
+                    result = -1;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public async Task<int> tryEntryOrder()
         {
             int result = 0;
@@ -754,12 +792,12 @@ namespace CryptoBoxer
                     SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                     if (retObj == null)
                     {
-                        Console.WriteLine("failed to Long Entry Order");
+                        postSlack("failed to Long Entry Order");
                         result = -1;
                         return result;
                     }
                     // 注文成功
-                    Console.WriteLine("Long Entry Order ID = {0}", retObj.child_order_acceptance_id);
+                    postSlack(string.Format("Long Entry Order ID = {0}", retObj.child_order_acceptance_id));
                     m_position.entryLongOrder(retObj.child_order_acceptance_id);
                 }
                 else if(isShort)
@@ -769,12 +807,12 @@ namespace CryptoBoxer
                     SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                     if (retObj == null)
                     {
-                        Console.WriteLine("failed to Short Entry Order");
+                        postSlack("failed to Short Entry Order");
                         result = -1;
                         return result;
                     }
                     // 注文成功
-                    Console.WriteLine("Short Entry Order ID = {0}", retObj.child_order_acceptance_id);
+                    postSlack(string.Format("Short Entry Order ID = {0}", retObj.child_order_acceptance_id));
                     m_position.entryShortOrder(retObj.child_order_acceptance_id);
                 }
             }
@@ -818,20 +856,20 @@ namespace CryptoBoxer
                 
                 if (responce.child_order_state == "REJECTED")
                 {
-                    Console.WriteLine("Order is rejected. entry_price={0}", responce.average_price);
+                    postSlack(string.Format("Order is rejected. entry_price={0}", responce.average_price));
                     result = -1;
                     return result;
                 }
 
                 if (responce.child_order_state != "COMPLETED")
                 {
-                    Console.WriteLine("Order is not completed. entry_price={0}", responce.average_price);
+                    postSlack(string.Format("Order is not completed. entry_price={0}", responce.average_price));
                     result = 1;
                     return result;
                 }
 
                 // 注文確定
-                Console.WriteLine("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id);
+                postSlack(string.Format("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id));
                 m_position.entry(responce.average_price);
             }
             catch (Exception ex)
@@ -882,12 +920,12 @@ namespace CryptoBoxer
                         SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
-                            Console.WriteLine("failed to Long Exit Order.");
+                            postSlack("failed to Long Exit Order.");
                             result = -1;
                             return result;
                         }
                         // 注文成功
-                        Console.WriteLine("Long Exit Order ID = {0}", retObj.child_order_acceptance_id);
+                        postSlack(string.Format("Long Exit Order ID = {0}", retObj.child_order_acceptance_id));
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
                 }
@@ -900,12 +938,12 @@ namespace CryptoBoxer
                         SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
-                            Console.WriteLine("failed to Short Exit Order.");
+                            postSlack("failed to Short Exit Order.");
                             result = -1;
                             return result;
                         }
                         // 注文成功
-                        Console.WriteLine("Short Exit Order ID = {0}", retObj.child_order_acceptance_id);
+                        postSlack(string.Format("Short Exit Order ID = {0}", retObj.child_order_acceptance_id));
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
                 }
@@ -958,12 +996,12 @@ namespace CryptoBoxer
                         SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
-                            Console.WriteLine("failed to Long Losscut Order.");
+                            postSlack("failed to Long Losscut Order.");
                             result = -1;
                             return result;
                         }
                         // 注文成功
-                        Console.WriteLine("Long Losscut Order ID = {0}", retObj.child_order_acceptance_id);
+                        postSlack(string.Format("Long Losscut Order ID = {0}", retObj.child_order_acceptance_id));
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
                 }
@@ -976,12 +1014,12 @@ namespace CryptoBoxer
                         SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                         if (retObj == null)
                         {
-                            Console.WriteLine("failed to Short Losscut Order.");
+                            postSlack("failed to Short Losscut Order.");
                             result = -1;
                             return result;
                         }
                         // 注文成功
-                        Console.WriteLine("Short Losscut Order ID = {0}", retObj.child_order_acceptance_id);
+                        postSlack(string.Format("Short Losscut Order ID = {0}", retObj.child_order_acceptance_id));
                         m_position.exitOrder(retObj.child_order_acceptance_id);
                     }
                 }
@@ -1026,21 +1064,27 @@ namespace CryptoBoxer
 
                 if (responce.child_order_state == "REJECTED")
                 {
-                    Console.WriteLine("Order is rejected. entry_price={0}", responce.average_price);
+                    postSlack(string.Format("Order is rejected. entry_price={0}", responce.average_price));
                     result = -1;
                     return result;
                 }
 
                 if (responce.child_order_state != "COMPLETED")
                 {
-                    Console.WriteLine("Order is not completed. entry_price={0}", responce.average_price);
+                    postSlack(string.Format("Order is not completed. entry_price={0}", responce.average_price));
                     result = 1;
                     return result;
                 }
 
                 // 注文確定
                 m_position.exit(responce.average_price);
-                Console.WriteLine("Order is completed. profit={0} exit_price={1} id={2}", m_position.getProfit(), responce.average_price, m_position.exit_id);
+                m_profitSum += m_position.getProfit();
+                postSlack(string.Format("Order is completed. profit={0:0} sum={1:0} exit_price={2:0} id={3}"
+                                        , m_position.getProfit()
+                                        , m_profitSum
+                                        , responce.average_price
+                                        , m_position.exit_id)
+                         );
 
                 m_position = new Position();
                 m_posArray.Add(m_position);
@@ -1322,18 +1366,18 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-                if (!prevCandle.isOverBBLast())
+                if (!prevCandle.isTouchBollHigh())
                 {
-                    if (!pastCandle.isOverBBLast())
+                    if (!pastCandle.isTouchBollHigh())
                     {
                         result = false;
                         return result;
                     }
-                    Console.WriteLine("pastCandle's Last is Over BB_HIGH");
+                    Console.WriteLine("pastCandle is Touch BB_HIGH");
                 }
                 else
                 {
-                    Console.WriteLine("prevCandle's Last is Over BB_HIGH");
+                    Console.WriteLine("prevCandle is Touch BB_HIGH");
                 }
 
                 if(curCandle.boll_high < curCandle.boll_high_top)
@@ -1374,15 +1418,21 @@ namespace CryptoBoxer
                         if (prevCandle.isTrend())
                         {
                             // 前回が上昇キャンドルの場合
-                            if (prevCandle.isOverBBOpen())
+                            /*
+                            if (prevCandle.isOverBBLast())
                             {
                                 // キャンドル始値がボリンジャー高バンド以上にある
                                 // まだ上昇の可能性がある
-                                Console.WriteLine("not need short. prevCandle's open is Over BB_HIGH. Lv={0}", m_preShortBollLv);
+                                Console.WriteLine("not need short. prevCandle's last is Over BB_HIGH. Lv={0}", m_preShortBollLv);
                                 // 何もしない
                                 result = false;
                                 return result;
                             }
+                            */
+                            Console.WriteLine("not need short. m_preShortBollLv is LOW but change soon. Lv={0}", m_preShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
                         }
                         else
                         {
@@ -1480,18 +1530,18 @@ namespace CryptoBoxer
                 m_curLongBollLv = curCandle.getLongLevel();
                 m_preLongBollLv = prevCandle.getLongLevel();
 
-                if (!prevCandle.isUnderBBLast())
+                if (!prevCandle.isTouchBollLow())
                 {
-                    if (!pastCandle.isUnderBBLast())
+                    if (!pastCandle.isTouchBollLow())
                     {
                         result = false;
                         return result;
                     }
-                    Console.WriteLine("pastCandle's Last is Under BB_LOW");
+                    Console.WriteLine("pastCandle is Touch BB_LOW");
                 }
                 else
                 {
-                    Console.WriteLine("prevCandle's Last is Under BB_LOW");
+                    Console.WriteLine("prevCandle is Touch BB_LOW");
                 }
 
                 if (curCandle.boll_low > curCandle.boll_low_top)
@@ -1544,13 +1594,19 @@ namespace CryptoBoxer
                         else
                         {
                             // 前回が下降キャンドルの場合
-                            if (prevCandle.isUnderBBOpen())
+                            /*
+                            if (prevCandle.isUnderBBLast())
                             {
                                 // 何もしない
-                                Console.WriteLine("not need long. prevCandle's open is Under BB_LOW. Lv={0}", m_preLongBollLv);
+                                Console.WriteLine("not need long. prevCandle's last is Under BB_LOW. Lv={0}", m_preLongBollLv);
                                 result = false;
                                 return result;
                             }
+                            */
+                            Console.WriteLine("not need long. m_preLongBollLv is LOW but change soon. Lv={0}", m_preLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
                         }
                     }
 
