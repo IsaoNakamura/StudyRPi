@@ -1118,5 +1118,107 @@ namespace UtilityTrade
             }
             return result;
         }
+
+        public bool isOverTopBB(int sample_num)
+        {
+            bool result = true;
+            try
+            {
+                Candlestick curCandle = getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    if(candle.boll_high <= candle.boll_high_top)
+                    {
+                        result = false;
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isUnderTopBB(int sample_num)
+        {
+            bool result = true;
+            try
+            {
+                Candlestick curCandle = getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    if (candle.boll_low >= candle.boll_low_top)
+                    {
+                        result = false;
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
     }
 }

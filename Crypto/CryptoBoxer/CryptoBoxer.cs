@@ -610,7 +610,7 @@ namespace CryptoBoxer
                             await tryEntryOrder();
                             //await tryExitOrder();
 
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},vola={11:0}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},ema={11:0}"
                                               , curCandle.timestamp
                                               , curCandle.last
                                               , curCandle.last - curCandle.ema
@@ -622,7 +622,7 @@ namespace CryptoBoxer
                                               , m_preLongBollLv
                                               , m_curShortBollLv
                                               , m_preShortBollLv
-                                              , curCandle.getVolatilityRate()
+                                              , curCandle.ema//curCandle.getVolatilityRate()
                             );
 
                             //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
@@ -1380,9 +1380,16 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle is Touch BB_HIGH");
                 }
 
-                if(curCandle.boll_high < curCandle.boll_high_top)
+                if (curCandle.boll_high < curCandle.boll_high_top)
                 {
                     Console.WriteLine("not need short. boll_high is inside.");
+                    result = false;
+                    return result;
+                }
+
+                if(!m_candleBuf.isOverTopBB(10))
+                {
+                    Console.WriteLine("not need short. boll_high is not over the top.");
                     result = false;
                     return result;
                 }
@@ -1546,7 +1553,14 @@ namespace CryptoBoxer
 
                 if (curCandle.boll_low > curCandle.boll_low_top)
                 {
-                    Console.WriteLine("not need short. boll_low is inside.");
+                    Console.WriteLine("not need long. boll_low is inside.");
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isUnderTopBB(10))
+                {
+                    Console.WriteLine("not need long. boll_high is not under the top.");
                     result = false;
                     return result;
                 }
