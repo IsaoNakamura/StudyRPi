@@ -557,7 +557,7 @@ namespace CryptoBoxer
                 postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num));
                 postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num));
                 postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num));
-                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_over_candle_num));
                 postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far));
                 postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near));
                 postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
@@ -865,7 +865,7 @@ namespace CryptoBoxer
                 postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num));
                 postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num));
                 postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num));
-                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_over_candle_num));
                 postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far));
                 postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near));
                 postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
