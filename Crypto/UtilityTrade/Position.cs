@@ -27,10 +27,12 @@ namespace UtilityTrade
         private OrderState entry_state { get; set; }
         public string entry_id { get; private set; }
         public double entry_price { get; set; }
+        public string entry_date { get; set; }
 
         private OrderState exit_state { get; set; }
         public string exit_id { get; set; }
         public double exit_price { get; set; }
+        public string exit_date { get; set; }
 
         public Position()
         {
@@ -45,11 +47,13 @@ namespace UtilityTrade
             entry_state = OrderState.NONE;
             entry_id = "";
             entry_price = 0.0;
+            entry_date = "";
 
 
             exit_state = OrderState.NONE;
             exit_id = "";
             exit_price = 0.0;
+            exit_date = "";
 
             return;
         }
@@ -176,26 +180,29 @@ namespace UtilityTrade
             return false;
         }
 
-        public void entryLongOrder(string _acceptance_id)
+        public void entryLongOrder(string _acceptance_id, string _entry_date)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.LONG;
+            entry_date = _entry_date;
             return;
         }
 
-        public void entryShortOrder(string _acceptance_id)
+        public void entryShortOrder(string _acceptance_id, string _entry_date)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.SHORT;
+            entry_date = _entry_date;
             return;
         }
 
-        public void exitOrder(string _acceptance_id)
+        public void exitOrder(string _acceptance_id, string _exit_date)
         {
             exit_id = _acceptance_id;
             exit_state = OrderState.ACTIVE;
+            exit_date = _exit_date;
         }
 
         public void entry(double _entry_price)

@@ -689,6 +689,16 @@ namespace CryptoBoxer
                         // キャンドルを閉じる
                         if (curCandle != null)
                         {
+                            // CloseTimeは次の更新時間を使用する。
+                            curCandle.timestamp = nextCloseTime.ToString();
+
+                            // ENTRY/EXITロジック
+                            await tryEntryOrder();
+                            await tryExitOrder();
+
+                            // Losscutロジック
+                            await tryLosscutOrder();
+
                             bool trend = curCandle.isTrend();
                             string candleTrend = "";
                             int candleType = -1;
@@ -702,15 +712,6 @@ namespace CryptoBoxer
                                 candleTrend = "DOWN";
                                 candleType = curCandle.getDownCandleType();
                             }
-
-
-                            // CloseTimeは次の更新時間を使用する。
-                            curCandle.timestamp = nextCloseTime.ToString();
-
-                            // ENTRY/EXITロジック
-                            await tryEntryOrder();
-                            //await tryExitOrder();
-
                             Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},ema={11:0}"
                                               , curCandle.timestamp
                                               , curCandle.last
@@ -781,10 +782,10 @@ namespace CryptoBoxer
 
                     // ENTRY/EXITロジック
                     //await tryEntryOrder();
-                    await tryExitOrder();
+                    //await tryExitOrder();
 
                     // Losscutロジック
-                    await tryLosscutOrder();
+                    //await tryLosscutOrder();
 
                     // 注文状況確認ロジック
                     await checkEntry();
@@ -839,7 +840,7 @@ namespace CryptoBoxer
                 return false;
             }
 
-            if (m_config.backtest_flag >= 0)
+            if (m_config.backtest_flag > 0)
             {
                 return true;
             }
@@ -972,7 +973,7 @@ namespace CryptoBoxer
                     double exit_price = position.exit_price;
 
                     //postSlack(string.Format("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price));
-                    Console.WriteLine("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price);
+                    Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date);
                 }
 
                 System.Threading.Thread.Sleep(3000);
@@ -1050,6 +1051,13 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
                 // NONEポジションの場合
                 bool isLong = isConditionLongEntry();
                 bool isShort =isConditionShortEntry();
@@ -1066,8 +1074,8 @@ namespace CryptoBoxer
                         return result;
                     }
                     // 注文成功
-                    postSlack(string.Format("Long Entry Order ID = {0}", retObj.child_order_acceptance_id));
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id);
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                 }
                 else if(isShort)
                 {
@@ -1081,8 +1089,8 @@ namespace CryptoBoxer
                         return result;
                     }
                     // 注文成功
-                    postSlack(string.Format("Short Entry Order ID = {0}", retObj.child_order_acceptance_id));
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id);
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                 }
             }
             catch (Exception ex)
@@ -1107,6 +1115,13 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
                 // NONEポジションの場合
                 bool isLong = isConditionLongEntry();
                 bool isShort = isConditionShortEntry();
@@ -1115,16 +1130,16 @@ namespace CryptoBoxer
                 {
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
-                    postSlack(string.Format("Long Entry Order ID = {0}", long_id), true);
-                    m_position.entryLongOrder(long_id);
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
+                    m_position.entryLongOrder(long_id, curCandle.timestamp);
                     long_entry_cnt++;
                 }
                 else if (isShort)
                 {
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
-                    postSlack(string.Format("Short Entry Order ID = {0}", short_id),true);
-                    m_position.entryShortOrder(short_id);
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id),true);
+                    m_position.entryShortOrder(short_id, curCandle.timestamp);
                     short_entry_cnt++;
                 }
             }
@@ -1255,6 +1270,13 @@ namespace CryptoBoxer
                 }
                 // EXITが未だの場合
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
 
                 if (m_position.isLong())
                 {// LONGの場合
@@ -1271,8 +1293,8 @@ namespace CryptoBoxer
                             return result;
                         }
                         // 注文成功
-                        postSlack(string.Format("Long Exit Order ID = {0}", retObj.child_order_acceptance_id));
-                        m_position.exitOrder(retObj.child_order_acceptance_id);
+                        postSlack(string.Format("{0} Long Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                     }
                 }
                 else if (m_position.isShort())
@@ -1289,8 +1311,8 @@ namespace CryptoBoxer
                             return result;
                         }
                         // 注文成功
-                        postSlack(string.Format("Short Exit Order ID = {0}", retObj.child_order_acceptance_id));
-                        m_position.exitOrder(retObj.child_order_acceptance_id);
+                        postSlack(string.Format("{0} Short Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                     }
                 }
             }
@@ -1331,6 +1353,13 @@ namespace CryptoBoxer
                 }
                 // EXITが未だの場合
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
 
                 if (m_position.isLong())
                 {// LONGの場合
@@ -1339,8 +1368,8 @@ namespace CryptoBoxer
                     {
                         // 注文成功
                         string long_id = string.Format("BT_LONG_EXIT_{0:D8}", long_exit_cnt);
-                        postSlack(string.Format("Long Exit Order ID = {0}", long_id), true);
-                        m_position.exitOrder(long_id);
+                        postSlack(string.Format("{0} Long Exit Order ID = {1}", curCandle.timestamp, long_id), true);
+                        m_position.exitOrder(long_id, curCandle.timestamp);
                         long_exit_cnt++;
                     }
                 }
@@ -1350,8 +1379,8 @@ namespace CryptoBoxer
                     {
                         // 注文成功
                         string short_id = string.Format("BT_SHORT_EXIT_{0:D8}", short_exit_cnt);
-                        postSlack(string.Format("Short Exit Order ID = {0}", short_id),true);
-                        m_position.exitOrder(short_id);
+                        postSlack(string.Format("{0} Short Exit Order ID = {1}", curCandle.timestamp, short_id),true);
+                        m_position.exitOrder(short_id, curCandle.timestamp);
                         short_exit_cnt++;
                     }
                 }
@@ -1393,6 +1422,13 @@ namespace CryptoBoxer
                 }
                 // EXITが未だの場合
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
 
                 if (m_position.isLong())
                 {// LONGの場合
@@ -1409,8 +1445,8 @@ namespace CryptoBoxer
                             return result;
                         }
                         // 注文成功
-                        postSlack(string.Format("Long Losscut Order ID = {0}", retObj.child_order_acceptance_id));
-                        m_position.exitOrder(retObj.child_order_acceptance_id);
+                        postSlack(string.Format("{0} Long Losscut Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                     }
                 }
                 else if (m_position.isShort())
@@ -1427,8 +1463,8 @@ namespace CryptoBoxer
                             return result;
                         }
                         // 注文成功
-                        postSlack(string.Format("Short Losscut Order ID = {0}", retObj.child_order_acceptance_id));
-                        m_position.exitOrder(retObj.child_order_acceptance_id);
+                        postSlack(string.Format("{0} Short Losscut Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                     }
                 }
             }
@@ -1469,6 +1505,13 @@ namespace CryptoBoxer
                 }
                 // EXITが未だの場合
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
 
                 if (m_position.isLong())
                 {// LONGの場合
@@ -1477,8 +1520,8 @@ namespace CryptoBoxer
                     {
                         // 注文成功
                         string losscut_id = string.Format("BT_LONG_LC_{0:D8}", long_lc_cnt);
-                        postSlack(string.Format("Long Losscut Order ID = {0}", losscut_id), true);
-                        m_position.exitOrder(losscut_id);
+                        postSlack(string.Format("{0} Long Losscut Order ID = {1}", curCandle.timestamp, losscut_id), true);
+                        m_position.exitOrder(losscut_id, curCandle.timestamp);
                         long_lc_cnt++;
                     }
                 }
@@ -1488,8 +1531,8 @@ namespace CryptoBoxer
                     {
                         // 注文成功
                         string losscut_id = string.Format("BT_SHORT_LC_{0:D8}", short_lc_cnt);
-                        postSlack(string.Format("Short Losscut Order ID = {0}", losscut_id), true);
-                        m_position.exitOrder(losscut_id);
+                        postSlack(string.Format("{0} Short Losscut Order ID = {1}", curCandle.timestamp, losscut_id), true);
+                        m_position.exitOrder(losscut_id, curCandle.timestamp);
                         short_lc_cnt++;
                     }
                 }
@@ -1646,35 +1689,37 @@ namespace CryptoBoxer
                 if (ema_diff <= m_config.ema_diff_near)
                 {
                     isNearEma = true;
+                    result = true;
+                    return result;
                 }
 
-                if (isNearEma || isOverEma)
-                {
-                    int curLastLv = curCandle.getLastLevel();
-                    int curOpenLv = curCandle.getOpenLevel();
-                    if (curCandle.isTrend())
-                    {//上昇キャンドルなら
-                        if (curLastLv == 4 && curOpenLv == 0)
-                        {// 大陽線
-                            // SKIP
-                            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
-                            result = false;
-                            return result;
-                        }
-                        else
-                        {// 上髭
-                            // EXIT
-                            result = true;
-                            return result;
-                        }
-                    }
-                    else
-                    {//下降キャンドルなら
-                        // EXIT
-                        result = true;
-                        return result;
-                    }
-                }
+                //if (isNearEma || isOverEma)
+                //{
+                //    int curLastLv = curCandle.getLastLevel();
+                //    int curOpenLv = curCandle.getOpenLevel();
+                //    if (curCandle.isTrend())
+                //    {//上昇キャンドルなら
+                //        if (curLastLv == 4 && curOpenLv == 0)
+                //        {// 大陽線
+                //            // SKIP
+                //            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
+                //            result = false;
+                //            return result;
+                //        }
+                //        else
+                //        {// 上髭
+                //            // EXIT
+                //            result = true;
+                //            return result;
+                //        }
+                //    }
+                //    else
+                //    {//下降キャンドルなら
+                //        // EXIT
+                //        result = true;
+                //        return result;
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -1709,42 +1754,44 @@ namespace CryptoBoxer
                 if (curCandle.ema >= curCandle.last)
                 {
                     isUnderEma = true;
+                    result = true;
+                    return result;
                 }
 
-                bool isNearEma = false;
-                double ema_diff = curCandle.last - curCandle.ema;
-                if (ema_diff <= m_config.ema_diff_near)
-                {
-                    isNearEma = true;
-                }
+                //bool isNearEma = false;
+                //double ema_diff = curCandle.last - curCandle.ema;
+                //if (ema_diff <= m_config.ema_diff_near)
+                //{
+                //    isNearEma = true;
+                //}
 
-                if (isNearEma || isUnderEma)
-                {
-                    int curLastLv = curCandle.getLastLevel();
-                    int curOpenLv = curCandle.getOpenLevel();
-                    if (!curCandle.isTrend())
-                    {//下降キャンドルなら
-                        if (curLastLv == 0 && curOpenLv==4)
-                        {// 大陰線
-                            // SKIP
-                            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
-                            result = false;
-                            return result;
-                        }
-                        else
-                        {//下髭
-                            // EXIT
-                            result = true;
-                            return result;
-                        }
-                    }
-                    else
-                    {//上昇キャンドルなら
-                        // EXIT
-                        result = true;
-                        return result;
-                    }
-                }
+                //if (isNearEma || isUnderEma)
+                //{
+                //    int curLastLv = curCandle.getLastLevel();
+                //    int curOpenLv = curCandle.getOpenLevel();
+                //    if (!curCandle.isTrend())
+                //    {//下降キャンドルなら
+                //        if (curLastLv == 0 && curOpenLv==4)
+                //        {// 大陰線
+                //            // SKIP
+                //            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);
+                //            result = false;
+                //            return result;
+                //        }
+                //        else
+                //        {//下髭
+                //            // EXIT
+                //            result = true;
+                //            return result;
+                //        }
+                //    }
+                //    else
+                //    {//上昇キャンドルなら
+                //        // EXIT
+                //        result = true;
+                //        return result;
+                //    }
+                //}
             }
             catch (Exception ex)
             {
