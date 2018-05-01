@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -38,9 +39,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\CryptoBoxerConsoleF\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoxerConfig.cs" />
@@ -60,13 +58,13 @@
       <Project>{4ed1624c-292d-4cb6-8815-689fb8156f85}</Project>
       <Name>UtilityCryptowatch</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UtilitySlack\UtilitySlack.csproj">
+      <Project>{49b97e66-bbf4-4fd9-945e-2c5e0c8c56c2}</Project>
+      <Name>UtilitySlack</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UtilityTrade\UtilityTrade.csproj">
       <Project>{5d9028be-182e-4d93-9496-4078683e1a26}</Project>
       <Name>UtilityTrade</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UtilitySlackS\UtilitySlack.csproj">
-      <Project>{49B97E66-BBF4-4FD9-945E-2C5E0C8C56C2}</Project>
-      <Name>UtilitySlack</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

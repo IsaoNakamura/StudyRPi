@@ -35,8 +35,8 @@ namespace CryptoChart
         private Series m_series_max = null;
         private Series m_series_entry = null;
 
-        //private Series m_series_bollHigh_top = null;
-        //private Series m_series_bollLow_top = null;
+        private Series m_series_bollHigh_top = null;
+        private Series m_series_bollLow_top = null;
 
 
         private ChartArea m_indicatorArea = null;
@@ -58,6 +58,12 @@ namespace CryptoChart
             if (m_boxer.loadAuthBitflyer(@".\AuthBitflyer.json") != 0)
             {
                 Console.WriteLine("failed to loadAuthBitflyer.");
+                return;
+            }
+
+            if (m_boxer.loadAuthSlack(@".\AuthSlack.json") != 0)
+            {
+                Console.WriteLine("failed to loadAuthSlack.");
                 return;
             }
 
@@ -167,26 +173,26 @@ namespace CryptoChart
                 m_series_bollLow.Color = Color.MediumVioletRed;
                 m_series_bollLow.Name = "BOLL_LOW";
 
-                //if (m_series_bollHigh_top != null)
-                //{
-                //    m_series_bollHigh_top.Dispose();
-                //    m_series_bollHigh_top = null;
-                //}
-                //m_series_bollHigh_top = new Series();
-                //m_series_bollHigh_top.ChartType = SeriesChartType.Line;
-                //m_series_bollHigh_top.Color = Color.DarkBlue;
-                //m_series_bollHigh_top.Name = "BOLL_HIGH_TOP";
+                if (m_series_bollHigh_top != null)
+                {
+                    m_series_bollHigh_top.Dispose();
+                    m_series_bollHigh_top = null;
+                }
+                m_series_bollHigh_top = new Series();
+                m_series_bollHigh_top.ChartType = SeriesChartType.Line;
+                m_series_bollHigh_top.Color = Color.DarkBlue;
+                m_series_bollHigh_top.Name = "BOLL_HIGH_TOP";
 
 
-                //if (m_series_bollLow_top != null)
-                //{
-                //    m_series_bollLow_top.Dispose();
-                //    m_series_bollLow_top = null;
-                //}
-                //m_series_bollLow_top = new Series();
-                //m_series_bollLow_top.ChartType = SeriesChartType.Line;
-                //m_series_bollLow_top.Color = Color.DarkRed;
-                //m_series_bollLow_top.Name = "BOLL_LOW_TOP";
+                if (m_series_bollLow_top != null)
+                {
+                    m_series_bollLow_top.Dispose();
+                    m_series_bollLow_top = null;
+                }
+                m_series_bollLow_top = new Series();
+                m_series_bollLow_top.ChartType = SeriesChartType.Line;
+                m_series_bollLow_top.Color = Color.DarkRed;
+                m_series_bollLow_top.Name = "BOLL_LOW_TOP";
 
                 if (m_series_min != null)
                 {
@@ -299,8 +305,8 @@ namespace CryptoChart
                 m_series_ema.Points.Clear();
                 m_series_bollHigh.Points.Clear();
                 m_series_bollLow.Points.Clear();
-                //m_series_bollHigh_top.Points.Clear();
-                //m_series_bollLow_top.Points.Clear();
+                m_series_bollHigh_top.Points.Clear();
+                m_series_bollLow_top.Points.Clear();
                 m_series_min.Points.Clear();
                 m_series_max.Points.Clear();
                 m_series_entry.Points.Clear();
@@ -376,11 +382,11 @@ namespace CryptoChart
                     DataPoint dp_bollLow = new DataPoint(candle_cnt, Math.Round(candle.boll_low,0));
                     m_series_bollLow.Points.Add(dp_bollLow);
 
-                    //DataPoint dp_bollHigh_top = new DataPoint(candle_cnt, Math.Round(candle.boll_high_top,0));
-                    //m_series_bollHigh_top.Points.Add(dp_bollHigh_top);
+                    DataPoint dp_bollHigh_top = new DataPoint(candle_cnt, Math.Round(candle.boll_high_top, 0));
+                    m_series_bollHigh_top.Points.Add(dp_bollHigh_top);
 
-                    //DataPoint dp_bollLow_top = new DataPoint(candle_cnt, Math.Round(candle.boll_low_top,0));
-                    //m_series_bollLow_top.Points.Add(dp_bollLow_top);
+                    DataPoint dp_bollLow_top = new DataPoint(candle_cnt, Math.Round(candle.boll_low_top, 0));
+                    m_series_bollLow_top.Points.Add(dp_bollLow_top);
 
                     DataPoint dp_min = new DataPoint(candle_cnt, Math.Round(indicator_min,0));
                     m_series_min.Points.Add(dp_min);
@@ -405,14 +411,14 @@ namespace CryptoChart
                     {
                         elem_min = candle.low;
                     }
-                    //if (candle.boll_high_top > candle.boll_high)
-                    //{
-                    //    elem_max = candle.boll_high_top;
-                    //}
-                    //if (candle.boll_low_top < candle.boll_low)
-                    //{
-                    //    elem_min = candle.boll_low_top;
-                    //}
+                    if (candle.boll_high_top > elem_max)
+                    {
+                        elem_max = candle.boll_high_top;
+                    }
+                    if (candle.boll_low_top < elem_min)
+                    {
+                        elem_min = candle.boll_low_top;
+                    }
 
 
                     // 表示範囲を算出
@@ -445,8 +451,8 @@ namespace CryptoChart
                 this.chart1.Series.Add(m_series_ema);
                 this.chart1.Series.Add(m_series_bollHigh);
                 this.chart1.Series.Add(m_series_bollLow);
-                //this.chart1.Series.Add(m_series_bollHigh_top);
-                //this.chart1.Series.Add(m_series_bollLow_top);
+                this.chart1.Series.Add(m_series_bollHigh_top);
+                this.chart1.Series.Add(m_series_bollLow_top);
                 this.chart1.Series.Add(m_series_min);
                 this.chart1.Series.Add(m_series_max);
                 if (entry_price > double.Epsilon)
@@ -619,8 +625,8 @@ namespace CryptoChart
                 {
                     // 利益
                     int idx = this.CurrentInfoGrid.Rows.Add();
-                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PROFIT";
-                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", m_boxer.calcProfit());
+                    this.CurrentInfoGrid.Rows[idx].Cells[0].Value = "PROFIT_SUM";
+                    this.CurrentInfoGrid.Rows[idx].Cells[1].Value = string.Format("{0:0}", m_boxer.m_profitSum);
                 }
 
                 {

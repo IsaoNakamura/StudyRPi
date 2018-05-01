@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityCryptowatch", "..\Ut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityTrade", "..\UtilityTrade\UtilityTrade.csproj", "{5D9028BE-182E-4D93-9496-4078683E1A26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitySlack", "..\UtilitySlackS\UtilitySlack.csproj", "{49B97E66-BBF4-4FD9-945E-2C5E0C8C56C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitySlack", "..\UtilitySlack\UtilitySlack.csproj", "{49B97E66-BBF4-4FD9-945E-2C5E0C8C56C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

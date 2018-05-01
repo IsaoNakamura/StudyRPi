@@ -25,7 +25,7 @@ namespace CryptoBoxer
         public Position m_position { get; set; }
         private List<Position> m_posArray { get; set; }
 
-        private double m_profitSum { get; set; }
+        public double m_profitSum { get; set; }
 
         public int m_curShortBollLv { get; private set; }
         public int m_preShortBollLv { get; private set; }
@@ -1370,10 +1370,20 @@ namespace CryptoBoxer
                 {
                     if (!pastCandle.isTouchBollHigh())
                     {
-                        result = false;
-                        return result;
+                        //if (!curCandle.isTouchBollHighTop())
+                        //{
+                            result = false;
+                            return result;
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine("curCandle is Touch BB_HIGH_TOP");
+                        //}
                     }
-                    Console.WriteLine("pastCandle is Touch BB_HIGH");
+                    else
+                    {
+                        Console.WriteLine("pastCandle is Touch BB_HIGH");
+                    }
                 }
                 else
                 {
@@ -1387,7 +1397,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if(!m_candleBuf.isOverTopBB(10))
+                if(!m_candleBuf.isOverTopBB(6))
                 {
                     Console.WriteLine("not need short. boll_high is not over the top.");
                     result = false;
@@ -1541,10 +1551,20 @@ namespace CryptoBoxer
                 {
                     if (!pastCandle.isTouchBollLow())
                     {
-                        result = false;
-                        return result;
+                        //if (!curCandle.isTouchBollLowTop())
+                        //{
+                            result = false;
+                            return result;
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine("curCandle is Touch BB_LOW_TOP");
+                        //}
                     }
-                    Console.WriteLine("pastCandle is Touch BB_LOW");
+                    else
+                    {
+                        Console.WriteLine("pastCandle is Touch BB_LOW");
+                    }
                 }
                 else
                 {

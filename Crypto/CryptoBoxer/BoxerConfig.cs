@@ -33,6 +33,9 @@ namespace CryptoBoxer
         public int boll_top_sample_num { get; set; }
 
         [JsonProperty]
+        public int boll_over_candle_num { get; set; }
+
+        [JsonProperty]
         public double ema_diff_far { get; set; }
 
         [JsonProperty]
@@ -53,6 +56,7 @@ namespace CryptoBoxer
             ema_sample_num = 20;
             boll_sample_num = 20;
             boll_top_sample_num = 100;
+            boll_over_candle_num = 6;
             ema_diff_far = 1000;
             ema_diff_near = 100;
             losscut_value = -5000;

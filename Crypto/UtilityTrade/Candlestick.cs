@@ -545,6 +545,55 @@ namespace UtilityTrade
             return false;
         }
 
+        public bool isTouchBollHighTop()
+        {
+            //if (boll_high_top <= high)
+            //{
+            //    return true;
+            //}
+
+            if (boll_high_top <= last)
+            {
+                return true;
+            }
+
+            if (boll_high_top <= open)
+            {
+                return true;
+            }
+
+            //if (boll_high_top <= low)
+            //{
+            //    return true;
+            //}
+            return false;
+        }
+
+        public bool isTouchBollLowTop()
+        {
+            //if (boll_low_top >= low)
+            //{
+            //    return true;
+            //}
+
+            if (boll_low_top >= last)
+            {
+                return true;
+            }
+
+            if (boll_low_top >= open)
+            {
+                return true;
+            }
+
+            //if (boll_low_top >= high)
+            //{
+            //    return true;
+            //}
+
+            return false;
+        }
+
         public bool isTouchBollHighLow()
         {
             if(isTouchBollHigh())
