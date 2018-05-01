@@ -6,9 +6,11 @@
   "ema_sample_num": 100,
   "boll_sample_num": 20,
   "boll_top_sample_num": 100,
-  "boll_over_candle_num":  6,
+  "boll_over_candle_num": 6,
   "ema_diff_far": 2000.0,
   "ema_diff_near": 1000.0,
   "losscut_value": -5000,
-  "buffer_num": 200
+  "buffer_num": 200,
+  "backtest_hour": 72,
+  "backtest_flag": 1
 }

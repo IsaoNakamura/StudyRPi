@@ -279,7 +279,7 @@ namespace CryptoBoxer
         }
 
         // 過去のキャンドル情報群をバッファに適用
-        private int applyCandlestick(ref BitflyerOhlc ohlc)
+        private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc)
         {
             int result = 0;
             try
@@ -331,14 +331,14 @@ namespace CryptoBoxer
                     DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
                     Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice);
 
-                    Candlestick candle = m_candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
+                    Candlestick candle = candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
                     if (candle == null)
                     {
                         Console.WriteLine("failed to addCandle.");
                         continue;
                     }
 
-                    calcIndicator(ref candle);
+                    calcIndicator(candleBuf, ref candle);
 
                 }
 
@@ -354,7 +354,90 @@ namespace CryptoBoxer
             return result;
         }
 
-        public int calcIndicator(ref Candlestick candle)
+        private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int begIdx, int count)
+        {
+            int result = 0;
+            try
+            {
+                if (ohlc == null)
+                {
+                    Console.WriteLine("failed to GetOhlcAfterAsync()");
+                    result = -1;
+                    return result;
+                }
+
+                if (ohlc.result == null)
+                {
+                    Console.WriteLine("ohlc's result is null");
+                    result = -1;
+                    return result;
+                }
+
+                List<List<double>> candles = ohlc.result.getResult(m_config.periods);
+
+                if (candles == null)
+                {
+                    Console.WriteLine("ohlc's candle is null. periods={0}", m_config.periods);
+                    result = -1;
+                    return result;
+                }
+
+                int limit = begIdx + count;
+                if (limit > candles.Count)
+                {
+                    limit = candles.Count;
+                }
+
+                //foreach (List<double> candleFactor in candles)
+                for (int i=begIdx; i<limit; i++)
+                {
+                    List<double> candleFactor = candles[i];
+                    if (candleFactor == null)
+                    {
+                        continue;
+                    }
+
+                    double closeTime = candleFactor[0];
+                    double openPrice = candleFactor[1];
+                    double highPrice = candleFactor[2];
+                    double lowPrice = candleFactor[3];
+                    double closePrice = candleFactor[4];
+                    double volume = candleFactor[5];
+
+                    // Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
+                    //  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
+                    //  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
+                    // Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
+
+
+                    // 2018/04/10 19:21:00
+                    DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
+                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice);
+
+                    Candlestick candle = candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
+                    if (candle == null)
+                    {
+                        Console.WriteLine("failed to addCandle.");
+                        continue;
+                    }
+
+                    calcIndicator(candleBuf, ref candle);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int calcIndicator(CandleBuffer candleBuf, ref Candlestick candle)
         {
             int result = 0;
             try
@@ -368,7 +451,7 @@ namespace CryptoBoxer
                 // EMAを算出
                 {
                     double ema = 0.0;
-                    if (m_candleBuf.calcEma(out ema, m_config.ema_sample_num) == 0)
+                    if (candleBuf.calcEma(out ema, m_config.ema_sample_num) == 0)
                     {
                         candle.ema = ema;
                     }
@@ -378,7 +461,7 @@ namespace CryptoBoxer
                 {
                     double stddev = 0.0;
                     double ma = 0.0;
-                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_sample_num) == 0)
+                    if (candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_sample_num) == 0)
                     {
                         candle.stddev = stddev;
                         candle.ma = ma;
@@ -417,7 +500,7 @@ namespace CryptoBoxer
                 {
                     double stddev = 0.0;
                     double ma = 0.0;
-                    if (m_candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_top_sample_num) == 0)
+                    if (candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_top_sample_num) == 0)
                     {
                         candle.boll_high_top = ma + (2.0 * stddev);
                         candle.boll_low_top = ma - (2.0 * stddev);
@@ -427,7 +510,7 @@ namespace CryptoBoxer
                 // ボラリティの移動平均を算出
                 {
                     double vola_ma = 0.0;
-                    if (m_candleBuf.calcVolatilityMA(out vola_ma, 20) == 0)
+                    if (candleBuf.calcVolatilityMA(out vola_ma, 20) == 0)
                     {
                         candle.vola_ma = vola_ma;
                     }
@@ -435,7 +518,7 @@ namespace CryptoBoxer
 
                 {
                     double angle_ma = 0.0;
-                    if (m_candleBuf.calcEmaAngleMA(out angle_ma, 20) == 0)
+                    if (candleBuf.calcEmaAngleMA(out angle_ma, 20) == 0)
                     {
                         candle.ema_angle = angle_ma;
                     }
@@ -452,22 +535,40 @@ namespace CryptoBoxer
             return result;
         }
 
-        private async void postSlack(string text)
+        private async void postSlack(string text, bool onlyConsole=false)
         {
             Console.WriteLine(text);
-            await PostMessage.Request(m_authSlack, text);
+            if (!onlyConsole)
+            {
+                await PostMessage.Request(m_authSlack, text);
+            }
         }
 
         public async void MainLoop()
         {
             try
             {
-                postSlack("START TRADE");
-                
+                postSlack("====   START TRADE  ====");
+                System.Threading.Thread.Sleep(3000);
+
+                postSlack(string.Format("amount={0}", m_config.amount));
+                postSlack(string.Format("periods={0}", m_config.periods));
+                postSlack(string.Format("product={0}", m_config.product_bitflyer));
+                postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num));
+                postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num));
+                postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far));
+                postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near));
+                postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
+                postSlack(string.Format("buffer_num={0}", m_config.buffer_num));
+                postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour));
+
+                System.Threading.Thread.Sleep(3000);
 
                 // Cryptowatchから過去のデータを取得
-                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, m_candleBuf.m_buffer_num * m_config.periods);
-                if (applyCandlestick(ref ohlc) != 0)
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, (m_candleBuf.m_buffer_num) * m_config.periods);
+                if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -675,7 +776,7 @@ namespace CryptoBoxer
                     // インジケータ更新
                     if (curCandle != null)
                     {
-                        calcIndicator(ref curCandle);
+                        calcIndicator(m_candleBuf, ref curCandle);
                     }
 
                     // ENTRY/EXITロジック
@@ -706,6 +807,14 @@ namespace CryptoBoxer
                     if (m_stopFlag)
                     {
                         postSlack("recieved StopCode.");
+                        System.Threading.Thread.Sleep(3000);
+
+                        postSlack(string.Format("PROFIT_SUM={0:0}", m_profitSum));
+                        System.Threading.Thread.Sleep(3000);
+
+                        postSlack("====  END TRADE  ====");
+                        System.Threading.Thread.Sleep(3000);
+
                         break;
                     }
 
@@ -722,6 +831,166 @@ namespace CryptoBoxer
             }
             return;
         }
+
+        public bool isBackTest()
+        {
+            if (m_config == null)
+            {
+                return false;
+            }
+
+            if (m_config.backtest_flag >= 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private async void sleepAsync(int sec)
+        {
+            await Task.Delay(sec * 1000);
+        }
+
+        public async void BackTest()
+        {
+            try
+            {
+                postSlack("==== START BACKTEST ====");
+                System.Threading.Thread.Sleep(3000);
+
+                postSlack(string.Format("amount={0}",m_config.amount));
+                postSlack(string.Format("periods={0}", m_config.periods));
+                postSlack(string.Format("product={0}", m_config.product_bitflyer));
+                postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num));
+                postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num));
+                postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_top_sample_num));
+                postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far));
+                postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near));
+                postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
+                postSlack(string.Format("buffer_num={0}", m_config.buffer_num));
+                postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour));
+
+                System.Threading.Thread.Sleep(3000);
+
+
+                // Cryptowatchから過去のデータを取得
+                int test_num = (m_config.backtest_hour * 60);
+                long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
+                if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
+                {
+                    Console.WriteLine("failed to applyCandlestick()");
+                    return;
+                }
+
+                CandleBuffer testCandleBuf = CandleBuffer.createCandleBuffer(test_num);
+                if (testCandleBuf == null)
+                {
+                    Console.WriteLine("failed to create test CandleBuffer");
+                    return;
+                }
+                if (applyCandlestick(testCandleBuf, ref ohlc, m_candleBuf.getCandleCount(), test_num) != 0)
+                {
+                    Console.WriteLine("failed to applyCandlestick()");
+                    return;
+                }
+
+
+                int candle_cnt = testCandleBuf.getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    Console.WriteLine("candle's count is 0");
+                    return;
+                }
+
+
+                int long_entry_cnt = 0;
+                int short_entry_cnt = 0;
+                int long_exit_cnt = 0;
+                int short_exit_cnt = 0;
+                int long_lc_cnt = 0;
+                int short_lc_cnt = 0;
+                int cycle_cnt = 0;
+                for (int i = 0; i < candle_cnt; i++)
+                {
+                    Candlestick curCandle = testCandleBuf.getCandle(i);
+                    if (curCandle == null)
+                    {
+                        continue;
+                    }
+
+                    if (m_candleBuf.addCandle(curCandle) != 0)
+                    {
+                        Console.WriteLine("failed to addCandle for m_candleBuf.");
+                        return;
+                    }
+
+                    // ENTRYテスト
+                    tryEntryOrderTest(ref long_entry_cnt, ref short_entry_cnt);
+                    checkEntryTest(curCandle.last);
+
+                    // EXIT/ロスカットテスト
+                    tryExitOrderTest(ref long_exit_cnt, ref short_exit_cnt);
+                    tryLosscutOrderTest(ref long_lc_cnt, ref short_lc_cnt);
+                    checkExitTest(curCandle.last);
+
+
+                    Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},ema={3:0},B_H={4:0},B_L={5:0},B_HT={6:0},B_LT={7:0}"
+                                      , curCandle.timestamp
+                                      , m_profitSum
+                                      , curCandle.last
+                                      , curCandle.ema
+                                      , curCandle.boll_high
+                                      , curCandle.boll_low
+                                      , curCandle.boll_high_top
+                                      , curCandle.boll_low_top
+                    );
+
+
+                    System.Threading.Thread.Sleep(0);
+                    cycle_cnt++;
+                }
+
+                // 表示を更新
+                if (UpdateViewDelegate != null)
+                {
+                    UpdateViewDelegate();
+                }
+
+                foreach (Position position in m_posArray)
+                {
+                    if (position == null)
+                    {
+                        continue;
+                    }
+
+                    string state = position.getPositionStateStr();
+                    double profit = position.getProfit();
+                    double entry_price = position.entry_price;
+                    double exit_price = position.exit_price;
+
+                    //postSlack(string.Format("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price));
+                    Console.WriteLine("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price);
+                }
+
+                System.Threading.Thread.Sleep(3000);
+                postSlack(string.Format("PROFIT_SUM={0:0}, LONG={1}, SHORT={2}, LONG_LC={3}, SHORT_LC={4}", m_profitSum, long_entry_cnt, short_entry_cnt, long_lc_cnt, short_lc_cnt));
+
+                System.Threading.Thread.Sleep(3000);
+                postSlack("====  END BACKTEST  ====");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+            return;
+        }
+
 
         public int loadAuthBitflyer(string filePath)
         {
@@ -827,6 +1096,49 @@ namespace CryptoBoxer
             return result;
         }
 
+        private int tryEntryOrderTest(ref int long_entry_cnt, ref int short_entry_cnt)
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+
+                // NONEポジションの場合
+                bool isLong = isConditionLongEntry();
+                bool isShort = isConditionShortEntry();
+
+                if (isLong)
+                {
+                    // 注文成功
+                    string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
+                    postSlack(string.Format("Long Entry Order ID = {0}", long_id), true);
+                    m_position.entryLongOrder(long_id);
+                    long_entry_cnt++;
+                }
+                else if (isShort)
+                {
+                    // 注文成功
+                    string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
+                    postSlack(string.Format("Short Entry Order ID = {0}", short_id),true);
+                    m_position.entryShortOrder(short_id);
+                    short_entry_cnt++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public async Task<int> checkEntry()
         {
             int result = 0;
@@ -871,6 +1183,40 @@ namespace CryptoBoxer
                 // 注文確定
                 postSlack(string.Format("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id));
                 m_position.entry(responce.average_price);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int checkEntryTest(double last_price)
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isEntryActive())
+                {
+                    result = 1;
+                    return result;
+                }
+                // ENTRYアクティブの場合
+
+                // 注文確定
+                postSlack(string.Format("Order is completed. entry_price={0} id={1}", last_price, m_position.entry_id), true);
+                m_position.entry(last_price);
             }
             catch (Exception ex)
             {
@@ -945,6 +1291,68 @@ namespace CryptoBoxer
                         // 注文成功
                         postSlack(string.Format("Short Exit Order ID = {0}", retObj.child_order_acceptance_id));
                         m_position.exitOrder(retObj.child_order_acceptance_id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int tryExitOrderTest(ref int long_exit_cnt, ref int short_exit_cnt)
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isEntryCompleted())
+                {
+                    result = 1;
+                    return result;
+                }
+                // エントリーが完了している場合
+
+                if (!m_position.isExitNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // EXITが未だの場合
+
+
+                if (m_position.isLong())
+                {// LONGの場合
+
+                    if (isConditionLongExit())
+                    {
+                        // 注文成功
+                        string long_id = string.Format("BT_LONG_EXIT_{0:D8}", long_exit_cnt);
+                        postSlack(string.Format("Long Exit Order ID = {0}", long_id), true);
+                        m_position.exitOrder(long_id);
+                        long_exit_cnt++;
+                    }
+                }
+                else if (m_position.isShort())
+                {// SHORTの場合
+                    if (isConditionShortExit())
+                    {
+                        // 注文成功
+                        string short_id = string.Format("BT_SHORT_EXIT_{0:D8}", short_exit_cnt);
+                        postSlack(string.Format("Short Exit Order ID = {0}", short_id),true);
+                        m_position.exitOrder(short_id);
+                        short_exit_cnt++;
                     }
                 }
             }
@@ -1035,6 +1443,68 @@ namespace CryptoBoxer
             return result;
         }
 
+        public int tryLosscutOrderTest(ref int long_lc_cnt, ref int short_lc_cnt)
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isEntryCompleted())
+                {
+                    result = 1;
+                    return result;
+                }
+                // エントリーが完了している場合
+
+                if (!m_position.isExitNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // EXITが未だの場合
+
+
+                if (m_position.isLong())
+                {// LONGの場合
+
+                    if (isConditionLongLosscut())
+                    {
+                        // 注文成功
+                        string losscut_id = string.Format("BT_LONG_LC_{0:D8}", long_lc_cnt);
+                        postSlack(string.Format("Long Losscut Order ID = {0}", losscut_id), true);
+                        m_position.exitOrder(losscut_id);
+                        long_lc_cnt++;
+                    }
+                }
+                else if (m_position.isShort())
+                {// SHORTの場合
+                    if (isConditionShortLosscut())
+                    {
+                        // 注文成功
+                        string losscut_id = string.Format("BT_SHORT_LC_{0:D8}", short_lc_cnt);
+                        postSlack(string.Format("Short Losscut Order ID = {0}", losscut_id), true);
+                        m_position.exitOrder(losscut_id);
+                        short_lc_cnt++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public async Task<int> checkExit()
         {
             int result = 0;
@@ -1089,6 +1559,50 @@ namespace CryptoBoxer
                 m_position = new Position();
                 m_posArray.Add(m_position);
 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int checkExitTest(double last_price)
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isExitActive())
+                {
+                    result = 1;
+                    return result;
+                }
+                // EXITアクティブの場合
+
+
+                // 注文確定
+                m_position.exit(last_price);
+                m_profitSum += m_position.getProfit();
+                postSlack(string.Format("Order is completed. profit={0:0} sum={1:0} exit_price={2:0} id={3}"
+                                        , m_position.getProfit()
+                                        , m_profitSum
+                                        , last_price
+                                        , m_position.exit_id), true
+                         );
+
+                m_position = new Position();
+                m_posArray.Add(m_position);
             }
             catch (Exception ex)
             {
@@ -1397,7 +1911,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if(!m_candleBuf.isOverTopBB(6))
+                if(!m_candleBuf.isOverTopBB(m_config.boll_over_candle_num))
                 {
                     Console.WriteLine("not need short. boll_high is not over the top.");
                     result = false;
@@ -1578,7 +2092,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (!m_candleBuf.isUnderTopBB(10))
+                if (!m_candleBuf.isUnderTopBB(m_config.boll_over_candle_num))
                 {
                     Console.WriteLine("not need long. boll_high is not under the top.");
                     result = false;

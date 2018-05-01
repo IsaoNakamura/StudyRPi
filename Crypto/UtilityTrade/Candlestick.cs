@@ -822,6 +822,46 @@ namespace UtilityTrade
                     result = null;
                     return result;
                 }
+
+                if (addCandle(candle) != 0)
+                {
+                    result = null;
+                    return result;
+                }
+                result = candle;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = null;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int addCandle( Candlestick candle )
+        {
+            int result = 0;
+            try
+            {
+                if (m_candleList == null)
+                {
+                    m_candleList = new List<Candlestick>();
+                    if (m_candleList == null)
+                    {
+                        result = -1;
+                        return result;
+                    }
+                }
+
+                if (candle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
                 m_candleList.Add(candle);
 
                 // 保持数を超えた場合
@@ -833,13 +873,11 @@ namespace UtilityTrade
                     // 古いCandlestickから削除
                     m_candleList.RemoveRange(0, remove_cnt);
                 }
-
-                result = candle;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                result = null;
+                result = -1;
             }
             finally
             {
@@ -1195,7 +1233,6 @@ namespace UtilityTrade
 
                 for (int i = beg_idx; i < candle_cnt; i++)
                 {
-
                     Candlestick candle = m_candleList[i];
                     if (candle == null)
                     {

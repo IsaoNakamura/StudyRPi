@@ -47,6 +47,12 @@ namespace CryptoBoxer
         [JsonProperty]
         public int buffer_num { get; set; }
 
+        [JsonProperty]
+        public int backtest_hour { get; set; }
+
+        [JsonProperty]
+        public int backtest_flag { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -61,6 +67,8 @@ namespace CryptoBoxer
             ema_diff_near = 100;
             losscut_value = -5000;
             buffer_num = 60;
+            backtest_hour = 72;
+            backtest_flag = 0;
             return;
         }
 
