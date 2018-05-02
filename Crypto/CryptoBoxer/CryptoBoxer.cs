@@ -865,23 +865,23 @@ namespace CryptoBoxer
         {
             try
             {
-                postSlack("==== START BACKTEST ====");
-                System.Threading.Thread.Sleep(3000);
+                postSlack("==== START BACKTEST ====",true);
+                //System.Threading.Thread.Sleep(3000);
 
-                postSlack(string.Format("amount={0}",m_config.amount));
-                postSlack(string.Format("periods={0}", m_config.periods));
-                postSlack(string.Format("product={0}", m_config.product_bitflyer));
-                postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num));
-                postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num));
-                postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num));
-                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_over_candle_num));
-                postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far));
-                postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near));
-                postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
-                postSlack(string.Format("buffer_num={0}", m_config.buffer_num));
-                postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour));
+                postSlack(string.Format("amount={0}",m_config.amount), true);
+                postSlack(string.Format("periods={0}", m_config.periods), true);
+                postSlack(string.Format("product={0}", m_config.product_bitflyer), true);
+                postSlack(string.Format("ema_sample_num={0}", m_config.ema_sample_num), true);
+                postSlack(string.Format("boll_sample_num={0}", m_config.boll_sample_num), true);
+                postSlack(string.Format("boll_top_sample_num={0}", m_config.boll_top_sample_num), true);
+                postSlack(string.Format("boll_over_candle_num={0}", m_config.boll_over_candle_num), true);
+                postSlack(string.Format("ema_diff_far={0}", m_config.ema_diff_far), true);
+                postSlack(string.Format("ema_diff_near={0}", m_config.ema_diff_near), true);
+                postSlack(string.Format("losscut_value={0}", m_config.losscut_value), true);
+                postSlack(string.Format("buffer_num={0}", m_config.buffer_num), true);
+                postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour), true);
 
-                System.Threading.Thread.Sleep(3000);
+                //System.Threading.Thread.Sleep(3000);
 
 
                 // Cryptowatchから過去のデータを取得
@@ -984,11 +984,11 @@ namespace CryptoBoxer
                     Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date);
                 }
 
-                System.Threading.Thread.Sleep(3000);
-                postSlack(string.Format("PROFIT_SUM={0:0}, LONG={1}, SHORT={2}, LONG_LC={3}, SHORT_LC={4}", m_profitSum, long_entry_cnt, short_entry_cnt, long_lc_cnt, short_lc_cnt));
+                //System.Threading.Thread.Sleep(3000);
+                postSlack(string.Format("PROFIT_SUM={0:0}, LONG={1}, SHORT={2}, LONG_LC={3}, SHORT_LC={4}", m_profitSum, long_entry_cnt, short_entry_cnt, long_lc_cnt, short_lc_cnt), true);
 
-                System.Threading.Thread.Sleep(3000);
-                postSlack("====  END BACKTEST  ====");
+                //System.Threading.Thread.Sleep(3000);
+                postSlack("====  END BACKTEST  ====", true);
             }
             catch (Exception ex)
             {
@@ -996,6 +996,7 @@ namespace CryptoBoxer
             }
             finally
             {
+                m_stopFlag = true;
             }
             return;
         }
