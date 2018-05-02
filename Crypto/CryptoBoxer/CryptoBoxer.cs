@@ -457,6 +457,14 @@ namespace CryptoBoxer
                     }
                 }
 
+                {
+                    double ema = 0.0;
+                    if (candleBuf.calcEma(out ema, 20) == 0)
+                    {
+                        candle.ema_sub = ema;
+                    }
+                }
+
                 // 標準偏差、移動平均、ボリンジャーバンドを算出
                 {
                     double stddev = 0.0;
@@ -1980,6 +1988,17 @@ namespace CryptoBoxer
                     return result;
                 }
 
+
+                double ma_diff = curCandle.last - curCandle.ma;
+                if(ma_diff < 2000.0)
+                {
+                    Console.WriteLine("not need short. ma_diff is LOW. diff={0:0}", ma_diff);
+                    result = false;
+                    return result;
+                }
+
+
+
                 if (m_preShortBollLv < 0)
                 {
                     //前回のSHORTレベルが低い
@@ -2160,6 +2179,17 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
+
+
+                double ma_diff = curCandle.ma - curCandle.last;
+                if (ma_diff < 2000.0)
+                {
+                    Console.WriteLine("not need long. ma_diff is LOW. diff={0:0}", ma_diff);
+                    result = false;
+                    return result;
+                }
+
+
 
 
                 if (m_preLongBollLv < 0)

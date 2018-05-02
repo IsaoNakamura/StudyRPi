@@ -12,5 +12,5 @@
   "losscut_value": -5000,
   "buffer_num": 200,
   "backtest_hour": 72,
-  "backtest_flag": 1
+  "backtest_flag": 0
 }

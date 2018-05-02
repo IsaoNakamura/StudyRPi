@@ -16,6 +16,7 @@ namespace UtilityTrade
 
         // インジケータ
         public double ema { get; set; }
+        public double ema_sub { get; set; }
         public double stddev { get; set; }
         public double ma { get; set; }
         public double boll_high { get; set; }
@@ -42,6 +43,7 @@ namespace UtilityTrade
             boll_low_top = 0.0;
             vola_ma = 0.0;
             ema_angle = 0.0;
+            ema_sub = 0.0;
             return;
         }
 

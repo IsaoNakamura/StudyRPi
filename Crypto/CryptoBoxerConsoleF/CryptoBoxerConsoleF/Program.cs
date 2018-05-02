@@ -28,7 +28,14 @@ namespace CryptoBoxerConsoleF
                 return;
             }
 
-            m_boxer.MainLoop();
+            if(m_boxer.isBackTest())
+            {
+                m_boxer.BackTest();
+            }else
+            {
+                m_boxer.MainLoop();
+            }
+
 
             while (true)
             {
