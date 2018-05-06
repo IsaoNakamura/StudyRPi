@@ -700,6 +700,16 @@ namespace CryptoBoxer
                             // CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
 
+                            // 現物(BTC_JPY)のTickerを取得
+                            Ticker ticker_spot = await Ticker.GetTickerAsync("BTC_JPY");
+                            if (ticker_spot != null)
+                            {
+                                // FXと現物の価格乖離率を算出
+                                double spot_last = ticker_spot.ltp;
+                                double disparity_rate = (curCandle.last - spot_last) / spot_last * 100.0;
+                                curCandle.disparity_rate = disparity_rate;
+                            }
+
                             // ENTRY/EXITロジック
                             await tryEntryOrder();
                             await tryExitOrder();
@@ -720,7 +730,7 @@ namespace CryptoBoxer
                                 candleTrend = "DOWN";
                                 candleType = curCandle.getDownCandleType();
                             }
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},ema={11:0}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},ema={11:0},sfd={12:0.00}"
                                               , curCandle.timestamp
                                               , curCandle.last
                                               , curCandle.last - curCandle.ema
@@ -732,16 +742,9 @@ namespace CryptoBoxer
                                               , m_preLongBollLv
                                               , m_curShortBollLv
                                               , m_preShortBollLv
-                                              , curCandle.ema//curCandle.getVolatilityRate()
+                                              , curCandle.ema
+                                              , curCandle.disparity_rate
                             );
-
-                            //Console.WriteLine("closed candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                            //    , curCandle.timestamp
-                            //    , curCandle.open
-                            //    , curCandle.last
-                            //    , curCandle.high
-                            //    , curCandle.low
-                            //);
                         }
                         // 次の更新時間を更新
                         nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
@@ -754,14 +757,6 @@ namespace CryptoBoxer
                             Console.WriteLine("failed to addCandle.");
                             return;
                         }
-
-                        //Console.WriteLine("add candle. timestamp={0}, open={1}, close={2}, high={3}, low={4}"
-                        //    , curCandle.timestamp
-                        //    , curCandle.open
-                        //    , curCandle.last
-                        //    , curCandle.high
-                        //    , curCandle.low
-                        //);
 
                         // 最高値・最低値リセット
                         high_price = 0.0;
@@ -777,8 +772,6 @@ namespace CryptoBoxer
                             curCandle.open = open_price;
                             curCandle.last = cur_value;
                             curCandle.timestamp = cur_timestamp.ToString();
-                            //Console.WriteLine("update Candle. timestamp={0}, open={1}, cur={2}, high={3}, low={4}", cur_timestamp, open_price, cur_value, high_price, low_price);
-
                         }
                     }
 
@@ -805,7 +798,7 @@ namespace CryptoBoxer
                         UpdateViewDelegate();
                     }
 
-                    pre_tick_id = ticker.tick_id;
+                    pre_tick_id = tick_id;
 
                     if( System.IO.File.Exists(@"./StopCode.txt") )
                     {
@@ -1069,11 +1062,20 @@ namespace CryptoBoxer
 
                 // NONEポジションの場合
                 bool isLong = isConditionLongEntry();
-                bool isShort =isConditionShortEntry();
+                bool isShort= isConditionShortEntry();
+
+
 
                 if (isLong)
                 {
                     //Console.WriteLine("Try Long Entry Order.");
+
+                    if (curCandle.disparity_rate >= 5.0)
+                    {
+                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                        result = -1;
+                        return result;
+                    }
 
                     SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                     if (retObj == null)
