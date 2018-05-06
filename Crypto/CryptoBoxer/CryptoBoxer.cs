@@ -412,7 +412,7 @@ namespace CryptoBoxer
 
                     // 2018/04/10 19:21:00
                     DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
-                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice);
+                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, vol={5}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, volume);
 
                     Candlestick candle = candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
                     if (candle == null)
@@ -420,6 +420,7 @@ namespace CryptoBoxer
                         Console.WriteLine("failed to addCandle.");
                         continue;
                     }
+                    candle.volume = volume;
 
                     calcIndicator(candleBuf, ref candle);
 
@@ -510,6 +511,7 @@ namespace CryptoBoxer
                     double ma = 0.0;
                     if (candleBuf.calcStddevAndMA(out stddev, out ma, m_config.boll_top_sample_num) == 0)
                     {
+                        candle.ma_top = ma;
                         candle.boll_high_top = ma + (2.0 * stddev);
                         candle.boll_low_top = ma - (2.0 * stddev);
                     }
@@ -521,6 +523,15 @@ namespace CryptoBoxer
                     if (candleBuf.calcVolatilityMA(out vola_ma, 20) == 0)
                     {
                         candle.vola_ma = vola_ma;
+                    }
+                }
+
+                // Volumeの移動平均を算出
+                {
+                    double volume_ma = 0.0;
+                    if (candleBuf.calcVolumeMA(out volume_ma, 20) == 0)
+                    {
+                        candle.volume_ma = volume_ma;
                     }
                 }
 
@@ -595,6 +606,7 @@ namespace CryptoBoxer
                 bool isLastConnect = false;
                 int pre_tick_id = 0;
                 int cycle_cnt = 0;
+                double pre_volume = 0.0;
                 while (true)
                 {
                     // Tickerを取得
@@ -605,6 +617,7 @@ namespace CryptoBoxer
                     }
                     int tick_id = ticker.tick_id;
                     double cur_value = ticker.ltp;
+                    double volume = ticker.volume;//_by_product;
 
                     if (pre_tick_id == tick_id)
                     {
@@ -613,6 +626,8 @@ namespace CryptoBoxer
 
                     DateTime dateTimeUtc = DateTime.Parse(ticker.timestamp);// 2018-04-10T10:34:16.677 UTCタイム
                     DateTime cur_timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
+
+                    double vol_diff = volume - pre_volume;
 
 
                     bool isClose = false;
@@ -717,27 +732,14 @@ namespace CryptoBoxer
                             // Losscutロジック
                             await tryLosscutOrder();
 
-                            bool trend = curCandle.isTrend();
-                            string candleTrend = "";
-                            int candleType = -1;
-                            if (trend)
-                            {
-                                candleTrend = " UP ";
-                                candleType = curCandle.getUpCandleType();
-                            }
-                            else
-                            {
-                                candleTrend = "DOWN";
-                                candleType = curCandle.getDownCandleType();
-                            }
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},trend={5},type={6},curL={7},preL={8},curS={9},preS={10},ema={11:0},sfd={12:0.00}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},vol={5:0},volma={6:0},curL={7},preL={8},curS={9},preS={10},ema={11:0},sfd={12:0.00}"
                                               , curCandle.timestamp
                                               , curCandle.last
                                               , curCandle.last - curCandle.ema
                                               , curCandle.boll_high - curCandle.last
                                               , curCandle.last - curCandle.boll_low
-                                              , candleTrend
-                                              , candleType
+                                              , curCandle.volume
+                                              , curCandle.volume_ma
                                               , m_curLongBollLv
                                               , m_preLongBollLv
                                               , m_curShortBollLv
@@ -772,6 +774,8 @@ namespace CryptoBoxer
                             curCandle.open = open_price;
                             curCandle.last = cur_value;
                             curCandle.timestamp = cur_timestamp.ToString();
+                            curCandle.volume = curCandle.volume + vol_diff;
+                            //Console.WriteLine("diff={0:2} vol={1:2} pre={2:2}",vol_diff, volume, pre_volume);
                         }
                     }
 
@@ -799,6 +803,7 @@ namespace CryptoBoxer
                     }
 
                     pre_tick_id = tick_id;
+                    pre_volume = volume;
 
                     if( System.IO.File.Exists(@"./StopCode.txt") )
                     {
@@ -1991,7 +1996,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-
+                /*
                 double ma_diff = curCandle.last - curCandle.ma;
                 if(ma_diff < 2000.0)
                 {
@@ -2001,6 +2006,13 @@ namespace CryptoBoxer
                 }
 
 
+                if (curCandle.isCrossBBHighTop() || (curCandle.boll_high_top > curCandle.high))
+                {
+                    Console.WriteLine("not need short. Cross BBHighTop");
+                    result = false;
+                    return result;
+                }
+                */
 
                 if (m_preShortBollLv < 0)
                 {
@@ -2062,10 +2074,22 @@ namespace CryptoBoxer
                     else
                     {
                         // 現在のSHORTレベルが0より高い
-                        Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
-                        // ENTRY
-                        result = true;
-                        return result;
+                        if(m_candleBuf.isTurningHigh())
+                        {
+                            Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("not need short. is not Turning High. Lv={0}", m_curShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+
                     }
                 }
             }
@@ -2183,7 +2207,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-
+                /*
                 double ma_diff = curCandle.ma - curCandle.last;
                 if (ma_diff < 2000.0)
                 {
@@ -2193,7 +2217,13 @@ namespace CryptoBoxer
                 }
 
 
-
+                if(curCandle.isCrossBBLowTop() || (curCandle.boll_low_top < curCandle.low) )
+                {
+                    Console.WriteLine("not need long. Cross BBLowTop");
+                    result = false;
+                    return result;
+                }
+                */
 
                 if (m_preLongBollLv < 0)
                 {
@@ -2251,10 +2281,22 @@ namespace CryptoBoxer
                     else
                     {
                         // 現在のLONGレベルが0より高い
-                        Console.WriteLine("need long. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
-                        // ENTRY
-                        result = true;
-                        return result;
+                        if(m_candleBuf.isTurningLow())
+                        {
+                            Console.WriteLine("need long. m_curLongBollLv is HIGH. Lv={0}", m_curLongBollLv);
+                            // ENTRY
+                            result = true;
+                            return result;
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("not need long. is not Turning Low. Lv={0}", m_curLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+
                     }
                 }
             }

@@ -14,6 +14,10 @@ namespace UtilityTrade
         public double last { get; set; }
         public string timestamp { get; set; }
 
+        public double volume { get; set; }
+
+        public double disparity_rate { get; set; }
+
         // インジケータ
         public double ema { get; set; }
         public double ema_sub { get; set; }
@@ -26,6 +30,9 @@ namespace UtilityTrade
 
         public double boll_high_top { get; set; }
         public double boll_low_top { get; set; }
+        public double ma_top { get; set; }
+
+        public double volume_ma { get; set; }
 
         public Candlestick()
         {
@@ -34,9 +41,11 @@ namespace UtilityTrade
             open = 0.0;
             last = 0.0;
             timestamp = string.Empty;
+            disparity_rate = 0.0;
             ema = 0.0;
             stddev = 0.0;
             ma = 0.0;
+            ma_top = 0.0;
             boll_high = 0.0;
             boll_low = 0.0;
             boll_high_top = 0.0;
@@ -44,6 +53,9 @@ namespace UtilityTrade
             vola_ma = 0.0;
             ema_angle = 0.0;
             ema_sub = 0.0;
+
+            volume = 0.0;
+            volume_ma = 0.0;
             return;
         }
 
@@ -497,6 +509,68 @@ namespace UtilityTrade
             return result;
         }
 
+        public bool isCrossEMA(double play=0.0)
+        {
+            if (ema >= (low-play) && ema <= (high+play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossMA(double play = 0.0)
+        {
+            if (ma >= (low - play) && ma <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossMATop(double play = 0.0)
+        {
+            if (ma_top >= (low - play) && ma_top <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossBBHigh(double play = 0.0)
+        {
+            if (boll_high >= (low - play) && boll_high <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossBBLow(double play = 0.0)
+        {
+            if (boll_low >= (low - play) && boll_low <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossBBHighTop(double play = 0.0)
+        {
+            if (boll_high_top >= (low - play) && boll_high_top <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isCrossBBLowTop(double play = 0.0)
+        {
+            if (boll_low_top >= (low - play) && boll_low_top <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
 
         public bool isTouchBollHigh()
         {
@@ -1130,6 +1204,67 @@ namespace UtilityTrade
             return result;
         }
 
+        public int calcVolumeMA(out double ma, int sample_num)
+        {
+            int result = 0;
+            ma = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                double value_sum = 0.0;
+                double square_sum = 0.0;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    elem_cnt++;
+                    double elem_value = candle.volume;
+
+                    value_sum += elem_value;
+                    square_sum += (elem_value * elem_value);
+                }
+
+                if (elem_cnt > 0)
+                {
+                    ma = value_sum / elem_cnt;
+                }
+                else
+                {
+                    ma = 0.0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ma = 0.0;
+                }
+            }
+            return result;
+        }
+
         public int calcEmaAngleMA(out double ma, int sample_num)
         {
             int result = 0;
@@ -1297,6 +1432,170 @@ namespace UtilityTrade
                         return result;
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isTurningHigh(int offset=2, double play=1000.0, int threshold=1)
+        {
+            bool result = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int beg_idx = (candle_cnt - 1) - offset;
+                if(beg_idx < 0)
+                {
+                    result = false;
+                    return result;  
+                }
+
+                Candlestick begCandle = m_candleList[beg_idx];
+                if (begCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+                Console.WriteLine("search-beg time={0} last={1}", begCandle.timestamp, begCandle.last);
+
+                int crossCnt = 0;
+                bool isCross = false;
+                for (int i = beg_idx; i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    if (candle.boll_high > candle.boll_high_top)
+                    {
+                        if(candle.isCrossMA(play))
+                        {
+                            if(!isCross)
+                            {
+                                crossCnt++;
+                                isCross = true;
+                                Console.WriteLine("search-cross time={0} last={1}", candle.timestamp, candle.last);
+                            }
+                        }
+                        else
+                        {
+                            isCross = false;
+                        }
+                    }
+                    else
+                    {
+                        isCross = false;
+                    }
+
+                    if(candle.isCrossMATop(play))
+                    {
+                        Console.WriteLine("search-end time={0} last={1}", candle.timestamp, candle.last);
+                        break;
+                    }
+                }
+
+                if(crossCnt>threshold)
+                {
+                    result = true;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isTurningLow(int offset = 2, double play = 1000.0, int threshold = 1)
+        {
+            bool result = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int beg_idx = (candle_cnt - 1) - offset;
+                if (beg_idx < 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick begCandle = m_candleList[beg_idx];
+                if(begCandle==null)
+                {
+                    result = false;
+                    return result;
+                }
+                Console.WriteLine("search-beg time={0} last={1}", begCandle.timestamp, begCandle.last);
+
+                int crossCnt = 0;
+                bool isCross = false;
+                for (int i = beg_idx; i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    if (candle.boll_low < candle.boll_low_top)
+                    {
+                        if (candle.isCrossMA(play))
+                        {
+                            if (!isCross)
+                            {
+                                crossCnt++;
+                                isCross = true;
+                                Console.WriteLine("search-cross time={0} last={1}", candle.timestamp, candle.last);
+                            }
+                        }
+                        else
+                        {
+                            isCross = false;
+                        }
+                    }
+                    else
+                    {
+                        isCross = false;
+                    }
+
+                    if (candle.isCrossMATop(play))
+                    {
+                        Console.WriteLine("search-end time={0} last={1}", candle.timestamp, candle.last);
+                        break;
+                    }
+                }
+
+                if (crossCnt > threshold)
+                {
+                    result = true;
+                }
+
             }
             catch (Exception ex)
             {
