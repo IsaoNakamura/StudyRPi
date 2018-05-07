@@ -1075,7 +1075,7 @@ namespace CryptoBoxer
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
-                    if (curCandle.disparity_rate >= 5.0)
+                    if (curCandle.disparity_rate >= 10.0)
                     {
                         postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
                         result = -1;
