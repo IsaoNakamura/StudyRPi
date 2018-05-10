@@ -542,6 +542,32 @@ namespace CryptoBoxer
                         candle.ema_angle = angle_ma;
                     }
                 }
+
+                {
+                    double increase_child = 0.0;
+                    if (candleBuf.calcMATopIncrease(out increase_child, 20) == 0)
+                    {
+                        candle.ma_top_increase = increase_child;
+                    }
+
+                    double increase_parent = 0.0;
+                    if (candleBuf.calcMATopIncreaseMA(out increase_parent, 20) == 0)
+                    {
+                        if (Math.Abs(increase_parent) > double.Epsilon)
+                        {
+                            candle.ma_top_increase_rate = increase_child / increase_parent * 100.0;
+                            //Console.WriteLine("rate={0:0.0}, child={1}, parent={2}", candle.ma_top_increase_rate, increase_child, increase_parent);
+                        }
+                    }
+                }
+
+                //{
+                //    double ma_top_increase_ma = 0.0;
+                //    if (candleBuf.calcMATopIncreaseMA(out ma_top_increase_ma, 20) == 0)
+                //    {
+                //        candle.ma_top_increase_ma = ma_top_increase_ma;
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -979,7 +1005,7 @@ namespace CryptoBoxer
                     double exit_price = position.exit_price;
 
                     //postSlack(string.Format("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price));
-                    Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date);
+                    Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5},increase={6:0}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date, position.entry_increase);
                 }
 
                 //System.Threading.Thread.Sleep(3000);
@@ -1148,6 +1174,11 @@ namespace CryptoBoxer
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
                     m_position.entryLongOrder(long_id, curCandle.timestamp);
+                    double diff_rate = 0.0;
+                    if (m_candleBuf.searchMACross(ref diff_rate) == 0)
+                    {
+                        m_position.entry_increase = diff_rate;//curCandle.ema_angle;
+                    }
                     long_entry_cnt++;
                 }
                 else if (isShort)
@@ -1156,6 +1187,11 @@ namespace CryptoBoxer
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id),true);
                     m_position.entryShortOrder(short_id, curCandle.timestamp);
+                    double diff_rate = 0.0;
+                    if (m_candleBuf.searchMACross(ref diff_rate) == 0)
+                    {
+                        m_position.entry_increase = diff_rate;//curCandle.ema_angle;
+                    }
                     short_entry_cnt++;
                 }
             }

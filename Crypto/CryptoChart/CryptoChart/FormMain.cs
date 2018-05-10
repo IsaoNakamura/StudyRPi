@@ -532,10 +532,10 @@ namespace CryptoChart
                         continue;
                     }
 
-                    double value = Math.Floor(candle.ema_angle);
+                    double value = Math.Floor(candle.ma_top_increase_rate);
 
-                    DataPoint dp_angle = new DataPoint(candle_cnt, value);
-                    m_series_indi.Points.Add(dp_angle);
+                    DataPoint dp_value = new DataPoint(candle_cnt, value);
+                    m_series_indi.Points.Add(dp_value);
 
 
                     // 表示範囲を算出

@@ -34,6 +34,9 @@ namespace UtilityTrade
 
         public double volume_ma { get; set; }
 
+        public double ma_top_increase { get; set; }
+        public double ma_top_increase_rate { get; set; }
+
         public Candlestick()
         {
             high = 0.0;
@@ -56,6 +59,10 @@ namespace UtilityTrade
 
             volume = 0.0;
             volume_ma = 0.0;
+
+            ma_top_increase = 0.0;
+            ma_top_increase_rate = 0.0;
+
             return;
         }
 
@@ -1343,6 +1350,118 @@ namespace UtilityTrade
             return result;
         }
 
+        public int calcMATopIncrease(out double increase, int sample_num)
+        {
+            int result = 0;
+            increase = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = candle_cnt - sample_num;
+                if (beg_idx < 0 )
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick beg_candle = m_candleList[beg_idx];
+                if (beg_candle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick end_candle = getLastCandle();
+                if (end_candle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                increase = end_candle.ma_top - beg_candle.ma_top;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    increase = 0.0;
+                }
+            }
+            return result;
+        }
+
+        public int calcMATopIncreaseMA(out double ma, int sample_num)
+        {
+            int result = 0;
+            ma = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                double value_sum = 0.0;
+                double square_sum = 0.0;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    elem_cnt++;
+                    double elem_value = candle.ma_top_increase;
+
+                    value_sum += elem_value;
+                    square_sum += (elem_value * elem_value);
+                }
+
+                if (elem_cnt > 0)
+                {
+                    ma = value_sum / elem_cnt;
+                }
+                else
+                {
+                    ma = 0.0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ma = 0.0;
+                }
+            }
+            return result;
+        }
+
         public bool isOverTopBB(int sample_num)
         {
             bool result = true;
@@ -1604,6 +1723,98 @@ namespace UtilityTrade
             }
             finally
             {
+            }
+            return result;
+        }
+
+
+        public int searchMACross(ref double diff_rate)
+        {
+            int result = -1;
+            diff_rate = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = (candle_cnt - 1) - 1;
+                if (beg_idx < 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick curCandle = getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int cnt = 0;
+                double cross_ma = 0.0;
+                bool isCross = false;
+                for (int i = (beg_idx-1); i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    cnt++;
+
+                    if (curCandle.ma < curCandle.ma_top)
+                    {
+                        // LONGか判断する場合
+                        if (candle.ma >= candle.ma_top)
+                        {
+                            // 交差した場合
+                            isCross = true;
+                            cross_ma = candle.ma_top;
+                            Console.WriteLine("Hit!! CrossMA candle={0} MA={1:0} DIFF={2:0}", candle.timestamp, cross_ma, (curCandle.ma_top - cross_ma));
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // SHORTか判断する場合
+                        if (candle.ma <= candle.ma_top)
+                        {
+                            // 交差した場合
+                            isCross = true;
+                            cross_ma = candle.ma_top;
+                            Console.WriteLine("Hit!! CrossMA candle={0} MA={1:0} DIFF={2:0}", candle.timestamp, cross_ma, (curCandle.ma_top - cross_ma));
+                            break;
+                        }
+                    }
+                }
+
+                if (isCross)
+                {
+                    diff_rate = (curCandle.ma_top - cross_ma) / cnt;
+                    result = 0;
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("Miss!! CrossMA");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    diff_rate = 0.0;
+                }
             }
             return result;
         }
