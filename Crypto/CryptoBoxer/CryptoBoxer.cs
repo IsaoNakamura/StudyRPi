@@ -1005,7 +1005,7 @@ namespace CryptoBoxer
                     double exit_price = position.exit_price;
 
                     //postSlack(string.Format("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price));
-                    Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5},increase={6:0}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date, position.entry_increase);
+                    Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date);
                 }
 
                 //System.Threading.Thread.Sleep(3000);
@@ -1174,11 +1174,12 @@ namespace CryptoBoxer
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
                     m_position.entryLongOrder(long_id, curCandle.timestamp);
-                    double diff_rate = 0.0;
-                    if (m_candleBuf.searchMACross(ref diff_rate) == 0)
-                    {
-                        m_position.entry_increase = diff_rate;//curCandle.ema_angle;
-                    }
+                    //double diff_rate = 0.0;
+                    //int cnt = 0;
+                    //if (m_candleBuf.searchMACross(ref diff_rate, ref cnt) == 0)
+                    //{
+                    //    m_position.entry_increase = cnt;//curCandle.ema_angle;
+                    //}
                     long_entry_cnt++;
                 }
                 else if (isShort)
@@ -1187,11 +1188,12 @@ namespace CryptoBoxer
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id),true);
                     m_position.entryShortOrder(short_id, curCandle.timestamp);
-                    double diff_rate = 0.0;
-                    if (m_candleBuf.searchMACross(ref diff_rate) == 0)
-                    {
-                        m_position.entry_increase = diff_rate;//curCandle.ema_angle;
-                    }
+                    //double diff_rate = 0.0;
+                    //int cnt = 0;
+                    //if (m_candleBuf.searchMACross(ref diff_rate, ref cnt) == 0)
+                    //{
+                    //    m_position.entry_increase = cnt;//curCandle.ema_angle;
+                    //}
                     short_entry_cnt++;
                 }
             }
@@ -2032,6 +2034,18 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                double diff = 0.0;
+                int back_cnt = 0;
+                if (m_candleBuf.searchMACross(ref diff, ref back_cnt) == 0)
+                {
+                    if ( (back_cnt <= 0) || (back_cnt >=90) )
+                    {
+                        Console.WriteLine("not need short. back_cnt is over. cnt={0} diff={1:0}", back_cnt, diff);
+                        result = false;
+                        return result;
+                    }
+                }
+
                 /*
                 double ma_diff = curCandle.last - curCandle.ma;
                 if(ma_diff < 2000.0)
@@ -2117,7 +2131,6 @@ namespace CryptoBoxer
                             result = true;
                             return result;
                         }
-
                         else
                         {
                             Console.WriteLine("not need short. is not Turning High. Lv={0}", m_curShortBollLv);
@@ -2243,6 +2256,18 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                double diff = 0.0;
+                int back_cnt = 0;
+                if (m_candleBuf.searchMACross(ref diff, ref back_cnt) == 0)
+                {
+                    if ((back_cnt <= 0) || (back_cnt >= 90))
+                    {
+                        Console.WriteLine("not need long. back_cnt is over. cnt={0} diff={1:0}", back_cnt, diff);
+                        result = false;
+                        return result;
+                    }
+                }
+
                 /*
                 double ma_diff = curCandle.ma - curCandle.last;
                 if (ma_diff < 2000.0)
@@ -2324,7 +2349,6 @@ namespace CryptoBoxer
                             result = true;
                             return result;
                         }
-
                         else
                         {
                             Console.WriteLine("not need long. is not Turning Low. Lv={0}", m_curLongBollLv);

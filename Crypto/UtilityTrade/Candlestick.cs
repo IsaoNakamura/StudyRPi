@@ -1728,10 +1728,10 @@ namespace UtilityTrade
         }
 
 
-        public int searchMACross(ref double diff_rate)
+        public int searchMACross(ref double diff, ref int back_cnt)
         {
             int result = -1;
-            diff_rate = 0.0;
+            diff = 0.0;
             try
             {
                 int candle_cnt = getCandleCount();
@@ -1755,7 +1755,6 @@ namespace UtilityTrade
                     return result;
                 }
 
-                int cnt = 0;
                 double cross_ma = 0.0;
                 bool isCross = false;
                 for (int i = (beg_idx-1); i >= 0; i--)
@@ -1765,7 +1764,7 @@ namespace UtilityTrade
                     {
                         continue;
                     }
-                    cnt++;
+                    back_cnt++;
 
                     if (curCandle.ma < curCandle.ma_top)
                     {
@@ -1795,7 +1794,7 @@ namespace UtilityTrade
 
                 if (isCross)
                 {
-                    diff_rate = (curCandle.ma_top - cross_ma) / cnt;
+                    diff = (curCandle.ma_top - cross_ma);
                     result = 0;
                     return result;
                 }
@@ -1813,7 +1812,7 @@ namespace UtilityTrade
             {
                 if (result != 0)
                 {
-                    diff_rate = 0.0;
+                    diff = 0.0;
                 }
             }
             return result;

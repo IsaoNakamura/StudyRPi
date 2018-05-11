@@ -34,7 +34,7 @@ namespace UtilityTrade
         public double exit_price { get; set; }
         public string exit_date { get; set; }
 
-        public double entry_increase { get; set; }
+        //public double entry_increase { get; set; }
 
         public Position()
         {
