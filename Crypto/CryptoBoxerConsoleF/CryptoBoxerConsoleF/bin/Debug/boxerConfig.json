@@ -9,7 +9,7 @@
   "boll_over_candle_num": 7,
   "ema_diff_far": 3000.0,
   "ema_diff_near": 100.0,
-  "losscut_value": -3000,
+  "losscut_value": -5000,
   "buffer_num": 500,
   "backtest_hour": 96,
   "backtest_flag": 1
