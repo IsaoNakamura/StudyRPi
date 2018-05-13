@@ -100,6 +100,11 @@ namespace UtilityTrade
             return Math.Abs(last - open);
         }
 
+		public double getDiff()
+        {
+            return (last - open);
+        }
+
         public double getVolatilityRate()
         {
             if (vola_ma <= double.Epsilon)
@@ -691,82 +696,22 @@ namespace UtilityTrade
 
             return false;
         }
-
-        // キャンドル始値がボリンジャー高バンド以上か判断
-        public bool isOverBBOpen()
+      
+        // 値がボリンジャー高バンド以上か判断
+        public bool isOverBBHigh(double value)
         {
-            if (boll_high <= open)
+			if (boll_high <= value)
             {
                 return true;
             }
             return false;
         }
-
-
-        // キャンドル終値がボリンジャー高バンド以上か判断
-        public bool isOverBBLast()
+        
+        
+        // 値がボリンジャー低バンド以上か判断
+        public bool isUnderBBLow(double value)
         {
-            if (boll_high <= last)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル高値がボリンジャー高バンド以上か判断
-        public bool isOverBBHigh()
-        {
-            if (boll_high <= high)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル低値がボリンジャー高バンド以上か判断
-        public bool isOverBBLow()
-        {
-            if (boll_high <= low)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル始値がボリンジャー低バンド以下か判断
-        public bool isUnderBBOpen()
-        {
-            if (boll_low >= open)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル終値がボリンジャー低バンド以下か判断
-        public bool isUnderBBLast()
-        {
-            if (boll_low >= last)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル低値がボリンジャー低バンド以上か判断
-        public bool isUnderBBLow()
-        {
-            if (boll_low <= low)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        // キャンドル高値がボリンジャー低バンド以上か判断
-        public bool isUnderBBHigh()
-        {
-            if (boll_low <= low)
+            if (boll_low >= value)
             {
                 return true;
             }

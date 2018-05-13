@@ -1732,17 +1732,17 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                bool isOverEma = false;
-                if (curCandle.ema <= curCandle.last)
-                {
-                    isOverEma = true;
-                }
+                //bool isOverEma = false;
+                //if (curCandle.ema <= curCandle.last)
+                //{
+                //    isOverEma = true;
+                //}
 
-                bool isNearEma = false;
+                //bool isNearEma = false;
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff <= m_config.ema_diff_near)
                 {
-                    isNearEma = true;
+                    //isNearEma = true;
                     result = true;
                     return result;
                 }
@@ -1804,10 +1804,10 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                bool isUnderEma = false;
+                //bool isUnderEma = false;
                 if (curCandle.ema >= curCandle.last)
                 {
-                    isUnderEma = true;
+                    //isUnderEma = true;
                     result = true;
                     return result;
                 }
@@ -1981,50 +1981,56 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-                if (!prevCandle.isTouchBollHigh())
-                {
-                    if (!pastCandle.isTouchBollHigh())
-                    {
-                        //if (!curCandle.isTouchBollHighTop())
-                        //{
-                            result = false;
-                            return result;
-                        //}
-                        //else
-                        //{
-                        //    Console.WriteLine("curCandle is Touch BB_HIGH_TOP");
-                        //}
-                    }
-                    else
-                    {
-                        Console.WriteLine("pastCandle is Touch BB_HIGH");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("prevCandle is Touch BB_HIGH");
-                }
-
-                if (curCandle.boll_high < curCandle.boll_high_top)
-                {
-                    Console.WriteLine("not need short. boll_high is inside.");
-                    result = false;
-                    return result;
-                }
-
-                if(!m_candleBuf.isOverTopBB(m_config.boll_over_candle_num))
-                {
-                    Console.WriteLine("not need short. boll_high is not over the top.");
-                    result = false;
-                    return result;
-                }
-
-                if (curCandle.isTouchBollLow())
+				if (curCandle.isTouchBollLow())
                 {
                     Console.WriteLine("not need short. curCandle is Touch BB_LOW");
                     result = false;
                     return result;
                 }
+
+				if (!prevCandle.isOverBBHigh(prevCandle.last))
+                {
+					if (!pastCandle.isOverBBHigh(pastCandle.last))
+                    {
+						// 一つ前のキャンドルと過去のキャンドルがBollHighにタッチしていない
+                        // SHORTすべきでない
+                        result = false;
+                        return result;
+                    }
+                    else
+                    {
+						// 過去のキャンドルがBollHighにタッチ
+                        Console.WriteLine("pastCandle is Touch BB_HIGH");
+                    }
+                }
+                else
+                {
+					// 一つ前のキャンドルがBollHighにタッチしていない
+                    Console.WriteLine("prevCandle is Touch BB_HIGH");
+                }
+
+				if (curCandle.boll_high < (curCandle.boll_high_top+5000))
+                {
+                    Console.WriteLine("not need short. boll_high is inside.");
+                    result = false;
+                    return result;
+                }
+                
+                /*
+				if(curCandle.isCrossBBHighTop(1000))
+				{
+					Console.WriteLine("not need short. cross top's boll_high.");
+                    result = false;
+                    return result;
+				}
+				*/
+                
+                if(!m_candleBuf.isOverTopBB(m_config.boll_over_candle_num))
+                {
+                    Console.WriteLine("not need short. boll_high is not over the top.");
+                    result = false;
+                    return result;
+                }            
 
                 double ema_diff = curCandle.last - curCandle.ema;
                 if (ema_diff < m_config.ema_diff_far)
@@ -2034,6 +2040,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                /*
                 double diff = 0.0;
                 int back_cnt = 0;
                 if (m_candleBuf.searchMACross(ref diff, ref back_cnt) == 0)
@@ -2045,6 +2052,7 @@ namespace CryptoBoxer
                         return result;
                     }
                 }
+                */
 
                 /*
                 double ma_diff = curCandle.last - curCandle.ma;
@@ -2099,7 +2107,7 @@ namespace CryptoBoxer
                         else
                         {
                             // 前回が下降キャンドルの場合
-                            if (prevCandle.isOverBBLast())
+							if (prevCandle.isOverBBHigh(prevCandle.last))
                             {
                                 // キャンドル終値がボリンジャー高バンド以上にある
                                 // まだ上昇の可能性がある
@@ -2123,8 +2131,11 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        // 現在のSHORTレベルが0より高い
-                        if(m_candleBuf.isTurningHigh())
+						// 現在のSHORTレベルが0より高い
+
+						double curDiff = curCandle.getDiff();
+						double preDiff = prevCandle.getDiff();
+						if(curDiff <= preDiff)
                         {
                             Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
                             // ENTRY
@@ -2133,12 +2144,11 @@ namespace CryptoBoxer
                         }
                         else
                         {
-                            Console.WriteLine("not need short. is not Turning High. Lv={0}", m_curShortBollLv);
+							Console.WriteLine("not need short. curDiff is big than preDiff. cur={0} pre={1}", curDiff, preDiff);
                             // 何もしない
                             result = false;
                             return result;
                         }
-
                     }
                 }
             }
@@ -2203,9 +2213,16 @@ namespace CryptoBoxer
                 m_curLongBollLv = curCandle.getLongLevel();
                 m_preLongBollLv = prevCandle.getLongLevel();
 
-                if (!prevCandle.isTouchBollLow())
+				if (curCandle.isTouchBollHigh())
                 {
-                    if (!pastCandle.isTouchBollLow())
+                    Console.WriteLine("not need long. curCandle is Touch BB_HIGH");
+                    result = false;
+                    return result;
+                }
+
+				if (!prevCandle.isUnderBBLow(prevCandle.last))
+                {
+					if (!pastCandle.isUnderBBLow(pastCandle.last))
                     {
                         //if (!curCandle.isTouchBollLowTop())
                         //{
@@ -2227,27 +2244,30 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle is Touch BB_LOW");
                 }
 
-                if (curCandle.boll_low > curCandle.boll_low_top)
+				if (curCandle.boll_low > (curCandle.boll_low_top-5000))
                 {
                     Console.WriteLine("not need long. boll_low is inside.");
                     result = false;
                     return result;
                 }
-
+                
+                /*
+				if (curCandle.isCrossBBLowTop(1000))
+                {
+                    Console.WriteLine("not need long. cross top's boll_low.");
+                    result = false;
+                    return result;
+                }
+                */
+                
                 if (!m_candleBuf.isUnderTopBB(m_config.boll_over_candle_num))
                 {
                     Console.WriteLine("not need long. boll_high is not under the top.");
                     result = false;
                     return result;
                 }
-
-                if (curCandle.isTouchBollHigh())
-                {
-                    Console.WriteLine("not need long. curCandle is Touch BB_HIGH");
-                    result = false;
-                    return result;
-                }
-
+                
+                            
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff < m_config.ema_diff_far)
                 {
@@ -2256,6 +2276,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                /*
                 double diff = 0.0;
                 int back_cnt = 0;
                 if (m_candleBuf.searchMACross(ref diff, ref back_cnt) == 0)
@@ -2267,6 +2288,7 @@ namespace CryptoBoxer
                         return result;
                     }
                 }
+                */
 
                 /*
                 double ma_diff = curCandle.ma - curCandle.last;
@@ -2302,7 +2324,7 @@ namespace CryptoBoxer
                         if (prevCandle.isTrend())
                         {
                             // 前回が上昇キャンドルの場合
-                            if (prevCandle.isUnderBBLast())
+							if (prevCandle.isUnderBBLow(prevCandle.last))
                             {
                                 // 何もしない
                                 Console.WriteLine("not need long. prevCandle's last is Under BB_LOW. Lv={0}", m_preLongBollLv);
@@ -2313,15 +2335,6 @@ namespace CryptoBoxer
                         else
                         {
                             // 前回が下降キャンドルの場合
-                            /*
-                            if (prevCandle.isUnderBBLast())
-                            {
-                                // 何もしない
-                                Console.WriteLine("not need long. prevCandle's last is Under BB_LOW. Lv={0}", m_preLongBollLv);
-                                result = false;
-                                return result;
-                            }
-                            */
                             Console.WriteLine("not need long. m_preLongBollLv is LOW but change soon. Lv={0}", m_preLongBollLv);
                             // 何もしない
                             result = false;
@@ -2342,7 +2355,9 @@ namespace CryptoBoxer
                     else
                     {
                         // 現在のLONGレベルが0より高い
-                        if(m_candleBuf.isTurningLow())
+						double curDiff = curCandle.getDiff();
+                        double preDiff = prevCandle.getDiff();
+                        if (curDiff >= preDiff)
                         {
                             Console.WriteLine("need long. m_curLongBollLv is HIGH. Lv={0}", m_curLongBollLv);
                             // ENTRY
@@ -2351,7 +2366,7 @@ namespace CryptoBoxer
                         }
                         else
                         {
-                            Console.WriteLine("not need long. is not Turning Low. Lv={0}", m_curLongBollLv);
+							Console.WriteLine("not need long. curDiff is small than preDiff. cur={0} pre={1}", curDiff, preDiff);
                             // 何もしない
                             result = false;
                             return result;
