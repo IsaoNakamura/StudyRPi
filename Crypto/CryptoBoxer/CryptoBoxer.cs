@@ -1090,10 +1090,10 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
-
+                
                 // NONEポジションの場合
-                bool isLong = isConditionLongEntry();
-                bool isShort= isConditionShortEntry();
+                bool isLong = isConditionLongEntryScam();
+                bool isShort= isConditionShortEntryScam();
 
 
 
@@ -1101,7 +1101,7 @@ namespace CryptoBoxer
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
-                    if (curCandle.disparity_rate >= 10.0)
+                    if (curCandle.disparity_rate >= 5.0)
                     {
                         postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
                         result = -1;
@@ -1165,8 +1165,8 @@ namespace CryptoBoxer
                 }
 
                 // NONEポジションの場合
-                bool isLong = isConditionLongEntry();
-                bool isShort = isConditionShortEntry();
+                bool isLong = isConditionLongEntryScam();
+                bool isShort = isConditionShortEntryScam();
 
                 if (isLong)
                 {
@@ -1981,12 +1981,7 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-				if (curCandle.isTouchBollLow())
-                {
-                    Console.WriteLine("not need short. curCandle is Touch BB_LOW");
-                    result = false;
-                    return result;
-                }
+
 
 				if (!prevCandle.isOverBBHigh(prevCandle.last))
                 {
@@ -2213,12 +2208,7 @@ namespace CryptoBoxer
                 m_curLongBollLv = curCandle.getLongLevel();
                 m_preLongBollLv = prevCandle.getLongLevel();
 
-				if (curCandle.isTouchBollHigh())
-                {
-                    Console.WriteLine("not need long. curCandle is Touch BB_HIGH");
-                    result = false;
-                    return result;
-                }
+
 
 				if (!prevCandle.isUnderBBLow(prevCandle.last))
                 {
@@ -2388,5 +2378,200 @@ namespace CryptoBoxer
             return result;
         }
 
+		public bool isConditionShortEntryScam()
+        {
+            bool result = false;
+
+            try
+            {
+                m_curShortBollLv = -5;
+                m_preShortBollLv = -5;
+
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                m_curShortBollLv = curCandle.getShortLevel();
+                m_preShortBollLv = prevCandle.getShortLevel();
+
+				if ((curCandle.boll_high+1000) > curCandle.boll_high_top)
+                {
+                    Console.WriteLine("not need short. boll_high is outside.");
+                    result = false;
+                    return result;
+                }
+
+                if (!prevCandle.isOverBBHigh(prevCandle.last))
+                {
+					// 一つ前のキャンドルの終値がBollHighをOVERしてない
+                    // SHORTすべきでない
+					Console.WriteLine("not need short. prevCandle'last is not over BB_HIGH");
+                    result = false;
+                    return result;
+                }
+                else
+                {
+					// 一つ前のキャンドルの終値がBollHighをOVERしている
+                    Console.WriteLine("prevCandle'last is over BB_HIGH");
+                }
+                            
+                double ema_diff = curCandle.last - curCandle.ema;
+                if (ema_diff < m_config.ema_diff_far)
+                {
+                    Console.WriteLine("not need short. ema_diff is LOW. diff={0:0}", ema_diff);
+                    result = false;
+                    return result;
+                }
+                            
+                if (m_curShortBollLv <= 0)
+                {
+                    // 現在のSHORTレベルが0以下
+                    Console.WriteLine("not need short. m_curShortBollLv is LOW. Lv={0}", m_curShortBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                else
+                {
+                    // 現在のSHORTレベルが0より高い
+					Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
+                    // ENTRY
+                    result = true;
+                    return result;
+                }            
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+                m_curShortBollLv = -5;
+                m_preShortBollLv = -5;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+		public bool isConditionLongEntryScam()
+        {
+            bool result = false;
+            try
+            {
+                m_curLongBollLv = -5;
+                m_preLongBollLv = -5;
+
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                m_curLongBollLv = curCandle.getLongLevel();
+                m_preLongBollLv = prevCandle.getLongLevel();
+
+                if (!prevCandle.isUnderBBLow(prevCandle.last))
+                {
+					Console.WriteLine("not need long. prevCandle'last is not under BB_LOW");
+					result = false;
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("prevCandle'last is under BB_LOW");
+                }
+
+				if ((curCandle.boll_low-1000) < curCandle.boll_low_top)
+                {
+                    Console.WriteLine("not need long. boll_low is outside.");
+                    result = false;
+                    return result;
+                }            
+
+                double ema_diff = curCandle.ema - curCandle.last;
+                if (ema_diff < m_config.ema_diff_far)
+                {
+                    Console.WriteLine("not need long. ema_diff is LOW. diff={0:0}", ema_diff);
+                    result = false;
+                    return result;
+                }
+                
+                if (m_curLongBollLv <= 0)
+                {
+                    // 現在のLONGレベルが0以下
+                    Console.WriteLine("not need long. m_curLongBollLv is LOW. Lv={0}", m_curLongBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                else
+                {
+                    // 現在のLONGレベルが0より高い
+					// ENTRY
+                    result = true;
+                    return result;               
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+                m_curLongBollLv = -5;
+                m_preLongBollLv = -5;
+            }
+            finally
+            {
+            }
+            return result;
+        }
     }
 }
