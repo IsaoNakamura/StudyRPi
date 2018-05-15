@@ -53,6 +53,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public int backtest_flag { get; set; }
 
+        [JsonProperty]
+        public int boll_diff_play { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -69,6 +72,7 @@ namespace CryptoBoxer
             buffer_num = 60;
             backtest_hour = 72;
             backtest_flag = 0;
+            boll_diff_play = 1000;
             return;
         }
 

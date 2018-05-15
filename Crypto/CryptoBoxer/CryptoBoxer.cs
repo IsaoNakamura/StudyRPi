@@ -2420,7 +2420,7 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-				if ((curCandle.boll_high+1000) > curCandle.boll_high_top)
+				if ((curCandle.boll_high+ m_config.boll_diff_play) > curCandle.boll_high_top)
                 {
                     Console.WriteLine("not need short. boll_high is outside.");
                     result = false;
@@ -2460,10 +2460,67 @@ namespace CryptoBoxer
                 else
                 {
                     // 現在のSHORTレベルが0より高い
-					Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
-                    // ENTRY
-                    result = true;
-                    return result;
+
+                    int band_pos = 0;
+                    if (isPassBBtoMATop(out band_pos))
+                    {
+                        // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+                        // ENTRY
+                        Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+                        if (band_pos == -1)
+                        {
+                            // 上位BBバンドの下側を超えていた場合
+                            // MA側に向かう上への力が強いはず
+                            // 現在値より上位MAが下にあればENTRY
+                            if (curCandle.last > curCandle.ma_top)
+                            {
+                                // ENTRY
+                                Console.WriteLine("need short. Touch BB_LOW. MA_TOP is OVER. Lv={0}", m_curShortBollLv);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curShortBollLv);
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else if (band_pos == 1)
+                        {
+                            // 上位BBバンドの上側を超えていた場合
+                            // MA側に向かう下への力が強いはず
+                            // 現在値より上位MAが下にあればENTRY
+                            if (curCandle.last > curCandle.ma_top)
+                            {
+                                // ENTRY
+                                Console.WriteLine("need short. Touch BB_HIGH. MA_TOP is UNDER. Lv={0}", m_curShortBollLv);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curShortBollLv);
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
                 }            
             }
             catch (Exception ex)
@@ -2478,6 +2535,7 @@ namespace CryptoBoxer
             }
             return result;
         }
+
 		public bool isConditionLongEntryScam()
         {
             bool result = false;
@@ -2530,7 +2588,7 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle'last is under BB_LOW");
                 }
 
-				if ((curCandle.boll_low-1000) < curCandle.boll_low_top)
+				if ((curCandle.boll_low-m_config.boll_diff_play) < curCandle.boll_low_top)
                 {
                     Console.WriteLine("not need long. boll_low is outside.");
                     result = false;
@@ -2556,9 +2614,67 @@ namespace CryptoBoxer
                 else
                 {
                     // 現在のLONGレベルが0より高い
-					// ENTRY
-                    result = true;
-                    return result;               
+
+                    int band_pos = 0;
+                    if (isPassBBtoMATop(out band_pos))
+                    {
+                        // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+                        // ENTRY
+                        Console.WriteLine("need long. m_curLongBollLv is HIGH. Lv={0}", m_curLongBollLv);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+                        if (band_pos == -1)
+                        {
+                            // 上位BBバンドの下側を超えていた場合
+                            // MAに向かう上への力が強いはず
+                            // 現在値より上位MAが上にあればENTRY
+                            if (curCandle.last < curCandle.ma_top)
+                            {
+                                // ENTRY
+                                Console.WriteLine("need long. Touch BB_LOW. MA_TOP is OVER. Lv={0}", m_curLongBollLv);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curLongBollLv);
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else if (band_pos == 1)
+                        {
+                            // 上位BBバンドの上側を超えていた場合
+                            // MAに向かう下への力が強いはず
+                            // 現在値より上位MAが上にあればENTRY
+                            if (curCandle.last < curCandle.ma_top)
+                            {
+                                // ENTRY
+                                Console.WriteLine("need long. Touch BB_HIGH. MA_TOP is OVER. Lv={0}", m_curLongBollLv);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                Console.WriteLine("not need long. not pass BB to MATop. Lv={0}", m_curLongBollLv);
+                                // 何もしない
+                                result = false;
+                                return result;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need long. not pass BB to MATop. Lv={0}", m_curLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -2567,6 +2683,51 @@ namespace CryptoBoxer
                 result = false;
                 m_curLongBollLv = -5;
                 m_preLongBollLv = -5;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isPassBBtoMATop(out int band_pos)
+        {
+            bool result = false;
+            band_pos = 0;
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                string outside_stamp = "";
+                string cross_stamp = "";
+                int back_cnt = 0;
+                int matop_cross_cnt = 0;
+
+                if (m_candleBuf.searchLastOutsideBB(out band_pos, out outside_stamp, out cross_stamp, out back_cnt, out matop_cross_cnt) != 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (matop_cross_cnt > 0)
+                {
+                    Console.WriteLine("Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    result = true;
+                }
+                else
+                {
+                    Console.WriteLine("Not Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
             }
             finally
             {

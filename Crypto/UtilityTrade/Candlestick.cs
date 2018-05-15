@@ -1673,10 +1673,14 @@ namespace UtilityTrade
         }
 
 
-        public int searchMACross(ref double diff, ref int back_cnt)
+        public int searchLastOutsideBB(out int band_pos, out string outside_stamp, out string cross_stamp, out int back_cnt, out int matop_cross_cnt)
         {
             int result = -1;
-            diff = 0.0;
+            band_pos = 0;
+            outside_stamp = "";
+            cross_stamp = "";
+            back_cnt = 0;
+            matop_cross_cnt = 0;
             try
             {
                 int candle_cnt = getCandleCount();
@@ -1693,14 +1697,6 @@ namespace UtilityTrade
                     return result;
                 }
 
-                Candlestick curCandle = getLastCandle();
-                if (curCandle == null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                double cross_ma = 0.0;
                 bool isCross = false;
                 for (int i = (beg_idx-1); i >= 0; i--)
                 {
@@ -1711,27 +1707,36 @@ namespace UtilityTrade
                     }
                     back_cnt++;
 
-                    if (curCandle.ma < curCandle.ma_top)
+                    if (candle.isCrossMATop())
                     {
-                        // LONGか判断する場合
-                        if (candle.ma >= candle.ma_top)
+                        matop_cross_cnt++;
+                        cross_stamp = candle.timestamp;
+                    }
+
+                    if (candle.boll_low < candle.boll_low_top)
+                    {
+                        // BOLLが上位BOLLより下にはみ出した場合
+                        if (candle.isCrossBBLowTop())
                         {
-                            // 交差した場合
+                            // 上位BOLLにキャンドルが交差した場合
+                            band_pos = -1;
                             isCross = true;
-                            cross_ma = candle.ma_top;
-                            Console.WriteLine("Hit!! CrossMA candle={0} MA={1:0} DIFF={2:0}", candle.timestamp, cross_ma, (curCandle.ma_top - cross_ma));
+                            outside_stamp = candle.timestamp;
+                            //Console.WriteLine("Hit!! LastOutsideBB Low {0} LAST={1:0} CROSS={2}", candle.timestamp, candle.last, matop_cross_cnt);
                             break;
                         }
                     }
-                    else
+
+                    if (candle.boll_high > candle.boll_high_top)
                     {
-                        // SHORTか判断する場合
-                        if (candle.ma <= candle.ma_top)
+                        // BOLLが上位BOLLより上にはみ出した場合
+                        if (candle.isCrossBBHighTop())
                         {
-                            // 交差した場合
+                            // 上位BOLLにキャンドルが交差した場合
+                            band_pos = 1;
                             isCross = true;
-                            cross_ma = candle.ma_top;
-                            Console.WriteLine("Hit!! CrossMA candle={0} MA={1:0} DIFF={2:0}", candle.timestamp, cross_ma, (curCandle.ma_top - cross_ma));
+                            outside_stamp = candle.timestamp;
+                            //Console.WriteLine("Hit!! LastOutsideBB High {0} LAST={1:0} CROSS={2}", candle.timestamp, candle.last, matop_cross_cnt);
                             break;
                         }
                     }
@@ -1739,13 +1744,12 @@ namespace UtilityTrade
 
                 if (isCross)
                 {
-                    diff = (curCandle.ma_top - cross_ma);
                     result = 0;
                     return result;
                 }
                 else
                 {
-                    Console.WriteLine("Miss!! CrossMA");
+                    Console.WriteLine("Miss!! search LastOutsideBB.");
                 }
             }
             catch (Exception ex)
@@ -1757,7 +1761,11 @@ namespace UtilityTrade
             {
                 if (result != 0)
                 {
-                    diff = 0.0;
+                    band_pos = 0;
+                    outside_stamp = "";
+                    cross_stamp = "";
+                    back_cnt = 0;
+                    matop_cross_cnt = 0;
                 }
             }
             return result;
