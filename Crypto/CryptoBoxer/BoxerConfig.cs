@@ -59,6 +59,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public double vola_rate { get; set; }
 
+        [JsonProperty]
+        public double next_open_diff { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -77,6 +80,7 @@ namespace CryptoBoxer
             backtest_flag = 0;
             boll_diff_play = 1000;
             vola_rate = 2.0;
+            next_open_diff = 500.0;
             return;
         }
 
