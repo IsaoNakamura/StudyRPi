@@ -14,5 +14,6 @@
   "backtest_hour": 96,
   "backtest_flag": 0,
   "boll_diff_play": 1000,
-  "vola_rate":  2.0
+  "vola_rate": 2.0,
+  "next_open_diff": 500.0
 }

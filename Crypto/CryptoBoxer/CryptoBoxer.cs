@@ -1743,19 +1743,29 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                double profit = curCandle.last - m_position.entry_price;
+
                 //bool isOverEma = false;
-                //if (curCandle.ema <= curCandle.last)
-                //{
-                //    isOverEma = true;
-                //}
+                if (curCandle.ema <= curCandle.last)
+                {
+                    if (profit > 0.0)
+                    {
+                        //isOverEma = true;
+                        result = true;
+                        return result;
+                    }
+                }
 
                 //bool isNearEma = false;
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff <= m_config.ema_diff_near)
                 {
-                    //isNearEma = true;
-                    result = true;
-                    return result;
+                    if (profit > 0.0)
+                    {
+                        //isNearEma = true;
+                        result = true;
+                        return result;
+                    }
                 }
 
                 //if (isNearEma || isOverEma)
@@ -1815,20 +1825,30 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                double profit = m_position.entry_price - curCandle.last;
+
                 //bool isUnderEma = false;
                 if (curCandle.ema >= curCandle.last)
                 {
-                    //isUnderEma = true;
-                    result = true;
-                    return result;
+                    if (profit > 0.0)
+                    {
+                        //isUnderEma = true;
+                        result = true;
+                        return result;
+                    }
                 }
 
                 //bool isNearEma = false;
-                //double ema_diff = curCandle.last - curCandle.ema;
-                //if (ema_diff <= m_config.ema_diff_near)
-                //{
-                //    isNearEma = true;
-                //}
+                double ema_diff = curCandle.last - curCandle.ema;
+                if (ema_diff <= m_config.ema_diff_near)
+                {
+                    if (profit > 0.0)
+                    {
+                        //isNearEma = true;
+                        result = true;
+                        return result;
+                    }
+                }
 
                 //if (isNearEma || isUnderEma)
                 //{
