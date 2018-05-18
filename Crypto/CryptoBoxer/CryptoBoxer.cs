@@ -1856,7 +1856,7 @@ namespace CryptoBoxer
                 //    int curOpenLv = curCandle.getOpenLevel();
                 //    if (!curCandle.isTrend())
                 //    {//下降キャンドルなら
-                //        if (curLastLv == 0 && curOpenLv==4)
+                //        if (curLastLv == 0 && curOpenLv == 4)
                 //        {// 大陰線
                 //            // SKIP
                 //            Console.WriteLine("skip LONG-EXIT. curLastLv={0} curOpenLv={1}", curLastLv, curOpenLv);

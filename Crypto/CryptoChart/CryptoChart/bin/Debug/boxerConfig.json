@@ -7,7 +7,7 @@
   "boll_sample_num": 20,
   "boll_top_sample_num": 100,
   "boll_over_candle_num": 7,
-  "ema_diff_far": 800.0,
+  "ema_diff_far": 500.0,
   "ema_diff_near": 100.0,
   "losscut_value": -5000,
   "buffer_num": 500,
