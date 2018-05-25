@@ -27,6 +27,9 @@ namespace CryptoBoxer
         public int ema_sample_num { get; set; }
 
         [JsonProperty]
+        public int ema_sub_sample_num { get; set; }
+
+        [JsonProperty]
         public int boll_sample_num { get; set; }
 
         [JsonProperty]
@@ -69,6 +72,7 @@ namespace CryptoBoxer
             product_bitflyer = null;
             product_cryptowatch = null;
             ema_sample_num = 20;
+            ema_sub_sample_num = 20;
             boll_sample_num = 20;
             boll_top_sample_num = 100;
             boll_over_candle_num = 6;

@@ -29,6 +29,7 @@ namespace CryptoChart
         private ChartArea m_area = null;
         private Series m_series_ltp = null;
         private Series m_series_ema = null;
+        private Series m_series_ema_sub = null;
         private Series m_series_bollHigh = null;
         private Series m_series_bollLow = null;
         private Series m_series_min = null;
@@ -158,6 +159,17 @@ namespace CryptoChart
                 m_series_ema.ChartType = SeriesChartType.Line;
                 m_series_ema.Color = Color.Aqua;
                 m_series_ema.Name = "EMA";
+
+                if (m_series_ema_sub != null)
+                {
+                    m_series_ema_sub.Dispose();
+                    m_series_ema_sub = null;
+                }
+
+                m_series_ema_sub = new Series();
+                m_series_ema_sub.ChartType = SeriesChartType.Line;
+                m_series_ema_sub.Color = Color.Yellow;
+                m_series_ema_sub.Name = "EMA_SUB";
 
                 if (m_series_bollHigh != null)
                 {
@@ -310,6 +322,7 @@ namespace CryptoChart
             {
                 m_series_ltp.Points.Clear();
                 m_series_ema.Points.Clear();
+                m_series_ema_sub.Points.Clear();
                 m_series_bollHigh.Points.Clear();
                 m_series_bollLow.Points.Clear();
                 m_series_bollHigh_top.Points.Clear();
@@ -382,6 +395,9 @@ namespace CryptoChart
 
                     DataPoint dp_ema = new DataPoint(candle_cnt, Math.Round(candle.ema,0));
                     m_series_ema.Points.Add(dp_ema);
+
+                    DataPoint dp_ema_sub = new DataPoint(candle_cnt, Math.Round(candle.ema_sub, 0));
+                    m_series_ema_sub.Points.Add(dp_ema_sub);
 
                     DataPoint dp_bollHigh = new DataPoint(candle_cnt, Math.Round(candle.boll_high,0));
                     m_series_bollHigh.Points.Add(dp_bollHigh);
@@ -456,6 +472,7 @@ namespace CryptoChart
 
                 this.chart1.Series.Add(m_series_ltp);
                 this.chart1.Series.Add(m_series_ema);
+                this.chart1.Series.Add(m_series_ema_sub);
                 this.chart1.Series.Add(m_series_bollHigh);
                 this.chart1.Series.Add(m_series_bollLow);
                 this.chart1.Series.Add(m_series_bollHigh_top);
