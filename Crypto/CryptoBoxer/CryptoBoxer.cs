@@ -1176,11 +1176,15 @@ namespace CryptoBoxer
                 }
 
                 // NONEポジションの場合
-                //bool isLong = isConditionLongEntryScam(next_open);
-                //bool isShort = isConditionShortEntryScam(next_open);
 
-                bool isLong = isConditionLongEntryCrossEma();
-                bool isShort = isConditionShortEntryCrossEma();
+				//bool isLong = isConditionLongEntry();
+				//bool isShort = isConditionShortEntry();
+              
+                bool isLong = isConditionLongEntryScam(next_open);
+                bool isShort = isConditionShortEntryScam(next_open);
+
+                //bool isLong = isConditionLongEntryCrossEma();
+                //bool isShort = isConditionShortEntryCrossEma();
 
                 if (isLong)
                 {
@@ -1432,8 +1436,8 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    //if (isConditionLongExit())
-                    if (isConditionLongExitCrossEma())
+                    if (isConditionLongExit())
+                    //if (isConditionLongExitCrossEma())
                     {
                         // 注文成功
                         string long_id = string.Format("BT_LONG_EXIT_{0:D8}", long_exit_cnt);
@@ -1444,8 +1448,8 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    //if (isConditionShortExit())
-                    if (isConditionShortExitCrossEma())
+                    if (isConditionShortExit())
+                    //if (isConditionShortExitCrossEma())
                     {
                         // 注文成功
                         string short_id = string.Format("BT_SHORT_EXIT_{0:D8}", short_exit_cnt);
@@ -2040,7 +2044,8 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle is Touch BB_HIGH");
                 }
 
-				if (curCandle.boll_high < (curCandle.boll_high_top+5000))
+				//if (curCandle.boll_high < (curCandle.boll_high_top+5000))
+				if (curCandle.boll_high < curCandle.boll_high_top )
                 {
                     Console.WriteLine("not need short. boll_high is inside.");
                     result = false;
@@ -2056,12 +2061,14 @@ namespace CryptoBoxer
 				}
 				*/
                 
+                /*
                 if(!m_candleBuf.isOverTopBB(m_config.boll_over_candle_num))
                 {
                     Console.WriteLine("not need short. boll_high is not over the top.");
                     result = false;
                     return result;
-                }            
+                }
+                */
 
                 double ema_diff = curCandle.last - curCandle.ema;
                 if (ema_diff < m_config.ema_diff_far)
@@ -2270,7 +2277,8 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle is Touch BB_LOW");
                 }
 
-				if (curCandle.boll_low > (curCandle.boll_low_top-5000))
+				//if (curCandle.boll_low > (curCandle.boll_low_top-5000))
+				if (curCandle.boll_low > curCandle.boll_low_top )
                 {
                     Console.WriteLine("not need long. boll_low is inside.");
                     result = false;
@@ -2286,13 +2294,14 @@ namespace CryptoBoxer
                 }
                 */
                 
+                /*
                 if (!m_candleBuf.isUnderTopBB(m_config.boll_over_candle_num))
                 {
                     Console.WriteLine("not need long. boll_high is not under the top.");
                     result = false;
                     return result;
                 }
-                
+                */
                             
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff < m_config.ema_diff_far)
