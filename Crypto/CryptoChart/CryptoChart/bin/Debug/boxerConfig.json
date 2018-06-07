@@ -1,6 +1,6 @@
 {
   "amount": 0.01,
-  "periods": 60,
+  "periods": 900,
   "product_bitflyer": "FX_BTC_JPY",
   "product_cryptowatch": "btcfxjpy",
   "ema_sample_num": 20,
@@ -8,13 +8,14 @@
   "boll_sample_num": 20,
   "boll_top_sample_num": 100,
   "boll_over_candle_num": 7,
-  "ema_diff_far": 500.0,
-  "ema_diff_near": 100.0,
-  "losscut_value": -6000,
+  "ema_diff_far": 2000.0,
+  "ema_diff_near": 2900.0,
+  "losscut_value": -9500,
   "buffer_num": 500,
   "backtest_hour": 96,
   "backtest_flag": 1,
   "boll_diff_play": 1000,
   "vola_rate": 2.0,
-  "next_open_diff": 500.0
+  "next_open_diff": 500.0,
+  "back_cnt": 3
 }

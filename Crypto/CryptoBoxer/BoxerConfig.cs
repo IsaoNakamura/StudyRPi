@@ -65,6 +65,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public double next_open_diff { get; set; }
 
+        [JsonProperty]
+        public int back_cnt { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -85,6 +88,7 @@ namespace CryptoBoxer
             boll_diff_play = 1000;
             vola_rate = 2.0;
             next_open_diff = 500.0;
+            back_cnt = 2;
             return;
         }
 

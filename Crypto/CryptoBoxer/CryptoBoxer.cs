@@ -1103,8 +1103,11 @@ namespace CryptoBoxer
                 }
                 
                 // NONEポジションの場合
-                bool isLong = isConditionLongEntryScam(next_open);
-                bool isShort= isConditionShortEntryScam(next_open);
+                //bool isLong = isConditionLongEntryScam(next_open);
+                //bool isShort= isConditionShortEntryScam(next_open);
+
+                bool isLong = isConditionLongEntryCrossEma();
+                bool isShort = isConditionShortEntryCrossEma();
 
 
 
@@ -1180,15 +1183,14 @@ namespace CryptoBoxer
 				//bool isLong = isConditionLongEntry();
 				//bool isShort = isConditionShortEntry();
               
-                bool isLong = isConditionLongEntryScam(next_open);
-                bool isShort = isConditionShortEntryScam(next_open);
+                //bool isLong = isConditionLongEntryScam(next_open);
+                //bool isShort = isConditionShortEntryScam(next_open);
 
                 //bool isLong = isConditionLongEntrySwing(next_open);
                 //bool isShort = isConditionShortEntrySwing(next_open);
 
-
-                //bool isLong = isConditionLongEntryCrossEma();
-                //bool isShort = isConditionShortEntryCrossEma();
+                bool isLong = isConditionLongEntryCrossEma();
+                bool isShort = isConditionShortEntryCrossEma();
 
                 if (isLong)
                 {
@@ -1357,7 +1359,8 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    if (isConditionLongExit())
+                    //if (isConditionLongExit())
+                    if (isConditionLongExitCrossEma())
                     {
                         //Console.WriteLine("Try Long Exit Order.");
 
@@ -1375,7 +1378,8 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    if (isConditionShortExit())
+                    if (isConditionShortExitCrossEma())
+                    ///if (isConditionShortExit())
                     {
                         //Console.WriteLine("Try Short Exit Order.");
 
@@ -1440,8 +1444,8 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    if (isConditionLongExit())
-                    //if (isConditionLongExitCrossEma())
+                    //if (isConditionLongExit())
+                    if (isConditionLongExitCrossEma())
                     {
                         // 注文成功
                         string long_id = string.Format("BT_LONG_EXIT_{0:D8}", long_exit_cnt);
@@ -1452,8 +1456,8 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    if (isConditionShortExit())
-                    //if (isConditionShortExitCrossEma())
+                    //if (isConditionShortExit())
+                    if (isConditionShortExitCrossEma())
                     {
                         // 注文成功
                         string short_id = string.Format("BT_SHORT_EXIT_{0:D8}", short_exit_cnt);
@@ -2146,7 +2150,8 @@ namespace CryptoBoxer
 
                                     bool isGolden = false;
                                     bool isFirst = false;
-                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                    int back_cnt = 0;
+                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                     {
                                         // 何もしない
                                         result = false;
@@ -2185,7 +2190,8 @@ namespace CryptoBoxer
                                 {
                                     bool isGolden = false;
                                     bool isFirst = false;
-                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                    int back_cnt = 0;
+                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                     {
                                         // 何もしない
                                         result = false;
@@ -2405,7 +2411,8 @@ namespace CryptoBoxer
                                 {
                                     bool isGolden = false;
                                     bool isFirst = false;
-                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                    int back_cnt = 0;
+                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                     {
                                         // 何もしない
                                         result = false;
@@ -2446,7 +2453,8 @@ namespace CryptoBoxer
                                 {
                                     bool isGolden = false;
                                     bool isFirst = false;
-                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                    int back_cnt = 0;
+                                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                     {
                                         // 何もしない
                                         result = false;
@@ -3083,7 +3091,8 @@ namespace CryptoBoxer
                             {
                                 bool isGolden = false;
                                 bool isFirst = false;
-                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                int back_cnt = 0;
+                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                 {
                                     // 何もしない
                                     result = false;
@@ -3132,7 +3141,8 @@ namespace CryptoBoxer
                             {
                                 bool isGolden = false;
                                 bool isFirst = false;
-                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                int back_cnt = 0;
+                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                 {
                                     // 何もしない
                                     result = false;
@@ -3321,7 +3331,8 @@ namespace CryptoBoxer
                             {
                                 bool isGolden = false;
                                 bool isFirst = false;
-                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                int back_cnt = 0;
+                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                 {
                                     // 何もしない
                                     result = false;
@@ -3371,7 +3382,8 @@ namespace CryptoBoxer
                             {
                                 bool isGolden = false;
                                 bool isFirst = false;
-                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst) != 0)
+                                int back_cnt = 0;
+                                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                                 {
                                     // 何もしない
                                     result = false;
@@ -3517,12 +3529,35 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if ((prevCandle.ema >= prevCandle.ema_sub) && (curCandle.ema < curCandle.ema_sub))
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                 {
-                    // ENTRY
-                    Console.WriteLine("need short. Dead Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
-                    result = true;
+                    // 何もしない
+                    Console.WriteLine("not need short. failed to getEMACrossState() cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
                     return result;
+                }
+
+                if ( (!isGolden) && (back_cnt <= m_config.back_cnt))
+                //if ((prevCandle.ema >= prevCandle.ema_sub) && (curCandle.ema < curCandle.ema_sub))
+                {
+                    double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
+                    if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema <= curCandle.last) )
+                    {
+                        // ENTRY
+                        Console.WriteLine("need long. Golden Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // 何もしない
+                        Console.WriteLine("not need long. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        result = false;
+                        return result;
+                    }
                 }
                 else
                 {
@@ -3582,12 +3617,35 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if ((prevCandle.ema <= prevCandle.ema_sub) && (curCandle.ema > curCandle.ema_sub))
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt) != 0)
                 {
-                    // ENTRY
-                    Console.WriteLine("need long. Golden Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
-                    result = true;
+                    // 何もしない
+                    Console.WriteLine("not need long. failed to getEMACrossState() cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
                     return result;
+                }
+
+                if (isGolden && (back_cnt<=m_config.back_cnt) )
+                //if ((prevCandle.ema <= prevCandle.ema_sub) && (curCandle.ema > curCandle.ema_sub))
+                {
+                    double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
+                    if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema >= curCandle.last) )
+                    {
+                        // ENTRY
+                        Console.WriteLine("need long. Golden Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // 何もしない
+                        Console.WriteLine("not need long. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        result = false;
+                        return result;
+                    }
                 }
                 else
                 {
@@ -3630,7 +3688,8 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_position.entry_price;
 
-                if (curCandle.ema >= curCandle.ema_sub)
+                //if (curCandle.ema >= curCandle.ema_sub)
+                if (curCandle.isTouchBollLowTop())
                 {
                     //if (profit > 0.0)
                     {
@@ -3670,7 +3729,8 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_position.entry_price;
 
-                if (curCandle.ema <= curCandle.ema_sub)
+                //if (curCandle.ema <= curCandle.ema_sub)
+                if(curCandle.isTouchBollHighTop())
                 {
                     //if (profit > 0.0)
                     {
