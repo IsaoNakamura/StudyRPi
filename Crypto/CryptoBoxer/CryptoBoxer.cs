@@ -1923,13 +1923,24 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
+                            
                 double profit = curCandle.last - m_position.entry_price;
                 if (profit <= m_config.losscut_value)
                 {
                     result = true;
                     return result;
                 }
+
+                /*
+				if (curCandle.ema < curCandle.ema_sub)
+                {
+                    if (profit < 0)
+                    {
+                        result = true;
+                        return result;
+                    }
+                }
+                */
             }
             catch (Exception ex)
             {
@@ -1960,12 +1971,25 @@ namespace CryptoBoxer
                     return result;
                 }
 
+
+
                 double profit = m_position.entry_price - curCandle.last;
                 if (profit <= m_config.losscut_value)
                 {
                     result = true;
                     return result;
                 }
+
+                /*
+				if (curCandle.ema > curCandle.ema_sub)
+				{
+					if (profit < 0)
+					{
+						result = true;
+						return result;
+					}
+                }
+                */
             }
             catch (Exception ex)
             {
