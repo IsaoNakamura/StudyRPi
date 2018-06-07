@@ -1770,5 +1770,132 @@ namespace UtilityTrade
             }
             return result;
         }
+
+        public int getEMACrossState(out bool isGolden, out bool isFirst)
+        {
+            int result = -1;
+            isGolden = false;
+            isFirst = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int cur_idx = candle_cnt - 1;
+                int beg_idx = cur_idx - 1;
+                if (beg_idx < 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleList[cur_idx];
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                double cur_ema_length = Math.Abs(curCandle.ema - curCandle.ema_sub);
+                int cur_cross_state = 0;
+                if (curCandle.ema > curCandle.ema_sub)
+                {
+                    // GOLDEN
+                    isGolden = true;
+                    cur_cross_state = 1;
+                }
+                else if (curCandle.ema < curCandle.ema_sub)
+                {
+                    // DEAD
+                    isGolden = false;
+                    cur_cross_state = -1;
+                }
+                else
+                {
+                    // CROSS
+                    cur_cross_state = 0;
+                    isFirst = true;
+                }
+                Console.WriteLine("search-cur time={0} ema={1} ema_sub={2}", curCandle.timestamp, curCandle.ema, curCandle.ema_sub);
+
+                double max_ema_length = 0.0;
+                for (int i = beg_idx; i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    double ema_length = Math.Abs(candle.ema - candle.ema_sub);
+                    max_ema_length = Math.Max(ema_length, max_ema_length);
+
+                    if (cur_cross_state == 1)
+                    {
+                        // GOLDEN
+                        if (candle.ema <= candle.ema_sub)
+                        {
+                            // CROSS
+                            break;
+                        }
+                    }
+                    else if (cur_cross_state == -1)
+                    {
+                        // DEAD
+                        if (candle.ema >= candle.ema_sub)
+                        {
+                            // CROSS
+                            break;
+                        }
+                    }
+                    else if (cur_cross_state == 0)
+                    {
+                        // CROSS
+                        if (candle.ema < candle.ema_sub)
+                        {
+                            // GOLDEN
+                            isGolden = true;
+                            break;
+                        }
+                        else if (candle.ema > candle.ema_sub)
+                        {
+                            // DEAD
+                            isGolden = false;
+                            break;
+                        }
+                    }
+
+                }
+
+                if (cur_cross_state != 0)
+                {
+                    if (cur_ema_length < max_ema_length)
+                    {
+                        // 収束中
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        // 拡大中
+                        isFirst = true;
+                    }
+                }
+
+                result = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
     }
 }
