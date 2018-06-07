@@ -3529,6 +3529,12 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                if (curCandle.isTouchBollLowTop())
+                {
+                    result = false;
+                    return result;
+                }
+
                 bool isGolden = false;
                 bool isFirst = false;
                 int back_cnt = 0;
@@ -3616,6 +3622,12 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
+
+				if (curCandle.isTouchBollHighTop())
+				{
+					result = false;
+                    return result;
+				}
 
                 bool isGolden = false;
                 bool isFirst = false;
