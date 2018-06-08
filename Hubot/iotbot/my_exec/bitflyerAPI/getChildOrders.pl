@@ -27,7 +27,7 @@ $ua->timeout(10); # default: 180sec
 $ua->ssl_opts( verify_hostname => 0 ); # skip hostname verification
 
 # LONGエントリー
-#=pod
+=pod
 my $resBuy_json;
 my $retBuy_req = MyModule::UtilityBitflyer::sellMarket(
                     \$resBuy_json,
@@ -41,12 +41,12 @@ if( $retBuy_req!=0 ){
     print "failed to buyMarket\n";
     exit -1;
 }
-my $acceptance_id = $resBuy_json->{"child_order_acceptance_id"};
-#=cut
+#my $acceptance_id = $resBuy_json->{"child_order_acceptance_id"};
+=cut
 
 
-#my $acceptance_id = "JRF20180406-115653-625548"; 
-#my $acceptance_id = "JRF20180406-130857-275916";
+#my $acceptance_id = "JRF20180603-185700-719766"; 
+my $acceptance_id = "JRF20180603-190001-721214";
 print "acceptance_id=$acceptance_id\n";
 
 my $retry_cnt=0;
