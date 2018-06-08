@@ -306,7 +306,7 @@ namespace UtilityTrade
                 {
                     // 下髭陰線
                     // 阻まれている
-                    // だいぶ押された。そろそろ上昇が終わる
+                    // だいぶ押された。そろそろ下降が終わる
                     result = 2;
                     return result;
                 }
@@ -633,51 +633,51 @@ namespace UtilityTrade
             return false;
         }
 
-        public bool isTouchBollHighTop()
+        public bool isTouchBollHighTop(double play = 0.0)
         {
-            //if (boll_high_top <= high)
-            //{
-            //    return true;
-            //}
-
-            if (boll_high_top <= last)
+            if (boll_high_top <= (high + play))
             {
                 return true;
             }
 
-            if (boll_high_top <= open)
+            if (boll_high_top <= (last+play))
             {
                 return true;
             }
 
-            //if (boll_high_top <= low)
-            //{
-            //    return true;
-            //}
+            if (boll_high_top <= (open+play))
+            {
+                return true;
+            }
+
+            if (boll_high_top <= (low + play))
+            {
+                return true;
+            }
             return false;
         }
 
-        public bool isTouchBollLowTop()
+        public bool isTouchBollLowTop(double play = 0.0)
         {
-            //if (boll_low_top >= low)
-            //{
-            //    return true;
-            //}
-
-            if (boll_low_top >= last)
+            if (boll_low_top >= (low - play))
             {
                 return true;
             }
 
-            if (boll_low_top >= open)
+            if (boll_low_top >= (last-play))
             {
                 return true;
             }
 
-            //if (boll_low_top >= high)
-            //{
-            //    return true;
-            //}
+            if (boll_low_top >= (open - play))
+            {
+                return true;
+            }
+
+            if (boll_low_top >= (high - play))
+            {
+                return true;
+            }
 
             return false;
         }
@@ -945,6 +945,90 @@ namespace UtilityTrade
                     elem_cnt++;
                     double elem_value = candle.last;
                     double elem_ema = elem_value * 2.0 / (elem_cnt + 1) + last_ema * (elem_cnt + 1 - 2) / (elem_cnt + 1);
+
+                    last_ema = elem_ema;
+                }
+
+                ema = last_ema;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    ema = 0.0;
+                }
+            }
+            return result;
+        }
+
+        public int calcEma2(out double ema, int sample_num)
+        {
+            int result = 0;
+            ema = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                int last_idx = beg_idx - 1;
+                if (last_idx < 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int past_idx = last_idx - (sample_num - 1);
+                if (past_idx < 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                double last_sum = 0.0;
+                int last_cnt = 0;
+                for (int i = past_idx; i <= last_idx; i++)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    last_cnt++;
+                    last_sum += candle.last;
+                }
+
+
+                double last_ema = last_sum / sample_num;
+                int elem_cnt = 0;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+                    elem_cnt++;
+
+                    double elem_value = candle.last;
+                    double elem_ema = last_ema + (2.0 / (sample_num + 1)) * (elem_value - last_ema);
+
                     last_ema = elem_ema;
                 }
 

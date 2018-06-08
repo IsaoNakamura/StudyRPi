@@ -3571,20 +3571,19 @@ namespace CryptoBoxer
                 }
 
                 if ( (!isGolden) && (back_cnt <= m_config.back_cnt))
-                //if ((prevCandle.ema >= prevCandle.ema_sub) && (curCandle.ema < curCandle.ema_sub))
                 {
                     double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
                     if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema <= curCandle.last) )
                     {
                         // ENTRY
-                        Console.WriteLine("need long. Golden Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        Console.WriteLine("need short. Dead Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
                         result = true;
                         return result;
                     }
                     else
                     {
                         // 何もしない
-                        Console.WriteLine("not need long. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                        Console.WriteLine("not need short. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
                         result = false;
                         return result;
                     }
@@ -3665,7 +3664,6 @@ namespace CryptoBoxer
                 }
 
                 if (isGolden && (back_cnt<=m_config.back_cnt) )
-                //if ((prevCandle.ema <= prevCandle.ema_sub) && (curCandle.ema > curCandle.ema_sub))
                 {
                     double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
                     if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema >= curCandle.last) )
@@ -3715,8 +3713,18 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                int candle_cnt = m_candleBuf.getCandleCount();
+
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
                 {
                     result = false;
                     return result;
@@ -3724,9 +3732,127 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_position.entry_price;
 
-                //if (curCandle.ema >= curCandle.ema_sub)
-                if (curCandle.isTouchBollLowTop())
+
+
+                if (curCandle.isTouchBollLowTop(0.0))
                 {
+                    bool isGolden = false;
+                    bool isFirst = false;
+                    int back_cnt = 0;
+                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
+                    {
+                        if ((!isGolden) && isFirst)
+                        {
+                            // DEADクロスが初動の場合
+
+                            //// SHORT継続
+                            //result = false;
+                            //return result;
+
+                            //if (curCandle.isTrend())
+                            //{
+                            //    // 上昇キャンドルの場合
+
+                            //    int upType = curCandle.getUpCandleType();
+                            //    if (upType <= 2)
+                            //    {
+                            //        // SHORT継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // SHORT-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    // 下降キャンドルの場合
+                            //    int downType = curCandle.getDownCandleType();
+                            //    if (downType >= 2)
+                            //    {
+                            //        // SHORT継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // SHORT-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+
+                            int shortLv = curCandle.getShortLevel();
+                            if (shortLv <= 0)
+                            {
+                                // SHORTレベルが低くなった場合
+                                // SHORT-EXIT
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                // SHORTレベルまだ高い場合
+                                // SHORT継続
+                                result = false;
+                                return result;
+                            }
+
+                            //int curLongLv = curCandle.getLongLevel();
+                            //int preLongLv = prevCandle.getLongLevel();
+                            //if (preLongLv < 0)
+                            //{
+                            //    //前回のLONGレベルが低い
+                            //    // SHORT継続
+                            //    result = false;
+                            //    return result;
+                            //}
+                            //else
+                            //{
+                            //    if (preLongLv <= 0)
+                            //    {
+                            //        //前回のLONGレベルが0以下
+                            //        if (prevCandle.isTrend())
+                            //        {
+                            //            // 前回が上昇キャンドルの場合
+                            //            if (prevCandle.isUnderBBLow(prevCandle.last))
+                            //            {
+                            //                // SHORT継続
+                            //                result = false;
+                            //                return result;
+                            //            }
+                            //        }
+                            //        else
+                            //        {
+                            //            // 前回が下降キャンドルの場合
+                            //            // SHORT継続
+                            //            result = false;
+                            //            return result;
+                            //        }
+                            //    }
+
+                            //    //前回のLONGレベルが0より大きい
+                            //    if (curLongLv <= 0)
+                            //    {
+                            //        // 現在のLONGレベルが0以下
+                            //        // SHORT継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // 現在のLONGレベルが0より高い
+                            //        // SHORT-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+                        }
+                    }
+
                     //if (profit > 0.0)
                     {
                         result = true;
@@ -3756,6 +3882,8 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                int candle_cnt = m_candleBuf.getCandleCount();
+
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 if (curCandle == null)
                 {
@@ -3763,11 +3891,139 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
                 double profit = curCandle.last - m_position.entry_price;
 
-                //if (curCandle.ema <= curCandle.ema_sub)
-                if(curCandle.isTouchBollHighTop())
+
+                if (curCandle.isTouchBollHighTop(0.0))
                 {
+                    bool isGolden = false;
+                    bool isFirst = false;
+                    int back_cnt = 0;
+                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
+                    {
+                        if (isGolden && isFirst)
+                        {
+                            // GOLDENクロスが初動の場合
+
+                            //// LONG継続
+                            //result = false;
+                            //return result;
+
+                            //if (curCandle.isTrend())
+                            //{
+                            //    // 上昇キャンドルの場合
+
+                            //    int upType = curCandle.getUpCandleType();
+                            //    if (upType >= 2)
+                            //    {
+                            //        // LONG継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // LONG-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    // 下降キャンドルの場合
+                            //    int downType = curCandle.getDownCandleType();
+                            //    if (downType <= 2)
+                            //    {
+                            //        // LONG継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // LONG-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+
+                            int longLv = curCandle.getLongLevel();
+                            if (longLv <= 0)
+                            {
+                                // LONGレベルが低くなった場合
+                                // LONG-EXIT
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                // LONGレベルまだ高い場合
+                                // LONG継続
+                                result = false;
+                                return result;
+                            }
+
+                            //int curShortLv = curCandle.getShortLevel();
+                            //int preShortLv = prevCandle.getShortLevel();
+                            //if (preShortLv < 0)
+                            //{
+                            //    //前回のSHORTレベルが低い
+                            //    // LONG継続
+                            //    result = false;
+                            //    return result;
+                            //}
+                            //else
+                            //{
+                            //    if (preShortLv <= 0)
+                            //    {
+                            //        //前回のSHORTレベルが0以下
+                            //        if (prevCandle.isTrend())
+                            //        {
+                            //            // 前回が上昇キャンドルの場合
+
+                            //            // LONG継続
+                            //            result = false;
+                            //            return result;
+                            //        }
+                            //        else
+                            //        {
+                            //            // 前回が下降キャンドルの場合
+
+                            //            if (prevCandle.isOverBBHigh(prevCandle.last))
+                            //            {
+                            //                // LONG継続
+                            //                result = false;
+                            //                return result;
+                            //            }
+                            //        }
+                            //    }
+
+                            //    //前回のSHORTベルが0より大きい
+                            //    if (curShortLv <= 0)
+                            //    {
+                            //        // 現在のSHORTレベルが0以下
+                            //        // LONG継続
+                            //        result = false;
+                            //        return result;
+                            //    }
+                            //    else
+                            //    {
+                            //        // 現在のSHORTレベルが0より高い
+                            //        // LONG-EXIT
+                            //        result = true;
+                            //        return result;
+                            //    }
+                            //}
+                        }
+                    }
+
                     //if (profit > 0.0)
                     {
                         result = true;
