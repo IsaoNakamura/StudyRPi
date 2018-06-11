@@ -3555,6 +3555,7 @@ namespace CryptoBoxer
 
                 if (curCandle.isTouchBollLowTop())
                 {
+					Console.WriteLine("not need short. touch BollLowTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
                     result = false;
                     return result;
                 }
@@ -3576,22 +3577,29 @@ namespace CryptoBoxer
                     if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema <= curCandle.last) )
                     {
                         // ENTRY
-                        Console.WriteLine("need short. Dead Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+						Console.WriteLine("need short. Dead Cross. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);
                         result = true;
                         return result;
                     }
                     else
                     {
                         // 何もしない
-                        Console.WriteLine("not need short. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
-                        result = false;
+						Console.WriteLine("not need short. Dead Cross. not near ema. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);
+		                result = false;
                         return result;
                     }
                 }
                 else
                 {
                     // 何もしない
-                    Console.WriteLine("not need short. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+					if (isGolden)
+                    {
+                        Console.WriteLine("not need short. Golden Cross BackCnt Over. cnt={0} ema={1:0} last={2:0}", back_cnt, curCandle.ema, curCandle.last);
+                    }
+                    else
+                    {
+                        Console.WriteLine("not need short. Dead Cross BackCnt Over. cnt={0} ema={1:0} last={2:0}", back_cnt, curCandle.ema, curCandle.last);
+                    }
                     result = false;
                     return result;
                 }
@@ -3648,6 +3656,7 @@ namespace CryptoBoxer
 
 				if (curCandle.isTouchBollHighTop())
 				{
+					Console.WriteLine("not need long. touch BollHighTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
 					result = false;
                     return result;
 				}
@@ -3669,14 +3678,14 @@ namespace CryptoBoxer
                     if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema >= curCandle.last) )
                     {
                         // ENTRY
-                        Console.WriteLine("need long. Golden Cross. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+						Console.WriteLine("need long. Golden Cross. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);
                         result = true;
                         return result;
                     }
                     else
                     {
                         // 何もしない
-                        Console.WriteLine("not need long. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+						Console.WriteLine("not need long. Golden Cross. not near ema. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);
                         result = false;
                         return result;
                     }
@@ -3684,7 +3693,15 @@ namespace CryptoBoxer
                 else
                 {
                     // 何もしない
-                    Console.WriteLine("not need long. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+					if(isGolden)
+					{
+						Console.WriteLine("not need long. Golden Cross BackCnt Over. cnt={0} ema={1:0} last={2:0}", back_cnt, curCandle.ema, curCandle.last);
+					}
+					else
+					{
+						Console.WriteLine("not need long. Dead Cross BackCnt Over. cnt={0} ema={1:0} last={2:0}", back_cnt, curCandle.ema, curCandle.last);	
+					}
+
                     result = false;
                     return result;
                 }
@@ -3785,10 +3802,12 @@ namespace CryptoBoxer
                             //    }
                             //}
 
+                            
                             int shortLv = curCandle.getShortLevel();
                             if (shortLv <= 0)
                             {
                                 // SHORTレベルが低くなった場合
+								Console.WriteLine("exit short. DeadCrossFirst. shortLv is Low. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
                                 // SHORT-EXIT
                                 result = true;
                                 return result;
@@ -3797,9 +3816,11 @@ namespace CryptoBoxer
                             {
                                 // SHORTレベルまだ高い場合
                                 // SHORT継続
+								Console.WriteLine("not exit short. DeadCrossFirst. shortLv is High. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
                                 result = false;
                                 return result;
                             }
+                            
 
                             //int curLongLv = curCandle.getLongLevel();
                             //int preLongLv = prevCandle.getLongLevel();
@@ -3855,6 +3876,7 @@ namespace CryptoBoxer
 
                     //if (profit > 0.0)
                     {
+						Console.WriteLine("exit short. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
                         result = true;
                         return result;
                     }
@@ -3954,10 +3976,12 @@ namespace CryptoBoxer
                             //    }
                             //}
 
+                            
                             int longLv = curCandle.getLongLevel();
                             if (longLv <= 0)
                             {
                                 // LONGレベルが低くなった場合
+								Console.WriteLine("exit short. GoldCrossFirst. longLv is Low. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
                                 // LONG-EXIT
                                 result = true;
                                 return result;
@@ -3966,9 +3990,11 @@ namespace CryptoBoxer
                             {
                                 // LONGレベルまだ高い場合
                                 // LONG継続
+								Console.WriteLine("not exit short. GoldenCrossFirst. longLv is High. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
                                 result = false;
                                 return result;
                             }
+
 
                             //int curShortLv = curCandle.getShortLevel();
                             //int preShortLv = prevCandle.getShortLevel();
@@ -4026,6 +4052,7 @@ namespace CryptoBoxer
 
                     //if (profit > 0.0)
                     {
+						Console.WriteLine("exit long. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
                         result = true;
                         return result;
                     }
