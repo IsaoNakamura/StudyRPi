@@ -135,7 +135,7 @@ namespace CryptoChart
                 // 既定のグラフ領域の設定をクリアした後、設定する
                 this.chart1.ChartAreas.Clear();
                 this.chart1.ChartAreas.Add(m_area);
-                this.chart1.ChartAreas.Add(m_indicatorArea);
+                //this.chart1.ChartAreas.Add(m_indicatorArea);
 
                 // データ系列を作成する
                 if (m_series_ltp != null)
@@ -301,7 +301,7 @@ namespace CryptoChart
                 this.chart1.Series.Clear();
 
                 updateCandleChart();
-                updateIndicatorChart();
+                //updateIndicatorChart();
             }
             catch (Exception ex)
             {
