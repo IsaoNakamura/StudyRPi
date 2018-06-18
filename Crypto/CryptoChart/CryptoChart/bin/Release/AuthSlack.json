@@ -1,0 +1,7 @@
+{
+   "channel" : "CA0123NEA",
+   "host" : "https://slack.com/api/chat.postMessage",
+   "token" : "",
+   "icon_url" : "",
+   "username" : ""
+}
