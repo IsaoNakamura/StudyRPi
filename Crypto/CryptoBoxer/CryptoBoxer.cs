@@ -404,14 +404,30 @@ namespace CryptoBoxer
                     double closePrice = candleFactor[4];
                     double volume = candleFactor[5];
 
+                    DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
+
+                    if (closePrice <= Double.Epsilon)
+                    {
+                        Candlestick prevCandle = candleBuf.getLastCandle();
+                        if (prevCandle == null)
+                        {
+                            Console.WriteLine("cur's candle-value 0. and prev's candle is null. timestamp=", timestamp.ToString());
+                            result = -1;
+                            return result;
+                        }
+                        closeTime = prevCandle.last;
+                        openPrice = prevCandle.open;
+                        highPrice = prevCandle.high;
+                        lowPrice = prevCandle.low;
+                        volume = prevCandle.volume;
+                    }
+
                     // Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
                     //  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
                     //  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
                     // Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
 
 
-                    // 2018/04/10 19:21:00
-                    DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
                     Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, vol={5}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, volume);
 
                     Candlestick candle = candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
@@ -3685,7 +3701,7 @@ namespace CryptoBoxer
                 if ( (!isGolden) && (back_cnt <= m_config.back_cnt))
                 {
                     double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
-                    if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema <= curCandle.last) )
+                    if ( (ema_diff <= m_config.ema_cross_near) || (curCandle.ema <= curCandle.last) )
                     {
                         // ENTRY
 						Console.WriteLine("need short. Dead Cross. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);
@@ -3786,7 +3802,7 @@ namespace CryptoBoxer
                 if (isGolden && (back_cnt<=m_config.back_cnt) )
                 {
                     double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
-                    if ( (ema_diff <= m_config.ema_diff_near) || (curCandle.ema >= curCandle.last) )
+                    if ( (ema_diff <= m_config.ema_cross_near) || (curCandle.ema >= curCandle.last) )
                     {
                         // ENTRY
 						Console.WriteLine("need long. Golden Cross. cnt={0} diff={1:0} ema={2:0} last={3:0}", back_cnt, ema_diff, curCandle.ema, curCandle.last);

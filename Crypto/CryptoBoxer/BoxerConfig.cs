@@ -45,6 +45,9 @@ namespace CryptoBoxer
         public double ema_diff_near { get; set; }
 
         [JsonProperty]
+        public double ema_cross_near { get; set; }
+
+        [JsonProperty]
         public double losscut_value { get; set; }
 
         [JsonProperty]
@@ -81,6 +84,7 @@ namespace CryptoBoxer
             boll_over_candle_num = 6;
             ema_diff_far = 1000;
             ema_diff_near = 100;
+            ema_cross_near = 2900.0;
             losscut_value = -5000;
             buffer_num = 60;
             backtest_hour = 72;
