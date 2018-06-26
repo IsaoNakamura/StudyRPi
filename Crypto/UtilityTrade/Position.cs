@@ -22,6 +22,14 @@ namespace UtilityTrade
            , COMPLETED
         };
 
+        public enum StrategyType
+        {
+              UNKNOWN
+            , SCAM
+            , CROSS_EMA
+            , SWING
+        };
+
         private PositionState state { get; set; }
 
         private OrderState entry_state { get; set; }
@@ -33,6 +41,8 @@ namespace UtilityTrade
         public string exit_id { get; set; }
         public double exit_price { get; set; }
         public string exit_date { get; set; }
+
+        public StrategyType strategy_type { get; set; }
 
         //public double entry_increase { get; set; }
 
@@ -56,6 +66,8 @@ namespace UtilityTrade
             exit_id = "";
             exit_price = 0.0;
             exit_date = "";
+
+            strategy_type = StrategyType.UNKNOWN;
 
             return;
         }
@@ -143,13 +155,23 @@ namespace UtilityTrade
         {
             string result = "NONE";
 
+            string strategy_str = "";
+            if (strategy_type == StrategyType.SCAM)
+            {
+                strategy_str = "(SCAM)";
+            }
+            else if (strategy_type == StrategyType.SWING)
+            {
+                strategy_str = "(SWING)";
+            }
+
             if (isLong())
             {
-                result = "LONG";
+                result = "LONG" + strategy_str;
             }
             else if (isShort())
             {
-                result = "SHORT";
+                result = "SHORT" + strategy_str;
             }
 
             return result;

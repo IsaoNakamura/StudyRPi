@@ -1103,15 +1103,16 @@ namespace CryptoBoxer
                 }
                 
                 // NONEポジションの場合
-                //bool isLong = isConditionLongEntryScam(next_open);
-                //bool isShort= isConditionShortEntryScam(next_open);
+
+                // 
+                bool isLongSub = isConditionLongEntrySwing(next_open);
+                bool isShortSub= isConditionShortEntrySwing(next_open);
 
                 bool isLong = isConditionLongEntryCrossEma();
                 bool isShort = isConditionShortEntryCrossEma();
 
 
-
-                if (isLong)
+                if (isLong || isLongSub)
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
@@ -1132,8 +1133,17 @@ namespace CryptoBoxer
                     // 注文成功
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                     m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+
+                    if (isLong)
+                    {
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                    }
+                    else if (isLongSub)
+                    {
+                        m_position.strategy_type = Position.StrategyType.SWING;
+                    }
                 }
-                else if(isShort)
+                else if(isShort || isShortSub)
                 {
                     //Console.WriteLine("Try Short Entry Order.");
 
@@ -1147,6 +1157,15 @@ namespace CryptoBoxer
                     // 注文成功
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                     m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+
+                    if (isShort)
+                    {
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                    }
+                    else if (isShortSub)
+                    {
+                        m_position.strategy_type = Position.StrategyType.SWING;
+                    }
                 }
             }
             catch (Exception ex)
@@ -1180,44 +1199,53 @@ namespace CryptoBoxer
 
                 // NONEポジションの場合
 
-				//bool isLong = isConditionLongEntry();
-				//bool isShort = isConditionShortEntry();
-              
-                //bool isLong = isConditionLongEntryScam(next_open);
-                //bool isShort = isConditionShortEntryScam(next_open);
+                //bool isLong = isConditionLongEntry();
+                //bool isShort = isConditionShortEntry();
 
-                //bool isLong = isConditionLongEntrySwing(next_open);
-                //bool isShort = isConditionShortEntrySwing(next_open);
+
+                bool isLongSub = isConditionLongEntrySwing(next_open);
+                bool isShortSub = isConditionShortEntrySwing(next_open);
+
+                //bool isLongSub = isConditionLongEntryScam(next_open);
+                //bool isShortSub = isConditionShortEntryScam(next_open);
 
                 bool isLong = isConditionLongEntryCrossEma();
                 bool isShort = isConditionShortEntryCrossEma();
 
-                if (isLong)
+                if (isLong || isLongSub)
                 {
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
                     m_position.entryLongOrder(long_id, curCandle.timestamp);
-                    //double diff_rate = 0.0;
-                    //int cnt = 0;
-                    //if (m_candleBuf.searchMACross(ref diff_rate, ref cnt) == 0)
-                    //{
-                    //    m_position.entry_increase = cnt;//curCandle.ema_angle;
-                    //}
+
+                    if (isLong)
+                    {
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                    }
+                    else if (isLongSub)
+                    {
+                        m_position.strategy_type = Position.StrategyType.SWING;
+                        //m_position.strategy_type = Position.StrategyType.SCAM;
+                    }
                     long_entry_cnt++;
                 }
-                else if (isShort)
+                else if (isShort || isShortSub)
                 {
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id),true);
                     m_position.entryShortOrder(short_id, curCandle.timestamp);
-                    //double diff_rate = 0.0;
-                    //int cnt = 0;
-                    //if (m_candleBuf.searchMACross(ref diff_rate, ref cnt) == 0)
-                    //{
-                    //    m_position.entry_increase = cnt;//curCandle.ema_angle;
-                    //}
+
+                    if (isShort)
+                    {
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                    }
+                    else if (isShortSub)
+                    {
+                        m_position.strategy_type = Position.StrategyType.SWING;
+                        //m_position.strategy_type = Position.StrategyType.SCAM;
+                    }
                     short_entry_cnt++;
                 }
             }
@@ -1359,8 +1387,17 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    //if (isConditionLongExit())
-                    if (isConditionLongExitCrossEma())
+                    bool isCond = false;
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                    {
+                        isCond = isConditionLongExitCrossEma();
+                    }
+                    else
+                    {
+                        isCond = isConditionLongExit();
+                    }
+
+                    if (isCond)
                     {
                         //Console.WriteLine("Try Long Exit Order.");
 
@@ -1378,8 +1415,18 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    if (isConditionShortExitCrossEma())
-                    ///if (isConditionShortExit())
+
+                    bool isCond = false;
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                    {
+                        isCond = isConditionShortExitCrossEma();
+                    }
+                    else
+                    {
+                        isCond = isConditionShortExit();
+                    }
+
+                    if (isCond)
                     {
                         //Console.WriteLine("Try Short Exit Order.");
 
@@ -1444,8 +1491,40 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    //if (isConditionLongExit())
-                    if (isConditionLongExitCrossEma())
+                    bool isCond = false;
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                    {
+                        isCond = isConditionLongExitCrossEma();
+                    }
+                    else
+                    {
+                        isCond = isConditionLongExit();
+                        //if (isCond)
+                        //{
+                        //    // EXIT条件を満たした場合
+                        //    if (isConditionLongEntryCrossEma())
+                        //    {
+                        //        // CrossEMAのLongEntry条件を満たしていれば
+                        //        // LONG継続
+                        //        isCond = false;
+
+                        //        // ストラテジータイプをCROSS_EMAに換装
+                        //        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    // EXIT条件を満たさなかった場合
+                        //    if (isConditionShortEntryCrossEma())
+                        //    {
+                        //        // CrossEMAのShortEntry条件を満たしていれば
+                        //        // LONG中断
+                        //        isCond = true;
+                        //    }
+                        //}
+                    }
+
+                    if (isCond)
                     {
                         // 注文成功
                         string long_id = string.Format("BT_LONG_EXIT_{0:D8}", long_exit_cnt);
@@ -1456,8 +1535,40 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    //if (isConditionShortExit())
-                    if (isConditionShortExitCrossEma())
+                    bool isCond = false;
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                    {
+                        isCond = isConditionShortExitCrossEma();
+                    }
+                    else
+                    {
+                        isCond = isConditionShortExit();
+                        //if (isCond)
+                        //{
+                        //    // EXIT条件を満たした場合
+                        //    if (isConditionShortEntryCrossEma())
+                        //    {
+                        //        // CrossEMAのShortEntry条件を満たしていれば
+                        //        // Short継続
+                        //        isCond = false;
+
+                        //        // ストラテジータイプをCROSS_EMAに換装
+                        //        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    // EXIT条件を満たさなかった場合
+                        //    if (isConditionLongEntryCrossEma())
+                        //    {
+                        //        // CrossEMAのLongEntry条件を満たしていれば
+                        //        // SHORT中断
+                        //        isCond = true;
+                        //    }
+                        //}
+                    }
+
+                    if (isCond)
                     {
                         // 注文成功
                         string short_id = string.Format("BT_SHORT_EXIT_{0:D8}", short_exit_cnt);
@@ -2182,7 +2293,7 @@ namespace CryptoBoxer
                                         return result;
                                     }
 
-                                    if ( (!isGolden) && isFirst)
+                                    if ((!isGolden) && isFirst)
                                     {
                                         // ENTRY
                                         Console.WriteLine("need short. Touch BB_LOW. MA_TOP is OVER. Lv={0}", m_curShortBollLv);
