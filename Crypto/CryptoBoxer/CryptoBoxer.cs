@@ -1128,7 +1128,7 @@ namespace CryptoBoxer
                 bool isShort = isConditionShortEntryCrossEma();
 
 
-                if (isLong || isLongSub)
+                if (isLongSub)
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
@@ -1147,19 +1147,13 @@ namespace CryptoBoxer
                         return result;
                     }
                     // 注文成功
-                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+
                     m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
 
-                    if (isLong)
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                    }
-                    else if (isLongSub)
-                    {
-                        m_position.strategy_type = Position.StrategyType.SWING;
-                    }
+                    postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.strategy_type = Position.StrategyType.SWING;
                 }
-                else if(isShort || isShortSub)
+                else if (isShortSub)
                 {
                     //Console.WriteLine("Try Short Entry Order.");
 
@@ -1171,17 +1165,56 @@ namespace CryptoBoxer
                         return result;
                     }
                     // 注文成功
-                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+
                     m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
 
-                    if (isShort)
+
+                    postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.strategy_type = Position.StrategyType.SWING;
+
+                }
+                else if (isLong)
+                {
+                    //Console.WriteLine("Try Long Entry Order.");
+
+                    if (curCandle.disparity_rate >= 5.0)
                     {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                        result = -1;
+                        return result;
                     }
-                    else if (isShortSub)
+
+                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                    if (retObj == null)
                     {
-                        m_position.strategy_type = Position.StrategyType.SWING;
+                        postSlack("failed to Long Entry Order");
+                        result = -1;
+                        return result;
                     }
+                    // 注文成功
+                    
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                }
+                else if(isShort)
+                {
+                    //Console.WriteLine("Try Short Entry Order.");
+
+                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                    if (retObj == null)
+                    {
+                        postSlack("failed to Short Entry Order");
+                        result = -1;
+                        return result;
+                    }
+                    // 注文成功
+                    
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                    m_position.strategy_type = Position.StrategyType.CROSS_EMA;
                 }
             }
             catch (Exception ex)
@@ -1218,52 +1251,65 @@ namespace CryptoBoxer
                 //bool isLong = isConditionLongEntry();
                 //bool isShort = isConditionShortEntry();
 
+                //bool isLongSub = isConditionLongEntryScam(next_open);
+                //bool isShortSub = isConditionShortEntryScam(next_open);
 
                 bool isLongSub = isConditionLongEntrySwing(next_open);
                 bool isShortSub = isConditionShortEntrySwing(next_open);
 
-                //bool isLongSub = isConditionLongEntryScam(next_open);
-                //bool isShortSub = isConditionShortEntryScam(next_open);
-
                 bool isLong = isConditionLongEntryCrossEma();
                 bool isShort = isConditionShortEntryCrossEma();
 
-                if (isLong || isLongSub)
+                if (isLongSub)
                 {
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
-                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
+
                     m_position.entryLongOrder(long_id, curCandle.timestamp);
 
-                    if (isLong)
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                    }
-                    else if (isLongSub)
-                    {
-                        m_position.strategy_type = Position.StrategyType.SWING;
-                        //m_position.strategy_type = Position.StrategyType.SCAM;
-                    }
+
+                    postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, long_id), true);
+                    m_position.strategy_type = Position.StrategyType.SWING;
+                    //m_position.strategy_type = Position.StrategyType.SCAM;
                     long_entry_cnt++;
                 }
-                else if (isShort || isShortSub)
+                else if (isShortSub)
                 {
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
-                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id),true);
+
                     m_position.entryShortOrder(short_id, curCandle.timestamp);
 
-                    if (isShort)
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                    }
-                    else if (isShortSub)
-                    {
-                        m_position.strategy_type = Position.StrategyType.SWING;
-                        //m_position.strategy_type = Position.StrategyType.SCAM;
-                    }
+                    postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, short_id), true);
+                    m_position.strategy_type = Position.StrategyType.SWING;
+                    //m_position.strategy_type = Position.StrategyType.SCAM;
                     short_entry_cnt++;
                 }
+                else if (isLong)
+                {
+                    // 注文成功
+                    string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
+
+                    m_position.entryLongOrder(long_id, curCandle.timestamp);
+
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
+                    m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+
+                    long_entry_cnt++;
+                }
+                else if (isShort)
+                {
+                    // 注文成功
+                    string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
+
+                    m_position.entryShortOrder(short_id, curCandle.timestamp);
+
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
+                    m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+
+                    short_entry_cnt++;
+                }
+
             }
             catch (Exception ex)
             {
