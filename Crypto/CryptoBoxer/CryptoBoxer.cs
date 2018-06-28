@@ -2103,17 +2103,21 @@ namespace CryptoBoxer
                     result = true;
                     return result;
                 }
-
-                /*
-				if (curCandle.ema < curCandle.ema_sub)
-                {
-                    if (profit < 0)
+                
+				if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+				{
+					bool isGolden = false;
+                    bool isFirst = false;
+                    int back_cnt = 0;
+                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
                     {
-                        result = true;
-                        return result;
+                        if ((!isGolden) && (back_cnt >= 5))
+                        {
+                            result = true;
+                            return result;
+                        }
                     }
-                }
-                */
+				}            
             }
             catch (Exception ex)
             {
@@ -2153,16 +2157,20 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                /*
-				if (curCandle.ema > curCandle.ema_sub)
-				{
-					if (profit < 0)
-					{
-						result = true;
-						return result;
-					}
-                }
-                */
+				if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                {
+                    bool isGolden = false;
+                    bool isFirst = false;
+                    int back_cnt = 0;
+                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
+                    {
+                        if ((isGolden) && (back_cnt >= 5))
+                        {
+                            result = true;
+                            return result;
+                        }
+                    }
+                }  
             }
             catch (Exception ex)
             {
@@ -3733,6 +3741,13 @@ namespace CryptoBoxer
                     return result;
                 }
 
+				//if (curCandle.isTrend() && prevCandle.isTrend())
+				//if (prevCandle.isTrend())
+                //{
+                //    result = false;
+                //    return result;
+                //}
+
                 bool isGolden = false;
                 bool isFirst = false;
                 int back_cnt = 0;
@@ -3833,6 +3848,13 @@ namespace CryptoBoxer
 					result = false;
                     return result;
 				}
+
+				//if( !curCandle.isTrend() && !prevCandle.isTrend())
+				//if (!prevCandle.isTrend())
+				//{
+				//	result = false;
+                //    return result;
+				//}
 
                 bool isGolden = false;
                 bool isFirst = false;
