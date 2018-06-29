@@ -28,6 +28,7 @@ namespace UtilityTrade
             , SCAM
             , CROSS_EMA
             , SWING
+            , DOTEN
         };
 
         private PositionState state { get; set; }
@@ -163,6 +164,10 @@ namespace UtilityTrade
             else if (strategy_type == StrategyType.SWING)
             {
                 strategy_str = "(SWING)";
+            }
+            else if (strategy_type == StrategyType.DOTEN)
+            {
+                strategy_str = "(DOTEN)";
             }
 
             if (isLong())

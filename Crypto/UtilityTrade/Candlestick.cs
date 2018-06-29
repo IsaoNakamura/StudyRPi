@@ -1855,12 +1855,13 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getEMACrossState(out bool isGolden, out bool isFirst, out int back_cnt, double threshold_rate = 0.6)
+        public int getEMACrossState(out bool isGolden, out bool isFirst, out int back_cnt, out double cur_ema_length, double threshold_rate = 0.6)
         {
             int result = -1;
             isGolden = false;
             isFirst = false;
             back_cnt = 0;
+            cur_ema_length = 0.0;
             try
             {
                 int candle_cnt = getCandleCount();
@@ -1885,7 +1886,8 @@ namespace UtilityTrade
                     return result;
                 }
 
-                double cur_ema_length = Math.Abs(curCandle.ema - curCandle.ema_sub);
+                //double 
+                cur_ema_length = Math.Abs(curCandle.ema - curCandle.ema_sub);
                 int cur_cross_state = 0;
                 if (curCandle.ema > curCandle.ema_sub)
                 {
