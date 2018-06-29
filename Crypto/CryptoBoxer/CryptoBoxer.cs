@@ -2103,21 +2103,24 @@ namespace CryptoBoxer
                     result = true;
                     return result;
                 }
-                
-				if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
-				{
-					bool isGolden = false;
-                    bool isFirst = false;
-                    int back_cnt = 0;
-                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
+
+                if (m_config.expiration_cnt >= 0)
+                {
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
                     {
-                        if ((!isGolden) && (back_cnt >= 5))
+                        bool isGolden = false;
+                        bool isFirst = false;
+                        int back_cnt = 0;
+                        if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
                         {
-                            result = true;
-                            return result;
+                            if ((!isGolden) && (back_cnt >= m_config.expiration_cnt))
+                            {
+                                result = true;
+                                return result;
+                            }
                         }
                     }
-				}            
+                }
             }
             catch (Exception ex)
             {
@@ -2157,17 +2160,20 @@ namespace CryptoBoxer
                     return result;
                 }
 
-				if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
+                if (m_config.expiration_cnt >= 0)
                 {
-                    bool isGolden = false;
-                    bool isFirst = false;
-                    int back_cnt = 0;
-                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
+                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA)
                     {
-                        if ((isGolden) && (back_cnt >= 5))
+                        bool isGolden = false;
+                        bool isFirst = false;
+                        int back_cnt = 0;
+                        if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, 1.0) == 0)
                         {
-                            result = true;
-                            return result;
+                            if ((isGolden) && (back_cnt >= m_config.expiration_cnt))
+                            {
+                                result = true;
+                                return result;
+                            }
                         }
                     }
                 }  

@@ -18,5 +18,6 @@
   "boll_diff_play": 1000,
   "vola_rate": 2.0,
   "next_open_diff": 500.0,
-  "back_cnt": 3
+  "back_cnt": 3,
+  "expiration_cnt": 8
 }

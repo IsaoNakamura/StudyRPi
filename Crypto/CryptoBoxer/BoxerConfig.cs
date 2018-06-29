@@ -71,6 +71,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public int back_cnt { get; set; }
 
+        [JsonProperty]
+        public int expiration_cnt { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -93,6 +96,7 @@ namespace CryptoBoxer
             vola_rate = 2.0;
             next_open_diff = 500.0;
             back_cnt = 2;
+            expiration_cnt = 3;
             return;
         }
 
