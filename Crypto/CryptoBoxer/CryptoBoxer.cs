@@ -1500,13 +1500,19 @@ namespace CryptoBoxer
                     if (isCond)
                     {
                         //Console.WriteLine("Try Long Exit Order.");
-
-                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                        if (retObj == null)
+                        SendChildOrderResponse retObj = null;
+                        int retry_cnt = 0;
+                        while (true)
                         {
-                            postSlack("failed to Long Exit Order.");
-                            result = -1;
-                            return result;
+                            retry_cnt++;
+                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            if (retObj == null)
+                            {
+                                postSlack(string.Format("failed to Long Exit Order. retry_cnt={0}", retry_cnt));
+                                System.Threading.Thread.Sleep(1000);
+                                continue;
+                            }
+                            break;
                         }
                         // 注文成功
                         postSlack(string.Format("{0} Long Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
@@ -1529,13 +1535,19 @@ namespace CryptoBoxer
                     if (isCond)
                     {
                         //Console.WriteLine("Try Short Exit Order.");
-
-                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                        if (retObj == null)
+                        SendChildOrderResponse retObj = null;
+                        int retry_cnt = 0;
+                        while (true)
                         {
-                            postSlack("failed to Short Exit Order.");
-                            result = -1;
-                            return result;
+                            retry_cnt++;
+                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            if (retObj == null)
+                            {
+                                postSlack(string.Format("failed to Short Exit Order. retry_cnt={0}", retry_cnt));
+                                System.Threading.Thread.Sleep(1000);
+                                continue;
+                            }
+                            break;
                         }
                         // 注文成功
                         postSlack(string.Format("{0} Short Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
