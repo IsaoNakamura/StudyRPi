@@ -635,49 +635,49 @@ namespace UtilityTrade
 
         public bool isTouchBollHighTop(double play = 0.0)
         {
-            //if (boll_high_top <= (high + play))
-            //{
-            //    return true;
-            //}
+            if (boll_high_top <= (high + play))
+            {
+                return true;
+            }
 
             if (boll_high_top <= (last+play))
             {
                 return true;
             }
 
-            //if (boll_high_top <= (open+play))
-            //{
-            //    return true;
-            //}
+            if (boll_high_top <= (open + play))
+            {
+                return true;
+            }
 
-            //if (boll_high_top <= (low + play))
-            //{
-            //    return true;
-            //}
+            if (boll_high_top <= (low + play))
+            {
+                return true;
+            }
             return false;
         }
 
         public bool isTouchBollLowTop(double play = 0.0)
         {
-            //if (boll_low_top >= (low - play))
-            //{
-            //    return true;
-            //}
+            if (boll_low_top >= (low - play))
+            {
+                return true;
+            }
 
             if (boll_low_top >= (last-play))
             {
                 return true;
             }
 
-            //if (boll_low_top >= (open - play))
-            //{
-            //    return true;
-            //}
+            if (boll_low_top >= (open - play))
+            {
+                return true;
+            }
 
-            //if (boll_low_top >= (high - play))
-            //{
-            //    return true;
-            //}
+            if (boll_low_top >= (high - play))
+            {
+                return true;
+            }
 
             return false;
         }

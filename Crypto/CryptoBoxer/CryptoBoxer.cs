@@ -726,7 +726,7 @@ namespace CryptoBoxer
 
                         // キャンドルを閉じるべきか判断
                         //Console.WriteLine("is close?. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
-                        if (diff_sec<=0.0)
+                        if (diff_sec <= 0.0)
                         {
                             // 次の更新時間になったらキャンドルを閉じる
                             //Console.WriteLine("need close. next={0}, cur={1}, diff={2}", nextCloseTime, cur_timestamp, diff_sec);
@@ -775,10 +775,10 @@ namespace CryptoBoxer
 
                             // ENTRY/EXITロジック
                             await tryEntryOrder(cur_value);
-                            await tryExitOrder();
+                            //await tryExitOrder();
 
                             // Losscutロジック
-                            await tryLosscutOrder();
+                            //await tryLosscutOrder();
 
                             Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},vol={5:0},volma={6:0},curL={7},preL={8},curS={9},preS={10},ema={11:0},sfd={12:0.00}"
                                               , curCandle.timestamp
@@ -828,17 +828,26 @@ namespace CryptoBoxer
                     }
 
                     // インジケータ更新
+
                     if (curCandle != null)
                     {
                         calcIndicator(m_candleBuf, ref curCandle);
                     }
 
-                    // ENTRY/EXITロジック
-                    //await tryEntryOrder();
-                    //await tryExitOrder();
+                    // ENTRYロジック
+                    if (isClose != true)
+                    {
+                        if (m_isDotenLong || m_isDotenShort)
+                        {
+                            await tryEntryOrder(cur_value);
+                        }
+                    }
+
+                    // EXITロジック
+                    await tryExitOrder();
 
                     // Losscutロジック
-                    //await tryLosscutOrder();
+                    await tryLosscutOrder();
 
                     // 注文状況確認ロジック
                     await checkEntry();
@@ -998,9 +1007,37 @@ namespace CryptoBoxer
                     checkEntryTest(curCandle.last);
 
                     // EXIT/ロスカットテスト
-                    tryExitOrderTest(ref long_exit_cnt, ref short_exit_cnt);
-                    tryLosscutOrderTest(ref long_lc_cnt, ref short_lc_cnt);
-                    checkExitTest(curCandle.last);
+                    if (tryExitOrderTest(ref long_exit_cnt, ref short_exit_cnt) == 0)
+                    {
+                        //if (m_position.isLong())
+                        //{
+                        //    checkExitTest(curCandle.high);
+                        //}
+                        //else if (m_position.isShort())
+                        //{
+                        //    checkExitTest(curCandle.low);
+                        //}
+                        //else
+                        {
+                            checkExitTest(curCandle.last);
+                        }
+                    }
+
+                    if (tryLosscutOrderTest(ref long_lc_cnt, ref short_lc_cnt) == 0)
+                    {
+                        //if (m_position.isLong())
+                        //{
+                        //    checkExitTest(curCandle.low);
+                        //}
+                        //else if (m_position.isShort())
+                        //{
+                        //    checkExitTest(curCandle.high);
+                        //}
+                        //else
+                        {
+                            checkExitTest(curCandle.last);
+                        }
+                    }
 
 
                     Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},ema={3:0},B_H={4:0},B_L={5:0},B_HT={6:0},B_LT={7:0}"
@@ -1919,7 +1956,7 @@ namespace CryptoBoxer
             return result;
         }
 
-        public int checkExitTest(double last_price)
+        public int checkExitTest(double exit_price)
         {
             int result = 0;
             try
@@ -1940,12 +1977,12 @@ namespace CryptoBoxer
 
 
                 // 注文確定
-                m_position.exit(last_price);
+                m_position.exit(exit_price);
                 m_profitSum += m_position.getProfit();
                 postSlack(string.Format("Order is completed. profit={0:0} sum={1:0} exit_price={2:0} id={3}"
                                         , m_position.getProfit()
                                         , m_profitSum
-                                        , last_price
+                                        , exit_price
                                         , m_position.exit_id), true
                          );
 
@@ -4034,47 +4071,6 @@ namespace CryptoBoxer
                         {
                             // DEADクロスが初動の場合
 
-                            //// SHORT継続
-                            //result = false;
-                            //return result;
-
-                            //if (curCandle.isTrend())
-                            //{
-                            //    // 上昇キャンドルの場合
-
-                            //    int upType = curCandle.getUpCandleType();
-                            //    if (upType <= 2)
-                            //    {
-                            //        // SHORT継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // SHORT-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    // 下降キャンドルの場合
-                            //    int downType = curCandle.getDownCandleType();
-                            //    if (downType >= 2)
-                            //    {
-                            //        // SHORT継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // SHORT-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
-
-                            
                             int shortLv = curCandle.getShortLevel();
                             if (shortLv <= 0)
                             {
@@ -4092,57 +4088,6 @@ namespace CryptoBoxer
                                 result = false;
                                 return result;
                             }
-                            
-
-                            //int curLongLv = curCandle.getLongLevel();
-                            //int preLongLv = prevCandle.getLongLevel();
-                            //if (preLongLv < 0)
-                            //{
-                            //    //前回のLONGレベルが低い
-                            //    // SHORT継続
-                            //    result = false;
-                            //    return result;
-                            //}
-                            //else
-                            //{
-                            //    if (preLongLv <= 0)
-                            //    {
-                            //        //前回のLONGレベルが0以下
-                            //        if (prevCandle.isTrend())
-                            //        {
-                            //            // 前回が上昇キャンドルの場合
-                            //            if (prevCandle.isUnderBBLow(prevCandle.last))
-                            //            {
-                            //                // SHORT継続
-                            //                result = false;
-                            //                return result;
-                            //            }
-                            //        }
-                            //        else
-                            //        {
-                            //            // 前回が下降キャンドルの場合
-                            //            // SHORT継続
-                            //            result = false;
-                            //            return result;
-                            //        }
-                            //    }
-
-                            //    //前回のLONGレベルが0より大きい
-                            //    if (curLongLv <= 0)
-                            //    {
-                            //        // 現在のLONGレベルが0以下
-                            //        // SHORT継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // 現在のLONGレベルが0より高い
-                            //        // SHORT-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
                         }
                     }
 
@@ -4213,47 +4158,6 @@ namespace CryptoBoxer
                         {
                             // GOLDENクロスが初動の場合
 
-                            //// LONG継続
-                            //result = false;
-                            //return result;
-
-                            //if (curCandle.isTrend())
-                            //{
-                            //    // 上昇キャンドルの場合
-
-                            //    int upType = curCandle.getUpCandleType();
-                            //    if (upType >= 2)
-                            //    {
-                            //        // LONG継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // LONG-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    // 下降キャンドルの場合
-                            //    int downType = curCandle.getDownCandleType();
-                            //    if (downType <= 2)
-                            //    {
-                            //        // LONG継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // LONG-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
-
-
                             int longLv = curCandle.getLongLevel();
                             if (longLv <= 0)
                             {
@@ -4271,59 +4175,6 @@ namespace CryptoBoxer
                                 result = false;
                                 return result;
                             }
-
-
-                            //int curShortLv = curCandle.getShortLevel();
-                            //int preShortLv = prevCandle.getShortLevel();
-                            //if (preShortLv < 0)
-                            //{
-                            //    //前回のSHORTレベルが低い
-                            //    // LONG継続
-                            //    result = false;
-                            //    return result;
-                            //}
-                            //else
-                            //{
-                            //    if (preShortLv <= 0)
-                            //    {
-                            //        //前回のSHORTレベルが0以下
-                            //        if (prevCandle.isTrend())
-                            //        {
-                            //            // 前回が上昇キャンドルの場合
-
-                            //            // LONG継続
-                            //            result = false;
-                            //            return result;
-                            //        }
-                            //        else
-                            //        {
-                            //            // 前回が下降キャンドルの場合
-
-                            //            if (prevCandle.isOverBBHigh(prevCandle.last))
-                            //            {
-                            //                // LONG継続
-                            //                result = false;
-                            //                return result;
-                            //            }
-                            //        }
-                            //    }
-
-                            //    //前回のSHORTベルが0より大きい
-                            //    if (curShortLv <= 0)
-                            //    {
-                            //        // 現在のSHORTレベルが0以下
-                            //        // LONG継続
-                            //        result = false;
-                            //        return result;
-                            //    }
-                            //    else
-                            //    {
-                            //        // 現在のSHORTレベルが0より高い
-                            //        // LONG-EXIT
-                            //        result = true;
-                            //        return result;
-                            //    }
-                            //}
                         }
                     }
 
