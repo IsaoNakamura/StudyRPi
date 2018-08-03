@@ -41,12 +41,16 @@ namespace UtilityBitflyer
         public string time_in_force { get; set; }
     }
 
-    public class GetchildorderResponse
+
+    public class GetChildOrderResponse
     {
         public double average_price { get; set; }
         public string child_order_state { get; set; }
+        public string child_order_id { get; set; }
+        public string child_order_acceptance_id { get; set; }
+        public string side { get; set; }
+        public double price { get; set; }
     }
-
 
     public class SendChildOrder
     {
@@ -330,6 +334,53 @@ namespace UtilityBitflyer
             return result;
         }
 
+        public static async Task<JArray> getExcutionsAcceptance
+        (
+            AuthBitflyer auth,
+            string product_code,
+            string acceptance_id
+        )
+        {
+            JArray retArray = null;
+            try
+            {
+                string method = "GET";
+                string path = "/v1/me/getexecutions";
+                string query = string.Format(
+                        "?product_code={0}&child_order_acceptance_id={1}"
+                        , product_code
+                        , acceptance_id
+                    );
+                string body = "";
+
+                path = path + query;
+
+                string resJson = await RequestBitflyer.Request(auth, method, path, body);
+                if (resJson == null)
+                {
+                    Console.WriteLine("failed to RequestBitflyer.");
+                    return null;
+                }
+
+                retArray = (JArray)JsonConvert.DeserializeObject(resJson);
+                if (retArray == null)
+                {
+                    Console.WriteLine("Ticker's DeserializeObject is null.");
+                    return null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retArray = null;
+            }
+            finally
+            {
+            }
+            return retArray;
+        }
+
         public static async Task<JArray> getChildOrdersAcceptance
         (
             AuthBitflyer auth,
@@ -378,14 +429,14 @@ namespace UtilityBitflyer
         }
 
         // average_priceを返す　失敗すれば0.0
-        public static async Task<GetchildorderResponse> getChildOrderAveragePrice
+        public static async Task<GetChildOrderResponse> getChildOrderAveragePrice
         (
             AuthBitflyer auth,
             string product_code,
             string acceptance_id
         )
         {
-            GetchildorderResponse result = null;
+            GetChildOrderResponse result = null;
             try
             {
                 JArray retArray = await getChildOrdersAcceptance(auth, product_code, acceptance_id);
@@ -418,7 +469,7 @@ namespace UtilityBitflyer
 
                     if (isFullComp)
                     {
-                        result = new GetchildorderResponse();
+                        result = new GetChildOrderResponse();
                         if (result == null)
                         {
                             return result;
@@ -428,7 +479,7 @@ namespace UtilityBitflyer
                     }
                     else if (isReject)
                     {
-                        result = new GetchildorderResponse();
+                        result = new GetChildOrderResponse();
                         if (result == null)
                         {
                             return result;
@@ -453,5 +504,86 @@ namespace UtilityBitflyer
             return result;
         }
 
+        public static async Task<bool> isCanceldChildOrders
+        (
+            AuthBitflyer auth,
+            string product_code,
+            List<string> acceptance_ids
+        )
+        {
+            bool result = false;
+            try
+            {
+                if (acceptance_ids == null || acceptance_ids.Count <= 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                foreach (string acceptance_id in acceptance_ids)
+                {
+                    if (acceptance_id == null || acceptance_id.Length <= 0)
+                    {
+                        result = false;
+                        return result;
+                    }
+
+                    bool isExistOrders = false;
+                    {
+                        JArray retArray = await getChildOrdersAcceptance(auth, product_code, acceptance_id);
+                        if (retArray != null && retArray.Count > 0)
+                        {
+                            isExistOrders = true;
+                            foreach (JObject jobj in retArray)
+                            {
+                                if (jobj == null)
+                                {
+                                    continue;
+                                }
+
+                                string child_order_state = (string)jobj["child_order_state"];
+                                if (child_order_state != "COMPLETED")
+                                {
+                                    result = false;
+                                    return result;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            isExistOrders = false;
+                        }
+                    }
+
+
+                    if (!isExistOrders)
+                    {
+                        JArray retArray = await getExcutionsAcceptance(auth, product_code, acceptance_id);
+                        if (retArray != null && retArray.Count > 0)
+                        {
+                            result = false;
+                            return result;
+                        }
+                        // 建玉にキャンセルした注文が入ってなければキャンセル済みとする
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        result = true;
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
     }
 }

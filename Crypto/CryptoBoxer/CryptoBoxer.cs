@@ -583,13 +583,17 @@ namespace CryptoBoxer
                     }
                 }
 
-                //{
-                //    double ma_top_increase_ma = 0.0;
-                //    if (candleBuf.calcMATopIncreaseMA(out ma_top_increase_ma, 20) == 0)
-                //    {
-                //        candle.ma_top_increase_ma = ma_top_increase_ma;
-                //    }
-                //}
+                {
+                    double top_length = 0.0;
+                    double bottom_length = 0.0;
+                    if (candleBuf.calcHigeLength(out top_length, out bottom_length, 20) == 0)
+                    {
+                        //Console.WriteLine("HIGE_MAX top={0:0}, bottom={1:0}", top_length, bottom_length);
+                        candle.hige_top_max = top_length;
+                        candle.hige_bottom_max = bottom_length;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -605,6 +609,7 @@ namespace CryptoBoxer
         private async void postSlack(string text, bool onlyConsole=false)
         {
             Console.WriteLine(text);
+            onlyConsole = true;
             if (!onlyConsole)
             {
                 await PostMessage.Request(m_authSlack, text);
@@ -616,7 +621,7 @@ namespace CryptoBoxer
             try
             {
                 postSlack("====   START TRADE  ====");
-                System.Threading.Thread.Sleep(3000);
+                //System.Threading.Thread.Sleep(3000);
 
                 postSlack(string.Format("amount={0}", m_config.amount));
                 postSlack(string.Format("periods={0}", m_config.periods));
@@ -631,7 +636,7 @@ namespace CryptoBoxer
                 postSlack(string.Format("buffer_num={0}", m_config.buffer_num));
                 postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour));
 
-                System.Threading.Thread.Sleep(3000);
+                //System.Threading.Thread.Sleep(3000);
 
                 // Cryptowatchから過去のデータを取得
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, (m_candleBuf.m_buffer_num) * m_config.periods);
@@ -773,14 +778,18 @@ namespace CryptoBoxer
                                 curCandle.disparity_rate = disparity_rate;
                             }
 
+                            //await tryExitOrderHige();
+                            //await tryCnacelOrder();
+                            //await tryEntryOrderHige();
+
                             // ENTRY/EXITロジック
-                            await tryEntryOrder(cur_value);
+                            //await tryEntryOrder(cur_value);
                             //await tryExitOrder();
 
                             // Losscutロジック
                             //await tryLosscutOrder();
 
-                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},vol={5:0},volma={6:0},curL={7},preL={8},curS={9},preS={10},ema={11:0},sfd={12:0.00}"
+                            Console.WriteLine("closed candle. timestamp={0},last={1},ema={2:0},B_H={3:0},B_L={4:0},vol={5:0},volma={6:0},ema={7:0},sfd={8:0.00}"
                                               , curCandle.timestamp
                                               , curCandle.last
                                               , curCandle.last - curCandle.ema
@@ -788,10 +797,6 @@ namespace CryptoBoxer
                                               , curCandle.last - curCandle.boll_low
                                               , curCandle.volume
                                               , curCandle.volume_ma
-                                              , m_curLongBollLv
-                                              , m_preLongBollLv
-                                              , m_curShortBollLv
-                                              , m_preShortBollLv
                                               , curCandle.ema
                                               , curCandle.disparity_rate
                             );
@@ -834,24 +839,35 @@ namespace CryptoBoxer
                         calcIndicator(m_candleBuf, ref curCandle);
                     }
 
-                    // ENTRYロジック
-                    if (isClose != true)
-                    {
-                        if (m_isDotenLong || m_isDotenShort)
-                        {
-                            await tryEntryOrder(cur_value);
-                        }
-                    }
+                    //// ENTRYロジック
+                    //if (isClose != true)
+                    //{
+                    //    if (m_isDotenLong || m_isDotenShort)
+                    //    {
+                    //        await tryEntryOrder(cur_value);
+                    //    }
+                    //}
 
-                    // EXITロジック
-                    await tryExitOrder();
+                    //// EXITロジック
+                    //await tryExitOrder();
 
-                    // Losscutロジック
-                    await tryLosscutOrder();
+                    //// Losscutロジック
+                    //await tryLosscutOrder();
 
-                    // 注文状況確認ロジック
-                    await checkEntry();
+                    //// 注文状況確認ロジック
+                    //await checkEntry();
+                    //await checkExit();
+
+                    await tryExitOrderHige();
                     await checkExit();
+                    await tryCnacelOrder();
+                    //await checkCancelOrder();
+
+                    await tryEntryOrderHige();
+
+                    await checkEntryActive();
+
+                    await checkEntryCompleted();
 
                     // 表示を更新
                     if (UpdateViewDelegate != null)
@@ -870,6 +886,7 @@ namespace CryptoBoxer
 
                     if (m_stopFlag)
                     {
+                        await tryCnacelOrder();
                         postSlack("recieved StopCode.");
                         System.Threading.Thread.Sleep(3000);
 
@@ -895,6 +912,7 @@ namespace CryptoBoxer
             }
             return;
         }
+
 
         public bool isBackTest()
         {
@@ -1287,6 +1305,8 @@ namespace CryptoBoxer
             return result;
         }
 
+
+
         private int tryEntryOrderTest(ref int long_entry_cnt, ref int short_entry_cnt, double next_open)
         {
             int result = 0;
@@ -1416,7 +1436,7 @@ namespace CryptoBoxer
                 }
                 // ENTRYアクティブの場合
 
-                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
+                GetChildOrderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
                 if(responce==null)
                 {
                     //Console.WriteLine("Order is not completed.");
@@ -1452,6 +1472,8 @@ namespace CryptoBoxer
             }
             return result;
         }
+
+
 
         public int checkEntryTest(double last_price)
         {
@@ -1902,14 +1924,14 @@ namespace CryptoBoxer
                 }
                 // NONEポジションじゃない場合
 
-                if (!m_position.isExitActive())
+                if (!m_position.isExitOrdered())
                 {
                     result = 1;
                     return result;
                 }
-                // EXITアクティブの場合
+                // EXIT注文済みの場合
 
-                GetchildorderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.exit_id);
+                GetChildOrderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.exit_id);
                 if (responce == null)
                 {
                     //Console.WriteLine("Order is not completed.");
@@ -4194,6 +4216,695 @@ namespace CryptoBoxer
             {
                 Console.WriteLine(ex);
                 result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionShortEntryHige()
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                // 小ボリンジャーが大ボリンジャーをはみ出た場合はEntryしない
+                if (curCandle.boll_high > curCandle.boll_high_top)
+                {
+                    Console.WriteLine("not need short. boll_high is outside boll_high_top.");
+                    result = false;
+                    return result;
+                }
+
+                // ENTRY
+                Console.WriteLine("need short. boll_high is inside boll_high_top ");
+                result = true;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionLongEntryHige()
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                // 小ボリンジャーが大ボリンジャーをはみ出た場合はEntryしない
+                if (curCandle.boll_low < curCandle.boll_low_top)
+                {
+                    Console.WriteLine("not need long. boll_low is outside boll_low_top.");
+                    result = false;
+                    return result;
+                }
+
+                // ENTRY
+                Console.WriteLine("need long. boll_low is inside boll_low_top ");
+                result = true;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionCancelHige()
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                double buy_length = Math.Abs(m_position.limit_buy_price - curCandle.last);
+                double sell_length = Math.Abs(m_position.limit_sell_price - curCandle.last);
+
+                double buy_diff = curCandle.hige_bottom_max - buy_length;
+                double sell_diff = curCandle.hige_top_max - sell_length;
+
+                double buy_thr = curCandle.hige_bottom_max * 0.3;// 0.3;
+                double sell_thr = curCandle.hige_top_max * 0.3; // 0.3;
+
+                if (( Math.Abs(buy_diff) <= buy_thr) && (Math.Abs(buy_diff) <= sell_thr))
+                {
+                    //Console.WriteLine("not need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+                    result = false;
+                    return result;
+                }
+
+
+
+                // CANCEL
+                Console.WriteLine("need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+                result = true;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionExitHige()
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                double entry_diff = m_position.calcProfit(curCandle.last);
+
+                double threshold_diff = 1000.0;
+                if (Math.Abs(entry_diff) < threshold_diff)
+                {
+                    //Console.WriteLine("need not exit. diff={0:0} entry={1:0} last={2:0}", entry_diff, m_position.entry_price, curCandle.last);
+                    result = false;
+                    return result;
+                }
+
+                // EXIT
+                Console.WriteLine("need exit. diff={0:0} entry={1:0} last={2:0}", entry_diff, m_position.entry_price, curCandle.last);
+                result = true;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> tryEntryOrderHige()
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // PositionがNONEの場合
+
+                if (!m_position.isEntryNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // Entry注文がNONEの場合
+
+                if (!m_position.isExitNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // Exit注文していない場合
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                // NONEポジションの場合
+
+
+                bool isLong = true;// isConditionLongEntryHige();
+                bool isShort = true; // isConditionShortEntryHige();
+
+                if (isLong && isShort)
+                {
+                    if (curCandle.disparity_rate >= 5.0)
+                    {
+                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                        result = -1;
+                        return result;
+                    }
+
+
+                    double buy_price = Math.Round( curCandle.last - curCandle.hige_bottom_max);
+                    double sell_price = Math.Round(curCandle.last + curCandle.hige_top_max);
+
+
+                    SendParentOrderResponse retObj = await SendParentOrder.SendStopLimitOCO(m_authBitflyer, m_config.product_bitflyer, m_config.amount, buy_price, sell_price);
+                    if (retObj == null)
+                    {
+                        postSlack("failed to OCO Entry Order");
+                        result = -1;
+                        return result;
+                    }
+                    // 注文成功
+                    m_position.entryOrder(retObj.parent_order_acceptance_id, curCandle.timestamp);
+                    m_position.limit_buy_price = buy_price;
+                    m_position.limit_sell_price = sell_price;
+
+                    postSlack(string.Format("{0} OCO Entry Order ID = {1} buy={2:0} sell={3:0} hige_top={4:0} hige_btm={5:0}", curCandle.timestamp, retObj.parent_order_acceptance_id, buy_price, sell_price, curCandle.hige_top_max, curCandle.hige_bottom_max));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                m_isDotenShort = false;
+                m_isDotenLong = false;
+            }
+            return result;
+        }
+
+        // Entryが約定したかチェック
+        public async Task<int> checkEntryActive()
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションの場合
+
+                if (!m_position.isEntryOrdered())
+                {
+                    result = 1;
+                    return result;
+                }
+                // ENTRY注文済みの場合
+
+                GetParentOrderResponse responce = await SendParentOrder.getParentOrderOCO(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
+                if (responce == null)
+                {
+                    //Console.WriteLine("Order is not completed.  Order ID = {0}", m_position.entry_id);
+                    result = 1;
+                    return result;
+                }
+
+                if (responce.parent_order_state == "NONE")
+                {
+                    //postSlack(string.Format("Order is nothing. Order ID = {0}", m_position.entry_id));
+                    result = -1;
+                    return result;
+                }
+
+                if (responce.parent_order_state == "ACTIVE")
+                {
+                    if (m_position.entry_child_ids == null || m_position.entry_child_ids.Count() <= 0)
+                    {
+                        foreach (GetChildOrderResponse child in responce.children)
+                        {
+                            if (child == null)
+                            {
+                                continue;
+                            }
+                            if (m_position.entry_child_ids == null)
+                            {
+                                m_position.entry_child_ids = new List<string>();
+                                if (m_position.entry_child_ids == null)
+                                {
+                                    result = -1;
+                                    return result;
+                                }
+                            }
+
+                            m_position.entry_child_ids.Add(child.child_order_acceptance_id);
+                        }
+                        postSlack(string.Format("Order is active. Order ID = {0}", m_position.entry_id));
+                        m_position.entryActive();
+                    }
+                    result = 1;
+                    return result;
+                }
+                else if (responce.parent_order_state == "CANCELD")
+                {
+                    postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+                else if (responce.parent_order_state == "COMPLETED")
+                {
+                    // 注文確定
+                    postSlack(string.Format("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id));
+                    m_position.entry(responce.average_price, responce.side);
+                    result = 0;
+                    return result;
+                }
+                else if (responce.parent_order_state == "REJECTED")
+                {
+                    postSlack(string.Format("Order is rejected. Order ID = {0}", m_position.entry_id));
+                    result = -1;
+                    return result;
+                }
+                else
+                {
+                    postSlack(string.Format("Order is not completed. Order ID = {0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> checkEntryCompleted()
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションの場合
+
+                if (!m_position.isEntryActive())
+                {
+                    result = 1;
+                    return result;
+                }
+                // ENTRY注文がアクティブの場合
+
+                GetParentOrderResponse responce = await SendParentOrder.getParentOrderOCO(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
+                if (responce == null)
+                {
+                    //Console.WriteLine("Order is not completed.  Order ID = {0}", m_position.entry_id);
+                    result = 1;
+                    return result;
+                }
+
+                if (responce.parent_order_state == "NONE")
+                {
+                    //postSlack(string.Format("Order is nothing. Order ID = {0}", m_position.entry_id));
+                    result = -1;
+                    return result;
+                }
+
+                if (responce.parent_order_state == "ACTIVE")
+                {
+                    //postSlack(string.Format("Order is active. Order ID = {0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+                else if (responce.parent_order_state == "CANCELD")
+                {
+                    postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+                else if (responce.parent_order_state == "COMPLETED")
+                {
+                    // 注文確定
+                    postSlack(string.Format("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id));
+                    m_position.entry(responce.average_price, responce.side);
+                    result = 0;
+                    return result;
+                }
+                else if (responce.parent_order_state == "REJECTED")
+                {
+                    postSlack(string.Format("Order is rejected. Order ID = {0}", m_position.entry_id));
+                    result = -1;
+                    return result;
+                }
+                else
+                {
+                    postSlack(string.Format("Order is not completed. Order ID = {0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> tryCnacelOrder()
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションの場合
+
+                if (!m_position.isEntryActive())
+                {
+                    result = 1;
+                    return result;
+                }
+                // ENTRYアクティブの場合
+
+                bool isCancel = isConditionCancelHige();
+                if (!isCancel)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                int responce = await SendParentOrder.cancelParentOrderAcceptance(m_authBitflyer, m_config.product_bitflyer, m_position.entry_id);
+                if (responce != 0)
+                {
+                    //Console.WriteLine("Order is not canceled.");
+                    postSlack(string.Format("Cancel Order is failed. id={0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+
+                //int retry_cnt = 0;
+                //while (true)
+                //{
+                //    retry_cnt++;
+                bool isCanceled = await SendChildOrder.isCanceldChildOrders(m_authBitflyer, m_config.product_bitflyer, m_position.entry_child_ids);
+                if (!isCanceled)
+                {
+                    postSlack(string.Format("Cancel Commit is failed. id={0}", m_position.entry_id));
+                    result = 1;
+                    return result;
+                }
+                //    if (!isCanceled)
+                //    {
+                //        System.Threading.Thread.Sleep(100);
+                //        continue;
+                //    }
+                //    break;
+                //}
+
+                // 注文キャンセル確定
+                postSlack(string.Format("Cancel Order is succeed. id={0}", m_position.entry_id));
+
+                m_position.cancel();
+
+                m_position = new Position();
+                m_posArray.Add(m_position);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> checkCancelOrder()
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションの場合
+
+                if (!m_position.isEntryActive())
+                {
+                    result = 1;
+                    return result;
+                }
+                // ENTRYアクティブの場合
+
+
+                bool isCanceled = await SendChildOrder.isCanceldChildOrders(m_authBitflyer, m_config.product_bitflyer, m_position.entry_child_ids);
+                if (!isCanceled)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
+
+                m_position.cancel();
+
+                m_position = new Position();
+                m_posArray.Add(m_position);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public async Task<int> tryExitOrderHige()
+        {
+            int result = 0;
+            try
+            {
+                if (m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // NONEポジションじゃない場合
+
+                if (!m_position.isEntryCompleted())
+                {
+                    result = 1;
+                    return result;
+                }
+                // エントリーが完了している場合
+
+                if (!m_position.isExitNone())
+                {
+                    result = 1;
+                    return result;
+                }
+                // EXITが未だの場合
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                bool isExit = isConditionExitHige();
+                if (!isExit)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                if (m_position.isLong())
+                {// LONGの場合
+
+                    bool isCond = true;
+                    if (isCond)
+                    {
+                        //Console.WriteLine("Try Long Exit Order.");
+                        SendChildOrderResponse retObj = null;
+                        int retry_cnt = 0;
+                        while (true)
+                        {
+                            retry_cnt++;
+                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            if (retObj == null)
+                            {
+                                postSlack(string.Format("failed to Long Exit Order. retry_cnt={0}", retry_cnt));
+                                System.Threading.Thread.Sleep(1000);
+                                continue;
+                            }
+                            break;
+                        }
+                        // 注文成功
+                        postSlack(string.Format("{0} Long Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    }
+                }
+                else if (m_position.isShort())
+                {// SHORTの場合
+
+                    bool isCond = true;
+                    if (isCond)
+                    {
+                        //Console.WriteLine("Try Short Exit Order.");
+                        SendChildOrderResponse retObj = null;
+                        int retry_cnt = 0;
+                        while (true)
+                        {
+                            retry_cnt++;
+                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            if (retObj == null)
+                            {
+                                postSlack(string.Format("failed to Short Exit Order. retry_cnt={0}", retry_cnt));
+                                System.Threading.Thread.Sleep(1000);
+                                continue;
+                            }
+                            break;
+                        }
+                        // 注文成功
+                        postSlack(string.Format("{0} Short Exit Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                        m_position.exitOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
             }
             finally
             {

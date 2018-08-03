@@ -18,8 +18,10 @@ namespace UtilityTrade
         public enum OrderState
         {
              NONE
+           , ORDERED
            , ACTIVE
            , COMPLETED
+           , CANCELED
         };
 
         public enum StrategyType
@@ -29,6 +31,7 @@ namespace UtilityTrade
             , CROSS_EMA
             , SWING
             , DOTEN
+            , HIGE
         };
 
         private PositionState state { get; set; }
@@ -45,7 +48,10 @@ namespace UtilityTrade
 
         public StrategyType strategy_type { get; set; }
 
-        //public double entry_increase { get; set; }
+        public double limit_buy_price { get; set; }
+        public double limit_sell_price { get; set; }
+
+        public List<string> entry_child_ids { get; set; }
 
         public Position()
         {
@@ -91,6 +97,15 @@ namespace UtilityTrade
             return false;
         }
 
+        public bool isEntryOrdered()
+        {
+            if (entry_state == OrderState.ORDERED)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public bool isEntryActive()
         {
             if (entry_state == OrderState.ACTIVE)
@@ -112,6 +127,15 @@ namespace UtilityTrade
         public bool isExitNone()
         {
             if (exit_state == OrderState.NONE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isExitOrdered()
+        {
+            if (exit_state == OrderState.ORDERED)
             {
                 return true;
             }
@@ -227,15 +251,62 @@ namespace UtilityTrade
             return;
         }
 
+        public void entryOrder(string _acceptance_id, string _entry_date)
+        {
+            entry_id = _acceptance_id;
+            entry_state = OrderState.ORDERED;
+            state = PositionState.NONE;
+            entry_date = _entry_date;
+            return;
+        }
+
+        public void entryActive()
+        {
+            entry_state = OrderState.ACTIVE;
+            return;
+        }
+
         public void exitOrder(string _acceptance_id, string _exit_date)
         {
             exit_id = _acceptance_id;
-            exit_state = OrderState.ACTIVE;
+            exit_state = OrderState.ORDERED;
             exit_date = _exit_date;
+        }
+
+        public void exitActive()
+        {
+            exit_state = OrderState.ACTIVE;
+            return;
         }
 
         public void entry(double _entry_price)
         {
+            entry_price = _entry_price;
+            entry_state = OrderState.COMPLETED;
+            return;
+        }
+
+        public void cancel()
+        {
+            entry_state = OrderState.CANCELED;
+            state = PositionState.NONE;
+            return;
+        }
+
+        public void entry(double _entry_price, string _side)
+        {
+            if (_side == "BUY")
+            {
+                state = PositionState.LONG;
+            }
+            else if (_side == "SELL")
+            {
+                state = PositionState.SHORT;
+            }
+            else
+            {
+                state = PositionState.NONE;
+            }
             entry_price = _entry_price;
             entry_state = OrderState.COMPLETED;
             return;

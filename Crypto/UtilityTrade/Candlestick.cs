@@ -37,6 +37,9 @@ namespace UtilityTrade
         public double ma_top_increase { get; set; }
         public double ma_top_increase_rate { get; set; }
 
+        public double hige_top_max { get; set; }
+        public double hige_bottom_max { get; set; }
+
         public Candlestick()
         {
             high = 0.0;
@@ -1486,6 +1489,86 @@ namespace UtilityTrade
                 if (result != 0)
                 {
                     ma = 0.0;
+                }
+            }
+            return result;
+        }
+
+        public int calcHigeLength(out double top_length, out double bottom_length, int sample_num)
+        {
+            int result = 0;
+            top_length = 0.0;
+            bottom_length = 0.0;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                int beg_idx = 0;
+                if (candle_cnt >= sample_num)
+                {
+                    beg_idx = candle_cnt - sample_num;
+                }
+
+                double top_max = 0.0;
+                double bottom_max = 0.0;
+                bool isFirst = true;
+                for (int i = beg_idx; i < candle_cnt; i++)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+
+
+                    double top = 0.0;
+                    double bottom = 0.0;
+
+                    if (candle.isTrend())
+                    {
+                        top = candle.high - candle.last;
+                        bottom = candle.open - candle.low;
+                    }
+                    else
+                    {
+                        top = candle.high - candle.open;
+                        bottom = candle.last - candle.low;
+                    }
+
+                    if (isFirst)
+                    {
+                        isFirst = false;
+
+                        top_max = top;
+                        bottom_max = bottom;
+                    }
+                    else
+                    {
+                        top_max = Math.Max(top_max, top);
+                        bottom_max = Math.Max(bottom_max, bottom);
+                    }
+                }
+
+                top_length = top_max;
+                bottom_length = bottom_max;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    top_length = 0.0;
+                    bottom_length = 0.0;
                 }
             }
             return result;
