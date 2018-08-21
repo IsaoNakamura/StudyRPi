@@ -11,7 +11,7 @@
   "ema_diff_far": 1400.0,
   "ema_diff_near": 500.0,
   "ema_cross_near": 2900.0,
-  "losscut_value": -9500,
+  "losscut_value": -3000,
   "buffer_num": 500,
   "backtest_hour": 96,
   "backtest_flag": 0,

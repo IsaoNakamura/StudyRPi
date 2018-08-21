@@ -81,6 +81,71 @@ namespace UtilityBitflyer
             return responce;
         }
 
+        public static async Task<int> RequestChkSuccessCode
+        (
+            AuthBitflyer auth,
+            string method,
+            string path,
+            string body
+        )
+        {
+            int result = -1;
+            
+            try
+            {
+                StringContent content = null;
+                if (body != null && body.Length > 0)
+                {
+                    content = new StringContent(body);
+                }
+
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage(new HttpMethod(method), path))
+                {
+                    client.BaseAddress = EndPoint.endpointUri;
+
+                    if (content != null)
+                    {
+                        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                        request.Content = content;
+                    }
+
+                    if (auth != null)
+                    {
+                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+                        var data = timestamp + method + path + body;
+                        var hash = SignWithHMACSHA256(data, auth.m_access_secret);
+
+                        request.Headers.Add("ACCESS-KEY", auth.m_access_key);
+                        request.Headers.Add("ACCESS-TIMESTAMP", timestamp);
+                        request.Headers.Add("ACCESS-SIGN", hash);
+                    }
+
+                    var message = await client.SendAsync(request);
+                    // string responce = await message.Content.ReadAsStringAsync();
+
+                    if (message.IsSuccessStatusCode == false)
+                    {
+                        //Console.WriteLine(message.RequestMessage);
+                        result = -1;
+                    }
+                    else
+                    {
+                        result = 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         static string SignWithHMACSHA256(string data, string secret)
         {
             using (var encoder = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))

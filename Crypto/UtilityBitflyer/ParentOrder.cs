@@ -59,6 +59,8 @@ namespace UtilityBitflyer
 
     public class GetParentOrderResponse
     {
+        public int page_id { get; set; }
+        public string parent_order_id { get; set; }
         public string side { get; set; }
         public double average_price { get; set; }
         public string parent_order_state { get; set; }
@@ -222,10 +224,10 @@ namespace UtilityBitflyer
                 string method = "POST";
                 string path = "/v1/me/cancelparentorder";
 
-                string resJson = await RequestBitflyer.Request(auth, method, path, body);
-                if (resJson == null)
+                int resCode = await RequestBitflyer.RequestChkSuccessCode(auth, method, path, body);
+                if (resCode != 0)
                 {
-                    Console.WriteLine("failed to RequestBitflyer.");
+                    Console.WriteLine("failed to RequestChkSuccessCode for cancel.");
                     result = -1;
                     return result;
                 }
@@ -284,6 +286,101 @@ namespace UtilityBitflyer
             {
             }
             return retArray;
+        }
+
+        public static async Task<JArray> getParentOrders
+        (
+            AuthBitflyer auth,
+            string product_code,
+            int after_page_id,
+            int before_page_id
+        )
+        {
+            JArray retArray = null;
+            try
+            {
+                string method = "GET";
+                string path = "/v1/me/getparentorders";
+                string query = string.Format(
+                        "?product_code={0}&after={1}&before={2}"
+                        , product_code
+                        , after_page_id
+                        , before_page_id
+                    );
+                string body = "";
+
+                path = path + query;
+
+                string resJson = await RequestBitflyer.Request(auth, method, path, body);
+                if (resJson == null)
+                {
+                    Console.WriteLine("failed to RequestBitflyer.");
+                    return null;
+                }
+
+                retArray = (JArray)JsonConvert.DeserializeObject(resJson);
+                if (retArray == null)
+                {
+                    Console.WriteLine("Ticker's DeserializeObject is null.");
+                    return null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retArray = null;
+            }
+            finally
+            {
+            }
+            return retArray;
+        }
+
+        public static async Task<string> getParentOrderState
+        (
+            AuthBitflyer auth,
+            string product_code,
+            int page_id
+        )
+        {
+            string result = null;
+            try
+            {
+                JArray retArray = await getParentOrders(auth, product_code, page_id - 1, page_id + 1);
+
+                if (retArray == null || retArray.Count<=0 || retArray.Count>1)
+                {
+                    result = null;
+                    return result;
+                }
+
+                JObject jobj = (JObject)retArray[0];
+                if (jobj == null)
+                {
+                    result = null;
+                    return result;
+                }
+
+                string state = (string)jobj["parent_order_state"];
+                if (state == null || state.Length <= 0)
+                {
+                    result = null;
+                    return result;
+                }
+
+                result = state;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = null;
+            }
+            finally
+            {
+            }
+            return result;
         }
 
         public static async Task<JObject> getParentOrderAcceptance
@@ -398,6 +495,7 @@ namespace UtilityBitflyer
                     return result;
                 }
 
+                int page_id = (int)retObj["id"];
                 string parent_order_id = (string)retObj["parent_order_id"];
                 if (parent_order_id == null || parent_order_id.Length <= 0)
                 {
@@ -413,10 +511,12 @@ namespace UtilityBitflyer
                     {
                         return result;
                     }
+                    result.page_id = page_id;
+                    result.parent_order_id = parent_order_id;
                     result.side = "";
                     result.average_price = 0.0;
                     result.parent_order_state = "NONE";
-
+                    
                     return result;
                 }
 
@@ -486,6 +586,8 @@ namespace UtilityBitflyer
                     {
                         return result;
                     }
+                    result.page_id = page_id;
+                    result.parent_order_id = parent_order_id;
                     result.side = (string)compObj["side"]; ;
                     result.average_price = (double)compObj["average_price"];
                     result.parent_order_state = (string)compObj["child_order_state"];
@@ -499,6 +601,8 @@ namespace UtilityBitflyer
                     {
                         return result;
                     }
+                    result.page_id = page_id;
+                    result.parent_order_id = parent_order_id;
                     result.side = "";
                     result.average_price = 0.0;
                     result.parent_order_state = "ACTIVE";
@@ -512,6 +616,8 @@ namespace UtilityBitflyer
                     {
                         return result;
                     }
+                    result.page_id = page_id;
+                    result.parent_order_id = parent_order_id;
                     result.side = "";
                     result.average_price = 0.0;
                     result.parent_order_state = "CANCELED";
@@ -525,14 +631,14 @@ namespace UtilityBitflyer
                     {
                         return result;
                     }
+                    result.page_id = page_id;
+                    result.parent_order_id = parent_order_id;
                     result.side = "";
                     result.average_price = 0.0;
                     result.parent_order_state = "REJECTED";
                     result.children = children;
                     Console.WriteLine("REJECTED. side={0} state={1} accept_id={2} parent_id={3}", result.side, result.parent_order_state, acceptance_id, parent_order_id);
                 }
-
-
                 else
                 {
                     //Console.WriteLine("Entry Order is NULL. accept_id={0} parent_id={1}", acceptance_id, parent_order_id);

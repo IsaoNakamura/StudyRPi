@@ -34,6 +34,8 @@ namespace CryptoChart
         private Series m_series_bollLow = null;
         private Series m_series_min = null;
         private Series m_series_max = null;
+        private Series m_series_body_min = null;
+        private Series m_series_body_max = null;
         private Series m_series_entry = null;
 
         private Series m_series_bollHigh_top = null;
@@ -235,7 +237,29 @@ namespace CryptoChart
                 m_series_max.Color = Color.Blue;
                 m_series_max.Name = "MAX";
 
-                
+                if (m_series_body_min != null)
+                {
+                    m_series_body_min.Dispose();
+                    m_series_body_min = null;
+                }
+
+                m_series_body_min = new Series();
+                m_series_body_min.ChartType = SeriesChartType.Line;
+                m_series_body_min.Color = Color.DarkRed;
+                m_series_body_min.Name = "BODY_MIN";
+
+                if (m_series_body_max != null)
+                {
+                    m_series_body_max.Dispose();
+                    m_series_body_max = null;
+                }
+
+                m_series_body_max = new Series();
+                m_series_body_max.ChartType = SeriesChartType.Line;
+                m_series_body_max.Color = Color.DarkBlue;
+                m_series_body_max.Name = "BODY_MAX";
+
+
                 if (m_series_entry != null)
                 {
                     m_series_entry.Dispose();
@@ -329,6 +353,8 @@ namespace CryptoChart
                 m_series_bollLow_top.Points.Clear();
                 m_series_min.Points.Clear();
                 m_series_max.Points.Clear();
+                m_series_body_min.Points.Clear();
+                m_series_body_max.Points.Clear();
                 m_series_entry.Points.Clear();
 
                 if (m_boxer == null)
@@ -344,8 +370,17 @@ namespace CryptoChart
                     return result;
                 }
 
-                double indicator_min = m_boxer.m_min;
-                double indicator_max = m_boxer.m_max;
+                Candlestick curCandle = candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                double range_min = curCandle.range_min;
+                double range_max = curCandle.range_max;
+                double body_min = curCandle.body_min;
+                double body_max = curCandle.body_max;
                 double entry_price = m_boxer.getEntryPrice();
 
                 if (!candleBuf.isFullBuffer())
@@ -411,11 +446,17 @@ namespace CryptoChart
                     DataPoint dp_bollLow_top = new DataPoint(candle_cnt, Math.Round(candle.boll_low_top, 0));
                     m_series_bollLow_top.Points.Add(dp_bollLow_top);
 
-                    DataPoint dp_min = new DataPoint(candle_cnt, Math.Round(indicator_min,0));
+                    DataPoint dp_min = new DataPoint(candle_cnt, Math.Round(range_min,0));
                     m_series_min.Points.Add(dp_min);
 
-                    DataPoint dp_max = new DataPoint(candle_cnt, Math.Round(indicator_max,0));
+                    DataPoint dp_max = new DataPoint(candle_cnt, Math.Round(range_max,0));
                     m_series_max.Points.Add(dp_max);
+
+                    DataPoint dp_body_min = new DataPoint(candle_cnt, Math.Round(body_min, 0));
+                    m_series_body_min.Points.Add(dp_body_min);
+
+                    DataPoint dp_body_max = new DataPoint(candle_cnt, Math.Round(body_max, 0));
+                    m_series_body_max.Points.Add(dp_body_max);
 
                     if (entry_price > double.Epsilon)
                     {
@@ -479,6 +520,8 @@ namespace CryptoChart
                 this.chart1.Series.Add(m_series_bollLow_top);
                 this.chart1.Series.Add(m_series_min);
                 this.chart1.Series.Add(m_series_max);
+                this.chart1.Series.Add(m_series_body_min);
+                this.chart1.Series.Add(m_series_body_max);
                 if (entry_price > double.Epsilon)
                 {
                     this.chart1.Series.Add(m_series_entry);

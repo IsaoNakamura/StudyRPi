@@ -335,6 +335,36 @@ sub getExecutionsAcceptance{
     return($ret_req);
 }
 
+sub getExecutions{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getexecutions";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?product_code=%s", $path, $product);
+
+    print "endPoint = " . $endPoint . "\n";
+    print "path     = " . $path . "\n";
+    print "method   = " . $method . "\n";
+    print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
 sub getChildOrdersAcceptance{
     my $resultJson_ref = shift;
     my $userAgent_ref  = shift;
@@ -348,6 +378,99 @@ sub getChildOrdersAcceptance{
     my $body     = "";
 
     $path = sprintf("%s?product_code=%s&child_order_acceptance_id=%s", $path, $product,$acceptance_id);
+
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+sub getChildOrdersParent{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+    my $parent_order_id  = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getchildorders";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?product_code=%s&parent_order_id=%s", $path, $product,$parent_order_id);
+
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+
+sub getParentOrders{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $product        = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getparentorders";
+    my $method   = "GET";
+    my $body     = "";
+
+    #$path = sprintf("%s?product_code=%s&after=77912956&before=77912958", $path, $product);
+    $path = sprintf("%s?product_code=%s", $path, $product);
+
+    #print "endPoint = " . $endPoint . "\n";
+    #print "path     = " . $path . "\n";
+    #print "method   = " . $method . "\n";
+    #print "body     = " . $body . "\n";
+
+    my $ret_req =   MyModule::UtilityBitflyer::requestBitflyer(
+                        $resultJson_ref,
+                        $userAgent_ref,
+                        $auth_ref,
+                        $endPoint,
+                        $method,
+                        $path,
+                        $body
+                    );
+    return($ret_req);
+}
+
+sub getParentOrderAcceptance{
+    my $resultJson_ref = shift;
+    my $userAgent_ref  = shift;
+    my $auth_ref       = shift;
+    my $acceptance_id  = shift;
+
+    my $endPoint = "https://api.bitflyer.jp";
+    my $path     = "/v1/me/getparentorder";
+    my $method   = "GET";
+    my $body     = "";
+
+    $path = sprintf("%s?parent_order_acceptance_id=%s", $path,$acceptance_id);
 
     #print "endPoint = " . $endPoint . "\n";
     #print "path     = " . $path . "\n";

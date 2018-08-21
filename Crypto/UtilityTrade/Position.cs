@@ -22,6 +22,7 @@ namespace UtilityTrade
            , ACTIVE
            , COMPLETED
            , CANCELED
+           , REJECTED
         };
 
         public enum StrategyType
@@ -40,6 +41,8 @@ namespace UtilityTrade
         public string entry_id { get; private set; }
         public double entry_price { get; set; }
         public string entry_date { get; set; }
+        public string entry_parent_id { get; set; }
+        public int entry_page_id { get; set; }
 
         private OrderState exit_state { get; set; }
         public string exit_id { get; set; }
@@ -266,6 +269,7 @@ namespace UtilityTrade
             return;
         }
 
+
         public void exitOrder(string _acceptance_id, string _exit_date)
         {
             exit_id = _acceptance_id;
@@ -321,8 +325,12 @@ namespace UtilityTrade
 
         public void reject()
         {
-            init();
             return;
+        }
+
+        public void entryRecject()
+        {
+            entry_state = OrderState.REJECTED;
         }
 
         public double calcProfit(double now_price)

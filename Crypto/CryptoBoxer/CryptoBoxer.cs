@@ -586,11 +586,28 @@ namespace CryptoBoxer
                 {
                     double top_length = 0.0;
                     double bottom_length = 0.0;
-                    if (candleBuf.calcHigeLength(out top_length, out bottom_length, 20) == 0)
+                    double range_min = 0.0;
+                    double range_max = 0.0;
+                    double body_min = 0.0;
+                    double body_max = 0.0;
+                    if (candleBuf.calcHigeLength(
+                            out top_length,
+                            out bottom_length,
+                            out range_min,
+                            out range_max,
+                            out body_min,
+                            out body_max,
+                            20
+                        ) == 0
+                    )
                     {
                         //Console.WriteLine("HIGE_MAX top={0:0}, bottom={1:0}", top_length, bottom_length);
                         candle.hige_top_max = top_length;
                         candle.hige_bottom_max = bottom_length;
+                        candle.range_min = range_min;
+                        candle.range_max = range_max;
+                        candle.body_min = body_min;
+                        candle.body_max = body_max;
                     }
                 }
 
@@ -859,6 +876,7 @@ namespace CryptoBoxer
                     //await checkExit();
 
                     await tryExitOrderHige();
+                    await tryLosscutOrder();
                     await checkExit();
                     await tryCnacelOrder();
                     //await checkCancelOrder();
@@ -4223,6 +4241,59 @@ namespace CryptoBoxer
             return result;
         }
 
+        public bool isConditionEntryHige()
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.last >= curCandle.body_max)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.last <= curCandle.body_min)
+                {
+                    result = false;
+                    return result;
+                }
+
+                // ENTRY
+                Console.WriteLine("need short. boll_high is inside boll_high_top ");
+                result = true;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public bool isConditionShortEntryHige()
         {
             bool result = false;
@@ -4345,26 +4416,43 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                double buy_length = Math.Abs(m_position.limit_buy_price - curCandle.last);
-                double sell_length = Math.Abs(m_position.limit_sell_price - curCandle.last);
-
-                double buy_diff = curCandle.hige_bottom_max - buy_length;
-                double sell_diff = curCandle.hige_top_max - sell_length;
-
-                double buy_thr = curCandle.hige_bottom_max * 0.3;// 0.3;
-                double sell_thr = curCandle.hige_top_max * 0.3; // 0.3;
-
-                if (( Math.Abs(buy_diff) <= buy_thr) && (Math.Abs(buy_diff) <= sell_thr))
+                if ((curCandle.last > curCandle.body_min) && (curCandle.last < curCandle.body_max))
                 {
-                    //Console.WriteLine("not need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
                     result = false;
                     return result;
                 }
-
-
-
                 // CANCEL
-                Console.WriteLine("need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+                Console.WriteLine("need cancel. last={0:0} body_min={1:0} body_max={2:0} under={3:0} over={4:0}"
+                    , curCandle.last
+                    , curCandle.body_min
+                    , curCandle.body_max
+                    , curCandle.body_min - curCandle.last
+                    , curCandle.last - curCandle.body_min
+                );
+
+                //double buy_length = Math.Abs(m_position.limit_buy_price - curCandle.last);
+                //double sell_length = Math.Abs(m_position.limit_sell_price - curCandle.last);
+
+                //double buy_diff = curCandle.hige_bottom_max - buy_length;
+                //double sell_diff = curCandle.hige_top_max - sell_length;
+
+                //double buy_thr = curCandle.hige_bottom_max * 0.3;// 0.3;
+                //double sell_thr = curCandle.hige_top_max * 0.3; // 0.3;
+
+                //if (( Math.Abs(buy_diff) <= buy_thr) && (Math.Abs(buy_diff) <= sell_thr))
+                //{
+                //    //Console.WriteLine("not need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+                //    result = false;
+                //    return result;
+                //}
+
+
+
+                //// CANCEL
+                //Console.WriteLine("need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+
+
+
                 result = true;
                 return result;
             }
@@ -4404,20 +4492,65 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                double entry_diff = m_position.calcProfit(curCandle.last);
+                double profit = m_position.calcProfit(curCandle.last);
 
-                double threshold_diff = 1000.0;
-                if (Math.Abs(entry_diff) < threshold_diff)
+                if ((curCandle.last > curCandle.body_min) && (curCandle.last < curCandle.body_max))
                 {
-                    //Console.WriteLine("need not exit. diff={0:0} entry={1:0} last={2:0}", entry_diff, m_position.entry_price, curCandle.last);
-                    result = false;
+                    // EXIT
+                    Console.WriteLine("need exit. last={0:0} body_min={1:0} body_max={2:0} under={3:0} over={4:0}"
+                        , curCandle.last
+                        , curCandle.body_min
+                        , curCandle.body_max
+                        , curCandle.body_min - curCandle.last
+                        , curCandle.last - curCandle.body_min
+                    );
+                    result = true;
                     return result;
                 }
 
-                // EXIT
-                Console.WriteLine("need exit. diff={0:0} entry={1:0} last={2:0}", entry_diff, m_position.entry_price, curCandle.last);
-                result = true;
-                return result;
+                //if (m_position.entry_date != curCandle.timestamp)
+                //{
+                //    // Entry時とキャンドルが変わった場合
+                //    // EXIT
+                //    Console.WriteLine("need exit. changed candle.  profit={0:0}  entry={1} cur={2}", profit, m_position.entry_date, curCandle.timestamp);
+
+                //    result = true;
+                //    return result;
+                //}
+
+                //double hige_length = 0.0;
+                //if (m_position.isLong())
+                //{
+                //    hige_length = curCandle.hige_bottom_max;
+                //}
+                //else if (m_position.isShort())
+                //{
+                //    hige_length = curCandle.hige_top_max;
+                //}
+                //else
+                //{
+                //    result = false;
+                //    return result;
+                //}
+
+                //if ( (profit > 0) && (profit > hige_length) )
+                //{
+                //    // プラス利益かつヒゲより長い場合
+                //    // Exit
+                //    Console.WriteLine("need exit. profit is longer than hige. profit={0:0} entry={1:0} last={2:0}", profit, m_position.entry_price, curCandle.last);
+                //    result = true;
+                //    return result;
+                //}
+
+                //if ((profit <= 0) && (-profit > hige_length))
+                //{
+                //    // マイナス利益かつヒゲより長い場合
+                //    // Losscut
+                //    Console.WriteLine("need exit(losscut). profit={0:0} entry={1:0} last={2:0}", profit, m_position.entry_price, curCandle.last);
+
+                //    result = true;
+                //    return result;
+                //}
             }
             catch (Exception ex)
             {
@@ -4466,10 +4599,9 @@ namespace CryptoBoxer
                 // NONEポジションの場合
 
 
-                bool isLong = true;// isConditionLongEntryHige();
-                bool isShort = true; // isConditionShortEntryHige();
+                bool isEntry = isConditionEntryHige();
 
-                if (isLong && isShort)
+                if (isEntry)
                 {
                     if (curCandle.disparity_rate >= 5.0)
                     {
@@ -4479,8 +4611,8 @@ namespace CryptoBoxer
                     }
 
 
-                    double buy_price = Math.Round( curCandle.last - curCandle.hige_bottom_max);
-                    double sell_price = Math.Round(curCandle.last + curCandle.hige_top_max);
+                    double buy_price = curCandle.range_min;//Math.Round( curCandle.last - curCandle.hige_bottom_max);
+                    double sell_price = curCandle.range_max;//Math.Round(curCandle.last + curCandle.hige_top_max);
 
 
                     SendParentOrderResponse retObj = await SendParentOrder.SendStopLimitOCO(m_authBitflyer, m_config.product_bitflyer, m_config.amount, buy_price, sell_price);
@@ -4494,8 +4626,18 @@ namespace CryptoBoxer
                     m_position.entryOrder(retObj.parent_order_acceptance_id, curCandle.timestamp);
                     m_position.limit_buy_price = buy_price;
                     m_position.limit_sell_price = sell_price;
+                    m_position.strategy_type = Position.StrategyType.HIGE;
 
-                    postSlack(string.Format("{0} OCO Entry Order ID = {1} buy={2:0} sell={3:0} hige_top={4:0} hige_btm={5:0}", curCandle.timestamp, retObj.parent_order_acceptance_id, buy_price, sell_price, curCandle.hige_top_max, curCandle.hige_bottom_max));
+                    postSlack(
+                        string.Format("{0} OCO Entry Order ID = {1} buy={2:0} sell={3:0} body_min={4:0} body_max={5:0}"
+                            , curCandle.timestamp
+                            , retObj.parent_order_acceptance_id
+                            , buy_price
+                            , sell_price
+                            , curCandle.body_min
+                            , curCandle.body_max
+                        )
+                    );
                 }
             }
             catch (Exception ex)
@@ -4539,17 +4681,14 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (responce.parent_order_state == "NONE")
-                {
-                    //postSlack(string.Format("Order is nothing. Order ID = {0}", m_position.entry_id));
-                    result = -1;
-                    return result;
-                }
+                m_position.entry_page_id = responce.page_id;
+                m_position.entry_parent_id = responce.parent_order_id;
 
-                if (responce.parent_order_state == "ACTIVE")
+                if (responce.children != null)
                 {
                     if (m_position.entry_child_ids == null || m_position.entry_child_ids.Count() <= 0)
                     {
+                        postSlack(string.Format("checkEntryActive. Parent Order ID = {0}, {1} state={2}", m_position.entry_id, m_position.entry_parent_id, responce.parent_order_state));
                         foreach (GetChildOrderResponse child in responce.children)
                         {
                             if (child == null)
@@ -4567,36 +4706,55 @@ namespace CryptoBoxer
                             }
 
                             m_position.entry_child_ids.Add(child.child_order_acceptance_id);
+                            postSlack(string.Format("checkEntryActive. Child Order ID = {0}", child.child_order_acceptance_id));
                         }
-                        postSlack(string.Format("Order is active. Order ID = {0}", m_position.entry_id));
-                        m_position.entryActive();
                     }
-                    result = 1;
+                }
+
+                if (responce.parent_order_state == "NONE")
+                {
+                    //postSlack(string.Format("Order is nothing. Order ID = {0}", m_position.entry_id));
+                    result = -1;
+                    return result;
+                }
+
+
+
+                if (responce.parent_order_state == "ACTIVE")
+                {
+                    postSlack(string.Format("Order is active. Order ID = {0}, {1}", m_position.entry_id, m_position.entry_parent_id));
+
+                    m_position.entryActive();
+                    result = 0;
                     return result;
                 }
                 else if (responce.parent_order_state == "CANCELD")
                 {
-                    postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
+                    postSlack(string.Format("Order is canceld. Order ID = {0}, {1}", m_position.entry_id, m_position.entry_parent_id));
                     result = 1;
                     return result;
                 }
                 else if (responce.parent_order_state == "COMPLETED")
                 {
                     // 注文確定
-                    postSlack(string.Format("Order is completed. entry_price={0} id={1}", responce.average_price, m_position.entry_id));
+                    postSlack(string.Format("Order is completed. entry_price={0} id={1},{2}", responce.average_price, m_position.entry_id, m_position.entry_parent_id));
                     m_position.entry(responce.average_price, responce.side);
                     result = 0;
                     return result;
                 }
                 else if (responce.parent_order_state == "REJECTED")
                 {
-                    postSlack(string.Format("Order is rejected. Order ID = {0}", m_position.entry_id));
+                    postSlack(string.Format("Order is rejected. Order ID = {0},{1}", m_position.entry_id, m_position.entry_parent_id));
+                    m_position.entryRecject();
+                    m_position = new Position();
+                    m_posArray.Add(m_position);
+
                     result = -1;
                     return result;
                 }
                 else
                 {
-                    postSlack(string.Format("Order is not completed. Order ID = {0}", m_position.entry_id));
+                    postSlack(string.Format("Order is not completed. Order ID = {0},{1}", m_position.entry_id, m_position.entry_parent_id));
                     result = 1;
                     return result;
                 }
@@ -4725,24 +4883,14 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                //int retry_cnt = 0;
-                //while (true)
-                //{
-                //    retry_cnt++;
-                bool isCanceled = await SendChildOrder.isCanceldChildOrders(m_authBitflyer, m_config.product_bitflyer, m_position.entry_child_ids);
-                if (!isCanceled)
+                string state = await SendParentOrder.getParentOrderState(m_authBitflyer, m_config.product_bitflyer, m_position.entry_page_id);
+                if (state != "CANCELED")
                 {
-                    postSlack(string.Format("Cancel Commit is failed. id={0}", m_position.entry_id));
+                    postSlack(string.Format("Cancel Commit is failed. id={0} state={1}", m_position.entry_id, state));
                     result = 1;
                     return result;
                 }
-                //    if (!isCanceled)
-                //    {
-                //        System.Threading.Thread.Sleep(100);
-                //        continue;
-                //    }
-                //    break;
-                //}
+
 
                 // 注文キャンセル確定
                 postSlack(string.Format("Cancel Order is succeed. id={0}", m_position.entry_id));
@@ -4763,50 +4911,50 @@ namespace CryptoBoxer
             return result;
         }
 
-        public async Task<int> checkCancelOrder()
-        {
-            int result = 0;
-            try
-            {
-                if (!m_position.isNone())
-                {
-                    result = 1;
-                    return result;
-                }
-                // NONEポジションの場合
+        //public async Task<int> checkCancelOrder()
+        //{
+        //    int result = 0;
+        //    try
+        //    {
+        //        if (!m_position.isNone())
+        //        {
+        //            result = 1;
+        //            return result;
+        //        }
+        //        // NONEポジションの場合
 
-                if (!m_position.isEntryActive())
-                {
-                    result = 1;
-                    return result;
-                }
-                // ENTRYアクティブの場合
+        //        if (!m_position.isEntryActive())
+        //        {
+        //            result = 1;
+        //            return result;
+        //        }
+        //        // ENTRYアクティブの場合
 
 
-                bool isCanceled = await SendChildOrder.isCanceldChildOrders(m_authBitflyer, m_config.product_bitflyer, m_position.entry_child_ids);
-                if (!isCanceled)
-                {
-                    result = 1;
-                    return result;
-                }
+        //        bool isCanceled = await SendChildOrder.isCanceldChildOrders(m_authBitflyer, m_config.product_bitflyer, m_position.entry_child_ids);
+        //        if (!isCanceled)
+        //        {
+        //            result = 1;
+        //            return result;
+        //        }
 
-                postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
+        //        postSlack(string.Format("Order is canceld. Order ID = {0}", m_position.entry_id));
 
-                m_position.cancel();
+        //        m_position.cancel();
 
-                m_position = new Position();
-                m_posArray.Add(m_position);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = -1;
-            }
-            finally
-            {
-            }
-            return result;
-        }
+        //        m_position = new Position();
+        //        m_posArray.Add(m_position);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex);
+        //        result = -1;
+        //    }
+        //    finally
+        //    {
+        //    }
+        //    return result;
+        //}
 
         public async Task<int> tryExitOrderHige()
         {

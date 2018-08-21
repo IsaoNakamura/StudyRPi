@@ -40,6 +40,11 @@ namespace UtilityTrade
         public double hige_top_max { get; set; }
         public double hige_bottom_max { get; set; }
 
+        public double range_min { get; set; }
+        public double range_max { get; set; }
+        public double body_min { get; set; }
+        public double body_max { get; set; }
+
         public Candlestick()
         {
             high = 0.0;
@@ -1494,11 +1499,24 @@ namespace UtilityTrade
             return result;
         }
 
-        public int calcHigeLength(out double top_length, out double bottom_length, int sample_num)
+        public int calcHigeLength
+        (
+            out double top_length,
+            out double bottom_length, 
+            out double range_min, 
+            out double range_max, 
+            out double body_min,
+            out double body_max,
+            int sample_num
+        )
         {
             int result = 0;
             top_length = 0.0;
             bottom_length = 0.0;
+            range_min = 0.0;
+            range_max = 0.0;
+            body_min = 0.0;
+            body_max = 0.0;
             try
             {
                 int candle_cnt = getCandleCount();
@@ -1514,8 +1532,12 @@ namespace UtilityTrade
                     beg_idx = candle_cnt - sample_num;
                 }
 
-                double top_max = 0.0;
-                double bottom_max = 0.0;
+                double _range_max = 0.0;
+                double _range_min = 0.0;
+                double _body_max = 0.0;
+                double _body_min = 0.0;
+                double _top_length = 0.0;
+                double _bottom_length = 0.0;
                 bool isFirst = true;
                 for (int i = beg_idx; i < candle_cnt; i++)
                 {
@@ -1526,37 +1548,61 @@ namespace UtilityTrade
                     }
 
 
-
                     double top = 0.0;
                     double bottom = 0.0;
 
+                    double body_high = 0.0;
+                    double body_low = 0.0;
+
                     if (candle.isTrend())
                     {
-                        top = candle.high - candle.last;
-                        bottom = candle.open - candle.low;
+                        body_high = candle.last;
+                        body_low = candle.open;
                     }
                     else
                     {
-                        top = candle.high - candle.open;
-                        bottom = candle.last - candle.low;
+                        body_high = candle.open;
+                        body_low = candle.last;
                     }
+
+                    top = candle.high - body_high;
+                    bottom = body_low - candle.low;
 
                     if (isFirst)
                     {
                         isFirst = false;
 
-                        top_max = top;
-                        bottom_max = bottom;
+                        _top_length = top;
+                        _bottom_length = bottom;
+
+                        _body_max = body_high;
+                        _body_min = body_low;
+
+                        _range_max = candle.high;
+                        _range_min = candle.low;
                     }
                     else
                     {
-                        top_max = Math.Max(top_max, top);
-                        bottom_max = Math.Max(bottom_max, bottom);
+                        _top_length = Math.Max(_top_length, top);
+                        _bottom_length = Math.Max(_bottom_length, bottom);
+
+                        _body_max = Math.Max(_body_max, body_high);
+                        _body_min = Math.Min(_body_min, body_low);
+
+
+                        _range_max = Math.Max(_range_max, candle.high);
+                        _range_min = Math.Min(_range_min, candle.low);
                     }
                 }
 
-                top_length = top_max;
-                bottom_length = bottom_max;
+                top_length = _top_length;
+                bottom_length = _bottom_length;
+
+                range_min = _range_min;
+                range_max = _range_max;
+
+                body_min = _body_min;
+                body_max = _body_max;
             }
             catch (Exception ex)
             {
@@ -1569,6 +1615,10 @@ namespace UtilityTrade
                 {
                     top_length = 0.0;
                     bottom_length = 0.0;
+                    range_min = 0.0;
+                    range_max = 0.0;
+                    body_min = 0.0;
+                    body_max = 0.0;
                 }
             }
             return result;

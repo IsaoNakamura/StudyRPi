@@ -334,7 +334,7 @@ namespace UtilityBitflyer
             return result;
         }
 
-        public static async Task<JArray> getExcutionsAcceptance
+        public static async Task<JArray> getExecutionsAcceptance
         (
             AuthBitflyer auth,
             string product_code,
@@ -558,7 +558,7 @@ namespace UtilityBitflyer
 
                     if (!isExistOrders)
                     {
-                        JArray retArray = await getExcutionsAcceptance(auth, product_code, acceptance_id);
+                        JArray retArray = await getExecutionsAcceptance(auth, product_code, acceptance_id);
                         if (retArray != null && retArray.Count > 0)
                         {
                             result = false;
