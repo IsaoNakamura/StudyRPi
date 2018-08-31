@@ -33,6 +33,7 @@ namespace UtilityTrade
             , SWING
             , DOTEN
             , HIGE
+            , FLONT_LINE
         };
 
         private PositionState state { get; set; }

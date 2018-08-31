@@ -77,6 +77,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public double expiration_ema_diff { get; set; }
 
+        [JsonProperty]
+        public double entry_offset { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -101,6 +104,7 @@ namespace CryptoBoxer
             back_cnt = 2;
             expiration_cnt = 11;
             expiration_ema_diff = 5000.0;
+            entry_offset = 800.0;
             return;
         }
 
