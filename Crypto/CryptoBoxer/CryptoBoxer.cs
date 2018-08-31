@@ -875,9 +875,9 @@ namespace CryptoBoxer
                     //await checkEntry();
                     //await checkExit();
 
-                    await tryExitOrderHige();
-                    await tryLosscutOrder();
-                    await checkExit();
+                    //await tryExitOrderHige();
+                    //await tryLosscutOrder();
+                    //await checkExit();
                     await tryCnacelOrder();
                     //await checkCancelOrder();
 
@@ -4416,40 +4416,38 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if ((curCandle.last > curCandle.body_min) && (curCandle.last < curCandle.body_max))
+                //if ((curCandle.last > curCandle.body_min) && (curCandle.last < curCandle.body_max))
+                //{
+                //    result = false;
+                //    return result;
+                //}gaz
+                //// CANCEL
+                //Console.WriteLine("need cancel. last={0:0} body_min={1:0} body_max={2:0} under={3:0} over={4:0}"
+                //    , curCandle.last
+                //    , curCandle.body_min
+                //    , curCandle.body_max
+                //    , curCandle.body_min - curCandle.last
+                //    , curCandle.last - curCandle.body_min
+                //);
+
+                double buy_diff = Math.Abs(m_position.limit_buy_price - curCandle.last);
+                double sell_diff = Math.Abs(m_position.limit_sell_price - curCandle.last);
+
+
+                double buy_thr = 2500;//curCandle.hige_bottom_max * 0.3;// 0.3;
+                double sell_thr = 2500;//curCandle.hige_top_max * 0.3; // 0.3;
+
+                if ( (buy_diff >= buy_thr) && (sell_diff >= sell_thr))
                 {
+                    //Console.WriteLine("not need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
                     result = false;
                     return result;
                 }
+
+
+
                 // CANCEL
-                Console.WriteLine("need cancel. last={0:0} body_min={1:0} body_max={2:0} under={3:0} over={4:0}"
-                    , curCandle.last
-                    , curCandle.body_min
-                    , curCandle.body_max
-                    , curCandle.body_min - curCandle.last
-                    , curCandle.last - curCandle.body_min
-                );
-
-                //double buy_length = Math.Abs(m_position.limit_buy_price - curCandle.last);
-                //double sell_length = Math.Abs(m_position.limit_sell_price - curCandle.last);
-
-                //double buy_diff = curCandle.hige_bottom_max - buy_length;
-                //double sell_diff = curCandle.hige_top_max - sell_length;
-
-                //double buy_thr = curCandle.hige_bottom_max * 0.3;// 0.3;
-                //double sell_thr = curCandle.hige_top_max * 0.3; // 0.3;
-
-                //if (( Math.Abs(buy_diff) <= buy_thr) && (Math.Abs(buy_diff) <= sell_thr))
-                //{
-                //    //Console.WriteLine("not need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
-                //    result = false;
-                //    return result;
-                //}
-
-
-
-                //// CANCEL
-                //Console.WriteLine("need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
+                Console.WriteLine("need cancel. buy_diff={0:0} sell_diff={1:0} buy_thr={2:0} sell_thr={3:0}", buy_diff, sell_diff, buy_thr, sell_thr);
 
 
 
@@ -4599,7 +4597,7 @@ namespace CryptoBoxer
                 // NONEポジションの場合
 
 
-                bool isEntry = isConditionEntryHige();
+                bool isEntry = true;// isConditionEntryHige();
 
                 if (isEntry)
                 {
@@ -4611,8 +4609,8 @@ namespace CryptoBoxer
                     }
 
 
-                    double buy_price = curCandle.range_min;//Math.Round( curCandle.last - curCandle.hige_bottom_max);
-                    double sell_price = curCandle.range_max;//Math.Round(curCandle.last + curCandle.hige_top_max);
+                    double buy_price = curCandle.last + 3000;//curCandle.range_min;//Math.Round( curCandle.last - curCandle.hige_bottom_max);
+                    double sell_price = curCandle.last - 3000;//curCandle.range_max;//Math.Round(curCandle.last + curCandle.hige_top_max);
 
 
                     SendParentOrderResponse retObj = await SendParentOrder.SendStopLimitOCO(m_authBitflyer, m_config.product_bitflyer, m_config.amount, buy_price, sell_price);
@@ -4860,12 +4858,12 @@ namespace CryptoBoxer
                 }
                 // NONEポジションの場合
 
-                if (!m_position.isEntryActive())
+                if (!m_position.isEntryOrdered())
                 {
                     result = 1;
                     return result;
                 }
-                // ENTRYアクティブの場合
+                // ENTRY注文済みの場合
 
                 bool isCancel = isConditionCancelHige();
                 if (!isCancel)

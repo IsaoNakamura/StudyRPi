@@ -78,7 +78,7 @@ namespace UtilityBitflyer
 
     public class SendParentOrder
     {
-        public static async Task<SendParentOrderResponse> PostSendParentOrder
+        private static async Task<SendParentOrderResponse> PostSendParentOrder
         (
             AuthBitflyer auth,
             SendParentOrderBody bodyObj
@@ -195,6 +195,200 @@ namespace UtilityBitflyer
             return retObj;
         }
 
+        public static async Task<SendParentOrderResponse> SendStopLimitIFD
+        (
+            AuthBitflyer auth,
+            string product_code,
+            string first_side,
+            double first_size,
+            double first_price,
+            double first_trigger_price,
+            string second_side,
+            double second_size,
+            double second_price,
+            double second_trigger_price
+        )
+        {
+            SendParentOrderResponse retObj = null;
+            try
+            {
+                SendParentOrderBody bodyObj = new SendParentOrderBody();
+                if (bodyObj == null)
+                {
+                    Console.WriteLine("failed to create SendParentOrderBody.");
+                    return null;
+                }
+                bodyObj.order_method = "OCO";
+                bodyObj.minute_to_expire = 10000;
+                bodyObj.time_in_force = "GTC";
+
+                List<SendParentOrderParameter> parameters = new List<SendParentOrderParameter>();
+                if (parameters == null)
+                {
+                    Console.WriteLine("failed to create SendParentOrderBody's parameters.");
+                    return null;
+                }
+                bodyObj.parameters = parameters;
+
+                {
+                    SendParentOrderParameter firstParam = new SendParentOrderParameter();
+                    firstParam.condition_type = "STOP_LIMIT";
+                    firstParam.trigger_price = first_trigger_price;
+                    firstParam.price = first_price;
+                    firstParam.product_code = product_code;
+                    firstParam.side = first_side;
+                    firstParam.size = first_size;
+
+                    bodyObj.parameters.Add(firstParam);
+                }
+
+                {
+                    SendParentOrderParameter secondParam = new SendParentOrderParameter();
+                    secondParam.condition_type = "STOP_LIMIT";
+                    secondParam.trigger_price = second_trigger_price;
+                    secondParam.price = second_price;
+                    secondParam.product_code = product_code;
+                    secondParam.side = second_side;
+                    secondParam.size = second_size;
+
+                    bodyObj.parameters.Add(secondParam);
+                }
+
+                retObj = await PostSendParentOrder(auth, bodyObj);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retObj = null;
+            }
+            finally
+            {
+            }
+            return retObj;
+        }
+
+        private static async Task<SendParentOrderResponse>SendStopLimitSimple
+        (
+            AuthBitflyer auth,
+            string product_code,
+            string side,
+            double size,
+            double price,
+            double trigger_price
+        )
+        {
+            SendParentOrderResponse retObj = null;
+            try
+            {
+                if (side == null)
+                {
+                    return null;
+                }
+
+                if (side.Length <= 0)
+                {
+                    return null;
+                }
+
+                if (side != "BUY" && side != "SELL")
+                {
+                    return null;
+                }
+
+                SendParentOrderBody bodyObj = new SendParentOrderBody();
+                if (bodyObj == null)
+                {
+                    Console.WriteLine("failed to create SendParentOrderBody.");
+                    return null;
+                }
+                bodyObj.order_method = "SIMPLE";
+                bodyObj.minute_to_expire = 10000;
+                bodyObj.time_in_force = "GTC";
+
+                List<SendParentOrderParameter> parameters = new List<SendParentOrderParameter>();
+                if (parameters == null)
+                {
+                    Console.WriteLine("failed to create SendParentOrderBody's parameters.");
+                    return null;
+                }
+                bodyObj.parameters = parameters;
+
+                {
+                    SendParentOrderParameter buyParam = new SendParentOrderParameter();
+                    buyParam.condition_type = "STOP_LIMIT";
+                    buyParam.trigger_price = trigger_price;
+                    buyParam.price = price;
+                    buyParam.product_code = product_code;
+                    buyParam.side = side;
+                    buyParam.size = size;
+
+                    bodyObj.parameters.Add(buyParam);
+                }
+
+
+                retObj = await PostSendParentOrder(auth, bodyObj);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retObj = null;
+            }
+            finally
+            {
+            }
+            return retObj;
+        }
+
+        public static async Task<SendParentOrderResponse> BuyStopLimitSimple
+        (
+            AuthBitflyer auth,
+            string product_code,
+            double size,
+            double price,
+            double trigger_price
+        )
+        {
+            SendParentOrderResponse retObj = null;
+            try
+            {
+                retObj = await SendStopLimitSimple(auth, product_code, "BUY", size, price, trigger_price);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retObj = null;
+            }
+            finally
+            {
+            }
+            return retObj;
+        }
+
+        public static async Task<SendParentOrderResponse> SellStopLimitSimple
+        (
+            AuthBitflyer auth,
+            string product_code,
+            double size,
+            double price,
+            double trigger_price
+        )
+        {
+            SendParentOrderResponse retObj = null;
+            try
+            {
+                retObj = await SendStopLimitSimple(auth, product_code, "SELL", size, price, trigger_price);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retObj = null;
+            }
+            finally
+            {
+            }
+            return retObj;
+        }
+
         public static async Task<int> cancelParentOrderAcceptance
         (
             AuthBitflyer auth,
@@ -288,7 +482,7 @@ namespace UtilityBitflyer
             return retArray;
         }
 
-        public static async Task<JArray> getParentOrders
+        private static async Task<JArray> getParentOrders
         (
             AuthBitflyer auth,
             string product_code,
@@ -383,7 +577,7 @@ namespace UtilityBitflyer
             return result;
         }
 
-        public static async Task<JObject> getParentOrderAcceptance
+        private static async Task<JObject> getParentOrderAcceptance
         (
             AuthBitflyer auth,
             string product_code,
@@ -430,7 +624,7 @@ namespace UtilityBitflyer
             return retObj;
         }
 
-        public static async Task<JArray> getChildOrdersParent
+        private static async Task<JArray> getChildOrdersParent
         (
             AuthBitflyer auth,
             string product_code,

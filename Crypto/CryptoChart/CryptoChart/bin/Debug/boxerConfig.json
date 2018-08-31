@@ -1,5 +1,5 @@
 {
-  "amount": 0.01,
+  "amount": 0.1,
   "periods": 60,
   "product_bitflyer": "FX_BTC_JPY",
   "product_cryptowatch": "btcfxjpy",
