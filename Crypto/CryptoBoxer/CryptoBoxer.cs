@@ -797,12 +797,8 @@ namespace CryptoBoxer
                                 curCandle.disparity_rate = disparity_rate;
                             }
 
-                            //await tryExitOrderHige();
-                            //await tryCnacelOrder();
-                            //await tryEntryOrderHige();
-
                             // ENTRY/EXITロジック
-                            //await tryEntryOrder(cur_value);
+                            await tryEntryOrder(cur_value);
                             //await tryExitOrder();
 
                             // Losscutロジック
@@ -859,7 +855,7 @@ namespace CryptoBoxer
                     }
 
                     // ENTRYロジック
-                    await tryEntryOrderFrontLine();
+                    //await tryEntryOrderFrontLine();
                     //if (isClose != true)
                     //{
                     //    if (m_isDotenLong || m_isDotenShort)
@@ -878,15 +874,7 @@ namespace CryptoBoxer
                     await checkEntry();
                     await checkExit();
 
-                    //await tryExitOrderHige();
-                    //await tryLosscutOrder();
-                    //await checkExit();
-                    //await tryCnacelOrder();
-                    //await checkCancelOrder();
 
-                    //await tryEntryOrderHige();
-
-                    //await checkEntryActive();
 
                     //await checkEntryCompleted();
 
@@ -1048,34 +1036,12 @@ namespace CryptoBoxer
                     // EXIT/ロスカットテスト
                     if (tryExitOrderTest(ref long_exit_cnt, ref short_exit_cnt) == 0)
                     {
-                        //if (m_position.isLong())
-                        //{
-                        //    checkExitTest(curCandle.high);
-                        //}
-                        //else if (m_position.isShort())
-                        //{
-                        //    checkExitTest(curCandle.low);
-                        //}
-                        //else
-                        {
-                            checkExitTest(curCandle.last);
-                        }
+                        checkExitTest(curCandle.last);
                     }
 
                     if (tryLosscutOrderTest(ref long_lc_cnt, ref short_lc_cnt) == 0)
                     {
-                        //if (m_position.isLong())
-                        //{
-                        //    checkExitTest(curCandle.low);
-                        //}
-                        //else if (m_position.isShort())
-                        //{
-                        //    checkExitTest(curCandle.high);
-                        //}
-                        //else
-                        {
-                            checkExitTest(curCandle.last);
-                        }
+                        checkExitTest(curCandle.last);
                     }
 
 
@@ -1206,8 +1172,8 @@ namespace CryptoBoxer
                 bool isLongSub = isConditionLongEntrySwing(next_open);
                 bool isShortSub= isConditionShortEntrySwing(next_open);
 
-                bool isLong = isConditionLongEntryCrossEma() || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma() || m_isDotenShort;
+                bool isLong = false;//isConditionLongEntryCrossEma() || m_isDotenLong;
+                bool isShort = false;// isConditionShortEntryCrossEma() || m_isDotenShort;
 
 
                 if (isLongSub)
@@ -1231,7 +1197,6 @@ namespace CryptoBoxer
                     // 注文成功
 
                     m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
-
                     postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                     m_position.strategy_type = Position.StrategyType.SWING;
                 }
@@ -1554,16 +1519,14 @@ namespace CryptoBoxer
                 {
                     // 最前線が後退
                     // EXIT
-                    //Console.WriteLine("need short exit. front-line is back. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
                     postSlack(string.Format("need short exit. front-line is back. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline));
                     result = true;
                 }
                 else if ((position + m_config.losscut_value) > (-m_config.losscut_value))
                 {
                     // 最前線を前進
-                    m_frontline = m_frontline - Math.Round((-m_config.losscut_value) * 0.5);
+                    m_frontline = m_frontline - Math.Round((-m_config.losscut_value) * 1.0);
                     // SHORT継続
-                    //Console.WriteLine("not need short exit. front-line is forward. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
                     postSlack(string.Format("not need short exit. front-line is forward. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline));
                     result = false;
                 }
@@ -1611,16 +1574,14 @@ namespace CryptoBoxer
                 {
                     // 最前線が後退
                     // EXIT
-                    //Console.WriteLine("need long exit. front-line is back. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
                     postSlack(string.Format("need long exit. front-line is back. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline));
                     result = true;
                 }
                 else if ( (position + m_config.losscut_value) > (-m_config.losscut_value) )
                 {
                     // 最前線を前進
-                    m_frontline = m_frontline + Math.Round((-m_config.losscut_value) * 0.5);
+                    m_frontline = m_frontline + Math.Round((-m_config.losscut_value) * 1.0);
                     // LONG継続
-                    //Console.WriteLine("not need long exit. front-line is forward. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
                     postSlack(string.Format("not need long exit. front-line is forward. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline));
                     result = false;
                 }
@@ -1670,11 +1631,11 @@ namespace CryptoBoxer
                 //bool isLongSub = isConditionLongEntryScam(next_open);
                 //bool isShortSub = isConditionShortEntryScam(next_open);
 
-                bool isLongSub = isConditionLongEntrySwing(next_open);
-                bool isShortSub = isConditionShortEntrySwing(next_open);
+                bool isLongSub = false;// isConditionLongEntrySwing(next_open);
+                bool isShortSub = false;// isConditionShortEntrySwing(next_open);
 
-                bool isLong = isConditionLongEntryCrossEma() || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma() || m_isDotenShort;
+                bool isLong = isConditionLongEntryCrossEma();//|| m_isDotenLong;
+                bool isShort = isConditionShortEntryCrossEma();//|| m_isDotenShort;
 
                 if (isLongSub)
                 {
@@ -2024,29 +1985,6 @@ namespace CryptoBoxer
                     else
                     {
                         isCond = isConditionLongExit();
-                        //if (isCond)
-                        //{
-                        //    // EXIT条件を満たした場合
-                        //    if (isConditionLongEntryCrossEma())
-                        //    {
-                        //        // CrossEMAのLongEntry条件を満たしていれば
-                        //        // LONG継続
-                        //        isCond = false;
-
-                        //        // ストラテジータイプをCROSS_EMAに換装
-                        //        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    // EXIT条件を満たさなかった場合
-                        //    if (isConditionShortEntryCrossEma())
-                        //    {
-                        //        // CrossEMAのShortEntry条件を満たしていれば
-                        //        // LONG中断
-                        //        isCond = true;
-                        //    }
-                        //}
                     }
 
                     if (isCond)
@@ -2068,29 +2006,6 @@ namespace CryptoBoxer
                     else
                     {
                         isCond = isConditionShortExit();
-                        //if (isCond)
-                        //{
-                        //    // EXIT条件を満たした場合
-                        //    if (isConditionShortEntryCrossEma())
-                        //    {
-                        //        // CrossEMAのShortEntry条件を満たしていれば
-                        //        // Short継続
-                        //        isCond = false;
-
-                        //        // ストラテジータイプをCROSS_EMAに換装
-                        //        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    // EXIT条件を満たさなかった場合
-                        //    if (isConditionLongEntryCrossEma())
-                        //    {
-                        //        // CrossEMAのLongEntry条件を満たしていれば
-                        //        // SHORT中断
-                        //        isCond = true;
-                        //    }
-                        //}
                     }
 
                     if (isCond)
@@ -2278,12 +2193,12 @@ namespace CryptoBoxer
                 }
                 // NONEポジションじゃない場合
 
-                if (!m_position.isExitOrdered())
+                if (!m_position.isExitActive())
                 {
                     result = 1;
                     return result;
                 }
-                // EXIT注文済みの場合
+                // EXIT注文アクティブの場合
 
                 GetChildOrderResponse responce = await SendChildOrder.getChildOrderAveragePrice(m_authBitflyer, m_config.product_bitflyer, m_position.exit_id);
                 if (responce == null)

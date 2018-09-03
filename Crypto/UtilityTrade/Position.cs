@@ -237,6 +237,8 @@ namespace UtilityTrade
             return false;
         }
 
+        // LONGエントリー注文
+        // 成行注文に使用する
         public void entryLongOrder(string _acceptance_id, string _entry_date)
         {
             entry_id = _acceptance_id;
@@ -246,6 +248,8 @@ namespace UtilityTrade
             return;
         }
 
+        // SHORTエントリー注文
+        // 成行注文に使用する
         public void entryShortOrder(string _acceptance_id, string _entry_date)
         {
             entry_id = _acceptance_id;
@@ -255,6 +259,8 @@ namespace UtilityTrade
             return;
         }
 
+        // エントリー注文
+        // 成行注文以外に使用する
         public void entryOrder(string _acceptance_id, string _entry_date)
         {
             entry_id = _acceptance_id;
@@ -264,6 +270,8 @@ namespace UtilityTrade
             return;
         }
 
+        // エントリー注文したものが注文板にのる
+        // 成行注文以外に使用する
         public void entryActive()
         {
             entry_state = OrderState.ACTIVE;
@@ -274,7 +282,7 @@ namespace UtilityTrade
         public void exitOrder(string _acceptance_id, string _exit_date)
         {
             exit_id = _acceptance_id;
-            exit_state = OrderState.ORDERED;
+            exit_state = OrderState.ACTIVE;
             exit_date = _exit_date;
         }
 
