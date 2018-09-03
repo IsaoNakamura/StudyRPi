@@ -34,6 +34,7 @@ namespace UtilityTrade
             , DOTEN
             , HIGE
             , FLONT_LINE
+            , OVER_EMA
         };
 
         private PositionState state { get; set; }
@@ -196,6 +197,10 @@ namespace UtilityTrade
             else if (strategy_type == StrategyType.DOTEN)
             {
                 strategy_str = "(DOTEN)";
+            }
+            else if (strategy_type == StrategyType.OVER_EMA)
+            {
+                strategy_str = "(OVER_EMA)";
             }
 
             if (isLong())
