@@ -482,6 +482,52 @@ namespace UtilityBitflyer
             return retArray;
         }
 
+        public static async Task<JArray> getParentOrders
+        (
+            AuthBitflyer auth,
+            string product_code,
+            string parent_order_state
+        )
+        {
+            JArray retArray = null;
+            try
+            {
+                string method = "GET";
+                string path = "/v1/me/getparentorders";
+                string query = string.Format(
+                        "?product_code={0}&parent_order_state={1}"
+                        , product_code
+                        , parent_order_state
+                    );
+                string body = "";
+
+                path = path + query;
+
+                string resJson = await RequestBitflyer.Request(auth, method, path, body);
+                if (resJson == null)
+                {
+                    Console.WriteLine("failed to RequestBitflyer.");
+                    return null;
+                }
+
+                retArray = (JArray)JsonConvert.DeserializeObject(resJson);
+                if (retArray == null)
+                {
+                    Console.WriteLine("Ticker's DeserializeObject is null.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                retArray = null;
+            }
+            finally
+            {
+            }
+            return retArray;
+        }
+
         private static async Task<JArray> getParentOrders
         (
             AuthBitflyer auth,

@@ -80,6 +80,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public double entry_offset { get; set; }
 
+        [JsonProperty]
+        public int boll_outside_check { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -105,6 +108,7 @@ namespace CryptoBoxer
             expiration_cnt = 11;
             expiration_ema_diff = 5000.0;
             entry_offset = 800.0;
+            boll_outside_check = 1;
             return;
         }
 

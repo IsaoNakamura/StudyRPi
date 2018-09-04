@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthBitflyer.cs" />
+    <Compile Include="ChildOrder.cs" />
     <Compile Include="ParentOrder.cs" />
     <Compile Include="RequestBitflyer.cs" />
     <Compile Include="Ticker.cs" />
