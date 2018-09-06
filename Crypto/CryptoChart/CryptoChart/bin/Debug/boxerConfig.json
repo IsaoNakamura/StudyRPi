@@ -10,7 +10,7 @@
   "boll_over_candle_num": 7,
   "ema_diff_far": 1400.0,
   "ema_diff_near": 1300.0,
-  "ema_cross_near": 3300.0,
+  "ema_cross_near": 1000.0,
   "buffer_num": 500,
   "backtest_hour": 96,
   "backtest_flag": 1,

@@ -36,6 +36,8 @@ namespace CryptoBoxer
         private bool m_isDotenShort { get; set; }
         private bool m_isDotenLong { get; set; }
 
+        private bool m_isDoten { get; set; }
+
         public double m_frontline { get; set; }
 
 
@@ -82,6 +84,8 @@ namespace CryptoBoxer
 
             m_isDotenShort = false;
             m_isDotenLong = false;
+
+            m_isDoten = false;
 
             m_frontline = 0.0;
 
@@ -1651,8 +1655,11 @@ namespace CryptoBoxer
                 //bool isLongSub = isConditionLongEntrySwing(next_open);
                 //bool isShortSub = isConditionShortEntrySwing(next_open);
 
-                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
+                //bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
+                //bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
+
+                bool isLong = false;// isConditionLongEntryReboundEMA(next_open) && m_isDoten;
+                bool isShort = false;// isConditionShortEntryReboundEMA(next_open) && m_isDoten;
 
 
 
@@ -1696,7 +1703,8 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
                     }
 
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
@@ -1716,7 +1724,8 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
                     }
 
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
@@ -1733,6 +1742,7 @@ namespace CryptoBoxer
             {
                 m_isDotenShort = false;
                 m_isDotenLong = false;
+                m_isDoten = false;
             }
             return result;
         }
@@ -2009,7 +2019,10 @@ namespace CryptoBoxer
                 {// LONGの場合
 
                     bool isCond = false;
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA || m_position.strategy_type == Position.StrategyType.DOTEN)
+                    if (   m_position.strategy_type == Position.StrategyType.CROSS_EMA
+                        || m_position.strategy_type == Position.StrategyType.DOTEN
+                        || m_position.strategy_type == Position.StrategyType.REBOUND_EMA
+                    )
                     {
                         isCond = isConditionLongExitCrossEma();
                     }
@@ -2030,7 +2043,10 @@ namespace CryptoBoxer
                 else if (m_position.isShort())
                 {// SHORTの場合
                     bool isCond = false;
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA || m_position.strategy_type == Position.StrategyType.DOTEN)
+                    if (   m_position.strategy_type == Position.StrategyType.CROSS_EMA 
+                        || m_position.strategy_type == Position.StrategyType.DOTEN
+                        || m_position.strategy_type == Position.StrategyType.REBOUND_EMA
+                    )
                     {
                         isCond = isConditionShortExitCrossEma();
                     }
@@ -2370,6 +2386,10 @@ namespace CryptoBoxer
             }
             finally
             {
+                if (result)
+                {
+                    m_isDoten = true;
+                }
             }
             return result;
         }
@@ -2420,6 +2440,10 @@ namespace CryptoBoxer
             }
             finally
             {
+                if (result)
+                {
+                    m_isDoten = true;
+                }
             }
             return result;
         }
@@ -4006,6 +4030,354 @@ namespace CryptoBoxer
             return result;
         }
 
+        public bool isConditionShortEntryReboundEMA(double next_open)
+        {
+            bool result = false;
+
+            try
+            {
+
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curShortBollLv = curCandle.getShortLevel();
+                int preShortBollLv = prevCandle.getShortLevel();
+
+
+                if (curCandle.isTouchBollLow())
+                {
+                    Console.WriteLine("not need short. touch BollLow. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollLowTop())
+                {
+                    Console.WriteLine("not need short. touch BollLowTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollHigh())
+                {
+                    Console.WriteLine("not need short. touch BollHigh. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollHighTop())
+                {
+                    Console.WriteLine("not need short. touch BollHighTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+
+                double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
+                if (ema_diff > m_config.ema_cross_near)
+                {
+                    Console.WriteLine("not need short. ema_diff is OVER. diff={0}", ema_diff);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+
+                if (curShortBollLv <= 0)
+                {
+                    // 現在のSHORTレベルが0以下
+                    Console.WriteLine("not need short. curShortBollLv is LOW. Lv={0}", curShortBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                // 現在のSHORTレベルが0より高い
+
+                if (curCandle.last < next_open)
+                {
+                    double diff = next_open - curCandle.last;
+                    if (diff >= m_config.next_open_diff)
+                    {
+                        Console.WriteLine("not need short. next_open is HIGH. Lv={0} Diff={1:0} last={2:0} next={3:0}", curShortBollLv, diff, curCandle.last, next_open);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
+
+                if (preShortBollLv < 0)
+                {
+                    //前回のSHORTレベルが低い
+                    Console.WriteLine("not need short. preShortBollLv is LOW. Lv={0}", preShortBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length) != 0)
+                {
+                    // 何もしない
+                    Console.WriteLine("not need shrot. failed to getEMACrossState() cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (isGolden)
+                {
+                    //GOLDEN-CROSS
+                    Console.WriteLine("not need shrot. Golden Cross cnt={0}", back_cnt);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                if (!isGolden && !isFirst)
+                {
+                    //DEAD-CROSS
+                    Console.WriteLine("not need shrot. Dead Cross is End. cnt={0}", back_cnt);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                int band_pos = 0;
+                if (isPassBBtoMATop(out band_pos))
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチ済みの場合
+                    Console.WriteLine("not need short. touched MA. band_pos={0}", band_pos);
+                    result = false;
+                    return result;
+                }
+
+                if (band_pos != 1)
+                {
+                    Console.WriteLine("not need short.  not-touched BBHighTop band_pos={0}", band_pos);
+                    result = false;
+                    return result;
+                }
+
+                // ENTRY
+                Console.WriteLine("need short. curLv={0} preLv{1}", curShortBollLv, preShortBollLv);
+                result = true;
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionLongEntryReboundEMA(double next_open)
+        {
+            bool result = false;
+
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = m_candleBuf.getCandleCount();
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curLongBollLv = curCandle.getLongLevel();
+                int preLongBollLv = prevCandle.getLongLevel();
+
+
+                if (curCandle.isTouchBollHigh())
+                {
+                    Console.WriteLine("not need long. touch BollHigh. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollHighTop())
+                {
+                    Console.WriteLine("not need long. touch BollHighTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollLow())
+                {
+                    Console.WriteLine("not need long. touch BollLow. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (curCandle.isTouchBollLowTop())
+                {
+                    Console.WriteLine("not need long. touch BollLowTop. cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+
+                double ema_diff = Math.Abs(curCandle.ema - curCandle.last);
+                if (ema_diff > m_config.ema_cross_near)
+                {
+                    Console.WriteLine("not need long. ema_diff is OVER. diff={0}", ema_diff);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+
+                if (curLongBollLv <= 0)
+                {
+                    // 現在のLongレベルが0以下
+                    Console.WriteLine("not need long. curLongBollLv is LOW. Lv={0}", curLongBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+                // 現在のLONGレベルが0より高い
+
+                if (curCandle.last > next_open)
+                {
+                    double diff = next_open - curCandle.last;
+                    if (diff >= m_config.next_open_diff)
+                    {
+                        Console.WriteLine("not need long. next_open is HIGH. Lv={0} Diff={1:0} last={2:0} next={3:0}", curLongBollLv, diff, curCandle.last, next_open);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
+
+                if (preLongBollLv < 0)
+                {
+                    //前回のLONGレベルが低い
+                    Console.WriteLine("not need long. preLongBollLv is LOW. Lv={0}", preLongBollLv);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length) != 0)
+                {
+                    // 何もしない
+                    Console.WriteLine("not need long. failed to getEMACrossState() cur_emaS={0:0} cur_emaL={1:0} prev_emaS={2:0} prev_emaL={3:0}", curCandle.ema, curCandle.ema_sub, prevCandle.ema, prevCandle.ema_sub);
+                    result = false;
+                    return result;
+                }
+
+                if (!isGolden)
+                {
+                    //DEAD-CROSS
+                    Console.WriteLine("not need long. Dead Cross cnt={0}", back_cnt);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                if (!isGolden && !isFirst)
+                {
+                    //GOLDEN-CROSSだけど収束状態
+                    Console.WriteLine("not need long. Golden Cross is End. cnt={0}", back_cnt);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                int band_pos = 0;
+                if (isPassBBtoMATop(out band_pos))
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチ済みの場合
+                    Console.WriteLine("not need long. touched MA. band_pos={0}", band_pos);
+                    result = false;
+                    return result;
+                }
+
+                if (band_pos != -1)
+                {
+                    Console.WriteLine("not need long.  not-touched BBLowTop band_pos={0}", band_pos);
+                    result = false;
+                    return result;
+                }
+
+                // ENTRY
+                Console.WriteLine("need long. curLv={0} preLv{1}", curLongBollLv, preLongBollLv);
+                result = true;
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+
         public bool isPassBBtoMATop(out int band_pos)
         {
             bool result = false;
@@ -4605,7 +4977,7 @@ namespace CryptoBoxer
 
                     //if (profit > 0.0)
                     {
-						Console.WriteLine("exit short. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
+                        Console.WriteLine("exit short. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
                         result = true;
                         return result;
                     }

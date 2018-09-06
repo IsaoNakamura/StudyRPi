@@ -35,6 +35,7 @@ namespace UtilityTrade
             , HIGE
             , FLONT_LINE
             , OVER_EMA
+            , REBOUND_EMA
         };
 
         private PositionState state { get; set; }
@@ -201,6 +202,10 @@ namespace UtilityTrade
             else if (strategy_type == StrategyType.OVER_EMA)
             {
                 strategy_str = "(OVER_EMA)";
+            }
+            else if (strategy_type == StrategyType.REBOUND_EMA)
+            {
+                strategy_str = "(REBOUND_EMA)";
             }
 
             if (isLong())
