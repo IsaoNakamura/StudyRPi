@@ -1166,8 +1166,12 @@ namespace CryptoBoxer
 
                 // NONEポジションの場合
 
-                bool isLongSub = isConditionLongEntryOverEma();
-                bool isShortSub = isConditionShortEntryOverEma();
+                //bool isLongSub = isConditionLongEntryOverEma();
+                //bool isShortSub = isConditionShortEntryOverEma();
+
+                bool isLongSub = isConditionLongEntryScam(next_open);
+                bool isShortSub = isConditionShortEntryScam(next_open);
+
 
                 bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
                 bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
@@ -1210,7 +1214,7 @@ namespace CryptoBoxer
 
                     m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
                     postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                    m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    m_position.strategy_type = Position.StrategyType.SCAM;
                 }
                 else if (isShortSub)
                 {
@@ -1229,7 +1233,7 @@ namespace CryptoBoxer
 
 
                     postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                    m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    m_position.strategy_type = Position.StrategyType.SCAM;
 
                 }
                 else if (isLong)
@@ -1638,9 +1642,14 @@ namespace CryptoBoxer
 
                 // NONEポジションの場合
 
+                //bool isLongSub = isConditionLongEntryOverEma();
+                //bool isShortSub = isConditionShortEntryOverEma();
 
-                bool isLongSub = isConditionLongEntryOverEma();
-                bool isShortSub = isConditionShortEntryOverEma();
+                bool isLongSub = isConditionLongEntryScam(next_open); 
+                bool isShortSub = isConditionShortEntryScam(next_open);
+
+                //bool isLongSub = isConditionLongEntrySwing(next_open);
+                //bool isShortSub = isConditionShortEntrySwing(next_open);
 
                 bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
                 bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
@@ -1656,7 +1665,9 @@ namespace CryptoBoxer
 
 
                     postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, long_id), true);
-                    m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    //m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    //m_position.strategy_type = Position.StrategyType.SWING;
+                    m_position.strategy_type = Position.StrategyType.SCAM;
                     long_entry_cnt++;
                 }
                 else if (isShortSub)
@@ -1667,7 +1678,10 @@ namespace CryptoBoxer
                     m_position.entryShortOrder(short_id, curCandle.timestamp);
 
                     postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, short_id), true);
-                    m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    //m_position.strategy_type = Position.StrategyType.OVER_EMA;
+                    //m_position.strategy_type = Position.StrategyType.SWING;
+                    m_position.strategy_type = Position.StrategyType.SCAM;
+
                     short_entry_cnt++;
                 }
                 else if (isLong)
@@ -2579,11 +2593,14 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-                if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
+                if (m_config.boll_outside_check > 0)
                 {
-                    Console.WriteLine("not need short. boll_high is outside.");
-                    result = false;
-                    return result;
+                    if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
+                    {
+                        Console.WriteLine("not need short. boll_high is outside.");
+                        result = false;
+                        return result;
+                    }
                 }
 
                 if (!prevCandle.isOverBBHigh(prevCandle.last))
@@ -2867,11 +2884,14 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle'last is under BB_LOW");
                 }
 
-                if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
+                if (m_config.boll_outside_check > 0)
                 {
-                    Console.WriteLine("not need long. boll_low is outside.");
-                    result = false;
-                    return result;
+                    if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
+                    {
+                        Console.WriteLine("not need long. boll_low is outside.");
+                        result = false;
+                        return result;
+                    }
                 }
 
 
@@ -2943,6 +2963,7 @@ namespace CryptoBoxer
                                 return result;
                             }
                         }
+
 
                         int band_pos = 0;
                         if (isPassBBtoMATop(out band_pos))
@@ -3559,11 +3580,14 @@ namespace CryptoBoxer
                 m_curShortBollLv = curCandle.getShortLevel();
                 m_preShortBollLv = prevCandle.getShortLevel();
 
-				if ((curCandle.boll_high+ m_config.boll_diff_play) > curCandle.boll_high_top)
+                if (m_config.boll_outside_check > 0)
                 {
-                    Console.WriteLine("not need short. boll_high is outside.");
-                    result = false;
-                    return result;
+                    if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
+                    {
+                        Console.WriteLine("not need short. boll_high is outside.");
+                        result = false;
+                        return result;
+                    }
                 }
 
                 if (!prevCandle.isOverBBHigh(prevCandle.last))
@@ -3611,20 +3635,6 @@ namespace CryptoBoxer
                             return result;
                         }
                     }
-
-                    //if (!curCandle.isTrend() && prevCandle.isTrend())
-                    //{
-                    //    double curVola = curCandle.getDiff();
-                    //    double preVola = prevCandle.getDiff();
-                    //    double rate = Math.Abs(curVola) / Math.Abs(preVola) * 100.0;
-                    //    if (rate < m_config.vola_rate)
-                    //    {
-                    //        // 何もしない
-                    //        Console.WriteLine("not need short. curVola is small. Lv={0} rate={1:0} cur={2:0} pre={3:0}", m_curLongBollLv, rate, curVola, preVola);
-                    //        result = false;
-                    //        return result;
-                    //    }
-                    //}
 
                     int band_pos = 0;
                     if (isPassBBtoMATop(out band_pos))
@@ -3815,12 +3825,15 @@ namespace CryptoBoxer
                     Console.WriteLine("prevCandle'last is under BB_LOW");
                 }
 
-				if ((curCandle.boll_low-m_config.boll_diff_play) < curCandle.boll_low_top)
+                if (m_config.boll_outside_check > 0)
                 {
-                    Console.WriteLine("not need long. boll_low is outside.");
-                    result = false;
-                    return result;
-                }            
+                    if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
+                    {
+                        Console.WriteLine("not need long. boll_low is outside.");
+                        result = false;
+                        return result;
+                    }
+                }
 
                 double ema_diff = curCandle.ema - curCandle.last;
                 if (ema_diff < m_config.ema_diff_far)
@@ -3853,20 +3866,6 @@ namespace CryptoBoxer
                             return result;
                         }
                     }
-
-                    //if (curCandle.isTrend() && !prevCandle.isTrend())
-                    //{
-                    //    double curVola = curCandle.getDiff();
-                    //    double preVola = prevCandle.getDiff();
-                    //    double rate = Math.Abs(curVola) / Math.Abs(preVola) * 100.0;
-                    //    if (rate < m_config.vola_rate)
-                    //    {
-                    //        // 何もしない
-                    //        Console.WriteLine("not need long. curVola is small. Lv={0} rate={1:0} cur={2:0} pre={3:0}", m_curLongBollLv, rate, curVola, preVola);
-                    //        result = false;
-                    //        return result;
-                    //    }
-                    //}
 
                     int band_pos = 0;
                     if (isPassBBtoMATop(out band_pos))

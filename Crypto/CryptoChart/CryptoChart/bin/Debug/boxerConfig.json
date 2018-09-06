@@ -1,10 +1,10 @@
 {
   "amount": 0.01,
-  "periods": 900,
+  "periods": 60,
   "product_bitflyer": "FX_BTC_JPY",
   "product_cryptowatch": "btcfxjpy",
   "ema_sample_num": 20,
-  "ema_sub_sample_num": 110,
+  "ema_sub_sample_num": 130,
   "boll_sample_num": 20,
   "boll_top_sample_num": 130,
   "boll_over_candle_num": 7,
@@ -22,5 +22,5 @@
   "expiration_ema_diff": 5000.0,
   "losscut_value": -4400,
   "entry_offset": 500.0,
-  "boll_outside_check": 1
+  "boll_outside_check": 0
 }
