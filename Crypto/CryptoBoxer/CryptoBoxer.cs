@@ -2485,7 +2485,7 @@ namespace CryptoBoxer
                         {
                             if ((!isGolden) && (back_cnt >= m_config.expiration_cnt))
                             {
-                                if ((cur_ema_length <= m_config.expiration_ema_diff) )
+                                if ((cur_ema_length <= m_config.expiration_ema_diff))
                                 {
                                     //m_isDotenShort = true;
                                 }
@@ -2546,7 +2546,7 @@ namespace CryptoBoxer
                         {
                             if ((isGolden) && (back_cnt >= m_config.expiration_cnt))
                             {
-                                if ((cur_ema_length <= m_config.expiration_ema_diff) )
+                                if ((cur_ema_length <= m_config.expiration_ema_diff))
                                 {
                                     //m_isDotenLong = true;
                                 }
@@ -2555,7 +2555,7 @@ namespace CryptoBoxer
                             }
                         }
                     }
-                }  
+                }
             }
             catch (Exception ex)
             {
@@ -3616,7 +3616,7 @@ namespace CryptoBoxer
                     }
                 }
 
-                if (!prevCandle.isOverBBHigh(prevCandle.last))
+                if (!prevCandle.isOverBBHigh(prevCandle.last + m_config.boll_diff_play))
                 {
 					// 一つ前のキャンドルの終値がBollHighをOVERしてない
                     // SHORTすべきでない
@@ -3672,14 +3672,6 @@ namespace CryptoBoxer
                         return result;
                     }
 
-                    //if (isGolden && (back_cnt <= 120))
-                    //{
-                    //    //Console.WriteLine("not need short. Golden Cross is First. back={0} ema_length={1:0}", back_cnt, cur_ema_length);
-                    //    // 何もしない
-                    //    result = false;
-                    //    return result;
-                    //}
-
                     Console.WriteLine("## getEMACrossState ## isGolden={0} isFirst={1} back={2} ema_length={3:0}", isGolden, isFirst, back_cnt, cur_ema_length);
 
                     bool isPass = false;
@@ -3713,7 +3705,7 @@ namespace CryptoBoxer
                             {
                                 // DEAD-CROSS
                                 // ENTRY
-                                Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top{1:0}", curCandle.last, curCandle.ma_top);
+                                Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top);
                                 result = true;
                                 return result;
                             }
@@ -3722,7 +3714,7 @@ namespace CryptoBoxer
                                 // GOLDEN-CROSS
                                 if (isFirst)
                                 {
-                                    Console.WriteLine("not need short.  GOLDEN-CROSS is begin. Lv={0}", m_curLongBollLv);
+                                    Console.WriteLine("not need short.  GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
                                     // 何もしない
                                     result = false;
                                     return result;
@@ -3730,7 +3722,7 @@ namespace CryptoBoxer
                                 else
                                 {
                                     // ENTRY
-                                    Console.WriteLine("need short. GOLDEN-CROSS is end. Lv={0}", m_curShortBollLv);
+                                    Console.WriteLine("need short. GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
                                     result = true;
                                     return result;
                                 }
@@ -3807,7 +3799,7 @@ namespace CryptoBoxer
                 m_curLongBollLv = curCandle.getLongLevel();
                 m_preLongBollLv = prevCandle.getLongLevel();
 
-                if (!prevCandle.isUnderBBLow(prevCandle.last))
+                if (!prevCandle.isUnderBBLow(prevCandle.last - m_config.boll_diff_play))
                 {
 					Console.WriteLine("not need long. prevCandle'last is not under BB_LOW");
 					result = false;
@@ -3871,14 +3863,6 @@ namespace CryptoBoxer
                         return result;
                     }
 
-                    //if (!isGolden && (back_cnt<=120))
-                    //{
-                    //    Console.WriteLine("not need long. Dead Cross is First. back={0} ema_length={1:0}", back_cnt, cur_ema_length);
-                    //    // 何もしない
-                    //    result = false;
-                    //    return result;
-                    //}
-
                     Console.WriteLine("## getEMACrossState ## isGolden={0} isFirst={1} back={2} ema_length={3:0}", isGolden, isFirst, back_cnt, cur_ema_length);
 
                     bool isPass = false;
@@ -3912,7 +3896,7 @@ namespace CryptoBoxer
                                 // GOLDEN-CROSS
 
                                 // ENTRY
-                                Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top{1:0}", curCandle.last, curCandle.ma_top);
+                                Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
                                 result = true;
                                 return result;
                             }
@@ -3921,7 +3905,7 @@ namespace CryptoBoxer
                                 // DEAD-CROSS
                                 if (isFirst)
                                 {
-                                    Console.WriteLine("not need long. DEAD-CROSS is begin. Lv={0}", m_curShortBollLv);
+                                    Console.WriteLine("not need long. DEAD-CROSS is begin. back_cnt={0}", back_cnt);
                                     // 何もしない
                                     result = false;
                                     return result;
@@ -3929,7 +3913,7 @@ namespace CryptoBoxer
                                 else
                                 {
                                     // ENTRY
-                                    Console.WriteLine("need long. DEAD-CROSS is end. Lv={0}", m_curShortBollLv);
+                                    Console.WriteLine("need long. DEAD-CROSS is end. back_cnt={0}", back_cnt);
                                     result = true;
                                     return result;
                                 }
@@ -4924,51 +4908,53 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_position.entry_price;
 
-
-                if (curCandle.isTouchBollLow())
-                //if (curCandle.isTouchBollLowTop(0.0))
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) != 0)
                 {
-                    bool isGolden = false;
-                    bool isFirst = false;
-                    int back_cnt = 0;
-                    double cur_ema_length = 0.0;
-                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
-                    {
-                        if ((!isGolden) && isFirst)
-                        {
-                            // DEADクロスが初動の場合
+                    result = false;
+                    return result;
+                }
 
-                            int shortLv = curCandle.getShortLevel();
-                            if (shortLv <= 0)
-                            {
-                                // SHORTレベルが低くなった場合
-                                Console.WriteLine("exit short. DeadCrossFirst. shortLv is Low. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
-                                // SHORT-EXIT
-                                result = true;
-                                return result;
-                            }
-                            else
-                            {
-                                // SHORTレベルまだ高い場合
-                                // SHORT継続
-                                Console.WriteLine("not exit short. DeadCrossFirst. shortLv is High. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
-                                result = false;
-                                return result;
-                            }
-                        }
-                    }
+                if (!curCandle.isTouchBollLow())
+                {
+                    //Console.WriteLine("not exit short. inside BOLL_LOW_TOP. bollLtop={0:0} last={1:0}", curCandle.boll_low_top, curCandle.last);
+                    result = false;
+                    return result;
+                }
 
-                    //if (profit > 0.0)
+                if ((!isGolden) && isFirst)
+                {
+                    // DEADクロスが初動の場合
+
+                    int shortLv = curCandle.getShortLevel();
+                    if (shortLv <= 0)
                     {
-                        Console.WriteLine("exit short. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
+                        // SHORTレベルが低くなった場合
+                        Console.WriteLine("exit short. DeadCrossFirst. shortLv is Low. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
+                        // SHORT-EXIT
                         result = true;
                         return result;
                     }
+                    else
+                    {
+                        // SHORTレベルまだ高い場合
+                        // SHORT継続
+                        //Console.WriteLine("not exit short. DeadCrossFirst. shortLv is High. Lv={0} bollLtop={1:0} last={2:0}", shortLv, curCandle.boll_low_top, curCandle.last);
+                        result = false;
+                        return result;
+                    }
                 }
-                else
+
+                //if (profit > 0.0)
                 {
-                    Console.WriteLine("not exit short. inside BOLL_LOW_TOP. bollLtop={0:0} last={1:0}", curCandle.boll_low_top, curCandle.last);
+                    Console.WriteLine("exit short. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
+                    result = true;
+                    return result;
                 }
+
             }
             catch (Exception ex)
             {
@@ -5012,50 +4998,54 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_position.entry_price;
 
-                if ( curCandle.isTouchBollHigh())
-                //if (curCandle.isTouchBollHighTop(0.0))
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) != 0)
                 {
-                    bool isGolden = false;
-                    bool isFirst = false;
-                    int back_cnt = 0;
-                    double cur_ema_length = 0.0;
-                    if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
-                    {
-                        if (isGolden && isFirst)
-                        {
-                            // GOLDENクロスが初動の場合
+                    result = false;
+                    return result;
+                }
 
-                            int longLv = curCandle.getLongLevel();
-                            if (longLv <= 0)
-                            {
-                                // LONGレベルが低くなった場合
-                                Console.WriteLine("exit long. GoldCrossFirst. longLv is Low. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
-                                // LONG-EXIT
-                                result = true;
-                                return result;
-                            }
-                            else
-                            {
-                                // LONGレベルまだ高い場合
-                                // LONG継続
-                                Console.WriteLine("not exit long. GoldenCrossFirst. longLv is High. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
-                                result = false;
-                                return result;
-                            }
-                        }
-                    }
 
-                    //if (profit > 0.0)
+                if (!curCandle.isTouchBollHigh())
+                {
+                    //Console.WriteLine("not exit long. GoldCrossFirst. inside BOLL_HIGH_TOP. bollHtop={0:0} last={1:0}", curCandle.boll_high_top, curCandle.last);
+                    result = false;
+                    return result;
+                }
+
+                if (isGolden && isFirst)
+                {
+                    // GOLDENクロスが初動の場合
+
+                    int longLv = curCandle.getLongLevel();
+                    if (longLv <= 0)
                     {
-                        Console.WriteLine("exit long. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
+                        // LONGレベルが低くなった場合
+                        Console.WriteLine("exit long. GoldCrossFirst. longLv is Low. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
+                        // LONG-EXIT
                         result = true;
                         return result;
                     }
+                    else
+                    {
+                        // LONGレベルまだ高い場合
+                        // LONG継続
+                        //Console.WriteLine("not exit long. GoldenCrossFirst. longLv is High. Lv={0} bollLtop={1:0} last={2:0}", longLv, curCandle.boll_low_top, curCandle.last);
+                        result = false;
+                        return result;
+                    }
                 }
-                else
+
+                //if (profit > 0.0)
                 {
-                    Console.WriteLine("not exit long. GoldCrossFirst. inside BOLL_HIGH_TOP. bollHtop={0:0} last={1:0}", curCandle.boll_high_top, curCandle.last);
+                    Console.WriteLine("exit long. cnt={0} bollLtop={1:0} last={2:0}", back_cnt, curCandle.boll_low_top, curCandle.last);
+                    result = true;
+                    return result;
                 }
+
             }
             catch (Exception ex)
             {

@@ -2060,7 +2060,7 @@ namespace UtilityTrade
                         // GOLDEN
                         if (candle.ema <= candle.ema_sub)
                         {
-							Console.WriteLine("golden-cross from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
+							//Console.WriteLine("golden-cross from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
                             // CROSS
                             break;
                         }
@@ -2070,7 +2070,7 @@ namespace UtilityTrade
                         // DEAD
                         if (candle.ema >= candle.ema_sub)
                         {
-							Console.WriteLine("dead-cross from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
+							//Console.WriteLine("dead-cross from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
                             // CROSS
                             break;
                         }
@@ -2080,14 +2080,14 @@ namespace UtilityTrade
                         // CROSS
                         if (candle.ema < candle.ema_sub)
                         {
-							Console.WriteLine("golden-cross-now from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
+							//Console.WriteLine("golden-cross-now from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
                             // GOLDEN
                             isGolden = true;
                             break;
                         }
                         else if (candle.ema > candle.ema_sub)
                         {
-							Console.WriteLine("dead-cross-now from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
+							//Console.WriteLine("dead-cross-now from={0} now={1} cnt={2} ema={3:0} ema_sub={4:0}", candle.timestamp, curCandle.timestamp, back_cnt, curCandle.ema, curCandle.ema_sub);
                             // DEAD
                             isGolden = false;
                             break;
