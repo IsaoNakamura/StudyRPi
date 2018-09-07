@@ -86,6 +86,9 @@ namespace CryptoBoxer
         [JsonProperty]
         public double frontline_ahead { get; set; }
 
+        [JsonProperty]
+        public int boll_chk_past_num { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -113,6 +116,7 @@ namespace CryptoBoxer
             entry_offset = 800.0;
             boll_outside_check = 1;
             frontline_ahead = 1000.0;
+            boll_chk_past_num = 4;
             return;
         }
 

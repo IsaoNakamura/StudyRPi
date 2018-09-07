@@ -1624,9 +1624,9 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isOverTopBB(int sample_num)
+        public bool isOverBBHigh(int past_num, int play)
         {
-            bool result = true;
+            bool result = false;
             try
             {
                 Candlestick curCandle = getLastCandle();
@@ -1644,21 +1644,21 @@ namespace UtilityTrade
                 }
 
                 int beg_idx = 0;
-                if (candle_cnt >= sample_num)
+                if (candle_cnt >= (past_num + 1))
                 {
-                    beg_idx = candle_cnt - sample_num;
+                    beg_idx = candle_cnt - (past_num + 1);
                 }
 
-                for (int i = beg_idx; i < candle_cnt; i++)
+                for (int i = beg_idx; i < (candle_cnt-1); i++)
                 {
                     Candlestick candle = m_candleList[i];
                     if (candle == null)
                     {
                         continue;
                     }
-                    if(candle.boll_high <= candle.boll_high_top)
+                    if (candle.isOverBBHigh(candle.last + play))
                     {
-                        result = false;
+                        result = true;
                         return result;
                     }
                 }
@@ -1674,9 +1674,9 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isUnderTopBB(int sample_num)
+        public bool isUnderBBLow(int past_num, int play)
         {
-            bool result = true;
+            bool result = false;
             try
             {
                 Candlestick curCandle = getLastCandle();
@@ -1694,22 +1694,21 @@ namespace UtilityTrade
                 }
 
                 int beg_idx = 0;
-                if (candle_cnt >= sample_num)
+                if (candle_cnt >= (past_num+1))
                 {
-                    beg_idx = candle_cnt - sample_num;
+                    beg_idx = candle_cnt - (past_num+1);
                 }
 
-                for (int i = beg_idx; i < candle_cnt; i++)
+                for (int i = beg_idx; i < (candle_cnt-1); i++)
                 {
-
                     Candlestick candle = m_candleList[i];
                     if (candle == null)
                     {
                         continue;
                     }
-                    if (candle.boll_low >= candle.boll_low_top)
+                    if (candle.isUnderBBLow(candle.last - play))
                     {
-                        result = false;
+                        result = true;
                         return result;
                     }
                 }
