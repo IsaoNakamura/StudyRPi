@@ -1655,11 +1655,11 @@ namespace CryptoBoxer
                 //bool isLongSub = isConditionLongEntrySwing(next_open);
                 //bool isShortSub = isConditionShortEntrySwing(next_open);
 
-                //bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
-                //bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
+                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
+                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
 
-                bool isLong = false;// isConditionLongEntryReboundEMA(next_open) && m_isDoten;
-                bool isShort = false;// isConditionShortEntryReboundEMA(next_open) && m_isDoten;
+                //bool isLong = isConditionLongEntryReboundEMA(next_open) && m_isDoten;
+                //bool isShort = isConditionShortEntryReboundEMA(next_open) && m_isDoten;
 
 
 
@@ -1703,8 +1703,8 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        //m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
                     }
 
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
@@ -1724,8 +1724,8 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        //m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
+                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
+                        //m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
                     }
 
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
@@ -2761,7 +2761,7 @@ namespace CryptoBoxer
                                     }
                                     else
                                     {
-                                        Console.WriteLine("not short long. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
+                                        Console.WriteLine("not need short. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
                                         // 何もしない
                                         result = false;
                                         return result;
@@ -3701,7 +3701,7 @@ namespace CryptoBoxer
                                     }
                                     else
                                     {
-                                        Console.WriteLine("not short long. not DEAD-CROSS-FIRST. Lv={0}", m_curLongBollLv);
+                                        Console.WriteLine("not need short. not DEAD-CROSS-FIRST. Lv={0}", m_curLongBollLv);
                                         // 何もしない
                                         result = false;
                                         return result;
@@ -3709,7 +3709,7 @@ namespace CryptoBoxer
                                 }
                                 else
                                 {
-                                    Console.WriteLine("not short long. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
+                                    Console.WriteLine("not need short. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
                                     // 何もしない
                                     result = false;
                                     return result;
@@ -3752,7 +3752,7 @@ namespace CryptoBoxer
                                     }
                                     else
                                     {
-                                        Console.WriteLine("not short long. not DEAD-CROSS-FIRST. Lv={0}", m_curLongBollLv);
+                                        Console.WriteLine("not need short. not DEAD-CROSS-FIRST. Lv={0}", m_curLongBollLv);
                                         // 何もしない
                                         result = false;
                                         return result;
@@ -3760,7 +3760,7 @@ namespace CryptoBoxer
                                 }
                                 else
                                 {
-                                    Console.WriteLine("not short long. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
+                                    Console.WriteLine("not need short. not DEAD-CROSS. Lv={0}", m_curLongBollLv);
                                     // 何もしない
                                     result = false;
                                     return result;
@@ -4403,12 +4403,12 @@ namespace CryptoBoxer
 
                 if (matop_cross_cnt > 0)
                 {
-                    Console.WriteLine("Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    //Console.WriteLine("Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
                     result = true;
                 }
                 else
                 {
-                    Console.WriteLine("Not Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    //Console.WriteLine("Not Pass BB to MATop. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
                     result = false;
                 }
             }
