@@ -3696,7 +3696,7 @@ namespace CryptoBoxer
                         // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
                         // (上位の収束状態は終了しているので影響を受けにくい状態)
                         // ENTRY
-                        Console.WriteLine("need short. m_curShortBollLv is HIGH. Lv={0}", m_curShortBollLv);
+                        Console.WriteLine("need short. touched MA. Lv={0}", m_curShortBollLv);
                         result = true;
                         return result;
                     }
@@ -3712,20 +3712,10 @@ namespace CryptoBoxer
                             if (!isGolden)
                             {
                                 // DEAD-CROSS
-                                if (isFirst)
-                                {
-                                    // ENTRY
-                                    Console.WriteLine("need short. DEAD-CROSS is begin. Lv={0}", m_curShortBollLv);
-                                    result = true;
-                                    return result;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("not need short. DEAD-CROSS is end. Lv={0}", m_curShortBollLv);
-                                    // 何もしない
-                                    result = false;
-                                    return result;
-                                }
+                                // ENTRY
+                                Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top{1:0}", curCandle.last, curCandle.ma_top);
+                                result = true;
+                                return result;
                             }
                             else
                             {
@@ -3904,7 +3894,7 @@ namespace CryptoBoxer
                     {
                         // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
                         // ENTRY
-                        Console.WriteLine("need long. m_curLongBollLv is HIGH. Lv={0}", m_curLongBollLv);
+                        Console.WriteLine("need long. touched MA. Lv={0}", m_curShortBollLv);
                         result = true;
                         return result;
                     }
@@ -3920,21 +3910,11 @@ namespace CryptoBoxer
                             if (isGolden)
                             {
                                 // GOLDEN-CROSS
-                                if (isFirst)
-                                {
-                                    // GOLDENクロスの初動の場合
-                                    // ENTRY
-                                    Console.WriteLine("need long. GOLDEN-CROSS is begin. Lv={0}", m_curShortBollLv);
-                                    result = true;
-                                    return result;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("not need long. GOLDEN-CROSS is end. Lv={0}", m_curShortBollLv);
-                                    // 何もしない
-                                    result = false;
-                                    return result;
-                                }
+
+                                // ENTRY
+                                Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top{1:0}", curCandle.last, curCandle.ma_top);
+                                result = true;
+                                return result;
                             }
                             else
                             {
