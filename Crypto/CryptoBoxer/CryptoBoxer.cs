@@ -1177,8 +1177,8 @@ namespace CryptoBoxer
                 bool isShortSub = isConditionShortEntryScam(next_open);
 
 
-                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
+                bool isLong = false;// isConditionLongEntryCrossEma();// || m_isDotenLong;
+                bool isShort = false;// isConditionShortEntryCrossEma();// || m_isDotenShort;
 
                 if (isLongSub || isShortSub || isLong || isShort)
                 {
@@ -1655,8 +1655,8 @@ namespace CryptoBoxer
                 //bool isLongSub = isConditionLongEntrySwing(next_open);
                 //bool isShortSub = isConditionShortEntrySwing(next_open);
 
-                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
+                bool isLong = false;// isConditionLongEntryCrossEma();// || m_isDotenLong;
+                bool isShort = false;// isConditionShortEntryCrossEma();// || m_isDotenShort;
 
                 //bool isLong = isConditionLongEntryReboundEMA(next_open) && m_isDoten;
                 //bool isShort = isConditionShortEntryReboundEMA(next_open) && m_isDoten;
@@ -2473,27 +2473,47 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (m_config.expiration_cnt >= 0)
+                switch (m_position.strategy_type)
                 {
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA /*|| m_position.strategy_type == Position.StrategyType.DOTEN*/)
-                    {
-                        bool isGolden = false;
-                        bool isFirst = false;
-                        int back_cnt = 0;
-                        double cur_ema_length = 0.0;
-                        if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
+                    case Position.StrategyType.SCAM:
+                    case Position.StrategyType.SWING:
+                        //if (m_position.entry_price >= curCandle.ema)
+                        //{
+                        //    result = true;
+                        //    return result;
+                        //}
+                        //if (curCandle.last >= curCandle.ema)
+                        //{
+                        //    result = true;
+                        //    return result;
+                        //}
+                        break;
+                    case Position.StrategyType.CROSS_EMA:
+                    case Position.StrategyType.REBOUND_EMA:
+                        if (m_config.expiration_cnt >= 0)
                         {
-                            if ((!isGolden) && (back_cnt >= m_config.expiration_cnt))
+                            bool isGolden = false;
+                            bool isFirst = false;
+                            int back_cnt = 0;
+                            double cur_ema_length = 0.0;
+                            if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
                             {
-                                if ((cur_ema_length <= m_config.expiration_ema_diff))
+                                if ((!isGolden) && (back_cnt >= m_config.expiration_cnt))
                                 {
-                                    //m_isDotenShort = true;
+                                    if ((cur_ema_length <= m_config.expiration_ema_diff))
+                                    {
+                                        //m_isDotenShort = true;
+                                    }
+                                    result = true;
+                                    return result;
                                 }
-                                result = true;
-                                return result;
                             }
                         }
-                    }
+                        break;
+                    case Position.StrategyType.DOTEN:
+                        break;
+                    default:
+                        break;
                 }
             }
             catch (Exception ex)
@@ -2534,28 +2554,50 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (m_config.expiration_cnt >= 0)
+
+                switch (m_position.strategy_type)
                 {
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA /*|| m_position.strategy_type == Position.StrategyType.DOTEN*/)
-                    {
-                        bool isGolden = false;
-                        bool isFirst = false;
-                        int back_cnt = 0;
-                        double cur_ema_length = 0.0;
-                        if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
+                    case Position.StrategyType.SCAM:
+                    case Position.StrategyType.SWING:
+                        //if (m_position.entry_price <= curCandle.ema)
+                        //{
+                        //    result = true;
+                        //    return result;
+                        //}
+                        //if (curCandle.last <= curCandle.ema)
+                        //{
+                        //    result = true;
+                        //    return result;
+                        //}
+                        break;
+                    case Position.StrategyType.CROSS_EMA:
+                    case Position.StrategyType.REBOUND_EMA:
+                        if (m_config.expiration_cnt >= 0)
                         {
-                            if ((isGolden) && (back_cnt >= m_config.expiration_cnt))
+                            bool isGolden = false;
+                            bool isFirst = false;
+                            int back_cnt = 0;
+                            double cur_ema_length = 0.0;
+                            if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
                             {
-                                if ((cur_ema_length <= m_config.expiration_ema_diff))
+                                if ((isGolden) && (back_cnt >= m_config.expiration_cnt))
                                 {
-                                    //m_isDotenLong = true;
+                                    if ((cur_ema_length <= m_config.expiration_ema_diff))
+                                    {
+                                        //m_isDotenLong = true;
+                                    }
+                                    result = true;
+                                    return result;
                                 }
-                                result = true;
-                                return result;
                             }
                         }
-                    }
+                        break;
+                    case Position.StrategyType.DOTEN:
+                        break;
+                    default:
+                        break;
                 }
+
             }
             catch (Exception ex)
             {
