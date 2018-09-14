@@ -1045,15 +1045,15 @@ namespace CryptoBoxer
                     }
 
 
-                    Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},ema={3:0},B_H={4:0},B_L={5:0},B_HT={6:0},B_LT={7:0}"
+                    Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},trend={3},vola_ma={4:0},vola={5:0},down_type={6},shortLv={7}"
                                       , curCandle.timestamp
                                       , m_profitSum
                                       , curCandle.last
-                                      , curCandle.ema
-                                      , curCandle.boll_high
-                                      , curCandle.boll_low
-                                      , curCandle.boll_high_top
-                                      , curCandle.boll_low_top
+                                      , curCandle.isTrend()
+                                      , curCandle.vola_ma
+                                      , curCandle.getVolatility()
+                                      , curCandle.getDownCandleType()
+                                      , curCandle.getShortLevel()
                     );
 
 
