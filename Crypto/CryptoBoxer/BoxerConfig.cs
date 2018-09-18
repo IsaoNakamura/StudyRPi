@@ -63,9 +63,6 @@ namespace CryptoBoxer
         public int boll_diff_play { get; set; }
 
         [JsonProperty]
-        public double vola_rate { get; set; }
-
-        [JsonProperty]
         public double next_open_diff { get; set; }
 
         [JsonProperty]
@@ -89,6 +86,21 @@ namespace CryptoBoxer
         [JsonProperty]
         public int boll_chk_past_num { get; set; }
 
+        [JsonProperty]
+        public double ema_reverce_play { get; set; }
+
+        [JsonProperty]
+        public double whale_vola_rate { get; set; }
+
+        [JsonProperty]
+        public double vola_big { get; set; }
+
+        [JsonProperty]
+        public double vola_small { get; set; }
+
+        [JsonProperty]
+        public double fixed_profit { get; set; }
+
         public BoxerConfig()
         {
             amount = 0.0;
@@ -108,7 +120,6 @@ namespace CryptoBoxer
             backtest_hour = 72;
             backtest_flag = 0;
             boll_diff_play = 1000;
-            vola_rate = 2.0;
             next_open_diff = 500.0;
             back_cnt = 2;
             expiration_cnt = 11;
@@ -117,6 +128,11 @@ namespace CryptoBoxer
             boll_outside_check = 1;
             frontline_ahead = 1000.0;
             boll_chk_past_num = 4;
+            ema_reverce_play = 0.0;
+            whale_vola_rate = 300.0;
+            vola_big = 500.0;
+            vola_small = 20.0;
+            fixed_profit = 300.0;
             return;
         }
 

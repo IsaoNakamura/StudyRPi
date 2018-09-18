@@ -341,7 +341,7 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getShortLevel()
+        public int getShortLevel(double vola_big = 300.0, double vola_small = 20.0)
         {
             int result = -1;
 
@@ -358,7 +358,7 @@ namespace UtilityTrade
                 }
                 else if (up_type <= 2)
                 {
-                    if (vola_rate >= 300.0)
+                    if (vola_rate >= vola_big)
                     {
                         // 大きいローソク
                         // 上昇継続
@@ -374,7 +374,7 @@ namespace UtilityTrade
                 }
                 else
                 {
-                    if (vola_rate <= 20.0)
+                    if (vola_rate <= vola_small)
                     {
                         // 小さいローソク
                         // トレンド転換
@@ -400,7 +400,7 @@ namespace UtilityTrade
                 }
                 else if (down_type <= 2)
                 {
-                    if (vola_rate >= 300.0)
+                    if (vola_rate >= vola_big)
                     {
                         // 大きいローソク
                         // 下降継続
@@ -416,7 +416,7 @@ namespace UtilityTrade
                 }
                 else
                 {
-                    if (vola_rate <= 20.0)
+                    if (vola_rate <= vola_small)
                     {
                         // 小さいローソク
                         // トレンド転換
@@ -435,7 +435,7 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getLongLevel()
+        public int getLongLevel(double vola_big=300.0, double vola_small=50.0)
         {
             int result = -1;
 
@@ -452,7 +452,7 @@ namespace UtilityTrade
                 }
                 else if (down_type <= 2)
                 {
-                    if (vola_rate >= 300.0)
+                    if (vola_rate >= vola_big)
                     {
                         // 大きいローソク
                         // 下降継続
@@ -468,7 +468,7 @@ namespace UtilityTrade
                 }
                 else
                 {
-                    if (vola_rate <= 20.0)
+                    if (vola_rate <= vola_small)
                     {
                         // 小さいローソク
                         // トレンド転換
@@ -494,7 +494,7 @@ namespace UtilityTrade
                 }
                 else if (up_type <= 2)
                 {
-                    if (vola_rate >= 300.0)
+                    if (vola_rate >= vola_big)
                     {
                         // 大きいローソク
                         // 上昇継続
@@ -510,7 +510,7 @@ namespace UtilityTrade
                 }
                 else
                 {
-                    if (vola_rate <= 20.0)
+                    if (vola_rate <= vola_small)
                     {
                         // 小さいローソク
                         // トレンド転換
@@ -2121,5 +2121,116 @@ namespace UtilityTrade
             }
             return result;
         }
+
+        public int getNearEmaCandle(out Candlestick reverceCandle, bool entry_side, string entry_date, double boll_div=8.0)
+        {
+            int result = 0;
+            reverceCandle = null;
+
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick curCandle = getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick entryCandle = null;
+                double diff_min = double.MaxValue;
+                for (int i = (candle_cnt - 1); i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+
+                    if (candle.timestamp == entry_date)
+                    {
+                        entryCandle = candle;
+                        break;
+                    }
+
+                    double diff = Math.Abs(candle.ema - candle.last);
+                    //if (entry_side)
+                    //{
+                    //    // LONGの場合
+                    //    diff = Math.Abs(candle.ema - candle.high);
+                    //}
+                    //else
+                    //{
+                    //    // SHORTの場合
+                    //    diff = Math.Abs(candle.low - candle.ema);
+                    //}
+
+                    if (diff_min > diff)
+                    {
+                        diff_min = diff;
+                        reverceCandle = candle;
+                    }
+                }
+
+                if (entryCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (reverceCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                double high_length = reverceCandle.boll_high - reverceCandle.ema;
+                double low_length = reverceCandle.ema - reverceCandle.boll_low;
+
+                if (entry_side)
+                {
+                    // LONGの場合
+
+                    if (diff_min > (low_length / boll_div))
+                    {
+                        result = -1;
+                        return result;
+                    }
+                }
+                else
+                {
+                    // SHORTの場合
+
+                    if (diff_min > (high_length / boll_div))
+                    {
+                        result = -1;
+                        return result;
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    reverceCandle = null;
+                }
+            }
+            return result;
+        }
+
     }
 }
