@@ -2542,33 +2542,48 @@ namespace CryptoBoxer
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
-                        if ((curCandle.last >= curCandle.ema) && (profit <= 0.0))
+						//if (m_position.entry_price >= curCandle.ema)
+                        //{
+                        //    Console.WriteLine("## LOSSCUT ## entry is over EMA. profit={0:0} entry={1:0} ema={2:0}", profit, m_position.entry_price, curCandle.ema);
+                        //    result = true;
+                        //    return result;
+                        //}
+
+						if ((curCandle.last >= curCandle.ema) && (profit <= 0.0))
                         {
                             //Console.WriteLine("## LOSSCUT ##. profit={0:0} last={1:0} ema={2:0}", profit, curCandle.last, curCandle.ema);
                             //result = true;
                             //return result;
                             Candlestick minCandle = null;
                             Candlestick maxCandle = null;
-                            int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
+							Candlestick entryCandle = null;
+							int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, out entryCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
                             if (ret == 0)
                             {
                                 double max_profit = m_position.calcProfit(maxCandle.last);
                                 double min_profit = m_position.calcProfit(minCandle.last);
+								double ema_profit = m_position.calcProfit(entryCandle.ema);
+								double profit_rate = max_profit / ema_profit * 100.0;
                                 //double length = max_profit - min_profit;
-                                if (max_profit < 0.0)
+								if (profit_rate < 40.0)
                                 {
-                                    Console.WriteLine("## LOSSCUT ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+									Console.WriteLine("## LOSSCUT ##. profit={0:0} max_profit={1:0} {2} ema_profit={3:0} {4:0.0}", profit, max_profit, maxCandle.timestamp, ema_profit, profit_rate);
                                     result = true;
                                     return result;
                                 }
-                                //if ( ((max_profit - profit) <= (length / 8.0)) && (maxCandle.timestamp != curCandle.timestamp) )
+								else
+                                {
+                                    Console.WriteLine("## CONTINUE ##. profit={0:0} max_profit={1:0} {2} ema_profit={3:0} {4:0.0}", profit, max_profit, maxCandle.timestamp, ema_profit, profit_rate);
+                                }
+
+                                //if ( ((max_profit - profit) <= (length / 4.0)) && (maxCandle.timestamp != curCandle.timestamp) )
                                 //{
                                 //    // 現利益がmax寄りにある場合
                                 //    Console.WriteLine("## LOSSCUT ##. max-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
                                 //    result = true;
                                 //    return result;
                                 //}
-                                //else if ((profit - min_profit) <= (length / 8.0))
+                                //else if ((profit - min_profit) <= (length / 4.0))
                                 //{
                                 //    // 現利益がmin寄りにある場合
                                 //    Console.WriteLine("## LOSSCUT ##. min-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
@@ -2673,6 +2688,13 @@ namespace CryptoBoxer
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
+						//if (m_position.entry_price <= curCandle.ema)
+						//{
+						//	Console.WriteLine("## LOSSCUT ## entry is under EMA. profit={0:0} entry={1:0} ema={2:0}", profit, m_position.entry_price, curCandle.ema);
+      //                      result = true;
+      //                      return result;
+						//}
+
                         if ( (curCandle.last <= curCandle.ema) && (profit <= 0.0) )
                         {
                             //Console.WriteLine("## LOSSCUT ##. profit={0:0} last={1:0} ema={2:0}", profit, curCandle.last, curCandle.ema);
@@ -2681,26 +2703,34 @@ namespace CryptoBoxer
 
                             Candlestick minCandle = null;
                             Candlestick maxCandle = null;
-                            int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
+							Candlestick entryCandle = null;
+                            int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, out entryCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
                             if (ret == 0)
                             {
                                 double max_profit = m_position.calcProfit(maxCandle.last);
                                 double min_profit = m_position.calcProfit(minCandle.last);
+								double ema_profit = m_position.calcProfit(entryCandle.ema);
+                                double profit_rate = max_profit / ema_profit * 100.0;
                                 //double length = max_profit - min_profit;
-                                if (max_profit < 0.0)
+								if (profit_rate < 40.0)
                                 {
-                                    Console.WriteLine("## LOSSCUT ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+									Console.WriteLine("## LOSSCUT ##. profit={0:0} max_profit={1:0} {2} ema_profit={3:0} {4:0.0}", profit, max_profit, maxCandle.timestamp, ema_profit, profit_rate);
                                     result = true;
                                     return result;
                                 }
-                                //if ( ((max_profit - profit) <= (length / 8.0)) && (maxCandle.timestamp != curCandle.timestamp))
+								else
+								{
+									Console.WriteLine("## CONTINUE ##. profit={0:0} max_profit={1:0} {2} ema_profit={3:0} {4:0.0}", profit, max_profit, maxCandle.timestamp, ema_profit, profit_rate);
+								}
+
+                                //if ( ((max_profit - profit) <= (length / 4.0)) && (maxCandle.timestamp != curCandle.timestamp))
                                 //{
                                 //    // 現利益がmax寄りにある場合
                                 //    Console.WriteLine("## LOSSCUT ##. max-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
                                 //    result = true;
                                 //    return result;
                                 //}
-                                //else if ((profit - min_profit) <= (length / 8.0))
+                                //else if ((profit - min_profit) <= (length / 4.0))
                                 //{
                                 //    // 現利益がmin寄りにある場合
                                 //    Console.WriteLine("## LOSSCUT ##. min-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
