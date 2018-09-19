@@ -2187,7 +2187,13 @@ namespace UtilityTrade
 
                 if (reverceCandle == null)
                 {
-                    result = -1;
+                    result = 1;
+                    return result;
+                }
+
+                if (curCandle.timestamp == reverceCandle.timestamp)
+                {
+                    result = 2;
                     return result;
                 }
 
@@ -2200,7 +2206,7 @@ namespace UtilityTrade
 
                     if (diff_min > (low_length / boll_div))
                     {
-                        result = -1;
+                        result = 3;
                         return result;
                     }
                 }
@@ -2210,7 +2216,7 @@ namespace UtilityTrade
 
                     if (diff_min > (high_length / boll_div))
                     {
-                        result = -1;
+                        result = 3;
                         return result;
                     }
                 }
@@ -2227,6 +2233,104 @@ namespace UtilityTrade
                 if (result != 0)
                 {
                     reverceCandle = null;
+                }
+            }
+            return result;
+        }
+
+        public int getMinMaxProfitCandle(out Candlestick minCandle, out Candlestick maxCandle, bool entry_side, string entry_date, double entry_price)
+        {
+            int result = 0;
+            minCandle = null;
+            maxCandle = null;
+
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt <= 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick curCandle = getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                Candlestick entryCandle = null;
+                double profit_min = double.MaxValue;
+                double profit_max = double.MinValue;
+                for (int i = (candle_cnt - 1); i >= 0; i--)
+                {
+                    Candlestick candle = m_candleList[i];
+                    if (candle == null)
+                    {
+                        continue;
+                    }
+
+                    if (candle.timestamp == entry_date)
+                    {
+                        entryCandle = candle;
+                        break;
+                    }
+
+                    double profit = 0.0;
+                    if (entry_side)
+                    {
+                        // LONGの場合
+                        profit = candle.last - entry_price;
+                    }
+                    else
+                    {
+                        // SHORTの場合
+                        profit = entry_price - candle.last;
+                    }
+
+                    if (profit_min > profit)
+                    {
+                        profit_min = profit;
+                        minCandle = candle;
+                    }
+
+                    if (profit_max < profit)
+                    {
+                        profit_max = profit;
+                        maxCandle = candle;
+                    }
+                }
+
+                if (entryCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (minCandle == null)
+                {
+                    result = 1;
+                    return result;
+                }
+
+                if (maxCandle == null)
+                {
+                    result = 1;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    minCandle = null;
+                    maxCandle = null;
                 }
             }
             return result;

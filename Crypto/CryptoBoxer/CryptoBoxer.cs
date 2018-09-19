@@ -805,7 +805,7 @@ namespace CryptoBoxer
 
                             // ENTRY/EXITロジック
                             await tryEntryOrder(cur_value);
-
+                            await tryExitOrder();
 
                             if (m_position.isEntryCompleted())
                             {
@@ -879,7 +879,7 @@ namespace CryptoBoxer
                     await checkEntry();
 
                     // EXITロジック
-                    await tryExitOrder();
+                    //await tryExitOrder();
 
                     
 
@@ -2532,6 +2532,7 @@ namespace CryptoBoxer
                     double vola = curCandle.getVolatilityRate();
                     if (vola >= m_config.whale_vola_rate)
                     {
+                        Console.WriteLine("## LOSSCUT ## volaRate is Limit-Over. profit={0:0} vola={1} limit={2:0}", profit, vola, m_config.whale_vola_rate);
                         result = true;
                         return result;
                     }
@@ -2541,12 +2542,53 @@ namespace CryptoBoxer
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
-                        //if ((profit + m_config.ema_reverce_play) < 0)
+                        if ((curCandle.last >= curCandle.ema) && (profit <= 0.0))
+                        {
+                            //Console.WriteLine("## LOSSCUT ##. profit={0:0} last={1:0} ema={2:0}", profit, curCandle.last, curCandle.ema);
+                            //result = true;
+                            //return result;
+                            Candlestick minCandle = null;
+                            Candlestick maxCandle = null;
+                            int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
+                            if (ret == 0)
+                            {
+                                double max_profit = m_position.calcProfit(maxCandle.last);
+                                double min_profit = m_position.calcProfit(minCandle.last);
+                                //double length = max_profit - min_profit;
+                                if (max_profit < 0.0)
+                                {
+                                    Console.WriteLine("## LOSSCUT ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                    result = true;
+                                    return result;
+                                }
+                                //if ( ((max_profit - profit) <= (length / 8.0)) && (maxCandle.timestamp != curCandle.timestamp) )
+                                //{
+                                //    // 現利益がmax寄りにある場合
+                                //    Console.WriteLine("## LOSSCUT ##. max-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //    result = true;
+                                //    return result;
+                                //}
+                                //else if ((profit - min_profit) <= (length / 8.0))
+                                //{
+                                //    // 現利益がmin寄りにある場合
+                                //    Console.WriteLine("## LOSSCUT ##. min-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //    result = true;
+                                //    return result;
+                                //}
+                                //else
+                                //{
+                                //    Console.WriteLine("## CONTINUE ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //}
+                            }
+                        }
+
+                        //if( (m_position.entry_price - m_config.ema_reverce_play) >= curCandle.last)
                         //{
-                        //    Candlestick reverceCandle = null;
-                        //    if (m_candleBuf.getNearEmaCandle(out reverceCandle, m_position.isLong(), m_position.entry_date) == 0)
+                        //    Candlestick reverseCandle = null;
+                        //    int ret = m_candleBuf.getNearEmaCandle(out reverseCandle, m_position.isLong(), m_position.entry_date);
+                        //    if ( ret == 0)
                         //    {
-                        //        Console.WriteLine("!!! need long losscut !!!. profit={0:0} rev={1} last={2:0}", profit, reverceCandle.timestamp, reverceCandle.last);
+                        //        Console.WriteLine("## LOSSCUT ## candle reversed before EMA.  profit={0:0} rev={1} last={2:0}", profit, reverseCandle.timestamp, reverseCandle.last);
                         //        result = true;
                         //        return result;
                         //    }
@@ -2609,8 +2651,6 @@ namespace CryptoBoxer
                     return result;
                 }
 
-
-
                 double profit = m_position.entry_price - curCandle.last;
                 if (profit <= m_config.losscut_value)
                 {
@@ -2623,22 +2663,64 @@ namespace CryptoBoxer
                     double vola = curCandle.getVolatilityRate();
                     if (vola >= m_config.whale_vola_rate)
                     {
+                        Console.WriteLine("## LOSSCUT ## volaRate is Limit-Over. profit={0:0} vola={1} limit={2:0}", profit, vola, m_config.whale_vola_rate);
                         result = true;
                         return result;
                     }
                 }
 
-
                 switch (m_position.strategy_type)
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
-                        //if ((profit + m_config.ema_reverce_play) < 0)
+                        if ( (curCandle.last <= curCandle.ema) && (profit <= 0.0) )
+                        {
+                            //Console.WriteLine("## LOSSCUT ##. profit={0:0} last={1:0} ema={2:0}", profit, curCandle.last, curCandle.ema);
+                            //result = true;
+                            //return result;
+
+                            Candlestick minCandle = null;
+                            Candlestick maxCandle = null;
+                            int ret = m_candleBuf.getMinMaxProfitCandle(out minCandle, out maxCandle, m_position.isLong(), m_position.entry_date, m_position.entry_price);
+                            if (ret == 0)
+                            {
+                                double max_profit = m_position.calcProfit(maxCandle.last);
+                                double min_profit = m_position.calcProfit(minCandle.last);
+                                //double length = max_profit - min_profit;
+                                if (max_profit < 0.0)
+                                {
+                                    Console.WriteLine("## LOSSCUT ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                    result = true;
+                                    return result;
+                                }
+                                //if ( ((max_profit - profit) <= (length / 8.0)) && (maxCandle.timestamp != curCandle.timestamp))
+                                //{
+                                //    // 現利益がmax寄りにある場合
+                                //    Console.WriteLine("## LOSSCUT ##. max-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //    result = true;
+                                //    return result;
+                                //}
+                                //else if ((profit - min_profit) <= (length / 8.0))
+                                //{
+                                //    // 現利益がmin寄りにある場合
+                                //    Console.WriteLine("## LOSSCUT ##. min-near profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //    result = true;
+                                //    return result;
+                                //}
+                                //else
+                                //{
+                                //    Console.WriteLine("## CONTINUE ##. profit={0:0} max={1:0} {2} min={3:0} {4}", profit, max_profit, maxCandle.timestamp, min_profit, minCandle.timestamp);
+                                //}
+                            }
+                        }
+
+                        //if ( (m_position.entry_price + m_config.ema_reverce_play) <= curCandle.last)
                         //{
-                        //    Candlestick reverceCandle = null;
-                        //    if (m_candleBuf.getNearEmaCandle(out reverceCandle, m_position.isLong(), m_position.entry_date) == 0)
+                        //    Candlestick reverseCandle = null;
+                        //    int ret = m_candleBuf.getNearEmaCandle(out reverseCandle, m_position.isLong(), m_position.entry_date);
+                        //    if (ret == 0)
                         //    {
-                        //        Console.WriteLine("!!! need short losscut !!!. profit={0:0} rev={1} last={2:0}", profit, reverceCandle.timestamp, reverceCandle.last);
+                        //        Console.WriteLine("## LOSSCUT ## candle reversed before EMA.  profit={0:0} rev={1} last={2:0}", profit, reverseCandle.timestamp, reverseCandle.last);
                         //        result = true;
                         //        return result;
                         //    }
@@ -3772,6 +3854,25 @@ namespace CryptoBoxer
 
                 // 現在のSHORTレベルが0より高い
 
+                double prevVolaRate = prevCandle.getVolatilityRate();
+                if (prevCandle.isTrend() && (prevVolaRate >= m_config.vola_big))
+                {
+                    Console.WriteLine("not need short. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preShortBollLv, prevVolaRate);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+
+                //double curVolaRate = curCandle.getVolatilityRate();
+                //if (prevCandle.isTrend() && (prevVolaRate > curVolaRate) && (m_preShortBollLv < 0))
+                //{
+                //    Console.WriteLine("not need short. prevCandle's Vola is Big than Cur. prev={0:0.0} cur={1:0.0}", prevVolaRate, curVolaRate);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
 
                 //if (m_preShortBollLv <= -2)
                 //{
@@ -3781,6 +3882,26 @@ namespace CryptoBoxer
                 //    result = false;
                 //    return result;
                 //}
+
+                //if (
+                //        (curCandle.boll_high < curCandle.boll_high_top) &&
+                //        ((curCandle.high >= curCandle.boll_high_top) || (prevCandle.high >= prevCandle.boll_high_top))
+                //)
+                //{
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
+                if (curCandle.boll_high > curCandle.boll_high_top)
+                {
+                    if (curCandle.last > curCandle.boll_high)
+                    {
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
 
                 if (curCandle.last < next_open)
                 {
@@ -3979,6 +4100,24 @@ namespace CryptoBoxer
 
                 // 現在のLONGレベルが0より高い
 
+                double prevVolaRate = prevCandle.getVolatilityRate();
+                if ((!prevCandle.isTrend()) && (prevVolaRate >= m_config.vola_big))
+                {
+                    Console.WriteLine("not need long. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preLongBollLv, prevVolaRate);
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                //double curVolaRate = curCandle.getVolatilityRate();
+                //if ( (!prevCandle.isTrend()) && (prevVolaRate > curVolaRate) && (m_preLongBollLv < 0) )
+                //{
+                //    Console.WriteLine("not need long. prevCandle's Vola is Big than Cur. prev={0:0.0} cur={1:0.0}", prevVolaRate, curVolaRate);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
                 //if (m_preLongBollLv <= -2)
                 //{
                 //    // ひとつ前のLONGレベルが-2以下
@@ -3987,6 +4126,26 @@ namespace CryptoBoxer
                 //    result = false;
                 //    return result;
                 //}
+
+                //if (
+                //        (curCandle.boll_low > curCandle.boll_low_top) &&
+                //        ((curCandle.low <= curCandle.boll_low_top) || (prevCandle.low <= prevCandle.boll_low_top))
+                //)
+                //{
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
+                if (curCandle.boll_low < curCandle.boll_low_top)
+                {
+                    if (curCandle.last < curCandle.boll_low)
+                    {
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
 
                 if (curCandle.last > next_open)
                 {
