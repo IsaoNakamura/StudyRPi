@@ -81,6 +81,9 @@ namespace CryptoBoxer
         public int boll_outside_check { get; set; }
 
         [JsonProperty]
+        public int lc_boll_outside_check { get; set; }
+
+        [JsonProperty]
         public double frontline_ahead { get; set; }
 
         [JsonProperty]
@@ -129,6 +132,7 @@ namespace CryptoBoxer
             expiration_ema_diff = 5000.0;
             entry_offset = 800.0;
             boll_outside_check = 1;
+            lc_boll_outside_check = 1;
             frontline_ahead = 1000.0;
             boll_chk_past_num = 4;
             boll_chk_play = 200.0;

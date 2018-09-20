@@ -2613,7 +2613,7 @@ namespace CryptoBoxer
                             }
                         }
 
-                        if (m_config.boll_outside_check > 0)
+                        if (m_config.lc_boll_outside_check > 0)
                         {
                             if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
                             {
@@ -2715,7 +2715,7 @@ namespace CryptoBoxer
                             }
                         }
 
-                        if (m_config.boll_outside_check > 0)
+                        if (m_config.lc_boll_outside_check > 0)
                         {
                             if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
                             {
