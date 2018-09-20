@@ -1624,7 +1624,7 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isOverBBHigh(int past_num, int play)
+        public bool isOverBBHigh(int past_num, double play)
         {
             bool result = false;
             try
@@ -1674,7 +1674,7 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isUnderBBLow(int past_num, int play)
+        public bool isUnderBBLow(int past_num, double play)
         {
             bool result = false;
             try

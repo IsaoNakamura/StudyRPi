@@ -60,7 +60,7 @@ namespace CryptoBoxer
         public int backtest_flag { get; set; }
 
         [JsonProperty]
-        public int boll_diff_play { get; set; }
+        public double boll_diff_play { get; set; }
 
         [JsonProperty]
         public double next_open_diff { get; set; }
@@ -85,6 +85,9 @@ namespace CryptoBoxer
 
         [JsonProperty]
         public int boll_chk_past_num { get; set; }
+
+        [JsonProperty]
+        public double boll_chk_play { get; set; }
 
         [JsonProperty]
         public double ema_reverce_play { get; set; }
@@ -119,7 +122,7 @@ namespace CryptoBoxer
             buffer_num = 60;
             backtest_hour = 72;
             backtest_flag = 0;
-            boll_diff_play = 1000;
+            boll_diff_play = 1000.0;
             next_open_diff = 500.0;
             back_cnt = 2;
             expiration_cnt = 11;
@@ -128,6 +131,7 @@ namespace CryptoBoxer
             boll_outside_check = 1;
             frontline_ahead = 1000.0;
             boll_chk_past_num = 4;
+            boll_chk_play = 200.0;
             ema_reverce_play = 0.0;
             whale_vola_rate = 300.0;
             vola_big = 500.0;
