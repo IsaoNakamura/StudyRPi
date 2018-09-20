@@ -2238,11 +2238,20 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getMinMaxProfitCandle(out Candlestick minCandle, out Candlestick maxCandle, bool entry_side, string entry_date, double entry_price)
+        public int getMinMaxProfitCandle
+        (
+            out Candlestick minCandle,
+            out Candlestick maxCandle,
+            out Candlestick entryCandle,
+            bool entry_side,
+            string entry_date,
+            double entry_price
+        )
         {
             int result = 0;
             minCandle = null;
             maxCandle = null;
+            entryCandle = null;
 
             try
             {
@@ -2260,7 +2269,6 @@ namespace UtilityTrade
                     return result;
                 }
 
-                Candlestick entryCandle = null;
                 double profit_min = double.MaxValue;
                 double profit_max = double.MinValue;
                 for (int i = (candle_cnt - 1); i >= 0; i--)
@@ -2331,6 +2339,7 @@ namespace UtilityTrade
                 {
                     minCandle = null;
                     maxCandle = null;
+                    entryCandle = null;
                 }
             }
             return result;
