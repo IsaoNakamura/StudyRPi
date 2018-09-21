@@ -45,6 +45,12 @@ namespace UtilityTrade
         public double body_min { get; set; }
         public double body_max { get; set; }
 
+        public int range_min_keep { get; set; }
+        public int range_max_keep { get; set; }
+
+        public int range_min_cnt { get; set; }
+        public int range_max_cnt { get; set; }
+
         public Candlestick()
         {
             high = 0.0;
@@ -70,6 +76,12 @@ namespace UtilityTrade
 
             ma_top_increase = 0.0;
             ma_top_increase_rate = 0.0;
+
+            range_min_keep = 0;
+            range_max_keep = 0;
+
+            range_min_cnt = 0;
+            range_max_cnt = 0;
 
             return;
         }
@@ -807,6 +819,16 @@ namespace UtilityTrade
             }
 
             return m_candleList.Last();
+        }
+
+        public int getLastCandleIndex()
+        {
+            if (getCandleCount() <= 0)
+            {
+                return -1;
+            }
+
+            return (getCandleCount() - 1);
         }
 
         public Candlestick getCandle(int index)
@@ -1624,9 +1646,10 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isOverBBHigh(int past_num, double play)
+        public bool isOverBBHigh(out Candlestick overCandle, int past_num, double play)
         {
             bool result = false;
+            overCandle = null;
             try
             {
                 Candlestick curCandle = getLastCandle();
@@ -1658,6 +1681,7 @@ namespace UtilityTrade
                     }
                     if (candle.isOverBBHigh(candle.last + play))
                     {
+                        overCandle = candle;
                         result = true;
                         return result;
                     }
@@ -1670,13 +1694,18 @@ namespace UtilityTrade
             }
             finally
             {
+                if (!result)
+                {
+                    overCandle = null;
+                }
             }
             return result;
         }
 
-        public bool isUnderBBLow(int past_num, double play)
+        public bool isUnderBBLow(out Candlestick underCandle, int past_num, double play)
         {
             bool result = false;
+            underCandle = null;
             try
             {
                 Candlestick curCandle = getLastCandle();
@@ -1708,6 +1737,7 @@ namespace UtilityTrade
                     }
                     if (candle.isUnderBBLow(candle.last - play))
                     {
+                        underCandle = candle;
                         result = true;
                         return result;
                     }
@@ -1720,6 +1750,10 @@ namespace UtilityTrade
             }
             finally
             {
+                if (!result)
+                {
+                    underCandle = null;
+                }
             }
             return result;
         }

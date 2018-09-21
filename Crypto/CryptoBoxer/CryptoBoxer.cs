@@ -605,7 +605,7 @@ namespace CryptoBoxer
                             out range_max,
                             out body_min,
                             out body_max,
-                            20
+                            60
                         ) == 0
                     )
                     {
@@ -616,6 +616,79 @@ namespace CryptoBoxer
                         candle.range_max = range_max;
                         candle.body_min = body_min;
                         candle.body_max = body_max;
+
+                        Candlestick lastCandle = candleBuf.getCandle(candleBuf.getLastCandleIndex()-1);
+                        if (lastCandle != null)
+                        {
+                            // 下に拡張
+                            if (candle.range_min < lastCandle.range_min)
+                            {
+                                if (lastCandle.range_min_cnt < 0)
+                                {
+                                    candle.range_min_cnt = 0;
+                                }
+                                else
+                                {
+                                    candle.range_min_cnt = lastCandle.range_min_cnt + 1;
+                                }
+                                candle.range_min_keep = 0;
+                            }
+                            else if (candle.range_min > lastCandle.range_min)
+                            {
+                                // 上に収縮
+                                if (lastCandle.range_min_cnt > 0)
+                                {
+                                    candle.range_min_cnt = 0;
+                                }
+                                else
+                                {
+                                    candle.range_min_cnt = lastCandle.range_min_cnt - 1;
+                                }
+                                //candle.range_min_keep = 0;
+                                candle.range_min_keep = lastCandle.range_min_keep + 1;
+                            }
+                            else
+                            {
+                                // 維持
+                                candle.range_min_cnt=0;
+                                candle.range_min_keep = lastCandle.range_min_keep + 1;
+                            }
+
+                            if (candle.range_max > lastCandle.range_max)
+                            {
+                                // 上に拡張
+                                if (lastCandle.range_max_cnt < 0)
+                                {
+                                    candle.range_max_cnt = 0;
+                                }
+                                else
+                                {
+                                    candle.range_max_cnt = lastCandle.range_max_cnt + 1;
+                                }
+                                candle.range_max_keep = 0;
+                            }
+                            else if (candle.range_max < lastCandle.range_max)
+                            {
+                                // 下に収縮
+                                if (candle.range_max_cnt > 0)
+                                {
+                                    candle.range_max_cnt = 0;
+                                }
+                                else
+                                {
+                                    candle.range_max_cnt = lastCandle.range_max_cnt - 1;
+                                }
+                                //candle.range_max_keep = 0;
+                                candle.range_max_keep = lastCandle.range_max_keep + 1;
+                            }
+                            else
+                            {
+                                // 維持
+                                candle.range_max_cnt = 0;
+                                candle.range_max_keep = lastCandle.range_max_keep + 1;
+                            }
+
+                        }
                     }
                 }
 
@@ -2603,23 +2676,36 @@ namespace CryptoBoxer
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
-                        //if (m_position.entry_price >= curCandle.ema)
-                        if ((curCandle.last >= curCandle.ema) && (profit <= 0.0))
+                        if (profit <= 0.0)
                         {
-                            if (isBadPosition())
-                            {
-                                result = true;
-                                return result;
-                            }
-                        }
-
-                        if (m_config.lc_boll_outside_check > 0)
-                        {
-                            if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
+                            //if (m_position.entry_price >= curCandle.ema)
+                            if (curCandle.last >= curCandle.ema)
                             {
                                 if (isBadPosition())
                                 {
-                                    Console.WriteLine("## LOSSCUT ## boll_low is outside. profit={0:0} boll_low={1:0} boll_low_top={2:0}", profit, curCandle.boll_low, curCandle.boll_low_top);
+                                    result = true;
+                                    return result;
+                                }
+                            }
+
+                            if (m_config.boll_outside_check > 0)
+                            {
+                                if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
+                                {
+                                    if (isBadPosition())
+                                    {
+                                        Console.WriteLine("## LOSSCUT ## boll_low is outside. profit={0:0} boll_low={1:0} boll_low_top={2:0}", profit, curCandle.boll_low, curCandle.boll_low_top);
+                                        result = true;
+                                        return result;
+                                    }
+                                }
+                            }
+
+                            if (m_config.lc_boll_outside_check > 0)
+                            {
+                                if (curCandle.range_min_keep <= 0)
+                                {
+                                    Console.WriteLine("## LOSSCUT ## RANGE-KEEP is end. profit={0:0} min_cnt={1}", profit, curCandle.range_min_cnt);
                                     result = true;
                                     return result;
                                 }
@@ -2705,23 +2791,36 @@ namespace CryptoBoxer
                 {
                     case Position.StrategyType.SCAM:
                     case Position.StrategyType.SWING:
-                        //if (m_position.entry_price <= curCandle.ema)                  
-                        if ( (curCandle.last <= curCandle.ema) && (profit <= 0.0) )
+                        if (profit <= 0.0)
                         {
-                            if (isBadPosition())
-                            {
-                                result = true;
-                                return result;
-                            }
-                        }
-
-                        if (m_config.lc_boll_outside_check > 0)
-                        {
-                            if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
+                            //if (m_position.entry_price <= curCandle.ema)                  
+                            if (curCandle.last <= curCandle.ema)
                             {
                                 if (isBadPosition())
                                 {
-                                    Console.WriteLine("## LOSSCUT ## boll_high is outside. profit={0:0} boll_high={1:0} boll_high_top={2:0}", profit, curCandle.boll_high, curCandle.boll_high_top);
+                                    result = true;
+                                    return result;
+                                }
+                            }
+
+                            if (m_config.lc_boll_outside_check > 0)
+                            {
+                                if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
+                                {
+                                    if (isBadPosition())
+                                    {
+                                        Console.WriteLine("## LOSSCUT ## boll_high is outside. profit={0:0} boll_high={1:0} boll_high_top={2:0}", profit, curCandle.boll_high, curCandle.boll_high_top);
+                                        result = true;
+                                        return result;
+                                    }
+                                }
+                            }
+
+                            if (m_config.lc_boll_outside_check > 0)
+                            {
+                                if (curCandle.range_max_keep <= 0)
+                                {
+                                    Console.WriteLine("## LOSSCUT ## RANGE-KEEP is end. profit={0:0} max_cnt={1}", profit, curCandle.range_max_cnt);
                                     result = true;
                                     return result;
                                 }
@@ -3825,7 +3924,8 @@ namespace CryptoBoxer
                     }
                 }
 
-                if (!m_candleBuf.isOverBBHigh(m_config.boll_chk_past_num, m_config.boll_chk_play))
+                Candlestick overCandle = null;
+                if (!m_candleBuf.isOverBBHigh(out overCandle, m_config.boll_chk_past_num, m_config.boll_chk_play))
                 {
                     // N個前のキャンドルの終値がBollHighをOVERしてない
                     // SHORTすべきでない
@@ -3845,25 +3945,55 @@ namespace CryptoBoxer
                 }
                 //Console.WriteLine("isConditonShortEntry. ema_diff is LOW. diff={0:0} last={1:0} ema={2:0}", ema_diff, curCandle.last, curCandle.ema);
 
-                if (m_curShortBollLv <= 0)
+                if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
                 {
-                    // 現在のSHORTレベルが0以下
-                    Console.WriteLine("not need short. m_curShortBollLv is LOW. Lv={0}", m_curShortBollLv);
-                    // 何もしない
-                    result = false;
-                    return result;
+                    // BBが上位BBをはみ出た場合
+                    if (m_curShortBollLv <= 1)
+                    {
+                        // 現在のSHORTレベルが1以下
+                        Console.WriteLine("not need short. m_curShortBollLv is LOW. Lv={0}", m_curShortBollLv);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
+                else
+                {
+                    // BBが上位BBをはみ出ない場合
+                    if (m_curShortBollLv <= 0)
+                    {
+                        // 現在のSHORTレベルが0以下
+                        Console.WriteLine("not need short. m_curShortBollLv is LOW. Lv={0}", m_curShortBollLv);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
                 }
 
-                // 現在のSHORTレベルが0より高い
+                // 現在のSHORTレベルが高い
 
-                double prevVolaRate = prevCandle.getVolatilityRate();
-                if (prevCandle.isTrend() && (prevVolaRate >= m_config.vola_big))
-                {
-                    Console.WriteLine("not need short. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preShortBollLv, prevVolaRate);
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
+                //if (prevCandle.isTrend())
+                //{
+                //    int prevCandleType = prevCandle.getUpCandleType();
+                //    if (prevCandleType  > 0)
+                //    {
+                //        Console.WriteLine("not need short. prevCandle is not over hair. prevType={0}", prevCandleType);
+                //        // 何もしない
+                //        result = false;
+                //        return result;
+                //    }
+                //}
+
+
+
+                //double prevVolaRate = prevCandle.getVolatilityRate();
+                //if (prevCandle.isTrend() && (prevVolaRate >= m_config.vola_big))
+                //{
+                //    Console.WriteLine("not need short. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preShortBollLv, prevVolaRate);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
 
 
                 //double curVolaRate = curCandle.getVolatilityRate();
@@ -3895,15 +4025,15 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                if (curCandle.boll_high > curCandle.boll_high_top)
-                {
-                    if (curCandle.last > curCandle.boll_high)
-                    {
-                        // 何もしない
-                        result = false;
-                        return result;
-                    }
-                }
+                //if (curCandle.boll_high > curCandle.boll_high_top)
+                //{
+                //    if (curCandle.last > curCandle.boll_high)
+                //    {
+                //        // 何もしない
+                //        result = false;
+                //        return result;
+                //    }
+                //}
 
                 if (curCandle.last < next_open)
                 {
@@ -3963,7 +4093,7 @@ namespace CryptoBoxer
                         {
                             // DEAD-CROSS
                             // ENTRY
-                            Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top);
+                            Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
                             result = true;
                             return result;
                         }
@@ -4065,7 +4195,8 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                if (!m_candleBuf.isUnderBBLow(m_config.boll_chk_past_num, m_config.boll_chk_play))
+                Candlestick underCandle = null;
+                if (!m_candleBuf.isUnderBBLow(out underCandle, m_config.boll_chk_past_num, m_config.boll_chk_play))
                 {
                     Console.WriteLine("not need long. pastCandle's last is not under BB_LOW");
                     result = false;
@@ -4090,26 +4221,54 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-                
-                if (m_curLongBollLv <= 0)
+
+                if ((curCandle.boll_low - m_config.boll_diff_play) < curCandle.boll_low_top)
                 {
-                    // 現在のLONGレベルが0以下
-                    Console.WriteLine("not need long. m_curLongBollLv is LOW. Lv={0}", m_curLongBollLv);
-                    // 何もしない
-                    result = false;
-                    return result;
+                    // BBが上位BBをはみ出た場合
+                    if (m_curLongBollLv <= 1)
+                    {
+                        // 現在のLONGレベルが1以下
+                        Console.WriteLine("not need long. m_curLongBollLv is LOW. Lv={0}", m_curLongBollLv);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
+                }
+                else
+                {
+                    // BBが上位BBをはみ出ない場合
+                    if (m_curLongBollLv <= 0)
+                    {
+                        // 現在のLONGレベルが0以下
+                        Console.WriteLine("not need long. m_curLongBollLv is LOW. Lv={0}", m_curLongBollLv);
+                        // 何もしない
+                        result = false;
+                        return result;
+                    }
                 }
 
                 // 現在のLONGレベルが0より高い
 
-                double prevVolaRate = prevCandle.getVolatilityRate();
-                if ((!prevCandle.isTrend()) && (prevVolaRate >= m_config.vola_big))
-                {
-                    Console.WriteLine("not need long. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preLongBollLv, prevVolaRate);
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
+                //if (!prevCandle.isTrend())
+                //{
+                //    int prevCandleType = prevCandle.getDownCandleType();
+                //    if (prevCandleType > 0 )
+                //    {
+                //        Console.WriteLine("not need long. prevCandle is not under hair. prevType={0}", prevCandleType);
+                //        // 何もしない
+                //        result = false;
+                //        return result;
+                //    }
+                //}
+
+                //double prevVolaRate = prevCandle.getVolatilityRate();
+                //if ((!prevCandle.isTrend()) && (prevVolaRate >= m_config.vola_big))
+                //{
+                //    Console.WriteLine("not need long. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preLongBollLv, prevVolaRate);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
 
                 //double curVolaRate = curCandle.getVolatilityRate();
                 //if ( (!prevCandle.isTrend()) && (prevVolaRate > curVolaRate) && (m_preLongBollLv < 0) )
@@ -4139,27 +4298,27 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                if (curCandle.boll_low < curCandle.boll_low_top)
-                {
-                    if (curCandle.last < curCandle.boll_low)
-                    {
-                        // 何もしない
-                        result = false;
-                        return result;
-                    }
-                }
+                //if (curCandle.boll_low < curCandle.boll_low_top)
+                //{
+                //    if (curCandle.last < curCandle.boll_low)
+                //    {
+                //        // 何もしない
+                //        result = false;
+                //        return result;
+                //    }
+                //}
 
-                if (curCandle.last > next_open)
-                {
-                    double diff = curCandle.last - next_open;
-                    if (diff >= m_config.next_open_diff)
-                    {
-                        Console.WriteLine("not need long. next_open is LOW. Lv={0} Diff={1:0} last={2:0} next={3:0}", m_curLongBollLv, diff, curCandle.last, next_open);
-                        // 何もしない
-                        result = false;
-                        return result;
-                    }
-                }
+                //if (curCandle.last > next_open)
+                //{
+                //    double diff = curCandle.last - next_open;
+                //    if (diff >= m_config.next_open_diff)
+                //    {
+                //        Console.WriteLine("not need long. next_open is LOW. Lv={0} Diff={1:0} last={2:0} next={3:0}", m_curLongBollLv, diff, curCandle.last, next_open);
+                //        // 何もしない
+                //        result = false;
+                //        return result;
+                //    }
+                //}
 
                 bool isGolden = false;
                 bool isFirst = false;
