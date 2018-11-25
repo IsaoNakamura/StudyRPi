@@ -4198,14 +4198,22 @@ namespace CryptoBoxer
                 {
                     Console.WriteLine("not need short. TOP-GOLDEN-CROSS back_cnt={0}", back_cnt_top);
                     // 何もしない
-                    //result = false;
-                    //return result;
+                    result = false;
+                    return result;
                 }
 
                 bool isPassTop = false;
                 int band_pos_top = 0;
                 if (m_candleBufTop.isPassBBtoMATop(out isPassTop, out band_pos_top) != 0)
                 {
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+				if (isPassTop == false && band_pos_top == -1)
+                {
+                    Console.WriteLine("not need short. not Pass BB to MA.");
                     // 何もしない
                     result = false;
                     return result;
@@ -4497,8 +4505,8 @@ namespace CryptoBoxer
                 {
                     Console.WriteLine("not need long. TOP-DEAD-CROSS back_cnt={0}", back_cnt_top);
 					// 何もしない
-                    //result = false;
-                    //return result;
+                    result = false;
+                    return result;
                 }
 
                 bool isPassTop = false;
@@ -4509,6 +4517,14 @@ namespace CryptoBoxer
 					result = false;
 					return result;
 				}
+
+				if (isPassTop == false && band_pos_top == 1)
+                {
+                    Console.WriteLine("not need long. not Pass BB to MA.");
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
 
                 if (isPass)
                 {
