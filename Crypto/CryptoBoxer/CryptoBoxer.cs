@@ -737,7 +737,8 @@ namespace CryptoBoxer
                 //System.Threading.Thread.Sleep(3000);
 
                 // Cryptowatchから過去のデータを取得
-                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, (m_candleBuf.m_buffer_num) * m_config.periods);
+                long after_secounds = m_candleBuf.m_buffer_num * m_config.periods;
+                BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
                 if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
@@ -1057,7 +1058,7 @@ namespace CryptoBoxer
 
 
                 // Cryptowatchから過去のデータを取得
-                int test_num = (m_config.backtest_hour * 60);
+				int test_num = (m_config.backtest_hour * 60 * 60) / m_config.periods;
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
                 if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
@@ -1072,7 +1073,7 @@ namespace CryptoBoxer
                     Console.WriteLine("failed to create test CandleBuffer");
                     return;
                 }
-                if (applyCandlestick(testCandleBuf, ref ohlc, m_candleBuf.getCandleCount(), test_num, false) != 0)
+				if (applyCandlestick(testCandleBuf, ref ohlc, m_candleBuf.getCandleCount(), test_num, false) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1085,6 +1086,12 @@ namespace CryptoBoxer
                     Console.WriteLine("candle's count is 0");
                     return;
                 }
+
+				{
+					// periods
+					//  1m= 60sec
+					// 15m=900sec
+				}
 
 
                 int long_entry_cnt = 0;
@@ -2488,6 +2495,15 @@ namespace CryptoBoxer
                     }
                 }
 
+				if (curCandle.high >= curCandle.ema)
+                {
+                    if (profit > 0.0)
+                    {
+                        result = true;
+                        return result;
+                    }
+                }
+
                 if (m_config.fixed_profit >= 100)
                 {
                     if (profit >= m_config.fixed_profit)
@@ -2550,6 +2566,15 @@ namespace CryptoBoxer
                         return result;
                     }
                 }
+
+				if( curCandle.low <= curCandle.ema )
+				{
+					if (profit > 0.0)
+                    {
+                        result = true;
+                        return result;
+                    }
+				}
 
                 if (m_config.fixed_profit >= 100)
                 {
@@ -4073,9 +4098,9 @@ namespace CryptoBoxer
 
                 if(isPass)
                 {
-                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
-                    // (上位の収束状態は終了しているので影響を受けにくい状態)
-                    // ENTRY
+					// 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+					// (上位の収束状態は終了しているので影響を受けにくい状態)
+					// ENTRY
                     Console.WriteLine("need short. touched MA. Lv={0} Type={1} VolaRate={2:0}", m_curShortBollLv, curCandle.getDownCandleType(), curCandle.getVolatilityRate());
                     result = true;
                     return result;
@@ -4345,10 +4370,11 @@ namespace CryptoBoxer
                 if (isPass)
                 {
                     // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
-                    // ENTRY
+					// ENTRY
                     Console.WriteLine("need long. touched MA. Lv={0} Type={1} VolaRate={2:0}", m_curLongBollLv, curCandle.getUpCandleType(), curCandle.getVolatilityRate());
                     result = true;
                     return result;
+
                 }
 
                 // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
