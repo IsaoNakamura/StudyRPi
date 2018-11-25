@@ -293,7 +293,7 @@ namespace CryptoBoxer
         }
 
         // 過去のキャンドル情報群をバッファに適用
-        private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc)
+		private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int periods)
         {
             int result = 0;
             try
@@ -312,11 +312,11 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                List<List<double>> candles = ohlc.result.getResult(m_config.periods);
+                List<List<double>> candles = ohlc.result.getResult(periods);
 
                 if (candles == null)
                 {
-                    Console.WriteLine("ohlc's candle is null. periods={0}", m_config.periods);
+                    Console.WriteLine("ohlc's candle is null. periods={0}", periods);
                     result = -1;
                     return result;
                 }
@@ -368,7 +368,7 @@ namespace CryptoBoxer
             return result;
         }
 
-        private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int begIdx, int count, bool isCalcIndicator=true)
+        private int applyCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int periods, int begIdx, int count, bool isCalcIndicator=true)
         {
             int result = 0;
             try
@@ -387,11 +387,11 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                List<List<double>> candles = ohlc.result.getResult(m_config.periods);
+				List<List<double>> candles = ohlc.result.getResult(periods);
 
                 if (candles == null)
                 {
-                    Console.WriteLine("ohlc's candle is null. periods={0}", m_config.periods);
+					Console.WriteLine("ohlc's candle is null. periods={0}", periods);
                     result = -1;
                     return result;
                 }
@@ -739,7 +739,7 @@ namespace CryptoBoxer
                 // Cryptowatchから過去のデータを取得
                 long after_secounds = m_candleBuf.m_buffer_num * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
-                if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
+				if (applyCandlestick(m_candleBuf, ref ohlc, m_config.periods, 0, m_candleBuf.m_buffer_num) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1061,7 +1061,7 @@ namespace CryptoBoxer
 				int test_num = (m_config.backtest_hour * 60 * 60) / m_config.periods;
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
-                if (applyCandlestick(m_candleBuf, ref ohlc, 0, m_candleBuf.m_buffer_num) != 0)
+				if (applyCandlestick(m_candleBuf, ref ohlc,m_config.periods, 0, m_candleBuf.m_buffer_num) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1073,7 +1073,7 @@ namespace CryptoBoxer
                     Console.WriteLine("failed to create test CandleBuffer");
                     return;
                 }
-				if (applyCandlestick(testCandleBuf, ref ohlc, m_candleBuf.getCandleCount(), test_num, false) != 0)
+				if (applyCandlestick(testCandleBuf, ref ohlc, m_config.periods, m_candleBuf.getCandleCount(), test_num, false) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1087,12 +1087,39 @@ namespace CryptoBoxer
                     return;
                 }
 
-				{
-					// periods
-					//  1m= 60sec
-					// 15m=900sec
-				}
+				//{
+					int periods_top = 900;
+					int test_num_top = (m_config.backtest_hour * 60 * 60) / periods_top;
+					long after_secounds_top = (m_candleBuf.m_buffer_num + test_num_top) * periods_top;
+					BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, periods_top, after_secounds_top);
 
+					CandleBuffer candleBuf_top = CandleBuffer.createCandleBuffer(m_candleBuf.m_buffer_num);
+					if (candleBuf_top == null)
+                    {
+                        Console.WriteLine("failed to create CandleBufferTop");
+                        return;
+                    }
+
+					if (applyCandlestick(candleBuf_top, ref ohlc_top, periods_top, 0, m_candleBuf.m_buffer_num) != 0)
+                    {
+                        Console.WriteLine("failed to applyCandlestick()");
+                        return;
+                    }
+
+					CandleBuffer testCandleBuf_top = CandleBuffer.createCandleBuffer(test_num_top);
+					if (testCandleBuf_top == null)
+                    {
+                        Console.WriteLine("failed to create test CandleBufferTop");
+                        return;
+                    }
+					if (applyCandlestick(testCandleBuf_top, ref ohlc_top, periods_top, candleBuf_top.getCandleCount(), test_num_top, false) != 0)
+                    {
+                        Console.WriteLine("failed to applyCandlestick()");
+                        return;
+                    }
+				//}
+
+				int top_index = 0;
 
                 int long_entry_cnt = 0;
                 int short_entry_cnt = 0;
@@ -1128,6 +1155,32 @@ namespace CryptoBoxer
                     else
                     {
                         next_open = nextCandle.open;
+                    }
+
+					{
+                        Candlestick topCandle = testCandleBuf_top.getCandle(top_index);
+                        if (topCandle != null)
+                        {
+							
+                            if (curCandle.timestamp == topCandle.timestamp)
+                            {
+								if (candleBuf_top.addCandle(topCandle) != 0)
+                                {
+									Console.WriteLine("failed to addCandle for candleBuf_top.");
+                                    return;
+                                }
+
+								calcIndicator(candleBuf_top, ref topCandle);
+
+                                Console.WriteLine("## testCandleBuf_top[{0}]. timestamp={1},last={2:0},trend={3}"
+                                                  , top_index
+                                                  , topCandle.timestamp
+                                                  , topCandle.last
+                                                  , topCandle.isTrend()
+                                 );
+                                top_index++;
+                            }
+                        }
                     }
 
                     // ENTRYテスト
@@ -1171,6 +1224,8 @@ namespace CryptoBoxer
                                           , curCandle.disparity_rate
                         );
                     }
+
+
 
 
                     System.Threading.Thread.Sleep(0);
@@ -3046,7 +3101,7 @@ namespace CryptoBoxer
                         }
 
                         int band_pos = 0;
-                        if (isPassBBtoMATop(out band_pos))
+						if (m_candleBuf.isPassBBtoMATop(out band_pos))
                         {
                             // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
                             // ENTRY
@@ -3314,7 +3369,7 @@ namespace CryptoBoxer
 
 
                         int band_pos = 0;
-                        if (isPassBBtoMATop(out band_pos))
+						if (m_candleBuf.isPassBBtoMATop(out band_pos))
                         {
                             // 上位ボリンジャーバンドをはみ出てから一度はMAにタッチしていた場合
                             // ENTRY
@@ -4089,7 +4144,7 @@ namespace CryptoBoxer
 
                 bool isPass = false;
                 int band_pos = 0;
-                if (isPassBBtoMATop(out isPass, out band_pos) != 0)
+				if (m_candleBuf.isPassBBtoMATop(out isPass, out band_pos) != 0)
                 {
                     // 何もしない
                     result = false;
@@ -4360,7 +4415,7 @@ namespace CryptoBoxer
 
                 bool isPass = false;
                 int band_pos = 0;
-                if (isPassBBtoMATop(out isPass, out band_pos) != 0)
+				if (m_candleBuf.isPassBBtoMATop(out isPass, out band_pos) != 0)
                 {
                     // 何もしない
                     result = false;
@@ -4584,7 +4639,7 @@ namespace CryptoBoxer
                 }
 
                 int band_pos = 0;
-                if (isPassBBtoMATop(out band_pos))
+				if (m_candleBuf.isPassBBtoMATop(out band_pos))
                 {
                     // 上位ボリンジャーバンドをはみ出てMAにタッチ済みの場合
                     Console.WriteLine("not need short. touched MA. band_pos={0}", band_pos);
@@ -4757,7 +4812,7 @@ namespace CryptoBoxer
                 }
 
                 int band_pos = 0;
-                if (isPassBBtoMATop(out band_pos))
+				if (m_candleBuf.isPassBBtoMATop(out band_pos))
                 {
                     // 上位ボリンジャーバンドをはみ出てMAにタッチ済みの場合
                     Console.WriteLine("not need long. touched MA. band_pos={0}", band_pos);
@@ -4782,100 +4837,6 @@ namespace CryptoBoxer
             {
                 Console.WriteLine(ex);
                 result = false;
-            }
-            finally
-            {
-            }
-            return result;
-        }
-
-
-        public bool isPassBBtoMATop(out int band_pos)
-        {
-            bool result = false;
-            band_pos = 0;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                string outside_stamp = "";
-                string cross_stamp = "";
-                int back_cnt = 0;
-                int matop_cross_cnt = 0;
-
-                if (m_candleBuf.searchLastOutsideBB(out band_pos, out outside_stamp, out cross_stamp, out back_cnt, out matop_cross_cnt) != 0)
-                {
-                    result = false;
-                    return result;
-                }
-
-                if (matop_cross_cnt > 0)
-                {
-                    Console.WriteLine("## Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
-                    result = true;
-                }
-                else
-                {
-                    Console.WriteLine("## Not Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
-                    result = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = false;
-            }
-            finally
-            {
-            }
-            return result;
-        }
-
-        public int isPassBBtoMATop(out bool isPass, out int band_pos)
-        {
-            int result = 0;
-            isPass = false;
-            band_pos = 0;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                string outside_stamp = "";
-                string cross_stamp = "";
-                int back_cnt = 0;
-                int matop_cross_cnt = 0;
-
-                if (m_candleBuf.searchLastOutsideBB(out band_pos, out outside_stamp, out cross_stamp, out back_cnt, out matop_cross_cnt) != 0)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                if (matop_cross_cnt > 0)
-                {
-                    Console.WriteLine("## Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
-                    isPass = true;
-                }
-                else
-                {
-                    Console.WriteLine("## Not Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
-                    isPass = false;
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = -1;
             }
             finally
             {
@@ -4933,8 +4894,7 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
-
+                            
                 bool isGolden = false;
                 bool isFirst = false;
                 int back_cnt = 0;
