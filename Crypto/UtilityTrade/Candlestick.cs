@@ -2379,5 +2379,86 @@ namespace UtilityTrade
             return result;
         }
 
+        public bool isPassBBtoMATop(out int band_pos)
+        {
+            bool result = false;
+            band_pos = 0;
+            try
+            {
+                string outside_stamp = "";
+                string cross_stamp = "";
+                int back_cnt = 0;
+                int matop_cross_cnt = 0;
+
+                if (searchLastOutsideBB(out band_pos, out outside_stamp, out cross_stamp, out back_cnt, out matop_cross_cnt) != 0)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (matop_cross_cnt > 0)
+                {
+                    Console.WriteLine("## Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    result = true;
+                }
+                else
+                {
+                    Console.WriteLine("## Not Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int isPassBBtoMATop(out bool isPass, out int band_pos)
+        {
+            int result = 0;
+            isPass = false;
+            band_pos = 0;
+            try
+            {
+                string outside_stamp = "";
+                string cross_stamp = "";
+                int back_cnt = 0;
+                int matop_cross_cnt = 0;
+
+                if (searchLastOutsideBB(out band_pos, out outside_stamp, out cross_stamp, out back_cnt, out matop_cross_cnt) != 0)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                if (matop_cross_cnt > 0)
+                {
+                    Console.WriteLine("## Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    isPass = true;
+                }
+                else
+                {
+                    Console.WriteLine("## Not Pass BB to MATop ##. OUTSIDE={0} CROSS={1} BACK={2} CNT={3}", outside_stamp, cross_stamp, back_cnt, matop_cross_cnt);
+                    isPass = false;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }

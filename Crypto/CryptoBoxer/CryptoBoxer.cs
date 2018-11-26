@@ -1098,13 +1098,12 @@ namespace CryptoBoxer
                 }
 
 
-				int periods_top = 300;
-				int test_num_top = (m_config.backtest_hour * 60 * 60) / periods_top;
-				long after_secounds_top = (m_candleBuf.m_buffer_num + test_num_top) * periods_top;
-				BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, periods_top, after_secounds_top);
+				int test_num_top = (m_config.backtest_hour * 60 * 60) / m_config.periods_top;
+				long after_secounds_top = (m_candleBuf.m_buffer_num + test_num_top) * m_config.periods_top;
+				BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
                 
 
-				if (applyCandlestick(m_candleBufTop, ref ohlc_top, periods_top, 0, m_candleBuf.m_buffer_num) != 0)
+				if (applyCandlestick(m_candleBufTop, ref ohlc_top, m_config.periods_top, 0, m_candleBuf.m_buffer_num) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1116,7 +1115,7 @@ namespace CryptoBoxer
                     Console.WriteLine("failed to create test CandleBufferTop");
                     return;
                 }
-				if (applyCandlestick(testCandleBuf_top, ref ohlc_top, periods_top, m_candleBufTop.getCandleCount(), test_num_top, false) != 0)
+				if (applyCandlestick(testCandleBuf_top, ref ohlc_top, m_config.periods_top, m_candleBufTop.getCandleCount(), test_num_top, false) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1866,8 +1865,17 @@ namespace CryptoBoxer
 
 
 
+
+
                 if (isLongSub)
                 {
+                    //if (isConditionLongEntrySTD(next_open, m_candleBufTop) == false)
+                    //{
+                    //    Console.WriteLine("not need long. Top's LongCondition is FALSE");
+                    //    result = 0;
+                    //    return result;
+                    //}
+
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
@@ -1882,6 +1890,13 @@ namespace CryptoBoxer
                 }
                 else if (isShortSub)
                 {
+                    //if (isConditionShortEntrySTD(next_open, m_candleBufTop) == false)
+                    //{
+                    //    Console.WriteLine("not need short. Top's ShortCondition is FALSE");
+                    //    result = 0;
+                    //    return result;
+                    //}
+
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
@@ -4084,68 +4099,6 @@ namespace CryptoBoxer
 
                 // 現在のSHORTレベルが高い
 
-                //if (prevCandle.isTrend())
-                //{
-                //    int prevCandleType = prevCandle.getUpCandleType();
-                //    if (prevCandleType  > 0)
-                //    {
-                //        Console.WriteLine("not need short. prevCandle is not over hair. prevType={0}", prevCandleType);
-                //        // 何もしない
-                //        result = false;
-                //        return result;
-                //    }
-                //}
-
-
-
-                //double prevVolaRate = prevCandle.getVolatilityRate();
-                //if (prevCandle.isTrend() && (prevVolaRate >= m_config.vola_big))
-                //{
-                //    Console.WriteLine("not need short. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preShortBollLv, prevVolaRate);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-
-                //double curVolaRate = curCandle.getVolatilityRate();
-                //if (prevCandle.isTrend() && (prevVolaRate > curVolaRate) && (m_preShortBollLv < 0))
-                //{
-                //    Console.WriteLine("not need short. prevCandle's Vola is Big than Cur. prev={0:0.0} cur={1:0.0}", prevVolaRate, curVolaRate);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-
-                //if (m_preShortBollLv <= -2)
-                //{
-                //    // ひとつ前のSHORTレベルが-2以下
-                //    Console.WriteLine("not need short. m_preShortBollLv is LOW. Lv={0}", m_preShortBollLv);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //if (
-                //        (curCandle.boll_high < curCandle.boll_high_top) &&
-                //        ((curCandle.high >= curCandle.boll_high_top) || (prevCandle.high >= prevCandle.boll_high_top))
-                //)
-                //{
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //if (curCandle.boll_high > curCandle.boll_high_top)
-                //{
-                //    if (curCandle.last > curCandle.boll_high)
-                //    {
-                //        // 何もしない
-                //        result = false;
-                //        return result;
-                //    }
-                //}
 
                 if (curCandle.last < next_open)
                 {
@@ -4154,7 +4107,7 @@ namespace CryptoBoxer
                     {
                         // 次のキャンドルのOPEN値がキャンドルの終値より大きい
                         // (SHORTしたいのに上がろうとしている)
-                        Console.WriteLine("not need short. next_open is HIGH. Lv={0} Diff={1:0} last={2:0} next={3:0}", m_curLongBollLv, diff, curCandle.last, next_open);
+                        Console.WriteLine("not need short. next_open is HIGH. Lv={0} Diff={1:0} last={2:0} next={3:0}", m_curShortBollLv, diff, curCandle.last, next_open);
                         // 何もしない
                         result = false;
                         return result;
@@ -4183,85 +4136,86 @@ namespace CryptoBoxer
                     return result;
                 }
 
-				bool isGoldenTop = false;
-                bool isFirstTop = false;
-                int back_cnt_top = 0;
-                double cur_ema_length_top = 0.0;
-                if (m_candleBufTop.getEMACrossState(out isGoldenTop, out isFirstTop, out back_cnt_top, out cur_ema_length_top) != 0)
+                if (isPass)
                 {
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
-
-                if (isGoldenTop == true && isFirstTop == true)
-                {
-                    Console.WriteLine("not need short. TOP-GOLDEN-CROSS back_cnt={0}", back_cnt_top);
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
-
-                bool isPassTop = false;
-                int band_pos_top = 0;
-                if (m_candleBufTop.isPassBBtoMATop(out isPassTop, out band_pos_top) != 0)
-                {
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
-
-				if (isPassTop == false && band_pos_top == -1)
-                {
-                    Console.WriteLine("not need short. not Pass BB to MA.");
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
-
-                if(isPass)
-                {
-					// 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
-					// (上位の収束状態は終了しているので影響を受けにくい状態)
-					// ENTRY
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+                    // (上位の収束状態は終了しているので影響を受けにくい状態)
+                    // ENTRY
                     Console.WriteLine("need short. touched MA. Lv={0} Type={1} VolaRate={2:0}", m_curShortBollLv, curCandle.getDownCandleType(), curCandle.getVolatilityRate());
                     result = true;
                     return result;
-                }
 
-                // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
-                if ( /*(band_pos == -1) ||*/ (band_pos == 1) )
+                    //if (!isGolden)
+                    //{
+                    //    // DEAD-CROSS
+
+                    //    // ENTRY
+                    //    Console.WriteLine("need short. touched ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                    //    result = true;
+                    //    return result;
+                    //}
+                    //else
+                    //{
+                    //    // GOLDEN-CROSS
+                    //    if (isFirst)
+                    //    {
+                    //        Console.WriteLine("not need short. touched ma_top and GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
+                    //        // 何もしない
+                    //        result = false;
+                    //        return result;
+                    //    }
+                    //    else
+                    //    {
+                    //        // ENTRY
+                    //        Console.WriteLine("need short. touched ma_top and GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
+                    //        result = true;
+                    //        return result;
+                    //    }
+                    //}
+                }
+                else
                 {
-                    // 上位BBバンドの上側を超えていた場合
-                    // MA側に向かう下への力が強いはず
-                    // 現在値より上位MAが下にあればENTRY
-                    if (curCandle.last > curCandle.ma_top)
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+                    if ( band_pos == 1)
                     {
-                        if (!isGolden)
+                        // 上位BBバンドの上側を超えていた場合
+                        // MA側に向かう下への力が強いはず
+                        // 現在値より上位MAが下にあればENTRY
+                        if (curCandle.last > curCandle.ma_top)
                         {
-                            // DEAD-CROSS
-                            // ENTRY
-                            Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
-                            result = true;
-                            return result;
-                        }
-                        else
-                        {
-                            // GOLDEN-CROSS
-                            if (isFirst)
+                            if (!isGolden)
                             {
-                                Console.WriteLine("not need short.  GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
-                                // 何もしない
-                                result = false;
+                                // DEAD-CROSS
+                                // ENTRY
+                                Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                                result = true;
                                 return result;
                             }
                             else
                             {
-                                // ENTRY
-                                Console.WriteLine("need short. GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
-                                result = true;
-                                return result;
+                                // GOLDEN-CROSS
+                                if (isFirst)
+                                {
+                                    Console.WriteLine("not need short.  GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
+                                    // 何もしない
+                                    result = false;
+                                    return result;
+                                }
+                                else
+                                {
+                                    // ENTRY
+                                    Console.WriteLine("need short. GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
+                                    result = true;
+                                    return result;
+                                }
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
                         }
                     }
                     else
@@ -4270,14 +4224,24 @@ namespace CryptoBoxer
                         // 何もしない
                         result = false;
                         return result;
+
+                        //if (!isGolden && isFirst)
+                        //{
+                        //    // DEAD-CROSS && First.
+
+                        //    // ENTRY
+                        //    Console.WriteLine("need short. DEAD-CROSS is BEGIN begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                        //    result = true;
+                        //    return result;
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine("not need short. GOLDEN-CROSS is-not begin. Lv={0}", m_curShortBollLv);
+                        //    // 何もしない
+                        //    result = false;
+                        //    return result;
+                        //}
                     }
-                }
-                else
-                {
-                    Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", m_curShortBollLv);
-                    // 何もしない
-                    result = false;
-                    return result;
                 }
             }
             catch (Exception ex)
@@ -4397,77 +4361,6 @@ namespace CryptoBoxer
 
                 // 現在のLONGレベルが0より高い
 
-                //if (!prevCandle.isTrend())
-                //{
-                //    int prevCandleType = prevCandle.getDownCandleType();
-                //    if (prevCandleType > 0 )
-                //    {
-                //        Console.WriteLine("not need long. prevCandle is not under hair. prevType={0}", prevCandleType);
-                //        // 何もしない
-                //        result = false;
-                //        return result;
-                //    }
-                //}
-
-                //double prevVolaRate = prevCandle.getVolatilityRate();
-                //if ((!prevCandle.isTrend()) && (prevVolaRate >= m_config.vola_big))
-                //{
-                //    Console.WriteLine("not need long. prevCandle's Vola is Big. Lv={0} VolaRate={1:0.0}", m_preLongBollLv, prevVolaRate);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //double curVolaRate = curCandle.getVolatilityRate();
-                //if ( (!prevCandle.isTrend()) && (prevVolaRate > curVolaRate) && (m_preLongBollLv < 0) )
-                //{
-                //    Console.WriteLine("not need long. prevCandle's Vola is Big than Cur. prev={0:0.0} cur={1:0.0}", prevVolaRate, curVolaRate);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //if (m_preLongBollLv <= -2)
-                //{
-                //    // ひとつ前のLONGレベルが-2以下
-                //    Console.WriteLine("not need long. m_preLongBollLv is LOW. Lv={0}", m_preLongBollLv);
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //if (
-                //        (curCandle.boll_low > curCandle.boll_low_top) &&
-                //        ((curCandle.low <= curCandle.boll_low_top) || (prevCandle.low <= prevCandle.boll_low_top))
-                //)
-                //{
-                //    // 何もしない
-                //    result = false;
-                //    return result;
-                //}
-
-                //if (curCandle.boll_low < curCandle.boll_low_top)
-                //{
-                //    if (curCandle.last < curCandle.boll_low)
-                //    {
-                //        // 何もしない
-                //        result = false;
-                //        return result;
-                //    }
-                //}
-
-                //if (curCandle.last > next_open)
-                //{
-                //    double diff = curCandle.last - next_open;
-                //    if (diff >= m_config.next_open_diff)
-                //    {
-                //        Console.WriteLine("not need long. next_open is LOW. Lv={0} Diff={1:0} last={2:0} next={3:0}", m_curLongBollLv, diff, curCandle.last, next_open);
-                //        // 何もしない
-                //        result = false;
-                //        return result;
-                //    }
-                //}
-
                 bool isGolden = false;
                 bool isFirst = false;
                 int back_cnt = 0;
@@ -4490,86 +4383,88 @@ namespace CryptoBoxer
                     return result;
                 }
 
-				bool isGoldenTop = false;
-                bool isFirstTop = false;
-                int back_cnt_top = 0;
-                double cur_ema_length_top = 0.0;
-                if (m_candleBufTop.getEMACrossState(out isGoldenTop, out isFirstTop, out back_cnt_top, out cur_ema_length_top) != 0)
-                {
-					// 何もしない
-                    result = false;
-                    return result;
-                }
-
-				if (isGoldenTop == false && isFirstTop == true)
-                {
-                    Console.WriteLine("not need long. TOP-DEAD-CROSS back_cnt={0}", back_cnt_top);
-					// 何もしない
-                    result = false;
-                    return result;
-                }
-
-                bool isPassTop = false;
-                int band_pos_top = 0;
-				if (m_candleBufTop.isPassBBtoMATop(out isPassTop, out band_pos_top) != 0)
-				{
-					// 何もしない
-					result = false;
-					return result;
-				}
-
-				if (isPassTop == false && band_pos_top == 1)
-                {
-                    Console.WriteLine("not need long. not Pass BB to MA.");
-                    // 何もしない
-                    result = false;
-                    return result;
-                }
-
                 if (isPass)
                 {
                     // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
-					// ENTRY
+                    // ENTRY
                     Console.WriteLine("need long. touched MA. Lv={0} Type={1} VolaRate={2:0}", m_curLongBollLv, curCandle.getUpCandleType(), curCandle.getVolatilityRate());
                     result = true;
                     return result;
 
+                    //if (isGolden)
+                    //{
+                    //    // GOLDEN-CROSS
+
+                    //    // ENTRY
+                    //    Console.WriteLine("need long. touched ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                    //    result = true;
+                    //    return result;
+                    //}
+                    //else
+                    //{
+                    //    // DEAD-CROSS
+                    //    if (isFirst)
+                    //    {
+                    //        Console.WriteLine("not need long. touched ma_top and DEAD-CROSS is begin. back_cnt={0}", back_cnt);
+                    //        // 何もしない
+                    //        result = false;
+                    //        return result;
+                    //    }
+                    //    else
+                    //    {
+                    //        // ENTRY
+                    //        Console.WriteLine("need long. touched ma_top and DEAD-CROSS is end. back_cnt={0}", back_cnt);
+                    //        result = true;
+                    //        return result;
+                    //    }
+                    //}
+
                 }
-
-                // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
-                if ( (band_pos == -1) /*|| (band_pos == 1)*/)
+                else
                 {
-                    // 上位BBバンドの下側を超えていた場合
-                    // MAに向かう上への力が強いはず
-                    // 現在値より上位MAが上にあればENTRY
-                    if (curCandle.last < curCandle.ma_top)
-                    {
-                        if (isGolden)
-                        {
-                            // GOLDEN-CROSS
 
-                            // ENTRY
-                            Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
-                            result = true;
-                            return result;
-                        }
-                        else
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+                    if (band_pos == -1)
+                    {
+                        // 上位BBバンドの下側を超えていた場合
+                        // MAに向かう上への力が強いはず
+                        // 現在値より上位MAが上にあればENTRY
+                        if (curCandle.last < curCandle.ma_top)
                         {
-                            // DEAD-CROSS
-                            if (isFirst)
+                            if (isGolden)
                             {
-                                Console.WriteLine("not need long. DEAD-CROSS is begin. back_cnt={0}", back_cnt);
-                                // 何もしない
-                                result = false;
+                                // GOLDEN-CROSS
+
+                                // ENTRY
+                                Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                                result = true;
                                 return result;
                             }
                             else
                             {
-                                // ENTRY
-                                Console.WriteLine("need long. DEAD-CROSS is end. back_cnt={0}", back_cnt);
-                                result = true;
-                                return result;
+                                // DEAD-CROSS
+                                if (isFirst)
+                                {
+                                    Console.WriteLine("not need long. DEAD-CROSS is begin. back_cnt={0}", back_cnt);
+                                    // 何もしない
+                                    result = false;
+                                    return result;
+                                }
+                                else
+                                {
+                                    // ENTRY
+                                    Console.WriteLine("need long. DEAD-CROSS is end. back_cnt={0}", back_cnt);
+                                    result = true;
+                                    return result;
+                                }
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need long. not pass BB to MATop. Lv={0}", m_curLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
                         }
                     }
                     else
@@ -4578,14 +4473,24 @@ namespace CryptoBoxer
                         // 何もしない
                         result = false;
                         return result;
+
+                        //if (isGolden && isFirst)
+                        //{
+                        //    // GOLDEN-CROSS && First.
+
+                        //    // ENTRY
+                        //    Console.WriteLine("need long. GOLDEN-CROSS is begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                        //    result = true;
+                        //    return result;
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine("not need long. GOLDEN-CROSS is-not begin. Lv={0}", m_curLongBollLv);
+                        //    // 何もしない
+                        //    result = false;
+                        //    return result;
+                        //}
                     }
-                }
-                else
-                {
-                    Console.WriteLine("not need long. not pass BB to MATop. Lv={0}", m_curLongBollLv);
-                    // 何もしない
-                    result = false;
-                    return result;
                 }
             }
             catch (Exception ex)
@@ -4600,6 +4505,398 @@ namespace CryptoBoxer
             }
             return result;
         }
+
+        public bool isConditionShortEntrySTD(double next_open, CandleBuffer candleBuf)
+        {
+            bool result = false;
+
+            try
+            {
+                int curShortBollLv = -5;
+                int preShortBollLv = -5;
+
+                if (candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = candleBuf.getCandleCount();
+
+                Candlestick curCandle = candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                curShortBollLv = curCandle.getShortLevel(m_config.vola_big, m_config.vola_small);
+                preShortBollLv = prevCandle.getShortLevel(m_config.vola_big, m_config.vola_small);
+
+
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length) != 0)
+                {
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                Console.WriteLine("## getEMACrossState ## isGolden={0} isFirst={1} back={2} ema_length={3:0}", isGolden, isFirst, back_cnt, cur_ema_length);
+
+                bool isPass = false;
+                int band_pos = 0;
+                if (candleBuf.isPassBBtoMATop(out isPass, out band_pos) != 0)
+                {
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                //if (!isGolden && isFirst)
+                //{
+                //    // DEAD-CROSS && First.
+
+                //    // ENTRY
+                //    Console.WriteLine("need short. DEAD-CROSS is BEGIN begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                //    result = true;
+                //    return result;
+                //}
+                //else
+                //{
+                //    Console.WriteLine("not need short. GOLDEN-CROSS is-not begin. Lv={0}", curShortBollLv);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
+                if (isPass)
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+                    // (上位の収束状態は終了しているので影響を受けにくい状態)
+
+                    if (!isGolden)
+                    {
+                        // DEAD-CROSS
+
+                        // ENTRY
+                        Console.WriteLine("need short. touched ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // GOLDEN-CROSS
+                        if (isFirst)
+                        {
+                            Console.WriteLine("not need short. touched ma_top and GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {
+                            // ENTRY
+                            Console.WriteLine("need short. touched ma_top and GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
+                            result = true;
+                            return result;
+                        }
+                    }
+                }
+                else
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+                    if (band_pos == 1)
+                    {
+                        // 上位BBバンドの上側を超えていた場合
+                        // MA側に向かう下への力が強いはず
+                        // 現在値より上位MAが下にあればENTRY
+                        if (curCandle.last > curCandle.ma_top)
+                        {
+                            if (!isGolden)
+                            {
+                                // DEAD-CROSS
+                                // ENTRY
+                                Console.WriteLine("need short. over ma_top and DEAD-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                // GOLDEN-CROSS
+                                if (isFirst)
+                                {
+                                    Console.WriteLine("not need short. GOLDEN-CROSS is begin. back_cnt={0}", back_cnt);
+                                    // 何もしない
+                                    result = false;
+                                    return result;
+                                }
+                                else
+                                {
+                                    // ENTRY
+                                    Console.WriteLine("need short. GOLDEN-CROSS is end. back_cnt={0}", back_cnt);
+                                    result = true;
+                                    return result;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need short. not pass BB to MATop. Lv={0}", curShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        // 上位BBバンドの下側を超えていた場合
+
+                        if (!isGolden && isFirst)
+                        {
+                            // DEAD-CROSS && First.
+
+                            // ENTRY
+                            Console.WriteLine("need short. DEAD-CROSS is BEGIN begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                            result = true;
+                            return result;
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need short. GOLDEN-CROSS is-not begin. Lv={0}", curShortBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionLongEntrySTD(double next_open, CandleBuffer candleBuf)
+        {
+            bool result = false;
+            try
+            {
+                int curLongBollLv = -5;
+                int preLongBollLv = -5;
+
+                if (candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                int candle_cnt = candleBuf.getCandleCount();
+
+                Candlestick curCandle = candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                int curIndex = candle_cnt - 1;
+
+                Candlestick prevCandle = candleBuf.getCandle(curIndex - 1);
+                if (prevCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                curLongBollLv = curCandle.getLongLevel(m_config.vola_big, m_config.vola_small);
+                preLongBollLv = prevCandle.getLongLevel(m_config.vola_big, m_config.vola_small);
+
+
+                bool isGolden = false;
+                bool isFirst = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                if (candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length) != 0)
+                {
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                Console.WriteLine("## getEMACrossState ## isGolden={0} isFirst={1} back={2} ema_length={3:0}", isGolden, isFirst, back_cnt, cur_ema_length);
+
+                bool isPass = false;
+                int band_pos = 0;
+                if (candleBuf.isPassBBtoMATop(out isPass, out band_pos) != 0)
+                {
+                    // 何もしない
+                    result = false;
+                    return result;
+                }
+
+                //if (isGolden && isFirst)
+                //{
+                //    // GOLDEN-CROSS && First.
+
+                //    // ENTRY
+                //    Console.WriteLine("need long. GOLDEN-CROSS is begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                //    result = true;
+                //    return result;
+                //}
+                //else
+                //{
+                //    Console.WriteLine("not need long. GOLDEN-CROSS is-not begin. Lv={0}", curLongBollLv);
+                //    // 何もしない
+                //    result = false;
+                //    return result;
+                //}
+
+
+                if (isPass)
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていた場合
+                    // (上位の収束状態は終了しているので影響を受けにくい状態)
+
+                    if (isGolden)
+                    {
+                        // GOLDEN-CROSS
+
+                        // ENTRY
+                        Console.WriteLine("need long. touched ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                        result = true;
+                        return result;
+                    }
+                    else
+                    {
+                        // DEAD-CROSS
+                        if (isFirst)
+                        {
+                            Console.WriteLine("not need long. touched ma_top and DEAD-CROSS is begin. back_cnt={0}", back_cnt);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                        else
+                        {
+                            // ENTRY
+                            Console.WriteLine("need long. touched ma_top and DEAD-CROSS is end. back_cnt={0}", back_cnt);
+                            result = true;
+                            return result;
+                        }
+                    }
+                }
+                else
+                {
+                    // 上位ボリンジャーバンドをはみ出てMAにタッチしていない場合
+
+                    if (band_pos == -1)
+                    {
+                        // 上位BBバンドの下側を超えていた場合
+                        // MAに向かう上への力が強いはず
+                        // 現在値より上位MAが上にあればENTRY
+                        if (curCandle.last < curCandle.ma_top)
+                        {
+                            if (isGolden)
+                            {
+                                // GOLDEN-CROSS
+
+                                // ENTRY
+                                Console.WriteLine("need long. under ma_top and GOLDEN-CROSS. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                                result = true;
+                                return result;
+                            }
+                            else
+                            {
+                                // DEAD-CROSS
+                                if (isFirst)
+                                {
+                                    Console.WriteLine("not need long. DEAD-CROSS is begin. back_cnt={0}", back_cnt);
+                                    // 何もしない
+                                    result = false;
+                                    return result;
+                                }
+                                else
+                                {
+                                    // ENTRY
+                                    Console.WriteLine("need long. DEAD-CROSS is end. back_cnt={0}", back_cnt);
+                                    result = true;
+                                    return result;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need long. not pass BB to MATop. Lv={0}", curLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        // 上位BBバンドの上側を超えていた場合
+
+                        if (isGolden && isFirst)
+                        {
+                            // GOLDEN-CROSS && First.
+
+                            // ENTRY
+                            Console.WriteLine("need long. GOLDEN-CROSS is begin. last={0:0} ma_top={1:0} back_cnt={2}", curCandle.last, curCandle.ma_top, back_cnt);
+                            result = true;
+                            return result;
+                        }
+                        else
+                        {
+                            Console.WriteLine("not need long. GOLDEN-CROSS is-not begin. Lv={0}", curLongBollLv);
+                            // 何もしない
+                            result = false;
+                            return result;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+
 
         public bool isConditionShortEntryReboundEMA(double next_open)
         {

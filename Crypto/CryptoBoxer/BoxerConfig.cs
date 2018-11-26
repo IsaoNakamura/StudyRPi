@@ -18,6 +18,9 @@ namespace CryptoBoxer
         public int periods { get; set; }
 
         [JsonProperty]
+        public int periods_top { get; set; }
+
+        [JsonProperty]
         public string product_bitflyer { get; set; }
 
         [JsonProperty]
@@ -111,6 +114,7 @@ namespace CryptoBoxer
         {
             amount = 0.0;
             periods = 60;
+            periods_top = 300;
             product_bitflyer = null;
             product_cryptowatch = null;
             ema_sample_num = 20;
