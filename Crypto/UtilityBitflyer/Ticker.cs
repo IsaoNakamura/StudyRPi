@@ -95,6 +95,7 @@ namespace UtilityBitflyer
                     Console.WriteLine("Ticker's DeserializeObject is null.");
                     return null;
                 }
+                //Console.WriteLine("GetTickerAsync. {0}", retObj.timestamp);
             }
             catch (Exception ex)
             {

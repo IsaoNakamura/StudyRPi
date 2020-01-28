@@ -59,6 +59,8 @@ namespace UtilityTrade
 
         public List<string> entry_child_ids { get; set; }
 
+        public double amount { get; set; }
+
         public Position()
         {
             init();
@@ -81,6 +83,8 @@ namespace UtilityTrade
             exit_date = "";
 
             strategy_type = StrategyType.UNKNOWN;
+
+            amount = 0.0;
 
             return;
         }
@@ -249,34 +253,37 @@ namespace UtilityTrade
 
         // LONGエントリー注文
         // 成行注文に使用する
-        public void entryLongOrder(string _acceptance_id, string _entry_date)
+        public void entryLongOrder(string _acceptance_id, string _entry_date, double _amount)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.LONG;
             entry_date = _entry_date;
+            amount = _amount;
             return;
         }
 
         // SHORTエントリー注文
         // 成行注文に使用する
-        public void entryShortOrder(string _acceptance_id, string _entry_date)
+        public void entryShortOrder(string _acceptance_id, string _entry_date, double _amount)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.SHORT;
             entry_date = _entry_date;
+            amount = _amount;
             return;
         }
 
         // エントリー注文
         // 成行注文以外に使用する
-        public void entryOrder(string _acceptance_id, string _entry_date)
+        public void entryOrder(string _acceptance_id, string _entry_date, double _amount)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ORDERED;
             state = PositionState.NONE;
             entry_date = _entry_date;
+            amount = _amount;
             return;
         }
 

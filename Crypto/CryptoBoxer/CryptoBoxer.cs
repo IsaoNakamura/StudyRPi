@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using UtilityBitflyer;
 using UtilityTrade;
@@ -724,6 +726,51 @@ namespace CryptoBoxer
             }
         }
 
+        private async void applyPositions()
+        {
+            try
+            {
+
+                JArray retArray = await Trade.getPositions(m_authBitflyer, m_config.product_bitflyer);
+                if (retArray != null)
+                {
+
+                    foreach (JObject jobj in retArray)
+                    {
+                        string side = (string)jobj["side"];
+                        double price = (double)jobj["price"];
+                        double amount = (double)jobj["size"];
+                        string open_date = (string)jobj["open_date"];
+
+                        DateTime dateTimeUtc = DateTime.Parse(open_date);// 2018-04-10T10:34:16.677 UTCタイム
+                        DateTime timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
+
+
+                        if (side == "BUY")
+                        {
+                            m_position.entryLongOrder("hoge", timestamp.ToString(), amount);
+
+                            m_position.entry(price);
+                        }
+                        else if (side == "SELL")
+                        {
+                            m_position.entryShortOrder("hoge", timestamp.ToString(), amount);
+
+                            m_position.entry(price);
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+        }
+
         public async void MainLoop()
         {
             try
@@ -769,8 +816,14 @@ namespace CryptoBoxer
                 int pre_tick_id = 0;
                 int cycle_cnt = 0;
                 double pre_volume = 0.0;
+
+                applyPositions();
+
+
                 while (true)
                 {
+                    System.Threading.Thread.Sleep(500);
+
                     // Tickerを取得
                     Ticker ticker = await Ticker.GetTickerAsync(m_config.product_bitflyer);
                     if (ticker == null)
@@ -788,6 +841,8 @@ namespace CryptoBoxer
 
                     DateTime dateTimeUtc = DateTime.Parse(ticker.timestamp);// 2018-04-10T10:34:16.677 UTCタイム
                     DateTime cur_timestamp = System.TimeZoneInfo.ConvertTimeFromUtc(dateTimeUtc, System.TimeZoneInfo.Local);
+
+                    
 
                     double vol_diff = volume - pre_volume;
 
@@ -888,8 +943,8 @@ namespace CryptoBoxer
                             }
 
                             // ENTRY/EXITロジック
-                            await tryEntryOrder(cur_value);
-                            await tryExitOrder();
+                            //await tryEntryOrder(cur_value);
+                            //await tryExitOrder();
 
                             if (m_position.isEntryCompleted())
                             {
@@ -956,28 +1011,17 @@ namespace CryptoBoxer
                         calcIndicator(m_candleBuf, ref curCandle);
                     }
 
-                    // ENTRYロジック
-                    //await tryEntryOrder(cur_value);
 
                     // 注文状況確認ロジック
-                    await checkEntry();
-
-                    // EXITロジック
-                    //await tryExitOrder();
-
-                    
-
+                    //await checkEntry();
 
                     // Losscutロジック
-                    await tryLosscutOrder();
+                    //await tryLosscutOrder();
 
-                    await checkExit();
-
-
+                    //await checkExit();
 
 
-
-                    //await checkEntryCompleted();
+                    ////await checkEntryCompleted();
 
                     // 表示を更新
                     if (UpdateViewDelegate != null)
@@ -1009,7 +1053,6 @@ namespace CryptoBoxer
                         break;
                     }
 
-                    System.Threading.Thread.Sleep(0);
                     cycle_cnt++;
                 }
             }
@@ -1418,7 +1461,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                     m_position.strategy_type = Position.StrategyType.SCAM;
                 }
@@ -1435,7 +1478,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
 
 
                     postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
@@ -1462,7 +1505,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     if (m_isDotenLong)
                     {
                         m_position.strategy_type = Position.StrategyType.DOTEN;
@@ -1487,7 +1530,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     if (m_isDotenShort)
                     {
                         m_position.strategy_type = Position.StrategyType.DOTEN;
@@ -1557,7 +1600,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     m_position.strategy_type = Position.StrategyType.FLONT_LINE;
 
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
@@ -1575,7 +1618,7 @@ namespace CryptoBoxer
                     }
                     // 注文成功
 
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     m_position.strategy_type = Position.StrategyType.FLONT_LINE;
 
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
@@ -1851,14 +1894,17 @@ namespace CryptoBoxer
                 //bool isLongSub = isConditionLongEntryOverEma();
                 //bool isShortSub = isConditionShortEntryOverEma();
 
-                bool isLongSub = isConditionLongEntryScam(next_open); 
-                bool isShortSub = isConditionShortEntryScam(next_open);
+                //bool isLongSub = isConditionLongEntryScam(next_open); 
+                //bool isShortSub = isConditionShortEntryScam(next_open);
 
                 //bool isLongSub = isConditionLongEntrySwing(next_open);
                 //bool isShortSub = isConditionShortEntrySwing(next_open);
 
-                bool isLong = false;// isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = false;// isConditionShortEntryCrossEma();// || m_isDotenShort;
+                bool isLongSub = false;
+                bool isShortSub = false;
+
+                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
+                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
 
                 //bool isLong = isConditionLongEntryReboundEMA(next_open) && m_isDoten;
                 //bool isShort = isConditionShortEntryReboundEMA(next_open) && m_isDoten;
@@ -1879,7 +1925,7 @@ namespace CryptoBoxer
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
-                    m_position.entryLongOrder(long_id, curCandle.timestamp);
+                    m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
 
 
                     postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, long_id), true);
@@ -1900,7 +1946,7 @@ namespace CryptoBoxer
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
-                    m_position.entryShortOrder(short_id, curCandle.timestamp);
+                    m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
 
                     postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, short_id), true);
                     //m_position.strategy_type = Position.StrategyType.OVER_EMA;
@@ -1914,7 +1960,7 @@ namespace CryptoBoxer
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
-                    m_position.entryLongOrder(long_id, curCandle.timestamp);
+                    m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
                     if (m_isDotenLong)
                     {
                         m_position.strategy_type = Position.StrategyType.DOTEN;
@@ -1935,7 +1981,7 @@ namespace CryptoBoxer
                     // 注文成功
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
-                    m_position.entryShortOrder(short_id, curCandle.timestamp);
+                    m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
                     if (m_isDotenShort)
                     {
                         m_position.strategy_type = Position.StrategyType.DOTEN;
@@ -2134,7 +2180,7 @@ namespace CryptoBoxer
                         while (true)
                         {
                             retry_cnt++;
-                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                             if (retObj == null)
                             {
                                 postSlack(string.Format("failed to Long Exit Order. retry_cnt={0}", retry_cnt));
@@ -2173,7 +2219,7 @@ namespace CryptoBoxer
                         while (true)
                         {
                             retry_cnt++;
-                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                             if (retObj == null)
                             {
                                 postSlack(string.Format("failed to Short Exit Order. retry_cnt={0}", retry_cnt));
@@ -2335,7 +2381,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Losscut Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                         if (retObj == null)
                         {
                             postSlack("failed to Long Losscut Order.");
@@ -2353,7 +2399,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Losscut Order.");
 
-                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                        SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                         if (retObj == null)
                         {
                             postSlack("failed to Short Losscut Order.");
@@ -6294,7 +6340,7 @@ namespace CryptoBoxer
                         return result;
                     }
                     // 注文成功
-                    m_position.entryOrder(retObj.parent_order_acceptance_id, curCandle.timestamp);
+                    m_position.entryOrder(retObj.parent_order_acceptance_id, curCandle.timestamp, m_config.amount);
                     m_position.limit_buy_price = buy_price;
                     m_position.limit_sell_price = sell_price;
                     m_position.strategy_type = Position.StrategyType.HIGE;
@@ -6679,7 +6725,7 @@ namespace CryptoBoxer
                         while (true)
                         {
                             retry_cnt++;
-                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                             if (retObj == null)
                             {
                                 postSlack(string.Format("failed to Long Exit Order. retry_cnt={0}", retry_cnt));
@@ -6705,7 +6751,7 @@ namespace CryptoBoxer
                         while (true)
                         {
                             retry_cnt++;
-                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                            retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_position.amount);
                             if (retObj == null)
                             {
                                 postSlack(string.Format("failed to Short Exit Order. retry_cnt={0}", retry_cnt));
