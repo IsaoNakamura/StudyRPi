@@ -137,7 +137,7 @@ namespace CryptoBoxer
             entry_offset = 800.0;
             boll_outside_check = 1;
             lc_boll_outside_check = 1;
-            frontline_ahead = 1000.0;
+            frontline_ahead = 2000.0;
             boll_chk_past_num = 4;
             boll_chk_play = 200.0;
             ema_reverce_play = 0.0;

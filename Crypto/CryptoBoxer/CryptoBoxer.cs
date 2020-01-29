@@ -751,12 +751,16 @@ namespace CryptoBoxer
                             m_position.entryLongOrder("hoge", timestamp.ToString(), amount);
 
                             m_position.entry(price);
+
+                            m_frontline = price;// - m_config.losscut_value;
                         }
                         else if (side == "SELL")
                         {
                             m_position.entryShortOrder("hoge", timestamp.ToString(), amount);
 
                             m_position.entry(price);
+
+                            m_frontline = price;// + m_config.losscut_value;
                         }
                     }
                 }
@@ -943,8 +947,8 @@ namespace CryptoBoxer
                             }
 
                             // ENTRY/EXITロジック
-                            //await tryEntryOrder(cur_value);
-                            //await tryExitOrder();
+                            await tryEntryOrder(cur_value);
+                            await tryExitOrder();
 
                             if (m_position.isEntryCompleted())
                             {
@@ -1091,6 +1095,7 @@ namespace CryptoBoxer
         {
             try
             {
+                m_frontline = 1045000.0;
                 postSlack("==== START BACKTEST ====",true);
                 //System.Threading.Thread.Sleep(3000);
 
@@ -1274,28 +1279,18 @@ namespace CryptoBoxer
 
                     if (m_position.isEntryCompleted())
                     {
-                        Console.WriteLine("closed candle. timestamp={0},profit={1},last={2:0},trend={3},ema={4:0},vola={5:0},vola_rate={6:0},sfd={7:0.00}"
+                        Console.WriteLine("closed candle. timestamp={0},profit={1},last={2:0}"
                                           , curCandle.timestamp
                                           , m_position.calcProfit(curCandle.last)
                                           , curCandle.last
-                                          , curCandle.isTrend()
-                                          , curCandle.ema
-                                          , curCandle.getVolatility()
-                                          , curCandle.getVolatilityRate()
-                                          , curCandle.disparity_rate
                         );
                     }
                     else
                     {
-                        Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},trend={3},ema={4:0},vola={5:0},vola_rate={6:0},sfd={7:0.00}"
+                        Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0}"
                                           , curCandle.timestamp
                                           , m_profitSum
                                           , curCandle.last
-                                          , curCandle.isTrend()
-                                          , curCandle.ema
-                                          , curCandle.getVolatility()
-                                          , curCandle.getVolatilityRate()
-                                          , curCandle.disparity_rate
                         );
                     }
 
@@ -1411,28 +1406,18 @@ namespace CryptoBoxer
                     return result;
                 }
 
-
-
                 // NONEポジションの場合
 
-                //bool isLongSub = isConditionLongEntryOverEma();
-                //bool isShortSub = isConditionShortEntryOverEma();
+                bool isLong = false;
+                bool isShort = false;
+                isConditionShortEntryFL();
 
-                bool isLongSub = isConditionLongEntryScam(next_open);
-                bool isShortSub = isConditionShortEntryScam(next_open);
-
-
-                bool isLong = false;// isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = false;// isConditionShortEntryCrossEma();// || m_isDotenShort;
-
-                if (isLongSub || isShortSub || isLong || isShort)
+                if (isLong || isShort)
                 {
                     bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
                     if (isActive)
                     {
-                        postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLongSub={0} isShortSub={1} isLong={2} isShort={3}"
-                            , isLongSub
-                            , isShortSub
+                        postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
                             , isLong
                             , isShort
                         ));
@@ -1441,7 +1426,7 @@ namespace CryptoBoxer
                     }
                 }
 
-                if (isLongSub)
+                if (isLong)
                 {
                     //Console.WriteLine("Try Long Entry Order.");
 
@@ -1462,58 +1447,7 @@ namespace CryptoBoxer
                     // 注文成功
 
                     m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-                    postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                    m_position.strategy_type = Position.StrategyType.SCAM;
-                }
-                else if (isShortSub)
-                {
-                    //Console.WriteLine("Try Short Entry Order.");
 
-                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Short Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-
-
-                    postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                    m_position.strategy_type = Position.StrategyType.SCAM;
-
-                }
-                else if (isLong)
-                {
-                    //Console.WriteLine("Try Long Entry Order.");
-
-                    if (curCandle.disparity_rate >= 5.0)
-                    {
-                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                        result = -1;
-                        return result;
-                    }
-
-                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Long Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-                    if (m_isDotenLong)
-                    {
-                        m_position.strategy_type = Position.StrategyType.DOTEN;
-                    }
-                    else
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                    }
 
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                 }
@@ -1531,14 +1465,7 @@ namespace CryptoBoxer
                     // 注文成功
 
                     m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-                    if (m_isDotenShort)
-                    {
-                        m_position.strategy_type = Position.StrategyType.DOTEN;
-                    }
-                    else
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                    }
+
 
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
                 }
@@ -1637,67 +1564,7 @@ namespace CryptoBoxer
             return result;
         }
 
-        public bool isConditionShortEntryFL()
-        {
-            bool result = false;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = false;
-                    return result;
-                }
 
-                if (!m_candleBuf.isFullBuffer())
-                {
-                    result = false;
-                    return result;
-                }
-
-                int candle_cnt = m_candleBuf.getCandleCount();
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                int curIndex = candle_cnt - 1;
-
-                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
-                if (prevCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                double offset = (prevCandle.last - m_config.entry_offset);
-                double diff = curCandle.last - offset;
-
-                if (diff > 0.0)
-                {
-                    Console.WriteLine("not need short. inside entry_offset. last={0:0} diff={1:0} offset={2:0} ", curCandle.last, diff, offset);
-                    result = false;
-                    return result;
-                }
-
-                // ENTRY
-                Console.WriteLine("need short. over entry_offset. last={0:0} diff={1:0} offset={2:0} ", curCandle.last, diff, offset);
-                result = true;
-                return result;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = false;
-            }
-            finally
-            {
-            }
-            return result;
-        }
 
         public bool isConditionLongEntryFL()
         {
@@ -1716,8 +1583,6 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                int candle_cnt = m_candleBuf.getCandleCount();
-
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 if (curCandle == null)
                 {
@@ -1725,27 +1590,17 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                int curIndex = candle_cnt - 1;
-
-                Candlestick prevCandle = m_candleBuf.getCandle(curIndex - 1);
-                if (prevCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                double offset = (prevCandle.last + m_config.entry_offset);
-                double diff = offset - curCandle.last;
+                double diff = m_frontline - curCandle.last;
 
                 if (diff > 0.0)
                 {
-                    Console.WriteLine("not need long. inside entry_offset. last={0:0} diff={1:0} offset={2:0} ", curCandle.last, diff, offset);
+                    Console.WriteLine("not need long. inside entry_offset. last={0:0} diff={1:0}", curCandle.last, diff);
                     result = false;
                     return result;
                 }
 
                 // ENTRY
-                Console.WriteLine("need long. over entry_offset. last={0:0} diff={1:0} offset={2:0} ", curCandle.last, diff, offset);
+                Console.WriteLine("need long. over entry_offset. last={0:0} diff={1:0} ", curCandle.last, diff);
                 result = true;
                 return result;
 
@@ -1760,62 +1615,6 @@ namespace CryptoBoxer
             }
             return result;
         }
-
-        public bool isConditionShortExitFL()
-        {
-            bool result = false;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-
-                double position = m_frontline - curCandle.last;
-                if (position < 0.0)
-                {
-                    // 最前線が後退
-                    // EXIT
-                    postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline), true);
-                    result = true;
-                }
-                else if (position >= m_config.frontline_ahead)
-                {
-                    // 最前線を前進
-                    m_frontline = m_frontline - Math.Round(position * 1.0); ;
-                    // SHORT継続
-                    postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline), true);
-                    result = false;
-                }
-                else
-                {
-                    // 最前線を維持
-                    // SHORT継続
-                    Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
-                    result = false;
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = false;
-            }
-            finally
-            {
-            }
-            return result;
-        }
-
 
         public bool isConditionLongExitFL()
         {
@@ -1891,85 +1690,16 @@ namespace CryptoBoxer
 
                 // NONEポジションの場合
 
-                //bool isLongSub = isConditionLongEntryOverEma();
-                //bool isShortSub = isConditionShortEntryOverEma();
+                bool isLong = false;//isConditionLongEntryFL();
+                bool isShort = isConditionShortEntryFL();
 
-                //bool isLongSub = isConditionLongEntryScam(next_open); 
-                //bool isShortSub = isConditionShortEntryScam(next_open);
-
-                //bool isLongSub = isConditionLongEntrySwing(next_open);
-                //bool isShortSub = isConditionShortEntrySwing(next_open);
-
-                bool isLongSub = false;
-                bool isShortSub = false;
-
-                bool isLong = isConditionLongEntryCrossEma();// || m_isDotenLong;
-                bool isShort = isConditionShortEntryCrossEma();// || m_isDotenShort;
-
-                //bool isLong = isConditionLongEntryReboundEMA(next_open) && m_isDoten;
-                //bool isShort = isConditionShortEntryReboundEMA(next_open) && m_isDoten;
-
-
-
-
-
-                if (isLongSub)
-                {
-                    //if (isConditionLongEntrySTD(next_open, m_candleBufTop) == false)
-                    //{
-                    //    Console.WriteLine("not need long. Top's LongCondition is FALSE");
-                    //    result = 0;
-                    //    return result;
-                    //}
-
-                    // 注文成功
-                    string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
-
-                    m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
-
-
-                    postSlack(string.Format("{0} Long(Sub) Entry Order ID = {1}", curCandle.timestamp, long_id), true);
-                    //m_position.strategy_type = Position.StrategyType.OVER_EMA;
-                    //m_position.strategy_type = Position.StrategyType.SWING;
-                    m_position.strategy_type = Position.StrategyType.SCAM;
-                    long_entry_cnt++;
-                }
-                else if (isShortSub)
-                {
-                    //if (isConditionShortEntrySTD(next_open, m_candleBufTop) == false)
-                    //{
-                    //    Console.WriteLine("not need short. Top's ShortCondition is FALSE");
-                    //    result = 0;
-                    //    return result;
-                    //}
-
-                    // 注文成功
-                    string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
-
-                    m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
-
-                    postSlack(string.Format("{0} Short(Sub) Entry Order ID = {1}", curCandle.timestamp, short_id), true);
-                    //m_position.strategy_type = Position.StrategyType.OVER_EMA;
-                    //m_position.strategy_type = Position.StrategyType.SWING;
-                    m_position.strategy_type = Position.StrategyType.SCAM;
-
-                    short_entry_cnt++;
-                }
-                else if (isLong)
+                if (isLong)
                 {
                     // 注文成功
                     string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
                     m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
-                    if (m_isDotenLong)
-                    {
-                        m_position.strategy_type = Position.StrategyType.DOTEN;
-                    }
-                    else
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        //m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
-                    }
+
 
                     postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
                     
@@ -1982,15 +1712,6 @@ namespace CryptoBoxer
                     string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
                     m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
-                    if (m_isDotenShort)
-                    {
-                        m_position.strategy_type = Position.StrategyType.DOTEN;
-                    }
-                    else
-                    {
-                        m_position.strategy_type = Position.StrategyType.CROSS_EMA;
-                        //m_position.strategy_type = Position.StrategyType.REBOUND_EMA;
-                    }
 
                     postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
 
@@ -2157,20 +1878,10 @@ namespace CryptoBoxer
 
                 if (m_position.isLong())
                 {// LONGの場合
+                    Console.WriteLine("Check Condition Long Exit.");
 
                     bool isCond = false;
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA || m_position.strategy_type == Position.StrategyType.DOTEN)
-                    {
-                        isCond = isConditionLongExitCrossEma();
-                    }
-                    else if (m_position.strategy_type == Position.StrategyType.FLONT_LINE)
-                    {
-                        isCond = isConditionLongExitFL();
-                    }
-                    else
-                    {
-                        isCond = isConditionLongExit();
-                    }
+                    //isCond = isConditionLongExit();
 
                     if (isCond)
                     {
@@ -2198,18 +1909,7 @@ namespace CryptoBoxer
                 {// SHORTの場合
 
                     bool isCond = false;
-                    if (m_position.strategy_type == Position.StrategyType.CROSS_EMA || m_position.strategy_type == Position.StrategyType.DOTEN)
-                    {
-                        isCond = isConditionShortExitCrossEma();
-                    }
-                    else if (m_position.strategy_type == Position.StrategyType.FLONT_LINE)
-                    {
-                        isCond = isConditionShortExitFL();
-                    }
-                    else
-                    {
-                        isCond = isConditionShortExit();
-                    }
+                    isConditionShortExitFL();
 
                     if (isCond)
                     {
@@ -2282,18 +1982,7 @@ namespace CryptoBoxer
                 if (m_position.isLong())
                 {// LONGの場合
 
-                    bool isCond = false;
-                    if (   m_position.strategy_type == Position.StrategyType.CROSS_EMA
-                        || m_position.strategy_type == Position.StrategyType.DOTEN
-                        || m_position.strategy_type == Position.StrategyType.REBOUND_EMA
-                    )
-                    {
-                        isCond = isConditionLongExitCrossEma();
-                    }
-                    else
-                    {
-                        isCond = isConditionLongExit();
-                    }
+                    bool isCond = isConditionLongExitFL();
 
                     if (isCond)
                     {
@@ -2306,18 +1995,7 @@ namespace CryptoBoxer
                 }
                 else if (m_position.isShort())
                 {// SHORTの場合
-                    bool isCond = false;
-                    if (   m_position.strategy_type == Position.StrategyType.CROSS_EMA 
-                        || m_position.strategy_type == Position.StrategyType.DOTEN
-                        || m_position.strategy_type == Position.StrategyType.REBOUND_EMA
-                    )
-                    {
-                        isCond = isConditionShortExitCrossEma();
-                    }
-                    else
-                    {
-                        isCond = isConditionShortExit();
-                    }
+                    bool isCond = isConditionShortExitFL();
 
                     if (isCond)
                     {
@@ -2740,10 +2418,6 @@ namespace CryptoBoxer
             }
             finally
             {
-                if (result)
-                {
-                    m_isDoten = true;
-                }
             }
             return result;
         }
@@ -2948,86 +2622,6 @@ namespace CryptoBoxer
                     result = true;
                     return result;
                 }
-
-                if (curCandle.isTrend())
-                {
-                    double vola = curCandle.getVolatilityRate();
-                    if (vola >= m_config.whale_vola_rate)
-                    {
-                        Console.WriteLine("## LOSSCUT ## volaRate is Limit-Over. profit={0:0} vola={1} limit={2:0}", profit, vola, m_config.whale_vola_rate);
-                        result = true;
-                        return result;
-                    }
-                }
-
-                switch (m_position.strategy_type)
-                {
-                    case Position.StrategyType.SCAM:
-                    case Position.StrategyType.SWING:
-                        if (profit <= 0.0)
-                        {
-                            //if (m_position.entry_price <= curCandle.ema)                  
-                            if (curCandle.last <= curCandle.ema)
-                            {
-                                if (isBadPosition())
-                                {
-                                    result = true;
-                                    return result;
-                                }
-                            }
-
-                            if (m_config.lc_boll_outside_check > 0)
-                            {
-                                if ((curCandle.boll_high + m_config.boll_diff_play) > curCandle.boll_high_top)
-                                {
-                                    if (isBadPosition())
-                                    {
-                                        Console.WriteLine("## LOSSCUT ## boll_high is outside. profit={0:0} boll_high={1:0} boll_high_top={2:0}", profit, curCandle.boll_high, curCandle.boll_high_top);
-                                        result = true;
-                                        return result;
-                                    }
-                                }
-                            }
-
-                            if (m_config.lc_boll_outside_check > 0)
-                            {
-                                if (curCandle.range_max_keep <= 0)
-                                {
-                                    Console.WriteLine("## LOSSCUT ## RANGE-KEEP is end. profit={0:0} max_cnt={1}", profit, curCandle.range_max_cnt);
-                                    result = true;
-                                    return result;
-                                }
-                            }
-                        }
-                        break;
-                    case Position.StrategyType.CROSS_EMA:
-                    case Position.StrategyType.REBOUND_EMA:
-                        if (m_config.expiration_cnt >= 0)
-                        {
-                            bool isGolden = false;
-                            bool isFirst = false;
-                            int back_cnt = 0;
-                            double cur_ema_length = 0.0;
-                            if (m_candleBuf.getEMACrossState(out isGolden, out isFirst, out back_cnt, out cur_ema_length, 1.0) == 0)
-                            {
-                                if ((isGolden) && (back_cnt >= m_config.expiration_cnt))
-                                {
-                                    if ((cur_ema_length <= m_config.expiration_ema_diff))
-                                    {
-                                        //m_isDotenLong = true;
-                                    }
-                                    result = true;
-                                    return result;
-                                }
-                            }
-                        }
-                        break;
-                    case Position.StrategyType.DOTEN:
-                        break;
-                    default:
-                        break;
-                }
-
             }
             catch (Exception ex)
             {
@@ -6776,6 +6370,175 @@ namespace CryptoBoxer
             }
             return result;
         }
+
+        public bool isConditionShortEntryFL()
+        {
+            bool result = false;
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                if (!m_candleBuf.isFullBuffer())
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                double diff = Math.Abs(curCandle.last - m_frontline);
+
+                if (diff > 1000.0)
+                {
+                    //Console.WriteLine("not need short. last={0:0} diff={1:0}", curCandle.last, diff);
+                    result = false;
+                    return result;
+                }
+
+
+                int posArrayNum = m_posArray.Count();
+                if (posArrayNum >= 2)
+                {
+                    Position lastPosition = m_posArray[posArrayNum - 2];
+
+                    DateTime ago = DateTime.Parse(lastPosition.exit_date);
+                    DateTime now = DateTime.Parse(curCandle.timestamp);
+                    TimeSpan span = now - ago;
+                    if (span.Minutes < 5)
+                    {
+                        Console.WriteLine("not need short. last={0:0} span={1:0}", curCandle.last, span.Minutes);
+                        result = false;
+                        return result;
+                    }
+                }
+                else
+                {
+
+
+                }
+
+
+
+                // ENTRY
+                Console.WriteLine("need short. last={0:0} diff={1:0}", curCandle.last, diff);
+                result = true;
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isConditionShortExitFL()
+        {
+            bool result = false;
+            try
+            {
+                if (m_candleBuf == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = false;
+                    return result;
+                }
+
+
+                double position = m_frontline - curCandle.last;
+
+                if (Math.Abs(m_frontline - m_position.entry_price) <= double.Epsilon)
+                {
+                    // フロントラインがENTRY位置と同じ場合
+                    if (isConditionShortLosscut())
+                    {
+                        // EXIT
+                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline), true);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontline = curCandle.last;
+                    }
+                    else if (position >= m_config.frontline_ahead)
+                    {
+                        // 最前線を前進
+                        double forward = Math.Round(position * 0.5);
+                        m_frontline = m_frontline - forward;
+                        // SHORT継続
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, position, m_frontline, forward), true);
+                        result = false;
+                    }
+                    else
+                    {
+                        // 最前線を維持
+                        // SHORT継続
+                        Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
+                        result = false;
+                    }
+                }
+                else
+                {
+                    // 何回か最前線を前進させている場合
+                    if (position < 0.0)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline), true);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontline = curCandle.last;
+                    }
+                    else if (position >= m_config.frontline_ahead)
+                    {
+                        // 最前線を前進
+                        double forward = Math.Round(position * 0.5);
+                        m_frontline = m_frontline - forward;
+                        // SHORT継続
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, position, m_frontline, forward), true);
+                        result = false;
+                    }
+                    else
+                    {
+                        // 最前線を維持
+                        // SHORT継続
+                        Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, position, m_frontline);
+                        result = false;
+                    }
+                }
+
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
 
 
     }
