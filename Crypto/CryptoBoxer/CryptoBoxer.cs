@@ -1279,18 +1279,20 @@ namespace CryptoBoxer
 
                     if (m_position.isEntryCompleted())
                     {
-                        Console.WriteLine("closed candle. timestamp={0},profit={1},last={2:0}"
+                        Console.WriteLine("closed candle. timestamp={0},profit={1},last={2:0},front={3:0}"
                                           , curCandle.timestamp
                                           , m_position.calcProfit(curCandle.last)
                                           , curCandle.last
+                                          , m_frontline
                         );
                     }
                     else
                     {
-                        Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0}"
+                        Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},front={3:0}"
                                           , curCandle.timestamp
                                           , m_profitSum
                                           , curCandle.last
+                                          , m_frontline
                         );
                     }
 
