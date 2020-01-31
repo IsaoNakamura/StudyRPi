@@ -1456,247 +1456,7 @@ namespace CryptoBoxer
             return result;
         }
 
-        public async Task<int> tryEntryOrder(double next_open)
-        {
-            int result = 0;
-            try
-            {
-                if (!m_position.isNone())
-                {
-                    result = 1;
-                    return result;
-                }
 
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                // NONEポジションの場合
-
-                bool isLong = isConditionLongEntryFL(); ;
-				bool isShort = false;//isConditionShortEntryFL();
-
-
-                if (isLong || isShort)
-                {
-                    bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
-                    if (isActive)
-                    {
-                        postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
-                            , isLong
-                            , isShort
-                        ));
-                        result = -1;
-                        return result;
-                    }
-                }
-
-                if (isLong)
-                {
-                    //Console.WriteLine("Try Long Entry Order.");
-
-                    if (curCandle.disparity_rate >= 5.0)
-                    {
-                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                        result = -1;
-                        return result;
-                    }
-
-                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Long Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-
-
-                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                }
-                else if(isShort)
-                {
-                    //Console.WriteLine("Try Short Entry Order.");
-
-                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Short Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-
-
-                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = -1;
-            }
-            finally
-            {
-                m_isDotenShort = false;
-                m_isDotenLong = false;
-            }
-            return result;
-        }
-
-        public async Task<int> tryEntryOrderFrontLine()
-        {
-            int result = 0;
-            try
-            {
-                if (!m_position.isNone())
-                {
-                    result = 1;
-                    return result;
-                }
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-                // NONEポジションの場合
-
-
-                bool isLong = isConditionLongEntryFL();
-                bool isShort = isConditionShortEntryFL();
-
-                if (isLong)
-                {
-                    //Console.WriteLine("Try Long Entry Order.");
-
-                    if (curCandle.disparity_rate >= 5.0)
-                    {
-                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                        result = -1;
-                        return result;
-                    }
-
-                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Long Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-                    m_position.strategy_type = Position.StrategyType.FLONT_LINE;
-
-                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                }
-                else if (isShort)
-                {
-                    //Console.WriteLine("Try Short Entry Order.");
-
-                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                    if (retObj == null)
-                    {
-                        postSlack("failed to Short Entry Order");
-                        result = -1;
-                        return result;
-                    }
-                    // 注文成功
-
-                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
-                    m_position.strategy_type = Position.StrategyType.FLONT_LINE;
-
-                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = -1;
-            }
-            finally
-            {
-                m_isDotenShort = false;
-                m_isDotenLong = false;
-            }
-            return result;
-        }
-
-
-
-
-
-        private int tryEntryOrderTest(ref int long_entry_cnt, ref int short_entry_cnt, double next_open)
-        {
-            int result = 0;
-            try
-            {
-                if (!m_position.isNone())
-                {
-                    result = 1;
-                    return result;
-                }
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = -1;
-                    return result;
-                }
-
-				// NONEポジションの場合
-
-				bool isLong = isConditionLongEntryFL();
-				bool isShort = isConditionShortEntryFL();
-
-                if (isLong)
-                {
-                    // 注文成功
-                    string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
-
-                    m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
-
-
-                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
-                    
-
-                    long_entry_cnt++;
-                }
-                else if (isShort)
-                {
-                    // 注文成功
-                    string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
-
-                    m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
-
-                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
-
-                    short_entry_cnt++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = -1;
-            }
-            finally
-            {
-                m_isDotenShort = false;
-                m_isDotenLong = false;
-                m_isDoten = false;
-            }
-            return result;
-        }
 
         public async Task<int> checkEntry()
         {
@@ -2242,148 +2002,7 @@ namespace CryptoBoxer
             }
             return result;
         }
-
-
-
-        public bool isConditionLongExit()
-        {
-            bool result = false;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                double profit = curCandle.last - m_position.entry_price;
-
-                if (curCandle.ema <= curCandle.last)
-                {
-                    if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-
-                double ema_diff = curCandle.ema - curCandle.last;
-                if (ema_diff <= m_config.ema_diff_near)
-                {
-                    if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-
-				if (curCandle.high >= curCandle.ema)
-                {
-                    if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-
-                if (m_config.fixed_profit >= 100)
-                {
-                    if (profit >= m_config.fixed_profit)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = false;
-            }
-            finally
-            {
-                if (result)
-                {
-                    m_isDoten = true;
-                }
-            }
-            return result;
-        }
-
-        public bool isConditionShortExit()
-        {
-            bool result = false;
-            try
-            {
-                if (m_candleBuf == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                Candlestick curCandle = m_candleBuf.getLastCandle();
-                if (curCandle == null)
-                {
-                    result = false;
-                    return result;
-                }
-
-                double profit = m_position.entry_price - curCandle.last;
-
-                if (curCandle.ema >= curCandle.last)
-                {
-                    if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-
-                double ema_diff = curCandle.last - curCandle.ema;
-                if (ema_diff <= m_config.ema_diff_near)
-                {
-                    if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-
-				if( curCandle.low <= curCandle.ema )
-				{
-					if (profit > 0.0)
-                    {
-                        result = true;
-                        return result;
-                    }
-				}
-
-                if (m_config.fixed_profit >= 100)
-                {
-                    if (profit >= m_config.fixed_profit)
-                    {
-                        result = true;
-                        return result;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                result = false;
-            }
-            finally
-            {
-            }
-            return result;
-        }
+        
 
         private bool isBadPosition()
         {
@@ -2708,7 +2327,163 @@ namespace CryptoBoxer
             return result;
         }
 
+		public async Task<int> tryEntryOrder(double next_open)
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
 
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                // NONEポジションの場合
+
+                bool isLong = isConditionLongEntryFL(); ;
+                bool isShort = isConditionShortEntryFL();
+
+
+                if (isLong || isShort)
+                {
+                    bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
+                    if (isActive)
+                    {
+                        postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
+                            , isLong
+                            , isShort
+                        ));
+                        result = -1;
+                        return result;
+                    }
+                }
+
+                if (isLong)
+                {
+                    //Console.WriteLine("Try Long Entry Order.");
+
+                    if (curCandle.disparity_rate >= 5.0)
+                    {
+                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                        result = -1;
+                        return result;
+                    }
+
+                    SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                    if (retObj == null)
+                    {
+                        postSlack("failed to Long Entry Order");
+                        result = -1;
+                        return result;
+                    }
+                    // 注文成功
+
+                    m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
+
+
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                }
+                else if (isShort)
+                {
+                    //Console.WriteLine("Try Short Entry Order.");
+
+                    SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                    if (retObj == null)
+                    {
+                        postSlack("failed to Short Entry Order");
+                        result = -1;
+                        return result;
+                    }
+                    // 注文成功
+
+                    m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
+
+
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, retObj.child_order_acceptance_id));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                m_isDotenShort = false;
+                m_isDotenLong = false;
+            }
+            return result;
+        }
+
+
+        private int tryEntryOrderTest(ref int long_entry_cnt, ref int short_entry_cnt, double next_open)
+        {
+            int result = 0;
+            try
+            {
+                if (!m_position.isNone())
+                {
+                    result = 1;
+                    return result;
+                }
+
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+                
+				// NONEポジションの場合
+                
+				bool isLong = isConditionLongEntryFL();
+				bool isShort = isConditionShortEntryFL();
+
+                if (isLong)
+                {
+                    // 注文成功
+                    string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
+
+                    m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);
+
+
+                    postSlack(string.Format("{0} Long Entry Order ID = {1}", curCandle.timestamp, long_id), true);
+
+
+                    long_entry_cnt++;
+                }
+                else if (isShort)
+                {
+                    // 注文成功
+                    string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
+
+                    m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
+
+                    postSlack(string.Format("{0} Short Entry Order ID = {1}", curCandle.timestamp, short_id), true);
+
+                    short_entry_cnt++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                m_isDotenShort = false;
+                m_isDotenLong = false;
+                m_isDoten = false;
+            }
+            return result;
+        }
 
 		public bool isConditionLongLosscut()
         {
@@ -2727,17 +2502,15 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
-				//if (!m_candleBuf.isHangAround(m_position.entry_price + m_config.losscut_value, 500, 3))
-				{
-
-
+                
+				{               
 					double profit = curCandle.last - m_position.entry_price;
 					if (profit <= m_config.losscut_value)
 					{
-						if (!m_candleBuf.isHangAround(m_position.entry_price + m_config.losscut_value, 500, 3))
+						//if (!m_candleBuf.isHangAround(m_position.entry_price, Math.Abs(m_config.losscut_value), 3))
+						if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
 						{
-						    result = false;
+						    result = true;
 						    return result;
 						}
 						//result = true;
@@ -2774,19 +2547,19 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
-				if (!m_candleBuf.isHangAround(m_position.entry_price - m_config.losscut_value, 500, 3))
+                
 				{               
 					double profit = m_position.entry_price - curCandle.last;
 					if (profit <= m_config.losscut_value)
 					{
-						//if (!m_candleBuf.isHangAround(m_position.entry_price - m_config.losscut_value, 500, 3))
-						//{
-						//    result = false;
-						//    return result;
-						//}
-						result = true;
-						return result;
+						//if (!m_candleBuf.isHangAround(m_position.entry_price, Math.Abs(m_config.losscut_value), 3))
+						if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
+						{
+						    result = true;
+						    return result;
+						}
+						//result = true;
+						//return result;
 					}
 				}
             }
@@ -2848,9 +2621,7 @@ namespace CryptoBoxer
                 //        return result;
                 //    }
 
-                //}
-
-
+                //}            
 
                 // フロントライン付近でウロウロしてる
                 //if (m_candleBuf.isHangAround(m_frontlineShort, Math.Abs(m_config.losscut_value), 6))
@@ -2860,75 +2631,17 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
-
-
-
+                            
                 if (position <= 0)
-                {
-                    //if (m_upBreakCnt > 0)
-                    //{
-                    //    result = false;
-                    //    return result;
-                    //}
-
+                {               
                     // 現在値がフロントラインより下
                     postSlack(string.Format("!! DOWN-BREAK !!. pos={0:0}", position), true);
-
-                    // 追いかける or 追いかけない
-
-                    //if (Math.Abs(position) <= Math.Abs(m_config.losscut_value))
-                    //{
-                    //    // 追いかけない
-                    //    result = false;
-                    //    return result;
-                    //}
-
-                    //if (!m_candleBuf.isFullDownPast(m_frontline, 3))
-                    //{
-                    //    result = false;
-                    //    return result;
-                    //}
-                    // 過去N個のキャンドルが全て下
-                    // 追いかける
-
-                    //if (m_candleBufTop.getLastCandle().ema > curCandle.last)
-                    //{
-                    //    result = false;
-                    //    return result;
-                    //}
                 }
                 else
                 {
                     // 現在値がフロントラインより上
-
-                    m_upBreakCnt = m_upBreakCnt + 10;
-                    postSlack(string.Format("!! UP-BREAK !!. pos={0:0} up_cnt={1}", position, m_upBreakCnt), true);
-
-                    //if (position > 1000.0)
-                    //{
-                    //    // 現在値がフロントラインより閾値分上
-                    //    // 何もしない
-                    //    result = false;
-                    //    return result;
-                    //}
-
-                    //if (m_candleBuf.isFullUpPast(m_frontline, 3))
-                    //{
-                    //    // 過去N個のキャンドルが全て上
-                    //    result = false;
-                    //    return result;
-                    //}
-
-
-                    //if (m_candleBufTop.getLastCandle().ema > m_frontline)
-                    //{
-                    //    //if (position > 3000.0)
-                    //    {
-                    //        m_frontline = m_candleBufTop.getLastCandle().ema;
-                    //        postSlack(string.Format("** renewal front-line **. last={0:0} front={1:0}", curCandle.last, m_frontline), true);
-                    //    }
-                    //}
+                    
+                    postSlack(string.Format("!! UP-BREAK !!. pos={0:0} up_cnt={1}", position, m_upBreakCnt), true);                
 
                     m_frontlineShort += (position * 0.5);
                     postSlack(string.Format("** renewal front-line **. last={0:0} front={1:0}", curCandle.last, m_frontlineShort), true);
@@ -2987,6 +2700,8 @@ namespace CryptoBoxer
 
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
+
+						//short_lc_cnt++;
                     }
                     else if (profit >= m_config.frontline_ahead)
                     {
@@ -3155,6 +2870,8 @@ namespace CryptoBoxer
 
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
+
+						//long_lc_cnt++;
                     }
                     else if (profit >= m_config.frontline_ahead)
                     {
