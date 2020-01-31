@@ -2460,5 +2460,124 @@ namespace UtilityTrade
             return result;
         }
 
+        public bool isFullUpPast(double price, int past_num)
+        {
+            bool result = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt > past_num)
+                {
+                    int last_index = candle_cnt - 1;
+                    int past_index = last_index - past_num;
+                    result = true;
+                    for (int i = last_index; i > past_index; i--)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        if (candle.last <= price)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isFullDownPast(double price, int past_num)
+        {
+            bool result = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt > past_num)
+                {
+                    int last_index = candle_cnt - 1;
+                    int past_index = last_index - past_num;
+                    result = true;
+                    for (int i = last_index; i > past_index; i--)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        if (candle.last >= price)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public bool isHangAround(double price, double threshold, int past_num)
+        {
+            bool result = false;
+            try
+            {
+                int candle_cnt = getCandleCount();
+                if (candle_cnt > past_num)
+                {
+                    int last_index = candle_cnt - 1;
+                    int past_index = last_index - past_num;
+                    result = true;
+                    for (int i = last_index; i > past_index; i--)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        double diff = Math.Abs(candle.last - price);
+
+                        if (diff > threshold)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
     }
 }
