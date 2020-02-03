@@ -2538,7 +2538,7 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isHangAround(double price, double threshold, int past_num)
+        public bool isHangAround(double price, double threshold, int past_num, int past_pos=0)
         {
             bool result = false;
             try
@@ -2546,7 +2546,7 @@ namespace UtilityTrade
                 int candle_cnt = getCandleCount();
                 if (candle_cnt > past_num)
                 {
-                    int last_index = candle_cnt - 1;
+                    int last_index = (candle_cnt - 1) - past_pos;
                     int past_index = last_index - past_num;
                     result = true;
                     for (int i = last_index; i > past_index; i--)
