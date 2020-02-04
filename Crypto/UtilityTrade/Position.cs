@@ -18,6 +18,7 @@ namespace UtilityTrade
         public enum OrderState
         {
              NONE
+           , RESERVED
            , ORDERED
            , ACTIVE
            , COMPLETED
@@ -295,6 +296,55 @@ namespace UtilityTrade
             return;
         }
 
+        public bool isReserved()
+        {
+            if (entry_state == OrderState.RESERVED)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isLongReserved()
+        {
+            if (entry_state == OrderState.RESERVED && state == PositionState.LONG)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isShortReserved()
+        {
+            if (entry_state == OrderState.RESERVED && state == PositionState.SHORT)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // LONGエントリー予約
+        public void reserveLongOrder()
+        {
+            entry_state = OrderState.RESERVED;
+            state = PositionState.LONG;
+            return;
+        }
+
+        // SHORTエントリー予約
+        public void reserveShortOrder()
+        {
+            entry_state = OrderState.RESERVED;
+            state = PositionState.SHORT;
+            return;
+        }
+
+        public void cancelReserveOrder()
+        {
+            entry_state = OrderState.NONE;
+            state = PositionState.NONE;
+            return;
+        }
 
         public void exitOrder(string _acceptance_id, string _exit_date)
         {
