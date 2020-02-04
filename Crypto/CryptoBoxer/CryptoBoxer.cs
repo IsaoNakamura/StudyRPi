@@ -1343,22 +1343,24 @@ namespace CryptoBoxer
 
                     if (m_position.isEntryCompleted())
                     {
-                        Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frontL={3:0},frontS={4:0}"
+						Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaSub={5:0}"
                                           , curCandle.timestamp
                                           , m_position.calcProfit(curCandle.last)
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
+						                  , curCandle.ema_sub
                         );
                     }
                     else
                     {
-                        Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frontL={3:0},frontS={4:0}"
+						Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frontL={3:0},frontS={4:0},emaSub={5:0}"
                                           , curCandle.timestamp
                                           , m_profitSum
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
+						                  , curCandle.ema_sub
                         );
                     }
 
@@ -2692,20 +2694,21 @@ namespace CryptoBoxer
 				{               
 					double profit = curCandle.last - m_position.entry_price;
 					if (profit <= m_config.losscut_value)
-					{
-
-
+					{                  
                         if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
-                        //if (!m_candleBuf.isHangAround(curCandle.last, 1000, 3))
                         {
-                            if ((curCandle.last - curCandle.ema_sub) > 0.0)
+                            if ((curCandle.last - curCandle.ema) > 0.0)
                             {
                                 result = true;
                                 return result;
                             }
-                            //result = true;
-						    //return result;
 						}
+					}
+
+					if (profit <= -4000.0)
+					{
+						result = true;
+                        return result;
 					}
 				}
 
@@ -2745,15 +2748,19 @@ namespace CryptoBoxer
 					{
                         if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
                         {
-                            if ((curCandle.last - curCandle.ema_sub) < 0.0)
+                            if ((curCandle.last - curCandle.ema) < 0.0)
                             {
                                 result = true;
                                 return result;
                             }
-                            //result = true;
-						    //return result;
 						}
 					}
+
+					if (profit <= -4000.0)
+                    {
+                        result = true;
+                        return result;
+                    }
 				}
             }
             catch (Exception ex)
