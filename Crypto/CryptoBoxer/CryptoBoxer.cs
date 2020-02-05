@@ -896,7 +896,19 @@ namespace CryptoBoxer
                 while (true)
                 {
                     System.Threading.Thread.Sleep(6000);
-
+                                   
+					if (m_position.isNone())
+					{
+						// NONEポジションの場合
+						bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
+						if (isActive)
+						{
+							Console.WriteLine("Wait. No Positon. but Active.");
+							System.Threading.Thread.Sleep(60000);
+							continue;
+						}
+					}
+     
                     // Tickerを取得
                     Ticker ticker = await Ticker.GetTickerAsync(m_config.product_bitflyer);
                     if (ticker == null)
@@ -1343,24 +1355,26 @@ namespace CryptoBoxer
 
                     if (m_position.isEntryCompleted())
                     {
-						Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaSub={5:0}"
+						Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0}"
                                           , curCandle.timestamp
                                           , m_position.calcProfit(curCandle.last)
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
 						                  , curCandle.ema_sub
+						                  , curCandle.vola_ma
                         );
                     }
                     else
                     {
-						Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frontL={3:0},frontS={4:0},emaSub={5:0}"
+						Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0}"
                                           , curCandle.timestamp
                                           , m_profitSum
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
 						                  , curCandle.ema_sub
+						                  , curCandle.vola_ma
                         );
                     }
 
@@ -2705,7 +2719,7 @@ namespace CryptoBoxer
 						}
 					}
 
-					if (profit <= -4000.0)
+					if (profit <= -3000.0)
 					{
 						result = true;
                         return result;
@@ -2756,7 +2770,7 @@ namespace CryptoBoxer
 						}
 					}
 
-					if (profit <= -4000.0)
+					if (profit <= -3000.0)
                     {
                         result = true;
                         return result;
@@ -2888,14 +2902,17 @@ namespace CryptoBoxer
             bool result = false;
             try
             {
+				//Console.WriteLine("isConditionLongEntryFL");
                 if (m_candleBuf == null)
                 {
+					//Console.WriteLine("isConditionLongEntryFL false0");
                     result = false;
                     return result;
                 }
 
                 if (!m_candleBuf.isFullBuffer())
                 {
+					//Console.WriteLine("isConditionLongEntryFL false1");
                     result = false;
                     return result;
                 }
@@ -2903,6 +2920,7 @@ namespace CryptoBoxer
                 Candlestick curCandle = m_candleBuf.getLastCandle();
                 if (curCandle == null)
                 {
+					//Console.WriteLine("isConditionLongEntryFL false2");
                     result = false;
                     return result;
                 }
@@ -2916,7 +2934,8 @@ namespace CryptoBoxer
                 if (m_candleBuf.isHangAround(m_frontlineLong, threshold, past_num, 1))
                 {
                     postSlack(string.Format("** hang around Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
-                    result = false;
+					//Console.WriteLine("isConditionLongEntryFL false3");
+					result = false;
                     return result;
                 }
 
@@ -2933,7 +2952,7 @@ namespace CryptoBoxer
                         postSlack(string.Format("** renewal Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
 
                     }
-
+					//Console.WriteLine("isConditionLongEntryFL false4");
                     result = false;
                     return result;
                 }
@@ -2944,6 +2963,7 @@ namespace CryptoBoxer
                     if (Math.Abs(position) <= threshold)
                     {
                         // ENTRYしない
+						//Console.WriteLine("isConditionLongEntryFL false5");
                         result = false;
                         return result;
                     }
@@ -2994,6 +3014,7 @@ namespace CryptoBoxer
                 if (Math.Abs(m_frontlineShort - m_position.entry_price) <= double.Epsilon)
                 {
                     // フロントラインがENTRY位置と同じ場合
+
                     if (isConditionShortLosscut())
                     {
                         // EXIT
@@ -3016,10 +3037,22 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        // 最前線を維持
-                        // SHORT継続
-                        //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
-                        result = false;
+						//const int past_num = 10;
+						//if ((profit >= 0) && (m_candleBuf.isFullUpPast(m_position.entry_price, past_num, 1)))
+						//{
+						//	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), true);
+						//	result = true;
+
+						//	// 最前線を後退
+						//	m_frontlineShort = curCandle.last;
+						//}
+						//else
+						{
+							// 最前線を維持
+							// SHORT継続
+							//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
+							result = false;
+						}
                     }
                 }
                 else
@@ -3045,10 +3078,10 @@ namespace CryptoBoxer
                     }
                     else
                     {
-                        // 最前線を維持
-                        // SHORT継続
-                        //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
-                        result = false;
+						// 最前線を維持
+						// SHORT継続
+						//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
+						result = false;
                     }
                 }
 
@@ -3091,33 +3124,46 @@ namespace CryptoBoxer
 
                 if (Math.Abs(m_frontlineLong - m_position.entry_price) <= double.Epsilon)
                 {
-                    // フロントラインがENTRY位置と同じ場合
-                    if (isConditionLongLosscut())
-                    {
-                        // EXIT
-                        postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), true);
-                        result = true;
+					// フロントラインがENTRY位置と同じ場合
+					if (isConditionLongLosscut())
+					{
+						// EXIT
+						postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), true);
+						result = true;
 
-                        // 最前線を後退
-                        m_frontlineLong = curCandle.last;
+						// 最前線を後退
+						m_frontlineLong = curCandle.last;
 
 						long_lc_cnt++;
-                    }
-                    else if (profit >= m_config.frontline_ahead)
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * 0.5);
-                        m_frontlineLong = m_frontlineLong + forward;
-                        // LONG継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
-                        result = false;
-                    }
-                    else
-                    {
-                        // 最前線を維持
-                        // LONG継続
-                        //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong);
-                        result = false;
+					}
+					else if (profit >= m_config.frontline_ahead)
+					{
+						// 最前線を前進
+						double forward = Math.Round(profit * 0.5);
+						m_frontlineLong = m_frontlineLong + forward;
+						// LONG継続
+						postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
+						result = false;
+					}
+					else
+					{
+						//const int past_num = 10;
+						//if ((profit >= 0) && (m_candleBuf.isFullDownPast(m_position.entry_price, past_num, 1)))
+						//{
+						//	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), true);
+						//	result = true;
+
+						//	// 最前線を後退
+						//	m_frontlineLong = curCandle.last;
+                            
+						//}
+						//else
+						{
+							// 最前線を維持
+							// LONG継続
+							//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong);
+							result = false;
+					    }
                     }
                 }
                 else
