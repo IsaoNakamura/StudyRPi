@@ -3035,6 +3035,15 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), true);
                         result = false;
                     }
+                    else if (profit >= (m_config.frontline_ahead * 0.1))
+                    {
+                        // 最前線を前進
+                        double forward = Math.Round(profit * 0.1);
+                        m_frontlineShort = m_frontlineShort - forward;
+                        // SHORT継続
+                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), true);
+                        result = false;
+                    }
                     else
                     {
 						//const int past_num = 10;
@@ -3145,7 +3154,16 @@ namespace CryptoBoxer
 						postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
 						result = false;
 					}
-					else
+                    else if (profit >= (m_config.frontline_ahead * 0.1))
+                    {
+                        // 最前線を前進
+                        double forward = Math.Round(profit * 0.1);
+                        m_frontlineLong = m_frontlineLong + forward;
+                        // LONG継続
+                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
+                        result = false;
+                    }
+                    else
 					{
 						//const int past_num = 10;
 						//if ((profit >= 0) && (m_candleBuf.isFullDownPast(m_position.entry_price, past_num, 1)))
