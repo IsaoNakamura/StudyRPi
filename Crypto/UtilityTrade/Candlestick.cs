@@ -550,6 +550,15 @@ namespace UtilityTrade
             return false;
         }
 
+        public bool isCrossEMAsub(double play = 0.0)
+        {
+            if (ema_sub >= (low - play) && ema_sub <= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public bool isCrossMA(double play = 0.0)
         {
             if (ma >= (low - play) && ma <= (high + play))
