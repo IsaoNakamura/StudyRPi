@@ -2609,7 +2609,7 @@ namespace CryptoBoxer
 
                     if (isLong)
                     {
-                        if (curCandle.isCrossEMAsub(ema_cross_play) || curCandle.last <= curCandle.ema)
+                        if (curCandle.isCrossEMAsub(ema_cross_play) /*|| curCandle.last <= curCandle.ema*/)
                         {
 
                             // 注文成功
@@ -2630,7 +2630,7 @@ namespace CryptoBoxer
                     }
                     else if (isShort)
                     {
-                        if (curCandle.isCrossEMAsub(ema_cross_play) || curCandle.last >= curCandle.ema)
+                        if (curCandle.isCrossEMAsub(ema_cross_play) /*|| curCandle.last >= curCandle.ema*/)
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -2655,7 +2655,7 @@ namespace CryptoBoxer
                     {
                         if (isLong)
                         {
-                            if (curCandle.isCrossEMAsub(ema_cross_play) || curCandle.last <= curCandle.ema)
+                            if (curCandle.isCrossEMAsub(ema_cross_play)/* || curCandle.last <= curCandle.ema*/)
                             {
 
                                 // 注文成功
@@ -2680,7 +2680,7 @@ namespace CryptoBoxer
                     {
                         if (isShort)
                         {
-                            if (curCandle.isCrossEMAsub(ema_cross_play) || curCandle.last >= curCandle.ema)
+                            if (curCandle.isCrossEMAsub(ema_cross_play)/* || curCandle.last >= curCandle.ema*/)
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
