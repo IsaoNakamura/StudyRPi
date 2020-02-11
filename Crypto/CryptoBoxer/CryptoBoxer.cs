@@ -2498,6 +2498,11 @@ namespace CryptoBoxer
                             if (curCandle.disparity_rate >= 5.0)
                             {
                                 postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+
+								// LONG予約キャンセル
+                                m_position.cancelReserveOrder();
+                                postSlack(string.Format("{0} Cancel Long Reserved.", curCandle.timestamp));
+
                                 result = -1;
                                 return result;
                             }
