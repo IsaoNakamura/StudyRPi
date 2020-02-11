@@ -852,6 +852,7 @@ namespace CryptoBoxer
                         }
                         else
                         {
+							postSlack(string.Format("Init position."));
                             m_position.init();
                         }
                     }
@@ -916,14 +917,14 @@ namespace CryptoBoxer
                 m_frontlineLong = m_frontlineShort = curCandle.ema;
 
 
-                //applyPositions();
+                applyPositions();
 
 
                 while (true)
                 {
                     System.Threading.Thread.Sleep(6000);
 
-                    applyPositions();
+                    //applyPositions();
 
      //               if (m_position.isNone())
 					//{
@@ -2411,19 +2412,19 @@ namespace CryptoBoxer
                     // NONEポジションの場合
 
 
-                    //if (isLong || isShort)
-                    //{
-                    //    bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
-                    //    if (isActive)
-                    //    {
-                    //        postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
-                    //            , isLong
-                    //            , isShort
-                    //        ));
-                    //        result = -1;
-                    //        return result;
-                    //    }
-                    //}
+                    if (isLong || isShort)
+                    {
+                        bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
+                        if (isActive)
+                        {
+                            postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
+                                , isLong
+                                , isShort
+                            ));
+                            result = -1;
+                            return result;
+                        }
+                    }
 
                     if (isLong)
                     {
@@ -2455,7 +2456,7 @@ namespace CryptoBoxer
                         {
                             // LONG予約
                             m_position.reserveLongOrder();
-                            postSlack(string.Format("{0} Long Reserved. ema={1:0} diff={2:0} ", curCandle.timestamp, curCandle.ema, curCandle.last - curCandle.ema));
+							postSlack(string.Format("{0} Long Reserved. ema_sub={1:0} diff={2:0} ", curCandle.timestamp, curCandle.ema_sub, curCandle.last - curCandle.ema_sub));
 
                         }
                     }
@@ -2484,7 +2485,7 @@ namespace CryptoBoxer
                         {
                             // SHORT予約
                             m_position.reserveShortOrder();
-                            postSlack(string.Format("{0} Short Reserved. ema={1:0} diff={2:0} ", curCandle.timestamp, curCandle.ema, curCandle.last - curCandle.ema));
+							postSlack(string.Format("{0} Short Reserved. ema_sub={1:0} diff={2:0} ", curCandle.timestamp, curCandle.ema_sub, curCandle.last - curCandle.ema_sub));
                         }
                     }
                 }
