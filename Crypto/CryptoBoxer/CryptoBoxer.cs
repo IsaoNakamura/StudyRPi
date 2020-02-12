@@ -922,7 +922,7 @@ namespace CryptoBoxer
 
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(6000);
+                    System.Threading.Thread.Sleep(4000);
 
                     //applyPositions();
 
@@ -2430,7 +2430,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Entry Order.");
 
-                        if (curCandle.disparity_rate >= 5.0)
+                        if (Math.Abs(curCandle.disparity_rate) >= 5.0)
                         {
                             postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
                             result = -1;
@@ -2463,6 +2463,14 @@ namespace CryptoBoxer
                     else if (isShort)
                     {
                         //Console.WriteLine("Try Short Entry Order.");
+
+                        if (Math.Abs(curCandle.disparity_rate) >= 5.0)
+                        {
+                            postSlack(string.Format("cancel Short Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                            result = -1;
+                            return result;
+                        }
+
 
                         if (curCandle.isCrossEMAsub(ema_cross_play))
                         {
@@ -2497,11 +2505,9 @@ namespace CryptoBoxer
                         {
                             if (curCandle.disparity_rate >= 5.0)
                             {
-                                postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-
 								// LONG予約キャンセル
                                 m_position.cancelReserveOrder();
-                                postSlack(string.Format("{0} Cancel Long Reserved.", curCandle.timestamp));
+                                postSlack(string.Format("{0} Cancel Long Reserved. DispartyRate is Over. rate={1:0.00}.", curCandle.timestamp, curCandle.disparity_rate));
 
                                 result = -1;
                                 return result;
@@ -2535,6 +2541,16 @@ namespace CryptoBoxer
                     {
                         if (isShort)
                         {
+                            if (curCandle.disparity_rate >= 5.0)
+                            {
+                                // SHORT予約キャンセル
+                                m_position.cancelReserveOrder();
+                                postSlack(string.Format("{0} Cancel Short Reserved. DispartyRate is Over. rate={1:0.00}.", curCandle.timestamp, curCandle.disparity_rate));
+
+                                result = -1;
+                                return result;
+                            }
+
                             if (curCandle.isCrossEMAsub(ema_cross_play))
                             {
 
