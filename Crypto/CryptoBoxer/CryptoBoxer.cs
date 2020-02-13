@@ -2409,6 +2409,7 @@ namespace CryptoBoxer
                 bool isShort = isConditionShortEntryFL(next_open);
 
                 const double ema_cross_play = 700.0;//1500.0;//1400.0;
+				const double disparity_border = 4.9;
 
 
                 if (m_position.isNone())
@@ -2430,16 +2431,19 @@ namespace CryptoBoxer
                         }
                     }
 
-                    if (isLong)
+					if (isLong && (curCandle.disparity_rate >= disparity_border))
                     {
-                        //Console.WriteLine("Try Long Entry Order.");
+                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                    }
 
-                        if (Math.Abs(curCandle.disparity_rate) >= 5.0)
-                        {
-                            postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                            result = -1;
-                            return result;
-                        }
+					if (isShort && curCandle.disparity_rate <= -disparity_border)
+                    {
+                        postSlack(string.Format("cancel Short Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+                    }
+
+					if (isLong && (curCandle.disparity_rate < disparity_border) )
+                    {
+                        //Console.WriteLine("Try Long Entry Order.");                  
 
                         if (curCandle.isCrossEMAsub(ema_cross_play))
                         {
@@ -2464,18 +2468,10 @@ namespace CryptoBoxer
 
                         }
                     }
-                    else if (isShort)
+					else if (isShort && (curCandle.disparity_rate > -disparity_border) )
                     {
                         //Console.WriteLine("Try Short Entry Order.");
-
-                        if (Math.Abs(curCandle.disparity_rate) >= 5.0)
-                        {
-                            postSlack(string.Format("cancel Short Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                            result = -1;
-                            return result;
-                        }
-
-
+                                          
                         if (curCandle.isCrossEMAsub(ema_cross_play))
                         {
 
@@ -2507,7 +2503,7 @@ namespace CryptoBoxer
                     {
                         if (isLong)
                         {
-                            if (curCandle.disparity_rate >= 5.0)
+							if (curCandle.disparity_rate >= disparity_border)
                             {
 								// LONG予約キャンセル
                                 m_position.cancelReserveOrder();
@@ -2545,7 +2541,7 @@ namespace CryptoBoxer
                     {
                         if (isShort)
                         {
-                            if (curCandle.disparity_rate >= 5.0)
+							if (curCandle.disparity_rate <= -disparity_border)
                             {
                                 // SHORT予約キャンセル
                                 m_position.cancelReserveOrder();
