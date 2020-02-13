@@ -1062,22 +1062,26 @@ namespace CryptoBoxer
 
                             if (m_position.isEntryCompleted())
                             {
-                                Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frontL={3:0},frontS={4:0}"
+								Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},sfd={6:0.00}"
                                                   , curCandle.timestamp
                                                   , m_position.calcProfit(curCandle.last)
                                                   , curCandle.last
                                                   , m_frontlineLong
                                                   , m_frontlineShort
+								                  , curCandle.ema_sub
+								                  , curCandle.disparity_rate
                                 );
                             }
                             else
                             {
-                                Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frontL={3:0},frontS={4:0}"
+								Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},sfd={6:0.00}"
                                                   , curCandle.timestamp
                                                   , m_profitSum
                                                   , curCandle.last
                                                   , m_frontlineLong
                                                   , m_frontlineShort
+								                  , curCandle.ema_sub
+                                                  , curCandle.disparity_rate
                                 );
                             }
                         }
@@ -2893,7 +2897,7 @@ namespace CryptoBoxer
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineShort, threshold, past_num, 1))
                 {
-                    postSlack(string.Format("** hang around Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), true);
+                    //postSlack(string.Format("** hang around Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), true);
                     result = false;
                     return result;
                 }
@@ -2991,7 +2995,7 @@ namespace CryptoBoxer
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineLong, threshold, past_num, 1))
                 {
-                    postSlack(string.Format("** hang around Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
+                    //postSlack(string.Format("** hang around Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
 					//Console.WriteLine("isConditionLongEntryFL false3");
 					result = false;
                     return result;
