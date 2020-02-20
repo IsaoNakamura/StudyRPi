@@ -2425,6 +2425,7 @@ namespace CryptoBoxer
 
                 const double disparity_border = 4.9;
 
+                const int leave_cnt = 88;
 
                 if (m_position.isNone())
                 {
@@ -2531,7 +2532,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (isCrossEma)
+                            if (isCrossEma || (isBeg && (back_cnt > leave_cnt))
                             {
                                 SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                                 if (retObj == null)
@@ -2569,7 +2570,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (isCrossEma)
+                            if (isCrossEma || (isBeg && (back_cnt > leave_cnt)) )
                             {
 
                                 SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
@@ -2652,6 +2653,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                const int leave_cnt = 88;
 
                 if (m_position.isNone())
                 {
@@ -2662,7 +2664,7 @@ namespace CryptoBoxer
                     {
                         if (isGolden)
                         {
-                            if (isBeg && (curCandle.last <= curCandle.ema_sub))
+                            if (isBeg && (curCandle.last <= curCandle.ema_sub /*|| isCrossEma*/))
                             {
 
                                 // 注文成功
@@ -2686,7 +2688,7 @@ namespace CryptoBoxer
                     {
                         if (!isGolden)
                         {
-                            if (isBeg && (curCandle.last >= curCandle.ema_sub) )
+                            if (isBeg && (curCandle.last >= curCandle.ema_sub/* || isCrossEma*/))
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -2713,7 +2715,7 @@ namespace CryptoBoxer
                     {
                         if (isLong && isGolden)
                         {
-                            if (isCrossEma/* || curCandle.last <= curCandle.ema_sub*/)
+                            if (isCrossEma || (isBeg && (back_cnt>leave_cnt) ) /* || curCandle.last <= curCandle.ema_sub*/)
                             {
 
                                 // 注文成功
@@ -2738,7 +2740,7 @@ namespace CryptoBoxer
                     {
                         if (isShort && !isGolden)
                         {
-                            if (isCrossEma/* || curCandle.last >= curCandle.ema_sub*/)
+                            if (isCrossEma || (isBeg && (back_cnt>leave_cnt) ) /* || curCandle.last >= curCandle.ema_sub*/)
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
