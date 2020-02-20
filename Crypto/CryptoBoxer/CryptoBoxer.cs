@@ -2531,7 +2531,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (curCandle.isCrossEMAsub(ema_cross_play))
+                            if (isCrossEma)
                             {
                                 SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                                 if (retObj == null)
