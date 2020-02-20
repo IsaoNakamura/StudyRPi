@@ -2532,7 +2532,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (isCrossEma || (isBeg && (back_cnt > leave_cnt))
+                            if (isCrossEma || (isBeg && (back_cnt > leave_cnt)) )
                             {
                                 SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                                 if (retObj == null)
