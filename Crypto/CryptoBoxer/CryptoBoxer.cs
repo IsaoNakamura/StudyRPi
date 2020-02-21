@@ -960,6 +960,8 @@ namespace CryptoBoxer
 
                     double vol_diff = volume - pre_volume;
 
+                    bool isSfd = true;
+
 
                     bool isClose = false;
                     if (!isLastConnect)
@@ -1048,10 +1050,11 @@ namespace CryptoBoxer
 
                             // 現物(BTC_JPY)のTickerを取得
                             Ticker ticker_spot = await Ticker.GetTickerAsync("BTC_JPY");
+                            double spot_last = 0.0;
                             if (ticker_spot != null)
                             {
                                 // FXと現物の価格乖離率を算出
-                                double spot_last = ticker_spot.ltp;
+                                spot_last = ticker_spot.ltp;
                                 double disparity_rate = (curCandle.last - spot_last) / spot_last * 100.0;
                                 curCandle.disparity_rate = disparity_rate;
                             }
@@ -1083,6 +1086,25 @@ namespace CryptoBoxer
 								                  , curCandle.ema_sub
                                                   , curCandle.disparity_rate
                                 );
+                            }
+
+                            if (Math.Abs(curCandle.disparity_rate) >= 4.9)
+                            {
+                                // SFD
+                                if (!isSfd)
+                                {
+                                    isSfd = true;
+                                    postSlack(string.Format("DispartyRate is Over. rate={0:0.00}. fx={1:0} btc={2:0}", curCandle.disparity_rate, curCandle.last, spot_last));
+                                }
+                            }
+                            else
+                            {
+                                // no SFD
+                                if (isSfd)
+                                {
+                                    isSfd = false;
+                                    postSlack(string.Format("DispartyRate is Under. rate={0:0.00}. fx={1:0} btc={2:0}", curCandle.disparity_rate, curCandle.last, spot_last));
+                                }
                             }
                         }
                         // 次の更新時間を更新
@@ -1655,7 +1677,7 @@ namespace CryptoBoxer
                 {// LONGの場合
 
                     int long_lc_cnt = 0;
-                    bool isCond = isConditionLongExitFL(ref long_lc_cnt);
+                    bool isCond = isConditionLongExitFL(ref long_lc_cnt, false);
 
                     if (isCond)
                     {
@@ -1682,7 +1704,7 @@ namespace CryptoBoxer
                 else if (m_position.isShort())
                 {// SHORTの場合
                     int short_lc_cnt = 0;
-                    bool isCond = isConditionShortExitFL(ref short_lc_cnt);
+                    bool isCond = isConditionShortExitFL(ref short_lc_cnt, false);
 
                     if (isCond)
                     {
@@ -2446,15 +2468,15 @@ namespace CryptoBoxer
                         }
                     }
 
-                    if (isLong && (curCandle.disparity_rate >= disparity_border))
-                    {
-                        postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                    }
+     //               if (isLong && (curCandle.disparity_rate >= disparity_border))
+     //               {
+     //                   postSlack(string.Format("cancel Long Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+     //               }
 
-					if (isShort && curCandle.disparity_rate <= -disparity_border)
-                    {
-                        postSlack(string.Format("cancel Short Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
-                    }
+					//if (isShort && curCandle.disparity_rate <= -disparity_border)
+     //               {
+     //                   postSlack(string.Format("cancel Short Entry Order. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+     //               }
 
 					if (isLong && (curCandle.disparity_rate < disparity_border) )
                     {
@@ -2464,14 +2486,27 @@ namespace CryptoBoxer
                         {
                             if (isBeg && (curCandle.last <= curCandle.ema_sub))
                             {
-
-                                // 注文成功
-                                SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                                if (retObj == null)
+                                SendChildOrderResponse retObj = null;
+                                int retry_cnt = 0;
+                                while (true)
                                 {
-                                    postSlack("failed to Long Entry Order");
-                                    result = -1;
-                                    return result;
+                                    retry_cnt++;
+                                    retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                                    if (retObj == null)
+                                    {
+                                        postSlack(string.Format("failed to Long Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        System.Threading.Thread.Sleep(1000);
+                                        if (retry_cnt<=1)
+                                        {
+                                            m_config.amount = m_config.amount - 0.01;
+                                            postSlack(string.Format("failed to Long Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                            continue;
+                                        }
+                                        postSlack(string.Format("failed to Long Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        result = -1;
+                                        return result;
+                                    }
+                                    break;
                                 }
                                 // 注文成功
 
@@ -2495,12 +2530,27 @@ namespace CryptoBoxer
                         {
                             if (isBeg && (curCandle.last >= curCandle.ema_sub))
                             {
-                                SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                                if (retObj == null)
+                                SendChildOrderResponse retObj = null;
+                                int retry_cnt = 0;
+                                while (true)
                                 {
-                                    postSlack("failed to Short Entry Order");
-                                    result = -1;
-                                    return result;
+                                    retry_cnt++;
+                                    retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount); ;
+                                    if (retObj == null)
+                                    {
+                                        
+                                        System.Threading.Thread.Sleep(1000);
+                                        if (retry_cnt <= 1)
+                                        {
+                                            m_config.amount = m_config.amount - 0.01;
+                                            postSlack(string.Format("failed to Short Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                            continue;
+                                        }
+                                        postSlack(string.Format("failed to Short Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        result = -1;
+                                        return result;
+                                    }
+                                    break;
                                 }
                                 // 注文成功
 
@@ -2534,12 +2584,27 @@ namespace CryptoBoxer
 
                             if (isCrossEma || (isBeg && (back_cnt > leave_cnt)) )
                             {
-                                SendChildOrderResponse retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                                if (retObj == null)
+                                SendChildOrderResponse retObj = null;
+                                int retry_cnt = 0;
+                                while (true)
                                 {
-                                    postSlack("failed to Long Entry Order");
-                                    result = -1;
-                                    return result;
+                                    retry_cnt++;
+                                    retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                                    if (retObj == null)
+                                    {
+                                        postSlack(string.Format("failed to Long(Reserved) Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        System.Threading.Thread.Sleep(1000);
+                                        if (retry_cnt <= 1)
+                                        {
+                                            m_config.amount = m_config.amount - 0.01;
+                                            postSlack(string.Format("failed to Long(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                            continue;
+                                        }
+                                        postSlack(string.Format("failed to Long(Reserved) Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        result = -1;
+                                        return result;
+                                    }
+                                    break;
                                 }
                                 // 注文成功
 
@@ -2573,12 +2638,27 @@ namespace CryptoBoxer
                             if (isCrossEma || (isBeg && (back_cnt > leave_cnt)) )
                             {
 
-                                SendChildOrderResponse retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                                if (retObj == null)
+                                SendChildOrderResponse retObj = null;
+                                int retry_cnt = 0;
+                                while (true)
                                 {
-                                    postSlack("failed to Short Entry Order");
-                                    result = -1;
-                                    return result;
+                                    retry_cnt++;
+                                    retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount); ;
+                                    if (retObj == null)
+                                    {
+
+                                        System.Threading.Thread.Sleep(1000);
+                                        if (retry_cnt <= 1)
+                                        {
+                                            m_config.amount = m_config.amount - 0.01;
+                                            postSlack(string.Format("failed to Short(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                            continue;
+                                        }
+                                        postSlack(string.Format("failed to Short(Reserved) Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        result = -1;
+                                        return result;
+                                    }
+                                    break;
                                 }
                                 // 注文成功
 
@@ -3089,7 +3169,7 @@ namespace CryptoBoxer
             return result;
         }
 
-        public bool isConditionShortExitFL(ref int short_lc_cnt)
+        public bool isConditionShortExitFL(ref int short_lc_cnt, bool onlyConsole = true)
         {
             bool result = false;
             try
@@ -3127,16 +3207,16 @@ namespace CryptoBoxer
                 {
                     // フロントラインがENTRY位置と同じ場合
 
-                    if (isConditionShortLosscut() /*|| isGolden*/)
+                    if (isConditionShortLosscut() /*|| isGolden || (!isGolden && !isBeg)*/ )
                     {
                         // EXIT
-                        postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineShort), true);
+                        postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineShort), onlyConsole);
                         result = true;
 
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
 
-						short_lc_cnt++;
+                        short_lc_cnt++;
                     }
                     else if (profit >= m_config.frontline_ahead)
                     {
@@ -3144,7 +3224,7 @@ namespace CryptoBoxer
                         double forward = Math.Round(profit * forward_rate);
                         m_frontlineShort = m_frontlineShort - forward;
                         // SHORT継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), true);
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                         result = false;
                     }
                     else if (profit >= (m_config.frontline_ahead * 0.1))
@@ -3153,36 +3233,54 @@ namespace CryptoBoxer
                         double forward = Math.Round(profit * 0.1);
                         m_frontlineShort = m_frontlineShort - forward;
                         // SHORT継続
-                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), true);
+                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                         result = false;
                     }
                     else
                     {
-						//const int past_num = 10;
-						//if ((profit >= 0) && (m_candleBuf.isFullUpPast(m_position.entry_price, past_num, 1)))
-						//{
-						//	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), true);
-						//	result = true;
+                        //const int past_num = 10;
+                        //if ((profit >= 0) && (m_candleBuf.isFullUpPast(m_position.entry_price, past_num, 1)))
+                        //{
+                        //	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
+                        //	result = true;
 
-						//	// 最前線を後退
-						//	m_frontlineShort = curCandle.last;
-						//}
-						//else
-						{
-							// 最前線を維持
-							// SHORT継続
-							//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
-							result = false;
-						}
+                        //	// 最前線を後退
+                        //	m_frontlineShort = curCandle.last;
+                        //}
+                        //else
+                        {
+                            // 最前線を維持
+                            // SHORT継続
+                            //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
+                            result = false;
+                        }
                     }
                 }
                 else
                 {
                     // 何回か最前線を前進させている場合
-                    if (profit <= 0 || isGolden)
+                    if (profit <= 0 )
+                    //if((m_position.entry_price - curCandle.last) <= 0)
                     {
                         // EXIT
-                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineShort), true);
+                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineShort), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
+                    else if (isGolden)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
+                    else if (!isGolden && !isBeg)
+                    {
+                        postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
                         result = true;
 
                         // 最前線を後退
@@ -3194,15 +3292,15 @@ namespace CryptoBoxer
                         double forward = Math.Round(profit * forward_rate2);
                         m_frontlineShort = m_frontlineShort - forward;
                         // SHORT継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), true);
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                         result = false;
                     }
                     else
                     {
-						// 最前線を維持
-						// SHORT継続
-						//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
-						result = false;
+                        // 最前線を維持
+                        // SHORT継続
+                        //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontline);
+                        result = false;
                     }
                 }
 
@@ -3223,7 +3321,7 @@ namespace CryptoBoxer
 
 
 
-        public bool isConditionLongExitFL(ref int long_lc_cnt)
+        public bool isConditionLongExitFL(ref int long_lc_cnt, bool onlyConsole = true)
         {
             bool result = false;
             try
@@ -3259,10 +3357,10 @@ namespace CryptoBoxer
                 if (Math.Abs(m_frontlineLong - m_position.entry_price) <= double.Epsilon)
                 {
 					// フロントラインがENTRY位置と同じ場合
-					if (isConditionLongLosscut() /*|| !isGolden*/)
-					{
+					if (isConditionLongLosscut() /*|| !isGolden || (isGolden && !isBeg)*/)
+                    {
 						// EXIT
-						postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), true);
+						postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), onlyConsole);
 						result = true;
 
 						// 最前線を後退
@@ -3276,7 +3374,7 @@ namespace CryptoBoxer
 						double forward = Math.Round(profit * forward_rate);
 						m_frontlineLong = m_frontlineLong + forward;
 						// LONG継続
-						postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
+						postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
 						result = false;
 					}
                     else if (profit >= (m_config.frontline_ahead * 0.1))
@@ -3285,37 +3383,56 @@ namespace CryptoBoxer
                         double forward = Math.Round(profit * 0.1);
                         m_frontlineLong = m_frontlineLong + forward;
                         // LONG継続
-                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
+                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
                         result = false;
                     }
                     else
 					{
-						//const int past_num = 10;
-						//if ((profit >= 0) && (m_candleBuf.isFullDownPast(m_position.entry_price, past_num, 1)))
-						//{
-						//	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), true);
-						//	result = true;
+                        //const int past_num = 10;
+                        //if ((profit >= 0) && (m_candleBuf.isFullDownPast(m_position.entry_price, past_num, 1)))
+                        //{
+                        //	postSlack(string.Format("## front-line is escape ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
+                        //	result = true;
 
-						//	// 最前線を後退
-						//	m_frontlineLong = curCandle.last;
-                            
-						//}
-						//else
-						{
-							// 最前線を維持
-							// LONG継続
-							//Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong);
-							result = false;
+                        //	// 最前線を後退
+                        //	m_frontlineLong = curCandle.last;
+
+                        //}
+                        //else
+                        {
+                            // 最前線を維持
+                            // LONG継続
+                            //Console.WriteLine("## front-line is keep ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong);
+                            result = false;
 					    }
                     }
                 }
                 else
                 {
                     // 何回か最前線を前進させている場合
-                    if (profit <= 0 || !isGolden)
+                    if (profit <= 0)
+                    //if( (curCandle.last-m_position.entry_price) <= 0)
                     {
                         // EXIT
-                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), true);
+                        postSlack(string.Format("## front-line is back ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
+                    else if (!isGolden)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
+                    else if (isGolden && !isBeg)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
                         result = true;
 
                         // 最前線を後退
@@ -3327,7 +3444,7 @@ namespace CryptoBoxer
                         double forward = Math.Round(profit * forward_rate2);
                         m_frontlineLong = m_frontlineLong + forward;
                         // LONG継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), true);
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
                         result = false;
                     }
                     else
