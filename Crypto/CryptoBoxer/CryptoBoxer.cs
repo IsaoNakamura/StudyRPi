@@ -914,6 +914,8 @@ namespace CryptoBoxer
                 int cycle_cnt = 0;
                 double pre_volume = 0.0;
 
+				bool isSfd = true;
+
                 m_frontlineLong = m_frontlineShort = curCandle.ema;
 
 
@@ -960,7 +962,7 @@ namespace CryptoBoxer
 
                     double vol_diff = volume - pre_volume;
 
-                    bool isSfd = true;
+                    
 
 
                     bool isClose = false;
