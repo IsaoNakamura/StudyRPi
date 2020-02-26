@@ -728,7 +728,7 @@ namespace CryptoBoxer
             //onlyConsole = true;
             if (!onlyConsole)
             {
-                await PostMessage.Request(m_authSlack, text);
+				await PostMessage.Request(m_authSlack, text);
             }
         }
 
