@@ -2483,16 +2483,16 @@ namespace CryptoBoxer
 
                     if (isLong || isShort)
                     {
-                        //bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
-                        //if (isActive)
-                        //{
-                        //    postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
-                        //        , isLong
-                        //        , isShort
-                        //    ));
-                        //    result = -1;
-                        //    return result;
-                        //}
+                        bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
+                        if (isActive)
+                        {
+                            postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
+                                , isLong
+                                , isShort
+                            ));
+                            result = -1;
+                            return result;
+                        }
 
                         if (isMaintenanceBitflyer(curCandle.timestamp))
                         {
