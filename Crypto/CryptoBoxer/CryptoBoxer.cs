@@ -2483,16 +2483,16 @@ namespace CryptoBoxer
 
                     if (isLong || isShort)
                     {
-                        bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
-                        if (isActive)
-                        {
-                            postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
-                                , isLong
-                                , isShort
-                            ));
-                            result = -1;
-                            return result;
-                        }
+                        //bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
+                        //if (isActive)
+                        //{
+                        //    postSlack(string.Format("cant's Trade. Orders or Positions is exists. isLong={0} isShort={1}"
+                        //        , isLong
+                        //        , isShort
+                        //    ));
+                        //    result = -1;
+                        //    return result;
+                        //}
 
                         if (isMaintenanceBitflyer(curCandle.timestamp))
                         {
@@ -2820,6 +2820,7 @@ namespace CryptoBoxer
                         if (isGolden)
                         {
                             if (isBeg || (/*curCandle.last <= curCandle.ema_sub|| */ isCrossEma))
+                            //if (isBeg && (/*curCandle.last <= curCandle.ema_sub ||*/ isCrossEma))
                             {
 
                                 // 注文成功
@@ -2844,6 +2845,7 @@ namespace CryptoBoxer
                         if (!isGolden)
                         {
                             if (isBeg || (/*curCandle.last >= curCandle.ema_sub || */isCrossEma))
+                            //if (isBeg && (/*curCandle.last >= curCandle.ema_sub ||*/ isCrossEma))
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -2871,6 +2873,7 @@ namespace CryptoBoxer
                         if (/*isLong && */isGolden)
                         {
                             if ( isCrossEma || isBeg || (back_cnt>leave_cnt))
+                            //if (isCrossEma && isBeg && (isBeg || back_cnt > leave_cnt))
                             {
 
                                 // 注文成功
@@ -2896,6 +2899,7 @@ namespace CryptoBoxer
                         if (/*isShort && */!isGolden)
                         {
                             if ( isCrossEma || isBeg || (back_cnt>leave_cnt) )
+                            //if (isCrossEma && isBeg && (isBeg || back_cnt > leave_cnt))
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -3282,7 +3286,7 @@ namespace CryptoBoxer
                 //}
 
                 double forward_rate = 0.5;
-                double forward_rate2 =0.4 + rate;//  0.5 + 0.1 * rate;//
+                double forward_rate2 = 0.4 + rate;//  0.5 + 0.1 * rate;//
 
                 double increase = rate;
                 if (increase > ahead_param)
@@ -3291,7 +3295,7 @@ namespace CryptoBoxer
                 }
 
                 //double frontline_ahead = curCandle.vola_ma * (ahead_param - increase);//  m_config.frontline_ahead; //
-                double frontline_ahead = curCandle.vola_ma * ahead_param;
+                double frontline_ahead = m_config.frontline_ahead; //curCandle.vola_ma * ahead_param; //
 
                 bool isGolden = false;
                 bool isBeg = false;
@@ -3465,7 +3469,7 @@ namespace CryptoBoxer
                 }
 
                 //double frontline_ahead = curCandle.vola_ma * (ahead_param - increase);//  m_config.frontline_ahead; //
-                double frontline_ahead = curCandle.vola_ma * ahead_param;
+                double frontline_ahead = m_config.frontline_ahead;//curCandle.vola_ma * ahead_param;// 
 
 
                 bool isGolden = false;
