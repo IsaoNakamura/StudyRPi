@@ -62,6 +62,8 @@ namespace UtilityTrade
 
         public double amount { get; set; }
 
+        public int frontline_fwd_num { get; set; }
+
         public Position()
         {
             init();
@@ -86,6 +88,8 @@ namespace UtilityTrade
             strategy_type = StrategyType.UNKNOWN;
 
             amount = 0.0;
+
+            frontline_fwd_num = 0;
 
             return;
         }

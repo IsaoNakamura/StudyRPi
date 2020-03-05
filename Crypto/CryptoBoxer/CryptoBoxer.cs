@@ -74,8 +74,8 @@ namespace CryptoBoxer
 
             m_posArray = null;
 
-            m_min = 0.0;
-            m_max = 0.0;
+            m_min = Double.MaxValue;
+            m_max = Double.MinValue;
             m_position = null;
 
             m_authBitflyer = null;
@@ -497,6 +497,23 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                // MAX更新
+                {
+                    if (m_max < candle.last)
+                    {
+                        m_max = candle.last;
+                    }
+                }
+
+
+                // MIN更新
+                {
+                    if (m_min > candle.last)
+                    {
+                        m_min = candle.last;
+                    }
+                }
+
                 // EMAを算出
                 {
                     double ema = 0.0;
@@ -525,32 +542,6 @@ namespace CryptoBoxer
 
                         candle.boll_high = ma + (2.0 * stddev);
                         candle.boll_low = ma - (2.0 * stddev);
-
-                        // MAX更新
-                        if (candle.boll_high < candle.last)
-                        {
-                            if (m_max < candle.last)
-                            {
-                                m_max = candle.last;
-                            }
-                        }
-                        else
-                        {
-                            m_max = candle.boll_high;
-                        }
-
-                        // MIN更新
-                        if (candle.boll_low > candle.last)
-                        {
-                            if (m_min > candle.last)
-                            {
-                                m_min = candle.last;
-                            }
-                        }
-                        else
-                        {
-                            m_min = candle.boll_low;
-                        }
                     }
                 }
 
@@ -3271,31 +3262,16 @@ namespace CryptoBoxer
 
                 double profit = m_frontlineShort - curCandle.last;
 
-                double ahead_param = 18.0;
-
-                double profit_real = m_position.entry_price - curCandle.last;
-                double diff = m_position.entry_price - m_frontlineShort;
-                double rate = diff / profit; //profit_real / (curCandle.vola_ma * ahead_param); //curCandle.vola_ma / profit_real;
-                //if (rate < 0.0)
-                //{
-                //    rate = 0.0;
-                //}
-                //if (profit_real <= curCandle.vola_ma * ahead_param)
-                //{
-                //    rate = 0.0;
-                //}
-
                 double forward_rate = 0.5;
-                double forward_rate2 = 0.4 + rate;//  0.5 + 0.1 * rate;//
+                double forward_rate2 = 0.5;// 0.4 + rate;//  0.5 + 0.1 * rate;//
 
-                double increase = rate;
-                if (increase > ahead_param)
+                double frontline_ahead = m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                //double frontline_ahead = (m_config.frontline_ahead*0.5) + ( (m_config.frontline_ahead*0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
+                double frontline_ahead2 = frontline_ahead * 2.0;
+                if (m_position.frontline_fwd_num <= 0)
                 {
-                    increase = ahead_param;
+                    frontline_ahead2 = frontline_ahead;
                 }
-
-                //double frontline_ahead = curCandle.vola_ma * (ahead_param - increase);//  m_config.frontline_ahead; //
-                double frontline_ahead = m_config.frontline_ahead; //curCandle.vola_ma * ahead_param; //
 
                 bool isGolden = false;
                 bool isBeg = false;
@@ -3327,6 +3303,7 @@ namespace CryptoBoxer
                         // 最前線を前進
                         double forward = Math.Round(profit * forward_rate);
                         m_frontlineShort = m_frontlineShort - forward;
+                        m_position.frontline_fwd_num++;
                         // SHORT継続
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
@@ -3390,13 +3367,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
-                    else if (profit >= frontline_ahead)
+                    else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
                         double forward = Math.Round(profit * forward_rate2);
                         m_frontlineShort = m_frontlineShort - forward;
+                        m_position.frontline_fwd_num++;
                         // SHORT継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate2, frontline_ahead), onlyConsole);
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         result = false;
                     }
                     else
@@ -3445,32 +3423,18 @@ namespace CryptoBoxer
 
                 double profit = curCandle.last - m_frontlineLong;
 
-                double ahead_param = 18.0;
-
-                double profit_real = curCandle.last - m_position.entry_price;
-                double diff = m_frontlineLong - m_position.entry_price;
-                double rate = diff / profit; //rate = profit_real / (curCandle.vola_ma * ahead_param); //curCandle.vola_ma / profit_real;
-                //if (rate < 0.0)
-                //{
-                //    rate = 0.0;
-                //}
-                //if (profit_real <= curCandle.vola_ma * ahead_param)
-                //{
-                //    rate = 0.0;
-                //}
 
                 double forward_rate = 0.5;
-                double forward_rate2 = 0.4 + rate;//  0.5 + 0.1 * rate;//
+                double forward_rate2 = 0.5;
 
-                double increase = rate;
-                if (increase > ahead_param)
+
+                double frontline_ahead = m_config.frontline_ahead;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                //double frontline_ahead = (m_config.frontline_ahead * 0.5) + ((m_config.frontline_ahead * 0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
+                double frontline_ahead2 = frontline_ahead * 2.0;
+                if (m_position.frontline_fwd_num <= 0)
                 {
-                    increase = ahead_param;
+                    frontline_ahead2 = frontline_ahead;
                 }
-
-                //double frontline_ahead = curCandle.vola_ma * (ahead_param - increase);//  m_config.frontline_ahead; //
-                double frontline_ahead = m_config.frontline_ahead;//curCandle.vola_ma * ahead_param;// 
-
 
                 bool isGolden = false;
                 bool isBeg = false;
@@ -3501,8 +3465,9 @@ namespace CryptoBoxer
 						// 最前線を前進
 						double forward = Math.Round(profit * forward_rate);
 						m_frontlineLong = m_frontlineLong + forward;
-						// LONG継続
-						postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
+                        m_position.frontline_fwd_num++;
+                        // LONG継続
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
 						result = false;
 					}
                     else if (profit >= (frontline_ahead * 0.1))
@@ -3566,13 +3531,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
-                    else if (profit >= frontline_ahead)
+                    else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
                         double forward = Math.Round(profit * forward_rate2);
                         m_frontlineLong = m_frontlineLong + forward;
+                        m_position.frontline_fwd_num++;
                         // LONG継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate2, frontline_ahead), onlyConsole);
+                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         result = false;
                     }
                     else
