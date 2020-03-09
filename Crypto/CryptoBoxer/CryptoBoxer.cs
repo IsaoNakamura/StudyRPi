@@ -2465,7 +2465,7 @@ namespace CryptoBoxer
 
                 const double disparity_border = 4.9;
 
-                const int leave_cnt = 299;
+                //const int leave_cnt = 299;
 
                 if (m_position.isNone())
                 {
@@ -2597,7 +2597,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (isCrossEma || isBeg || (back_cnt > leave_cnt))
+                            if (isCrossEma || isBeg /*|| (back_cnt > leave_cnt)*/)
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -2652,7 +2652,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if (isCrossEma || isBeg || (back_cnt > leave_cnt) )
+                            if (isCrossEma || isBeg/* || (back_cnt > leave_cnt)*/ )
                             {
 
                                 SendChildOrderResponse retObj = null;
@@ -2799,7 +2799,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                const int leave_cnt = 299;//88;
+               //const int leave_cnt = 299;//88;
 
                 if (m_position.isNone())
                 {
@@ -2863,9 +2863,9 @@ namespace CryptoBoxer
                     {
                         if (/*isLong && */isGolden)
                         {
-                            if ( isCrossEma || isBeg || (back_cnt>leave_cnt))
-                            //if (isCrossEma && isBeg && (isBeg || back_cnt > leave_cnt))
-                            {
+                            //if ( isCrossEma || isBeg || (back_cnt>leave_cnt))
+                            if (isCrossEma || isBeg)
+                                {
 
                                 // 注文成功
                                 string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
@@ -2889,8 +2889,8 @@ namespace CryptoBoxer
                     {
                         if (/*isShort && */!isGolden)
                         {
-                            if ( isCrossEma || isBeg || (back_cnt>leave_cnt) )
-                            //if (isCrossEma && isBeg && (isBeg || back_cnt > leave_cnt))
+                            //if ( isCrossEma || isBeg || (back_cnt>leave_cnt) )
+                            if (isCrossEma || isBeg)
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
