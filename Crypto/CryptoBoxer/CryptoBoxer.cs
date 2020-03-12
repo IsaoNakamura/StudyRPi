@@ -2577,7 +2577,7 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-                        if (isGolden && isBeg)
+                        if (isGolden)
                         {
 							if (curCandle.disparity_rate >= disparity_border)
                             {
@@ -2589,7 +2589,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-							if ( isCrossEma )
+							if (isCrossEma && isBeg)
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -2632,7 +2632,7 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-                        if (!isGolden && isBeg)
+                        if (!isGolden)
                         {
 							if (curCandle.disparity_rate <= -disparity_border)
                             {
@@ -2644,7 +2644,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-							if ( isCrossEma )
+							if (isCrossEma && isBeg)
                             {
 
                                 SendChildOrderResponse retObj = null;
@@ -2800,8 +2800,8 @@ namespace CryptoBoxer
 
 					if (isLong && isGolden)
 					{
-						if (isBeg || (isBeg && isCrossEma) )
-						{
+                        if (isBeg || (isBeg && isCrossEma) )
+                        {
 
 							// 注文成功
 							string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
@@ -2813,7 +2813,7 @@ namespace CryptoBoxer
 							long_entry_cnt++;
 						}
 						else
-						{
+                        {
 							// LONG予約
 							m_position.reserveLongOrder();
 							postSlack(string.Format("{0} Long Reserved. ema={1:0} diff={2:0} isGold={3} bkCnt={4} isBeg={5}", curCandle.timestamp, curCandle.ema, curCandle.last - curCandle.ema, isGolden, back_cnt, isBeg), true);
@@ -2821,8 +2821,8 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-						if (isBeg || (isBeg && isCrossEma) )
-						{
+                        if (isBeg || (isBeg && isCrossEma) )
+                        {
 							// 注文成功
 							string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
@@ -2845,9 +2845,9 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-						if (isGolden && isBeg)
+						if (isGolden)
                         {
-							if ( isCrossEma )
+							if (isCrossEma && isBeg)
                             {
 
                                 // 注文成功
@@ -2870,9 +2870,9 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-						if (!isGolden && isBeg)
+						if (!isGolden)
                         {
-							if ( isCrossEma )
+							if (isCrossEma && isBeg)
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
