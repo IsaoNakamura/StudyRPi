@@ -2498,7 +2498,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
                         
-						if ( isBeg || (isBeg && isCrossEma) )
+						if (isBeg || isCrossEma)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2527,7 +2527,7 @@ namespace CryptoBoxer
 
                             postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4}", curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg));
                         }
-                        else
+						else if(!isBeg)
                         {
                             // LONG予約
                             m_position.reserveLongOrder();
@@ -2538,7 +2538,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Entry Order.");
                         
-						if ( isBeg || (isBeg && isCrossEma) )
+						if (isBeg || isCrossEma)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2567,7 +2567,7 @@ namespace CryptoBoxer
                             m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                             postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4}", curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg));
                         }
-                        else
+						else if (!isBeg)
                         {
                             // SHORT予約
                             m_position.reserveShortOrder();
@@ -2591,7 +2591,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-							if (isCrossEma && isBeg)
+							if (/*isCrossEma &&*/ isBeg)
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -2646,7 +2646,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-							if (isCrossEma && isBeg)
+							if (/*isCrossEma &&*/ isBeg)
                             {
 
                                 SendChildOrderResponse retObj = null;
@@ -2802,7 +2802,7 @@ namespace CryptoBoxer
 
 					if (isLong && isGolden)
 					{
-                        if (isBeg || (isBeg && isCrossEma) )
+                        if (isBeg || isCrossEma)
                         {
 
 							// 注文成功
@@ -2814,7 +2814,7 @@ namespace CryptoBoxer
 
 							long_entry_cnt++;
 						}
-						else
+						else if (!isBeg) //if (!isCrossEma)//
                         {
 							// LONG予約
 							m_position.reserveLongOrder();
@@ -2823,7 +2823,7 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-                        if (isBeg || (isBeg && isCrossEma) )
+                        if (isBeg || isCrossEma)
                         {
 							// 注文成功
 							string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -2834,7 +2834,7 @@ namespace CryptoBoxer
 
 							short_entry_cnt++;
 						}
-                        else
+						else if (!isBeg)//if (!isCrossEma)//
                         {
                             // SHORT予約
                             m_position.reserveShortOrder();
@@ -2849,7 +2849,8 @@ namespace CryptoBoxer
                     {
 						if (isGolden)
                         {
-							if (isCrossEma && isBeg)
+							//if (isCrossEma)
+							if (/*isCrossEma ||*/ isBeg)
                             {
 
                                 // 注文成功
@@ -2874,7 +2875,8 @@ namespace CryptoBoxer
                     {
 						if (!isGolden)
                         {
-							if (isCrossEma && isBeg)
+							//if (isCrossEma)
+							if (/*isCrossEma ||*/ isBeg)
                             {
                                 // 注文成功
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
