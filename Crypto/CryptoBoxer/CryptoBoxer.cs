@@ -2449,6 +2449,8 @@ namespace CryptoBoxer
 
                 bool isLong = isConditionLongEntryFL(next_open, false);
                 bool isShort = isConditionShortEntryFL(next_open, false);
+				//isLong = false;
+				//isShort = false;
 
                 const double ema_cross_play = 1700.0;
                 bool isCrossEma = curCandle.isCrossEMAsub(ema_cross_play);
@@ -2620,7 +2622,7 @@ namespace CryptoBoxer
                             }
                             else
                             {
-                                postSlack(string.Format("Stay Long Reserved. isLong={0} isGold={1} bkCnt={2} isBeg={3} crossEma={4} posEma={5:0}", isLong, isGolden, back_cnt, isBeg, isCrossEma, curCandle.last - curCandle.ema_sub));
+                                //postSlack(string.Format("Stay Long Reserved. isLong={0} isGold={1} bkCnt={2} isBeg={3} crossEma={4} posEma={5:0}", isLong, isGolden, back_cnt, isBeg, isCrossEma, curCandle.last - curCandle.ema_sub));
                             }
                         }
                         else
@@ -2678,7 +2680,7 @@ namespace CryptoBoxer
                             }
                             else
                             {
-                                postSlack(string.Format("Stay Short Reserved. isShort={0} isDead={1} bkCnt={2} isBeg={3} crossEma={4} posEma={5:0}", isShort, !isGolden, back_cnt, isBeg, isCrossEma, curCandle.last - curCandle.ema_sub));
+                                //postSlack(string.Format("Stay Short Reserved. isShort={0} isDead={1} bkCnt={2} isBeg={3} crossEma={4} posEma={5:0}", isShort, !isGolden, back_cnt, isBeg, isCrossEma, curCandle.last - curCandle.ema_sub));
                             }
                         }
                         else
@@ -2989,7 +2991,7 @@ namespace CryptoBoxer
                             }
 						}
 					}
-
+                    
 					if (profit <= -3000.0)
                     {
                         result = true;
