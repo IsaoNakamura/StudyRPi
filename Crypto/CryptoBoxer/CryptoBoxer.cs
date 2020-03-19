@@ -3062,8 +3062,8 @@ namespace CryptoBoxer
 
                 //}            
 
-                double threshold = Math.Abs(m_config.losscut_value) + curCandle.vola_ma;
-                const int past_num = 3;
+                double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
+                const int past_num = 2;
 
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineShort, threshold, past_num, 1))
@@ -3159,8 +3159,8 @@ namespace CryptoBoxer
                 double position = curCandle.last - m_frontlineLong;
                 //double position = next_open - m_frontlineLong;
 
-                double threshold = Math.Abs(m_config.losscut_value) + curCandle.vola_ma;
-                const int past_num = 3;
+                double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                const int past_num = 2;
 
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineLong, threshold, past_num, 1))
