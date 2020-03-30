@@ -541,76 +541,53 @@ namespace UtilityTrade
             return result;
         }
 
-        public bool isCrossEMA(double play=0.0)
+        public bool isCross(double value, double play = 0.0)
         {
-            if (ema >= (low-play) && ema <= (high+play))
+            if (value >= (low - play) && value <= (high + play))
             {
                 return true;
             }
             return false;
+        }
+
+        public bool isCrossEMA(double play=0.0)
+        {
+            return isCross(ema, play);
         }
 
         public bool isCrossEMAsub(double play = 0.0)
         {
-            if (ema_sub >= (low - play) && ema_sub <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(ema_sub, play);
         }
 
         public bool isCrossMA(double play = 0.0)
         {
-            if (ma >= (low - play) && ma <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(ma, play);
         }
 
         public bool isCrossMATop(double play = 0.0)
         {
-            if (ma_top >= (low - play) && ma_top <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(ma_top, play);
         }
 
         public bool isCrossBBHigh(double play = 0.0)
         {
-            if (boll_high >= (low - play) && boll_high <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(boll_high, play);
         }
 
         public bool isCrossBBLow(double play = 0.0)
         {
-            if (boll_low >= (low - play) && boll_low <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(boll_low, play);
         }
 
         public bool isCrossBBHighTop(double play = 0.0)
         {
-            if (boll_high_top >= (low - play) && boll_high_top <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(boll_high_top, play);
         }
 
         public bool isCrossBBLowTop(double play = 0.0)
         {
-            if (boll_low_top >= (low - play) && boll_low_top <= (high + play))
-            {
-                return true;
-            }
-            return false;
+            return isCross(boll_low_top, play);
         }
 
         public bool isTouchBollHigh()
@@ -2031,13 +2008,25 @@ namespace UtilityTrade
             return result;
         }
 
-        public int getEMACrossState(out bool isGolden, out bool isFirst, out int back_cnt, out double cur_ema_length, double threshold_rate = 0.6)
+        public int getEMACrossState
+        (
+            out bool isGolden, 
+            out bool isFirst, 
+            out int back_cnt, 
+            out double cur_ema_length, 
+            out bool isTouchEma,
+            out bool isTouchEmaSub,
+            double threshold_rate = 0.6,
+            double ema_touch_play = 0.0
+        )
         {
             int result = -1;
             isGolden = false;
             isFirst = false;
             back_cnt = 0;
             cur_ema_length = 0.0;
+            isTouchEma = false;
+            isTouchEmaSub = false;
             try
             {
                 int candle_cnt = getCandleCount();
@@ -2082,8 +2071,7 @@ namespace UtilityTrade
                     // CROSS
                     cur_cross_state = 0;
                     isFirst = true;
-                }
-                
+                }              
 
                 double max_ema_length = 0.0;
                 for (int i = beg_idx; i >= 0; i--)
@@ -2097,6 +2085,22 @@ namespace UtilityTrade
 
                     double ema_length = Math.Abs(candle.ema - candle.ema_sub);
                     max_ema_length = Math.Max(ema_length, max_ema_length);
+
+                    if (!isTouchEma)
+                    {
+                        if (candle.isCrossEMA())
+                        {
+                            isTouchEma = true;
+                        }
+                    }
+
+                    if (!isTouchEmaSub)
+                    {
+                        if (candle.isCrossEMAsub())
+                        {
+                            isTouchEmaSub = true;
+                        }
+                    }
 
                     if (cur_cross_state == 1)
                     {
