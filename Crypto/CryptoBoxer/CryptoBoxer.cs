@@ -2452,6 +2452,7 @@ namespace CryptoBoxer
                 //isLong = false;
                 //isShort = false;
 
+				double beg_threshold = 0.5;
 				double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
                 if (ema_touch_play < 0.0)
                 {
@@ -2463,7 +2464,7 @@ namespace CryptoBoxer
                 double cur_ema_length = 0.0;
 				bool isCrossed = false;
 				bool isCrossedSub = false;
-				if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isCrossed, out isCrossedSub, 0.6, ema_touch_play) != 0)
+				if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isCrossed, out isCrossedSub, beg_threshold, ema_touch_play) != 0)
                 {
                     result = -1;
                     return result;
@@ -2796,7 +2797,8 @@ namespace CryptoBoxer
                         return result;
                     }
                 }
-
+                
+				double beg_threshold = 0.5;
 				double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
 				if(ema_touch_play<0.0)
 				{
@@ -2808,7 +2810,7 @@ namespace CryptoBoxer
                 double cur_ema_length = 0.0;
 				bool isCrossed = false;
 				bool isCrossedSub = false;
-                if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isCrossed, out isCrossedSub, 0.6, ema_touch_play) != 0)
+				if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isCrossed, out isCrossedSub, beg_threshold, ema_touch_play) != 0)
                 {
                     result = -1;
                     return result;
@@ -3391,14 +3393,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
-                    else if (!isGolden && !isBeg)
-                    {
-                        postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
-                        result = true;
+                    //else if (!isGolden && !isBeg)
+                    //{
+                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    result = true;
 
-                        // 最前線を後退
-                        m_frontlineShort = curCandle.last;
-                    }
+                    //    // 最前線を後退
+                    //    m_frontlineShort = curCandle.last;
+                    //}
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
@@ -3556,15 +3558,15 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
-                    else if (isGolden && !isBeg)
-                    {
-                        // EXIT
-                        postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
-                        result = true;
+                    //else if (isGolden && !isBeg)
+                    //{
+                    //    // EXIT
+                    //    postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    result = true;
 
-                        // 最前線を後退
-                        m_frontlineLong = curCandle.last;
-                    }
+                    //    // 最前線を後退
+                    //    m_frontlineLong = curCandle.last;
+                    //}
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
