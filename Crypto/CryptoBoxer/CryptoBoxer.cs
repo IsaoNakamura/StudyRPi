@@ -2975,26 +2975,33 @@ namespace CryptoBoxer
                     return result;
                 }
                 
-				{               
-					double profit = curCandle.last - m_position.entry_price;
+				{
+                    double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                    const int past_num = 2;
+
+                    double profit = curCandle.last - m_position.entry_price;
 					if (profit <= m_config.losscut_value)
 					{                  
-                        if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
+                        if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
                         {
-                            if ((curCandle.last - curCandle.ema) > 0.0)
+                            if ((curCandle.last - curCandle.ema_sub) > 0.0)
                             {
                                 result = true;
                                 return result;
                             }
+                            else
+                            {
+                                result = false;
+                            }
 						}
 					}
 
-					if (profit <= -3000.0)
-					{
-						result = true;
+                    if (profit <= -7000.0)
+                    {
+                        result = true;
                         return result;
-					}
-				}
+                    }
+                }
 
             }
             catch (Exception ex)
@@ -3026,26 +3033,33 @@ namespace CryptoBoxer
                     return result;
                 }
                 
-				{               
-					double profit = m_position.entry_price - curCandle.last;
+				{
+                    double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                    const int past_num = 2;
+
+                    double profit = m_position.entry_price - curCandle.last;
 					if (profit <= m_config.losscut_value)
 					{
-                        if (!m_candleBuf.isHangAround(curCandle.last, Math.Abs(m_config.losscut_value), 3))
+                        if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
                         {
-                            if ((curCandle.last - curCandle.ema) < 0.0)
+                            if ((curCandle.last - curCandle.ema_sub) < 0.0)
                             {
                                 result = true;
                                 return result;
                             }
-						}
+                            else
+                            {
+                                result = false;
+                            }
+                        }
 					}
-                    
-					if (profit <= -3000.0)
+
+                    if (profit <= -7000.0)
                     {
                         result = true;
                         return result;
                     }
-				}
+                }
             }
             catch (Exception ex)
             {
