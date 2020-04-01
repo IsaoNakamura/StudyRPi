@@ -2071,12 +2071,15 @@ namespace UtilityTrade
                     // CROSS
                     cur_cross_state = 0;
                     isFirst = true;
-                }              
+                }
+
+
 
                 double max_ema_length = 0.0;
-                for (int i = beg_idx; i >= 0; i--)
+                int itr_idx = 0;
+                for (itr_idx = beg_idx; itr_idx >= 0; itr_idx--)
                 {
-                    Candlestick candle = m_candleList[i];
+                    Candlestick candle = m_candleList[itr_idx];
                     if (candle == null)
                     {
                         continue;
@@ -2140,10 +2143,33 @@ namespace UtilityTrade
                             break;
                         }
                     }
-
                 }
 
-                if (cur_cross_state != 0)
+                //const int cross_over_limit = 2;
+                //for (int i = itr_idx - 1; i >= (itr_idx - cross_over_limit) ; i--)
+                //{
+                //    Candlestick candle = m_candleList[i];
+                //    if (candle == null)
+                //    {
+                //        continue;
+                //    }
+                //    if (!isTouchEma)
+                //    {
+                //        if (candle.isCrossEMA())
+                //        {
+                //            isTouchEma = true;
+                //        }
+                //    }
+                //    if (!isTouchEmaSub)
+                //    {
+                //        if (candle.isCrossEMAsub())
+                //        {
+                //            isTouchEmaSub = true;
+                //        }
+                //    }
+                //}
+
+                    if (cur_cross_state != 0)
                 {
                     if (cur_ema_length < (max_ema_length*threshold_rate))
                     {

@@ -64,6 +64,8 @@ namespace UtilityTrade
 
         public int frontline_fwd_num { get; set; }
 
+        public bool escape_flag { get; set; }
+
         public Position()
         {
             init();
@@ -90,6 +92,8 @@ namespace UtilityTrade
             amount = 0.0;
 
             frontline_fwd_num = 0;
+
+            escape_flag = false;
 
             return;
         }
