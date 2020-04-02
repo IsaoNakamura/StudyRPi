@@ -3582,15 +3582,15 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
-                    //else if (isGolden && !isBeg)
-                    //{
-                    //    // EXIT
-                    //    postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
-                    //    result = true;
+                    else if (isGolden && !isBeg)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                        result = true;
 
-                    //    // 最前線を後退
-                    //    m_frontlineLong = curCandle.last;
-                    //}
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
