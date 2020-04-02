@@ -2453,7 +2453,7 @@ namespace CryptoBoxer
                 //isShort = false;
 
 				double beg_threshold = 0.5;
-				double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
+                double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
                 if (ema_touch_play < 0.0)
                 {
                     ema_touch_play = 0.0;
@@ -2533,7 +2533,7 @@ namespace CryptoBoxer
 
                             postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4}", curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg));
                         }
-						else if(isBeg)
+						else
                         {
                             // LONG予約
                             m_position.reserveLongOrder();
@@ -2574,7 +2574,7 @@ namespace CryptoBoxer
                             m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount);
                             postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4}", curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg));
                         }
-						else if (isBeg)
+						else
                         {
                             // SHORT予約
                             m_position.reserveShortOrder();
@@ -2628,13 +2628,6 @@ namespace CryptoBoxer
 
                                 postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} isEma={5}"
 								                        , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossedSub));
-                            }
-                            else if (!isBeg)
-                            {
-                                // LONG予約キャンセル
-                                m_position.cancelReserveOrder();
-                                postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} isEma={4}"
-								                        , curCandle.timestamp, isLong, isGolden, isBeg, isCrossedSub));
                             }
                         }
                         else
@@ -2691,13 +2684,6 @@ namespace CryptoBoxer
 
                                 postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} isEma={5}"
 								                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossedSub));
-                            }
-                            else if (!isBeg)
-                            {
-                                // SHORT予約キャンセル
-                                m_position.cancelReserveOrder();
-                                postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} isEma={4}"
-								                        , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossedSub));
                             }
                         }
                         else
@@ -2799,7 +2785,7 @@ namespace CryptoBoxer
                 }
                 
 				double beg_threshold = 0.5;
-				double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
+                double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
 				if(ema_touch_play<0.0)
 				{
 					ema_touch_play = 0.0;
@@ -2821,12 +2807,18 @@ namespace CryptoBoxer
 
                 if (m_position.isNone())
                 {
-					// NONEポジションの場合
+                    // NONEポジションの場合
+
+                    //if (isLong || isShort)
+                    //{
+                    //    postSlack(string.Format("## isLong={0} isShort={1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8}"
+                    //                                , isLong, isShort, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                    //}
 
 
 					if (isLong && isGolden)
 					{
-						if (isBeg && ( (isCrossedSub && isCrossing) || isCrossingSub ) )
+						if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub ) )
                         {
 
                             // 注文成功
@@ -2840,7 +2832,7 @@ namespace CryptoBoxer
                             long_entry_cnt++;
 
                         }
-                        else if (isBeg)
+                        else
                         {
 							// LONG予約
 							m_position.reserveLongOrder();
@@ -2863,7 +2855,7 @@ namespace CryptoBoxer
                             short_entry_cnt++;
 
                         }
-                        else if (isBeg)
+                        else
                         {
                             // SHORT予約
                             m_position.reserveShortOrder();
@@ -2891,13 +2883,6 @@ namespace CryptoBoxer
 
                                 long_entry_cnt++;
                             }
-                            else if (!isBeg/* && !isCrossedEma*/)
-                            {
-                                // LONG予約キャンセル
-                                m_position.cancelReserveOrder();
-								postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-								                        , curCandle.timestamp, isLong, isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
-                            }
                         }
                         else
                         {
@@ -2923,13 +2908,6 @@ namespace CryptoBoxer
 								                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
 
                                 short_entry_cnt++;
-                            }
-                            else if (!isBeg/* && !isCrossedEma*/)
-                            {
-                                // SHORT予約キャンセル
-                                m_position.cancelReserveOrder();
-								postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-								                        , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
                             }
                         }
                         else
@@ -2977,7 +2955,7 @@ namespace CryptoBoxer
                 
 				{
                     double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
-                    const int past_num = 2;
+                    const int past_num = 4;
 
                     double profit = curCandle.last - m_position.entry_price;
 
@@ -3051,7 +3029,7 @@ namespace CryptoBoxer
                 
 				{
                     double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
-                    const int past_num = 2;
+                    const int past_num = 4;
 
                     double profit = m_position.entry_price - curCandle.last;
 
@@ -3152,7 +3130,7 @@ namespace CryptoBoxer
                 //}            
                 
                 double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
-                const int past_num = 1;
+                const int past_num = 23;
 
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineShort, threshold, past_num, 1))
@@ -3249,7 +3227,7 @@ namespace CryptoBoxer
                 //double position = next_open - m_frontlineLong;
 
                 double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
-                const int past_num = 1;
+                const int past_num = 23;
 
                 // フロントライン付近でウロウロしてる
                 if (m_candleBuf.isHangAround(m_frontlineLong, threshold, past_num, 1))

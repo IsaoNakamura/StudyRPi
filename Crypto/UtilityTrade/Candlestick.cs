@@ -2164,12 +2164,12 @@ namespace UtilityTrade
                 //    {
                 //        if (candle.isCrossEMAsub())
                 //        {
-                //            isTouchEmaSub = true;
+                //         b = true;
                 //        }
                 //    }
                 //}
 
-                    if (cur_cross_state != 0)
+                if (cur_cross_state != 0)
                 {
                     if (cur_ema_length < (max_ema_length*threshold_rate))
                     {
