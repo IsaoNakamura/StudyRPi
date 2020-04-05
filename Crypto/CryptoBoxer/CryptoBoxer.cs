@@ -3374,6 +3374,23 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                         result = false;
                     }
+					else if (isGolden)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
+                    else if (!isGolden && !isBeg)
+                    {
+                        postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
                     else
                     {
                         //const int past_num = 10;
@@ -3538,6 +3555,24 @@ namespace CryptoBoxer
                         // LONG継続
                         postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
                         result = false;
+                    }
+					else if (!isGolden)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
+                    else if (isGolden && !isBeg)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
                     }
                     else
 					{
