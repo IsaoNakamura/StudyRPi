@@ -66,6 +66,8 @@ namespace UtilityTrade
 
         public bool escape_flag { get; set; }
 
+		public double reserved_price { get; set; }
+
         public Position()
         {
             init();
@@ -94,6 +96,8 @@ namespace UtilityTrade
             frontline_fwd_num = 0;
 
             escape_flag = false;
+
+			reserved_price = 0.0;
 
             return;
         }
@@ -332,18 +336,20 @@ namespace UtilityTrade
         }
 
         // LONGエントリー予約
-        public void reserveLongOrder()
+		public void reserveLongOrder(double _reserved_price)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.LONG;
+			reserved_price = _reserved_price;
             return;
         }
 
         // SHORTエントリー予約
-        public void reserveShortOrder()
+		public void reserveShortOrder(double _reserved_price)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.SHORT;
+			reserved_price = _reserved_price;
             return;
         }
 
@@ -351,6 +357,7 @@ namespace UtilityTrade
         {
             entry_state = OrderState.NONE;
             state = PositionState.NONE;
+			reserved_price = 0.0;
             return;
         }
 
