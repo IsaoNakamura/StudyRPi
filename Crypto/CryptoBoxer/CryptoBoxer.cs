@@ -2960,12 +2960,25 @@ namespace CryptoBoxer
 									}
 									double cmp_rate = ema_last / ema_rsv;
 									double rsv_last = curCandle.last - m_position.reserved_price;
-									//if (cmp_rate >= 1.5)
-									if ( (rsv_last > fomo_limit) && !isCrossedSub && ( isCrossed || isCrossing || isCrossingSub) )
-									{
-										needEntry = true;
-                                        postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                  , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                                    //if (cmp_rate >= 1.5)
+                                    if (isBeg)
+                                    {
+                                        if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                        {
+                                            needEntry = true;
+                                            postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                                                                      , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ((rsv_last > fomo_limit) && isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                        {
+                                            needEntry = true;
+                                            postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                                                                      , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                                        }
+
                                     }
                                 }
 
@@ -3016,11 +3029,23 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = m_position.reserved_price - curCandle.last;
                                     //if (cmp_rate >= 1.5)
-                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                    if (isBeg)
                                     {
-                                        needEntry = true;
-                                        postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                        if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                        {
+                                            needEntry = true;
+                                            postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ((rsv_last > fomo_limit) && isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                        {
+                                            needEntry = true;
+                                            postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                        }
                                     }
                                 }
 
