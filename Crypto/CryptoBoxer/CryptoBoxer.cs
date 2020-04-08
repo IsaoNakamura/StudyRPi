@@ -2851,7 +2851,7 @@ namespace CryptoBoxer
                 }
                 
 				double beg_threshold = 0.5;
-                double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
+				double ema_touch_play = curCandle.vola_ma;//2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
 				if(ema_touch_play<0.0)
 				{
 					ema_touch_play = 0.0;
@@ -3035,7 +3035,7 @@ namespace CryptoBoxer
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub),true);
                                         }
                                     }
                                     else
@@ -3044,7 +3044,7 @@ namespace CryptoBoxer
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub),true);
                                         }
                                     }
                                 }
