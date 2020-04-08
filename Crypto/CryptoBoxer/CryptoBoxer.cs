@@ -3001,10 +3001,32 @@ namespace CryptoBoxer
                             }
                             else
                             {
+                                //if (isBeg)
+                                {
+                                    double ema_rsv = curCandle.ema - m_position.reserved_price;
+                                    double ema_last = 0.0;
+                                    if (isCrossedSub)
+                                    {
+                                        ema_last = curCandle.ema - curCandle.last;
+                                    }
+                                    else
+                                    {
+                                        ema_last = curCandle.ema_sub - curCandle.last;
+                                    }
+                                    double cmp_rate = ema_last / ema_rsv;
+                                    double rsv_last = m_position.reserved_price - curCandle.last;
+                                    //if (cmp_rate >= 1.5)
+                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
+                                    {
+                                        needEntry = true;
+                                        postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                                                                , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
+                                    }
+                                }
 
                             }
 
-							if (needEntry)
+                            if (needEntry)
 							{
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);                        
                                 m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount);
