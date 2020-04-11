@@ -2624,7 +2624,7 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = curCandle.last - m_position.reserved_price;
                                     //if (cmp_rate >= 1.5)
-                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub))
+                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -2709,7 +2709,7 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = m_position.reserved_price - curCandle.last;
                                     //if (cmp_rate >= 1.5)
-                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub))
+                                    if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -2963,7 +2963,7 @@ namespace CryptoBoxer
                                     //if (cmp_rate >= 1.5)
                                     //if (isBeg)
                                     {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub) )
+										if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub) )
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3033,7 +3033,7 @@ namespace CryptoBoxer
                                     //if (cmp_rate >= 1.5)
                                     //if (isBeg)
                                     {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && ( /*isCrossed ||*/ isCrossing || isCrossingSub) )
+										if ((rsv_last > fomo_limit) && !isCrossedSub && ( isCrossed || isCrossing || isCrossingSub) )
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3513,16 +3513,16 @@ namespace CryptoBoxer
 
                         short_lc_cnt++;
                     }
-                    else if (profit >= frontline_ahead_force)
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate_force);
-                        m_frontlineShort = m_frontlineShort - forward;
-                        m_position.frontline_fwd_num++;
-                        // SHORT継続
-                        postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= frontline_ahead_force)
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * forward_rate_force);
+                    //    m_frontlineShort = m_frontlineShort - forward;
+                    //    m_position.frontline_fwd_num++;
+                    //    // SHORT継続
+                    //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
+                    //    result = false;
+                    //}
                     else if (profit >= frontline_ahead)
                     {
                         // 最前線を前進
@@ -3609,16 +3609,16 @@ namespace CryptoBoxer
                     //    // 最前線を後退
                     //    m_frontlineShort = curCandle.last;
                     //}
-                    else if (profit >= frontline_ahead_force)
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate_force);
-                        m_frontlineShort = m_frontlineShort - forward;
-                        m_position.frontline_fwd_num++;
-                        // SHORT継続
-                        postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= frontline_ahead_force)
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * forward_rate_force);
+                    //    m_frontlineShort = m_frontlineShort - forward;
+                    //    m_position.frontline_fwd_num++;
+                    //    // SHORT継続
+                    //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
+                    //    result = false;
+                    //}
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
@@ -3718,16 +3718,16 @@ namespace CryptoBoxer
 
                         long_lc_cnt++;
                     }
-                    else if (profit >= frontline_ahead_force)
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate_force);
-                        m_frontlineLong = m_frontlineLong + forward;
-                        m_position.frontline_fwd_num++;
-                        // LONG継続
-                        postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= frontline_ahead_force)
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * forward_rate_force);
+                    //    m_frontlineLong = m_frontlineLong + forward;
+                    //    m_position.frontline_fwd_num++;
+                    //    // LONG継続
+                    //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
+                    //    result = false;
+                    //}
                     else if (profit >= frontline_ahead)
                     {
                         // 最前線を前進
@@ -3817,16 +3817,16 @@ namespace CryptoBoxer
                     //    // 最前線を後退
                     //    m_frontlineLong = curCandle.last;
                     //}
-                    else if (profit >= frontline_ahead_force)
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate_force);
-                        m_frontlineLong = m_frontlineLong + forward;
-                        m_position.frontline_fwd_num++;
-                        // LONG継続
-                        postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= frontline_ahead_force)
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * forward_rate_force);
+                    //    m_frontlineLong = m_frontlineLong + forward;
+                    //    m_position.frontline_fwd_num++;
+                    //    // LONG継続
+                    //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
+                    //    result = false;
+                    //}
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
