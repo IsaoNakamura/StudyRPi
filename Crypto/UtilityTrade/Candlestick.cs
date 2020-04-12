@@ -2017,7 +2017,9 @@ namespace UtilityTrade
             out bool isTouchEma,
             out bool isTouchEmaSub,
 			out double high_max,
+            out int high_max_idx,
             out double low_min,
+            out int low_min_idx,
             double threshold_rate = 0.6,
             double ema_touch_play = 0.0,
 			int cross_over_cnt = 30
@@ -2031,7 +2033,9 @@ namespace UtilityTrade
             isTouchEma = false;
             isTouchEmaSub = false;
 			high_max = 0.0;
+			high_max_idx = 0;
             low_min = 0.0;
+			low_min_idx = 0;
             
             try
             {
@@ -2096,8 +2100,20 @@ namespace UtilityTrade
                     double ema_length = Math.Abs(candle.ema - candle.ema_sub);
                     max_ema_length = Math.Max(ema_length, max_ema_length);
 
-					high_max = Math.Max(high_max,candle.high);
-					low_min = Math.Min(low_min, candle.low);
+					//high_max = Math.Max(high_max,candle.high);
+					//low_min = Math.Min(low_min, candle.low);
+
+					if(candle.high>high_max)
+					{
+						high_max = candle.high;
+						high_max_idx = itr_idx;
+					}
+
+					if (candle.low < low_min)
+                    {
+						low_min = candle.low;
+						low_min_idx = itr_idx;
+                    }
 
                     if (!isTouchEma)
                     {
@@ -2182,17 +2198,30 @@ namespace UtilityTrade
                         //if (cur_cross_state == 1)
                         {
                             // GOLDEN
-                            low_min = Math.Min(low_min, candle.low);
+                            //low_min = Math.Min(low_min, candle.low);
                         }
                         //else if (cur_cross_state == -1)
                         {
                             // DEAD
-                            high_max = Math.Max(high_max, candle.high);
+                            //high_max = Math.Max(high_max, candle.high);
                         }
-                    }
 
+						if (candle.high > high_max)
+                        {
+                            high_max = candle.high;
+                            high_max_idx = i;
+                        }
 
+                        if (candle.low < low_min)
+                        {
+                            low_min = candle.low;
+                            low_min_idx = i;
+                        }
+                    }               
 				}
+
+				//high_max_idx = candle_cnt - high_max_idx;
+				//low_min_idx = candle_cnt - low_min_idx;
                             
                 result = 0;
             }
