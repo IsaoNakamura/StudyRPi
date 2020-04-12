@@ -2466,7 +2466,10 @@ namespace CryptoBoxer
                 bool isCrossedSub = false;
                 double high_max = 0.0;
                 double low_min = 0.0;
-                if (m_candleBuf.getEMACrossState(
+				int high_max_idx = 0;
+                int low_min_idx = 0;
+				if(
+						m_candleBuf.getEMACrossState(
                         out isGolden,
                         out isBeg,
                         out back_cnt,
@@ -2474,10 +2477,13 @@ namespace CryptoBoxer
                         out isCrossed,
                         out isCrossedSub,
                         out high_max,
+					    out high_max_idx,
                         out low_min,
+	    				out low_min_idx,
                         beg_threshold,
                         ema_touch_play)
-                   != 0)
+                   != 0
+				)
                 {
                     result = -1;
                     return result;
@@ -2898,6 +2904,8 @@ namespace CryptoBoxer
 				bool isCrossedSub = false;
 				double high_max = 0.0;
                 double low_min = 0.0;
+				int high_max_idx = 0;
+				int low_min_idx = 0;
 				if(m_candleBuf.getEMACrossState(
 						out isGolden,
 						out isBeg,
@@ -2906,7 +2914,9 @@ namespace CryptoBoxer
 						out isCrossed,
 						out isCrossedSub,
 						out high_max,
+					    out high_max_idx,
 						out low_min,
+				    	out low_min_idx,
 						beg_threshold,
 						ema_touch_play)
 				   != 0)
@@ -3561,7 +3571,23 @@ namespace CryptoBoxer
                 bool isTouchEmaSub = false;
 				double high_max = 0.0;
                 double low_min = 0.0;
-				if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isTouchEma, out isTouchEmaSub, out high_max, out low_min) != 0)
+				int high_max_idx = 0;
+                int low_min_idx = 0;
+				if (
+					m_candleBuf.getEMACrossState
+					(
+						out isGolden, 
+						out isBeg, 
+						out back_cnt, 
+						out cur_ema_length,
+						out isTouchEma,
+						out isTouchEmaSub,
+						out high_max,
+						out high_max_idx,
+						out low_min,
+						out low_min_idx
+					) != 0
+				)
                 {
                     result = false;
                     return result;
@@ -3769,7 +3795,23 @@ namespace CryptoBoxer
                 bool isTouchEmaSub = false;
 				double high_max = 0.0;
                 double low_min = 0.0;
-                if (m_candleBuf.getEMACrossState(out isGolden, out isBeg, out back_cnt, out cur_ema_length, out isTouchEma, out isTouchEmaSub, out high_max, out low_min) != 0)
+				int high_max_idx = 0;
+                int low_min_idx = 0;
+                if (
+					m_candleBuf.getEMACrossState
+					(
+						out isGolden,
+						out isBeg,
+						out back_cnt,
+						out cur_ema_length,
+						out isTouchEma,
+						out isTouchEmaSub,
+						out high_max,
+						out high_max_idx,
+						out low_min,
+						out low_min_idx
+					) != 0
+				)
                 {
                     result = false;
                     return result;
