@@ -2944,6 +2944,10 @@ namespace CryptoBoxer
                 
 				double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
                 
+				Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
+				Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
+
+                
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
@@ -2970,6 +2974,7 @@ namespace CryptoBoxer
 							                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true);
 
                             long_entry_cnt++;
+							postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
 
                         }
                         else
@@ -2994,6 +2999,9 @@ namespace CryptoBoxer
 							                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibShort), true);
 
                             short_entry_cnt++;
+
+
+							postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
 
                         }
                         else
@@ -3067,7 +3075,10 @@ namespace CryptoBoxer
                                 m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount);                        
 								// 注文成功
 								postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib={9}"
-								                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true);                        
+								                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true); 
+
+								postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp,high_max, lowCandle.timestamp, low_min), true);
+
                                 long_entry_cnt++;
 							}
                         }
