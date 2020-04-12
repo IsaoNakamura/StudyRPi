@@ -2020,7 +2020,7 @@ namespace UtilityTrade
             out double low_min,
             double threshold_rate = 0.6,
             double ema_touch_play = 0.0,
-			int cross_over_cnt = 15
+			int cross_over_cnt = 30
         )
         {
             int result = -1;
