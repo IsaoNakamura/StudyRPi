@@ -2016,8 +2016,11 @@ namespace UtilityTrade
             out double cur_ema_length, 
             out bool isTouchEma,
             out bool isTouchEmaSub,
+			out double high_max,
+            out double low_min,
             double threshold_rate = 0.6,
-            double ema_touch_play = 0.0
+            double ema_touch_play = 0.0,
+			int cross_over_cnt = 15
         )
         {
             int result = -1;
@@ -2027,6 +2030,9 @@ namespace UtilityTrade
             cur_ema_length = 0.0;
             isTouchEma = false;
             isTouchEmaSub = false;
+			high_max = 0.0;
+            low_min = 0.0;
+            
             try
             {
                 int candle_cnt = getCandleCount();
@@ -2051,6 +2057,9 @@ namespace UtilityTrade
                     return result;
                 }
 
+				high_max = curCandle.high;
+                low_min = curCandle.low;
+
                 //double 
                 cur_ema_length = Math.Abs(curCandle.ema - curCandle.ema_sub);
                 int cur_cross_state = 0;
@@ -2073,8 +2082,6 @@ namespace UtilityTrade
                     isFirst = true;
                 }
 
-
-
                 double max_ema_length = 0.0;
                 int itr_idx = 0;
                 for (itr_idx = beg_idx; itr_idx >= 0; itr_idx--)
@@ -2088,6 +2095,9 @@ namespace UtilityTrade
 
                     double ema_length = Math.Abs(candle.ema - candle.ema_sub);
                     max_ema_length = Math.Max(ema_length, max_ema_length);
+
+					high_max = Math.Max(high_max,candle.high);
+					low_min = Math.Min(low_min, candle.low);
 
                     if (!isTouchEma)
                     {
@@ -2145,33 +2155,9 @@ namespace UtilityTrade
                     }
                 }
 
-                //const int cross_over_limit = 2;
-                //for (int i = itr_idx - 1; i >= (itr_idx - cross_over_limit) ; i--)
-                //{
-                //    Candlestick candle = m_candleList[i];
-                //    if (candle == null)
-                //    {
-                //        continue;
-                //    }
-                //    if (!isTouchEma)
-                //    {
-                //        if (candle.isCrossEMA())
-                //        {
-                //            isTouchEma = true;
-                //        }
-                //    }
-                //    if (!isTouchEmaSub)
-                //    {
-                //        if (candle.isCrossEMAsub())
-                //        {
-                //         b = true;
-                //        }
-                //    }
-                //}
-
-                if (cur_cross_state != 0)
+				if (cur_cross_state != 0)
                 {
-                    if (cur_ema_length < (max_ema_length*threshold_rate))
+                    if (cur_ema_length < (max_ema_length * threshold_rate))
                     {
                         // 収束中
                         isFirst = false;
@@ -2183,6 +2169,31 @@ namespace UtilityTrade
                     }
                 }
 
+				if(itr_idx > cross_over_cnt)
+				{
+					for (int i = itr_idx - 1; i >= (itr_idx - cross_over_cnt); i--)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        //if (cur_cross_state == 1)
+                        {
+                            // GOLDEN
+                            low_min = Math.Min(low_min, candle.low);
+                        }
+                        //else if (cur_cross_state == -1)
+                        {
+                            // DEAD
+                            high_max = Math.Max(high_max, candle.high);
+                        }
+                    }
+
+
+				}
+                            
                 result = 0;
             }
             catch (Exception ex)
