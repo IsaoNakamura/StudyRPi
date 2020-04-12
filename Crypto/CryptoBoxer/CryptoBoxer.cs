@@ -912,10 +912,10 @@ namespace CryptoBoxer
 
                 applyPositions();
 
-
+                
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(4000);
+                    System.Threading.Thread.Sleep(2000);//4000
 
                     //applyPositions();
 
@@ -2453,7 +2453,7 @@ namespace CryptoBoxer
                 //isShort = false;
 
 				double beg_threshold = 0.5;
-                double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
+                double ema_touch_play = 1300.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
                 if (ema_touch_play < 0.0)
                 {
                     ema_touch_play = 0.0;
@@ -2503,7 +2503,7 @@ namespace CryptoBoxer
 				bool isCrossing = curCandle.isCrossEMA();
 				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
 
-                const double fomo_limit = 6100.0;
+				double fomo_limit = 6800.0 + curCandle.vola_ma;
 
                 if (m_position.isNone())
                 {
@@ -2534,8 +2534,8 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
                         
-						//if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub))
-						if( isBeg && isFibLong)
+						if (isBeg && ((isCrossedSub && isFibLong) || isCrossingSub))
+						//if( isBeg && isFibLong)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2576,8 +2576,8 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Entry Order.");
                         
-						//if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub))
-						if (isBeg && isFibShort)
+						if (isBeg && ((isCrossedSub && isFibShort) || isCrossingSub))
+						//if (isBeg && isFibShort)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2633,8 +2633,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub))
-							if(isBeg && isFibLong)
+							if (isBeg && ((isCrossedSub && isFibLong) || isCrossingSub))
+							//if(isBeg && isFibLong)
                             {
                                 needEntry = true;
                             }
@@ -2655,8 +2655,8 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = curCandle.last - m_position.reserved_price;
                                     //if (cmp_rate >= 1.5)
-                                    //if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
-									if ((rsv_last > fomo_limit) && isFibLong)
+									if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub || isFibLong))
+									//if ((rsv_last > fomo_limit) && isFibLong)
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -2720,8 +2720,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub))
-							if (isBeg && isFibShort)
+							if (isBeg && ((isCrossedSub && isFibShort) || isCrossingSub))
+							//if (isBeg && isFibShort)
                             {
                                 needEntry = true;
                             }
@@ -2742,8 +2742,8 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = m_position.reserved_price - curCandle.last;
                                     //if (cmp_rate >= 1.5)
-                                    //if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub))
-									if ((rsv_last > fomo_limit) && isFibShort)
+									if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub || isFibShort))
+									//if ((rsv_last > fomo_limit) && isFibShort)
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -2885,7 +2885,7 @@ namespace CryptoBoxer
                 }
                 
 				double beg_threshold = 0.5;
-				double ema_touch_play = 2000.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
+				double ema_touch_play = 1300.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
 				if(ema_touch_play<0.0)
 				{
 					ema_touch_play = 0.0;
@@ -2928,12 +2928,12 @@ namespace CryptoBoxer
                 double fib_short = low_min + (high_max - low_min) * fib_rate;
 				bool isFibLong = curCandle.isCross(fib_long);
 				bool isFibShort = curCandle.isCross(fib_short);
-
+                
 				bool isCrossing = curCandle.isCrossEMA(0.0);
 				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
-
-                const double fomo_limit = 6100.0;
-
+                
+				double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
+                
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
@@ -2947,8 +2947,8 @@ namespace CryptoBoxer
 
 					if (isLong && isGolden)
 					{
-						//if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong ) )
-						if (isBeg && isFibLong)
+						if (isBeg && ((isCrossedSub && isFibLong) || isCrossingSub ) )
+						//if (isBeg && isFibLong)
                         {
 
                             // 注文成功
@@ -2972,8 +2972,8 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-						//if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
-						if (isBeg && isFibShort)
+						if (isBeg && ((isCrossedSub && isFibShort) || isCrossingSub ))
+						//if (isBeg && isFibShort)
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -3003,8 +3003,8 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-							//if(isBeg && ( (isCrossedSub && isCrossing) || isCrossingSub || isFibLong) )
-							if (isBeg && isFibLong)
+							if(isBeg && ( (isCrossedSub && isFibLong) || isCrossingSub ) )
+							//if (isBeg && isFibLong)
                             {
 								needEntry = true;
                             }
@@ -3027,8 +3027,8 @@ namespace CryptoBoxer
                                     //if (cmp_rate >= 1.5)
                                     //if (isBeg)
                                     {
-										//if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossed || isCrossing || isCrossingSub) )
-										if ((rsv_last > fomo_limit) && isFibLong)
+										if ((rsv_last > fomo_limit) && !isCrossedSub && (/*isCrossed ||*/ isCrossing || isCrossingSub || isFibLong) )
+										//if ((rsv_last > fomo_limit) && isFibLong)
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3075,8 +3075,8 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-							//if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
-							if (isBeg && isFibShort)
+							if (isBeg && ((isCrossedSub && isFibShort) || isCrossingSub ))
+							//if (isBeg && isFibShort)
                             {
                                 needEntry = true;
                             }
@@ -3099,8 +3099,8 @@ namespace CryptoBoxer
                                     //if (cmp_rate >= 1.5)
                                     //if (isBeg)
                                     {
-										//if ((rsv_last > fomo_limit) && !isCrossedSub && ( isCrossed || isCrossing || isCrossingSub) )
-										if ((rsv_last > fomo_limit) && isFibLong)
+										if ((rsv_last > fomo_limit) && !isCrossedSub && ( /*isCrossed ||*/ isCrossing || isCrossingSub || isFibShort) )
+										//if ((rsv_last > fomo_limit) && isFibShort)
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
