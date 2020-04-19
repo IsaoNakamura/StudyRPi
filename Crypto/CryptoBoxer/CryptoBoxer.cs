@@ -486,6 +486,99 @@ namespace CryptoBoxer
             return result;
         }
 
+		private int repairCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int periods, int begIdx, int count)
+        {
+            int result = 0;
+            try
+            {
+                if (ohlc == null)
+                {
+                    Console.WriteLine("failed to GetOhlcAfterAsync()");
+                    result = -1;
+                    return result;
+                }
+
+                if (ohlc.result == null)
+                {
+                    Console.WriteLine("ohlc's result is null");
+                    result = -1;
+                    return result;
+                }
+
+                List<List<double>> candles = ohlc.result.getResult(periods);
+
+                if (candles == null)
+                {
+                    Console.WriteLine("ohlc's candle is null. periods={0}", periods);
+                    result = -1;
+                    return result;
+                }
+
+                int limit = begIdx + count;
+                if (limit > candles.Count)
+                {
+                    limit = candles.Count;
+                }
+
+				int lastCandleIndex = candleBuf.getLastCandleIndex();
+
+                //foreach (List<double> candleFactor in candles)
+                for (int i = begIdx; i < limit; i++)
+                {
+                    List<double> candleFactor = candles[i];
+                    if (candleFactor == null)
+                    {
+                        continue;
+                    }
+
+                    double closeTime = candleFactor[0];
+                    double openPrice = candleFactor[1];
+                    double highPrice = candleFactor[2];
+                    double lowPrice = candleFactor[3];
+                    double closePrice = candleFactor[4];
+                    double volume = candleFactor[5];
+
+                    DateTime timestamp = DateTimeOffset.FromUnixTimeSeconds((long)closeTime).LocalDateTime;
+
+                    if (closePrice <= Double.Epsilon)
+                    {
+						continue;
+                    }
+
+					// Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
+					//  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
+					//  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
+					// Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
+
+					//Candlestick candle = candleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, timestamp.ToString());
+					Candlestick candle = candleBuf.getCandle(lastCandleIndex - i);
+                    if (candle == null)
+                    {
+						Console.WriteLine("failed to getCandle.");
+                        continue;
+                    }
+					//Console.WriteLine("\tRepair(BEF). {0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), candle.open, candle.last, candle.high, candle.low);
+                    candle.volume = volume;
+					candle.open = openPrice;
+					candle.last = closePrice;
+					candle.high = highPrice;
+					candle.low = lowPrice;               
+
+					//Console.WriteLine("\tRepair(AFT). {0}, open={1}, close={2}, high={3}, low={4}", timestamp.ToString(), candle.open, candle.last, candle.high, candle.low);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public int calcIndicator(CandleBuffer candleBuf, ref Candlestick candle)
         {
             int result = 0;
@@ -915,7 +1008,7 @@ namespace CryptoBoxer
                 
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(2000);//4000
+                    System.Threading.Thread.Sleep(4000);//2000
 
                     //applyPositions();
 
@@ -1038,8 +1131,15 @@ namespace CryptoBoxer
                         // キャンドルを閉じる
                         if (curCandle != null)
                         {
-                            // CloseTimeは次の更新時間を使用する。
+							// CloseTimeは次の更新時間を使用する。
                             curCandle.timestamp = nextCloseTime.ToString();
+
+							BitflyerOhlc ohlc_closed = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, m_config.periods);
+							if (repairCandlestick(m_candleBuf, ref ohlc_closed, m_config.periods, 0, 1) != 0)
+                            {
+								Console.WriteLine("failed to repairCandlestick()");
+                                //return;
+                            }                     
 
                             // 現物(BTC_JPY)のTickerを取得
                             Ticker ticker_spot = await Ticker.GetTickerAsync("BTC_JPY");

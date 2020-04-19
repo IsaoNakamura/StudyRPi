@@ -361,7 +361,7 @@ namespace UtilityBitflyer
                 string resJson = await RequestBitflyer.Request(auth, method, path, body);
                 if (resJson == null)
                 {
-                    Console.WriteLine("failed to RequestBitflyer.");
+					Console.WriteLine("failed to getChildOrdersAcceptance-Request.");
                     return null;
                 }
 
@@ -408,7 +408,7 @@ namespace UtilityBitflyer
                 string resJson = await RequestBitflyer.Request(auth, method, path, body);
                 if (resJson == null)
                 {
-                    Console.WriteLine("failed to RequestBitflyer.");
+					Console.WriteLine("failed to getChildOrders-Request.");
                     return null;
                 }
 
