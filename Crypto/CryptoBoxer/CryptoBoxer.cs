@@ -2488,18 +2488,51 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
+
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
+                int fib_index = 1;
+                double fib_long = high_max - (high_max - low_min) * fib_rates[fib_index];
+                double fib_short = low_min + (high_max - low_min) * fib_rates[fib_index];
+
+                double cmp_long = curCandle.last;
+                if (m_position.isLongReserved())
                 {
-                    // [0] 0
-                    // [1] 0.236
-                    // [2] 0.382
-                    // [3] 0.5
-                    // [4] 0.618
-                    // [5] 0.786
-                    // [6] 1               
+                    if (m_position.reserved_candle != null)
+                    {
+                        cmp_long = m_position.reserved_candle.last;
+                    }
                 }
-                double fib_rate = 0.236;
-                double fib_long = high_max - (high_max - low_min) * fib_rate;
-                double fib_short = low_min + (high_max - low_min) * fib_rate;
+                if (fib_long > (cmp_long/* + ema_touch_play*/))
+                {
+                    for (int i = fib_index + 1; i < 7; i++)
+                    {
+                        fib_long = high_max - (high_max - low_min) * fib_rates[i];
+                        if (fib_long <= cmp_long)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                double cmp_short = curCandle.last;
+                if (m_position.isShortReserved())
+                {
+                    if (m_position.reserved_candle != null)
+                    {
+                        cmp_short = m_position.reserved_candle.last;
+                    }
+                }
+                if (fib_short < (cmp_short/* + ema_touch_play*/))
+                {
+                    for (int i = fib_index + 1; i < 7; i++)
+                    {
+                        fib_short = low_min + (high_max - low_min) * fib_rates[i];
+                        if (fib_short >= cmp_short)
+                        {
+                            break;
+                        }
+                    }
+                }
                 bool isFibLong = curCandle.isCross(fib_long);
                 bool isFibShort = curCandle.isCross(fib_short);
 
@@ -2573,7 +2606,7 @@ namespace CryptoBoxer
 						else
                         {
                             // LONG予約
-							m_position.reserveLongOrder(curCandle.last);
+							m_position.reserveLongOrder(curCandle);
                             postSlack(string.Format("{0} Long Reserved. ema={1:0} diff={2:0} isGold={3} bkCnt={4} isBeg={5} isEma={6}"
 							                        , curCandle.timestamp, curCandle.ema, curCandle.last - curCandle.ema, isGolden, back_cnt, isBeg, isCrossedSub));
                         }
@@ -2615,7 +2648,7 @@ namespace CryptoBoxer
 						else
                         {
                             // SHORT予約
-							m_position.reserveShortOrder(curCandle.last);
+							m_position.reserveShortOrder(curCandle);
                             postSlack(string.Format("{0} Short Reserved. ema={1:0} diff={2:0} isDead={3} bkCnt={4} isBeg={5} isEma={6}"
 							                        , curCandle.timestamp, curCandle.ema, curCandle.last - curCandle.ema, !isGolden, back_cnt, isBeg, isCrossedSub));
                         }
@@ -2924,20 +2957,56 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
-				{
-                    // [0] 0
-                    // [1] 0.236
-                    // [2] 0.382
-                    // [3] 0.5
-                    // [4] 0.618
-                    // [5] 0.786
-                    // [6] 1               
+
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 }; 
+				int fib_index = 1;
+				double fib_long = high_max - (high_max - low_min) * fib_rates[fib_index];
+				double fib_short = low_min + (high_max - low_min) * fib_rates[fib_index];
+
+				double cmp_long = curCandle.last;
+				if (m_position.isLongReserved() )
+                {
+					if (m_position.reserved_candle != null )
+                    {
+						cmp_long = m_position.reserved_candle.last;
+                    }               
                 }
-                double fib_rate = 0.236;
-                double fib_long = high_max - (high_max - low_min) * fib_rate;
-                double fib_short = low_min + (high_max - low_min) * fib_rate;
+				if (fib_long > (cmp_long/* + ema_touch_play*/))
+                {
+                    for (int i = fib_index + 1; i < 7; i++)
+                    {
+                        fib_long = high_max - (high_max - low_min) * fib_rates[i];
+						if (fib_long <= cmp_long)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+				double cmp_short = curCandle.last;
+				if (m_position.isShortReserved() )
+                {
+                    if (m_position.reserved_candle != null)
+					{
+						cmp_short = m_position.reserved_candle.last;
+                    }
+                }
+                if (fib_short < (cmp_short/* + ema_touch_play*/))
+                {
+                    for (int i = fib_index + 1; i < 7; i++)
+                    {
+                        fib_short = low_min + (high_max - low_min) * fib_rates[i];
+                        if (fib_short >= cmp_short)
+                        {
+                            break;
+                        }
+                    }
+                }
+
 				bool isFibLong = curCandle.isCross(fib_long);
 				bool isFibShort = curCandle.isCross(fib_short);
+                
+
                 
 				bool isCrossing = curCandle.isCrossEMA(0.0);
 				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
@@ -2957,8 +3026,7 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## isLong={0} isShort={1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8}"
                     //                                , isLong, isShort, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
                     //}
-
-
+                                   
 					if (isLong && isGolden)
 					{
 						if (isBeg && ((isCrossedSub && isFibLong) || isCrossingSub ) )
@@ -2974,13 +3042,13 @@ namespace CryptoBoxer
 							                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true);
 
                             long_entry_cnt++;
-							postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
-
+							//postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
+                            
                         }
                         else
                         {
 							// LONG予約
-							m_position.reserveLongOrder(curCandle.last);
+							m_position.reserveLongOrder(curCandle);
 							postSlack(string.Format("{0} Long Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib={8}"
 							                        , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true);
 						}
@@ -3001,13 +3069,13 @@ namespace CryptoBoxer
                             short_entry_cnt++;
 
 
-							postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
+							//postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp, high_max, lowCandle.timestamp, low_min), true);
 
                         }
                         else
                         {
                             // SHORT予約
-							m_position.reserveShortOrder(curCandle.last);
+							m_position.reserveShortOrder(curCandle);
 							postSlack(string.Format("{0} Short Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib={8}"
 							                        , curCandle.timestamp, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibShort), true);
 
@@ -3077,7 +3145,7 @@ namespace CryptoBoxer
 								postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib={9}"
 								                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, isFibLong), true); 
 
-								postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp,high_max, lowCandle.timestamp, low_min), true);
+								//postSlack(string.Format("highMax={0} {1:0} lowMin={2} {3:0}", highCandle.timestamp,high_max, lowCandle.timestamp, low_min), true);
 
                                 long_entry_cnt++;
 							}

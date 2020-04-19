@@ -68,6 +68,8 @@ namespace UtilityTrade
 
 		public double reserved_price { get; set; }
 
+		public Candlestick reserved_candle { get; set; }
+
         public Position()
         {
             init();
@@ -98,6 +100,8 @@ namespace UtilityTrade
             escape_flag = false;
 
 			reserved_price = 0.0;
+
+			reserved_candle = null;
 
             return;
         }
@@ -336,20 +340,22 @@ namespace UtilityTrade
         }
 
         // LONGエントリー予約
-		public void reserveLongOrder(double _reserved_price)
+		public void reserveLongOrder(Candlestick _reserved_candle)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.LONG;
-			reserved_price = _reserved_price;
+			reserved_price = _reserved_candle.last;
+			reserved_candle = _reserved_candle;
             return;
         }
 
         // SHORTエントリー予約
-		public void reserveShortOrder(double _reserved_price)
+		public void reserveShortOrder(Candlestick _reserved_candle)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.SHORT;
-			reserved_price = _reserved_price;
+			reserved_price = _reserved_candle.last;
+			reserved_candle = _reserved_candle;
             return;
         }
 
@@ -358,6 +364,7 @@ namespace UtilityTrade
             entry_state = OrderState.NONE;
             state = PositionState.NONE;
 			reserved_price = 0.0;
+			reserved_candle = null;
             return;
         }
 
