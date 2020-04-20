@@ -3725,6 +3725,11 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
+                
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
+				int fib_index = 2;
+                double fib_rate = fib_rates[fib_index];
+                double fib_exit = low_min + (high_max - low_min) * fib_rate + 400.0;
 
                 if (Math.Abs(m_frontlineShort - m_position.entry_price) <= double.Epsilon)
                 {
@@ -3829,6 +3834,15 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
+					else if (fib_exit < curCandle.last)
+					{
+						// EXIT
+						postSlack(string.Format("## over fib-exit ##. last={0:0} pos={1:0} fib_exit={2:0}", curCandle.last, profit, fib_exit), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+					}
                     //else if (!isGolden && !isBeg)
                     //{
                     //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
@@ -3950,6 +3964,11 @@ namespace CryptoBoxer
                     return result;
                 }
 
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
+                int fib_index = 2;
+                double fib_rate = fib_rates[fib_index];
+				double fib_exit = high_max - (high_max - low_min) * fib_rate - 400.0;
+
                 if (Math.Abs(m_frontlineLong - m_position.entry_price) <= double.Epsilon)
                 {
                     // フロントラインがENTRY位置と同じ場合
@@ -4053,6 +4072,15 @@ namespace CryptoBoxer
 
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
+                    }
+					else if (fib_exit > curCandle.last)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## under fib-exit ##. last={0:0} pos={1:0} fib_exit={2:0}", curCandle.last, profit, fib_exit), onlyConsole);
+                        result = true;
+
+                        // 最前線を後退
+						m_frontlineLong = curCandle.last;
                     }
                     //else if (isGolden && !isBeg)
                     //{
