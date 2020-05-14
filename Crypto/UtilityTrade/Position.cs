@@ -70,6 +70,8 @@ namespace UtilityTrade
 
 		public Candlestick reserved_candle { get; set; }
 
+		public int entry_fib_idx { get; set; }
+
         public Position()
         {
             init();
@@ -102,6 +104,8 @@ namespace UtilityTrade
 			reserved_price = 0.0;
 
 			reserved_candle = null;
+
+			entry_fib_idx = -1;
 
             return;
         }
@@ -270,25 +274,27 @@ namespace UtilityTrade
 
         // LONGエントリー注文
         // 成行注文に使用する
-        public void entryLongOrder(string _acceptance_id, string _entry_date, double _amount)
+        public void entryLongOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.LONG;
             entry_date = _entry_date;
             amount = _amount;
+			entry_fib_idx = _fib_idx;
             return;
         }
 
         // SHORTエントリー注文
         // 成行注文に使用する
-        public void entryShortOrder(string _acceptance_id, string _entry_date, double _amount)
+		public void entryShortOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
             state = PositionState.SHORT;
             entry_date = _entry_date;
             amount = _amount;
+			entry_fib_idx = _fib_idx;
             return;
         }
 
