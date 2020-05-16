@@ -3520,7 +3520,7 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-				if (curCandle.vola_ma <= 1000.0)
+				if (curCandle.vola_ma <= 950.0)
                 {
                     result = false;
                     return result;
@@ -3625,7 +3625,7 @@ namespace CryptoBoxer
                 //    return result;
                 //}
                 
-				if (curCandle.vola_ma <= 1000.0)
+				if (curCandle.vola_ma <= 950.0)
                 {
                     result = false;
                     return result;
