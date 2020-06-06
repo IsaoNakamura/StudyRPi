@@ -2195,28 +2195,25 @@ namespace UtilityTrade
                             continue;
                         }
 
-                        //if (cur_cross_state == 1)
+                        if (cur_cross_state == 1)
                         {
                             // GOLDEN
-                            //low_min = Math.Min(low_min, candle.low);
+							if (candle.low < low_min)
+                            {
+                                low_min = candle.low;
+                                low_min_idx = i;
+                            }
                         }
-                        //else if (cur_cross_state == -1)
+                        
+						if (cur_cross_state == -1)
                         {
                             // DEAD
-                            //high_max = Math.Max(high_max, candle.high);
-                        }
-
-						if (candle.high > high_max)
-                        {
-                            high_max = candle.high;
-                            high_max_idx = i;
-                        }
-
-                        if (candle.low < low_min)
-                        {
-                            low_min = candle.low;
-                            low_min_idx = i;
-                        }
+							if (candle.high > high_max)
+                            {
+                                high_max = candle.high;
+                                high_max_idx = i;
+                            }
+                        }                  
                     }               
 				}
 

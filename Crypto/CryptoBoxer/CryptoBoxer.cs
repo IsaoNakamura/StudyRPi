@@ -2673,13 +2673,13 @@ namespace CryptoBoxer
                                 retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                                 if (retObj == null)
                                 {
-                                    System.Threading.Thread.Sleep(1000);
-									if (retry_cnt<=1 && (m_config.amount - 0.01) > 0)
-                                    {
-                                        m_config.amount = m_config.amount - 0.01;
-                                        postSlack(string.Format("failed to Long Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                        continue;
-                                    }
+         //                           System.Threading.Thread.Sleep(1000);
+									//if (retry_cnt<=1 && (m_config.amount - 0.01) > 0)
+                                    //{
+                                    //    m_config.amount = m_config.amount - 0.01;
+                                    //    postSlack(string.Format("failed to Long Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                    //    continue;
+                                    //}
                                     postSlack(string.Format("failed to Long Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
                                     result = -1;
                                     return result;
@@ -2718,13 +2718,13 @@ namespace CryptoBoxer
                                 if (retObj == null)
                                 {
                                     
-                                    System.Threading.Thread.Sleep(1000);
-									if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
-                                    {
-                                        m_config.amount = m_config.amount - 0.01;
-                                        postSlack(string.Format("failed to Short Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                        continue;
-                                    }
+         //                           System.Threading.Thread.Sleep(1000);
+									//if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
+                                    //{
+                                    //    m_config.amount = m_config.amount - 0.01;
+                                    //    postSlack(string.Format("failed to Short Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                    //    continue;
+                                    //}
                                     postSlack(string.Format("failed to Short Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
                                     result = -1;
                                     return result;
@@ -2806,13 +2806,13 @@ namespace CryptoBoxer
                                     retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
                                     if (retObj == null)
                                     {
-                                        System.Threading.Thread.Sleep(1000);
-										if (retry_cnt <= 1 && (m_config.amount - 0.01)>0 )
-                                        {
-                                            m_config.amount = m_config.amount - 0.01;
-                                            postSlack(string.Format("failed to Long(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                            continue;
-                                        }
+          //                              System.Threading.Thread.Sleep(1000);
+										//if (retry_cnt <= 1 && (m_config.amount - 0.01)>0 )
+                                        //{
+                                        //    m_config.amount = m_config.amount - 0.01;
+                                        //    postSlack(string.Format("failed to Long(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        //    continue;
+                                        //}
                                         postSlack(string.Format("failed to Long(Reserved) Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
                                         result = -1;
                                         return result;
@@ -2890,13 +2890,13 @@ namespace CryptoBoxer
                                     if (retObj == null)
                                     {
 
-                                        System.Threading.Thread.Sleep(1000);
-										if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
-                                        {
-                                            m_config.amount = m_config.amount - 0.01;
-                                            postSlack(string.Format("failed to Short(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                            continue;
-                                        }
+          //                              System.Threading.Thread.Sleep(1000);
+										//if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
+                                        //{
+                                        //    m_config.amount = m_config.amount - 0.01;
+                                        //    postSlack(string.Format("failed to Short(Reserved) Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                                        //    continue;
+                                        //}
                                         postSlack(string.Format("failed to Short(Reserved) Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
                                         result = -1;
                                         return result;
@@ -3520,7 +3520,7 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-				if (curCandle.vola_ma <= 950.0)
+				if (curCandle.vola_ma <= 850.0)
                 {
                     result = false;
                     return result;
@@ -3625,7 +3625,7 @@ namespace CryptoBoxer
                 //    return result;
                 //}
                 
-				if (curCandle.vola_ma <= 950.0)
+				if (curCandle.vola_ma <= 850.0)
                 {
                     result = false;
                     return result;
