@@ -1158,26 +1158,28 @@ namespace CryptoBoxer
 
                             if (m_position.isEntryCompleted())
                             {
-								Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},sfd={6:0.00}"
+								Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0},vola_ma={7:0}"
                                                   , curCandle.timestamp
                                                   , m_position.calcProfit(curCandle.last)
                                                   , curCandle.last
                                                   , m_frontlineLong
                                                   , m_frontlineShort
 								                  , curCandle.ema_sub
-								                  , curCandle.disparity_rate
+								                  , curCandle.getVolatility()
+								                  , curCandle.vola_ma
                                 );
                             }
                             else
                             {
-								Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},sfd={6:0.00}"
+								Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0},vola_ma={7:0}"
                                                   , curCandle.timestamp
                                                   , m_profitSum
                                                   , curCandle.last
                                                   , m_frontlineLong
                                                   , m_frontlineShort
 								                  , curCandle.ema_sub
-                                                  , curCandle.disparity_rate
+								                  , curCandle.getVolatility()
+								                  , curCandle.vola_ma
                                 );
                             }
 
@@ -1502,27 +1504,29 @@ namespace CryptoBoxer
                     //}
 
                     if (m_position.isEntryCompleted())
-                    {
-						Console.WriteLine("closed candle. timestamp={0},    profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0}"
+                    {                  
+						Console.WriteLine("closed candle. timestamp={0},profit={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0},vola_ma={7:0}"
                                           , curCandle.timestamp
                                           , m_position.calcProfit(curCandle.last)
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
-						                  , curCandle.ema_sub
-						                  , curCandle.vola_ma
+                                          , curCandle.ema_sub
+                                          , curCandle.getVolatility()
+                                          , curCandle.vola_ma
                         );
                     }
                     else
                     {
-						Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0}"
+						Console.WriteLine("closed candle. timestamp={0},profit_sum={1},last={2:0},frL={3:0},frS={4:0},emaS={5:0},vola={6:0},vola_ma={7:0}"
                                           , curCandle.timestamp
                                           , m_profitSum
                                           , curCandle.last
                                           , m_frontlineLong
                                           , m_frontlineShort
-						                  , curCandle.ema_sub
-						                  , curCandle.vola_ma
+                                          , curCandle.ema_sub
+                                          , curCandle.getVolatility()
+                                          , curCandle.vola_ma
                         );
                     }
 
