@@ -2667,7 +2667,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
                         
-						if (isBeg && (isFibLong || isCrossingSub))
+						if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2711,7 +2711,7 @@ namespace CryptoBoxer
                     {
                         //Console.WriteLine("Try Short Entry Order.");
                         
-						if (isBeg && (isFibShort || isCrossingSub))
+						if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -2771,7 +2771,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-							if (isBeg && (isFibLong || isCrossingSub))
+							if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
                             {
                                 needEntry = true;
                             }
@@ -2854,7 +2854,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-							if (isBeg && (isFibShort || isCrossingSub))
+							if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
                             {
                                 needEntry = true;
                             }
@@ -3103,7 +3103,7 @@ namespace CryptoBoxer
                                    
 					if (isLong && isGolden)
 					{
-						if (isBeg && ((/*isCrossedSub &&*/ isFibLong) || isCrossingSub ) )
+						if (isBeg && ((isCrossedSub || isFibLong) || isCrossingSub ) )
                         {
 
                             // 注文成功
@@ -3126,7 +3126,7 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-						if (isBeg && ((/*isCrossedSub &&*/ isFibShort) || isCrossingSub ))
+						if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -3155,7 +3155,7 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-							if(isBeg && ( (/*isCrossedSub &&*/ isFibLong) || isCrossingSub ) )
+							if(isBeg && ( (isCrossedSub || isFibLong) || isCrossingSub ) )
                             {
 								needEntry = true;
                             }
@@ -3213,7 +3213,7 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-							if (isBeg && ((/*isCrossedSub &&*/ isFibShort) || isCrossingSub ))
+							if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
                             {
                                 needEntry = true;
                             }
