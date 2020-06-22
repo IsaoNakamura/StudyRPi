@@ -2666,39 +2666,40 @@ namespace CryptoBoxer
 					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) )
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
-                        
-						if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
-                        {
-                            SendChildOrderResponse retObj = null;
-                            int retry_cnt = 0;
-                            while (true)
-                            {
-                                retry_cnt++;
-                                retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
-                                if (retObj == null)
-                                {
-         //                           System.Threading.Thread.Sleep(1000);
-									//if (retry_cnt<=1 && (m_config.amount - 0.01) > 0)
-                                    //{
-                                    //    m_config.amount = m_config.amount - 0.01;
-                                    //    postSlack(string.Format("failed to Long Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                    //    continue;
-                                    //}
-                                    postSlack(string.Format("failed to Long Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                    result = -1;
-                                    return result;
-                                }
-                                break;
-                            }
-                            // 注文成功
 
-							m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+                        //if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
+                        //                  {
+                        //                      SendChildOrderResponse retObj = null;
+                        //                      int retry_cnt = 0;
+                        //                      while (true)
+                        //                      {
+                        //                          retry_cnt++;
+                        //                          retObj = await SendChildOrder.BuyMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount);
+                        //                          if (retObj == null)
+                        //                          {
+                        //   //                           System.Threading.Thread.Sleep(1000);
+                        //			//if (retry_cnt<=1 && (m_config.amount - 0.01) > 0)
+                        //                              //{
+                        //                              //    m_config.amount = m_config.amount - 0.01;
+                        //                              //    postSlack(string.Format("failed to Long Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                        //                              //    continue;
+                        //                              //}
+                        //                              postSlack(string.Format("failed to Long Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                        //                              result = -1;
+                        //                              return result;
+                        //                          }
+                        //                          break;
+                        //                      }
+                        //                      // 注文成功
 
- 							postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-							                        , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                        //	m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
 
-                        }
-						else
+                        //		postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                        //	                        , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+
+                        //                  }
+                        //else
+                        if (isBeg && (isCrossedSub || isCrossed))
                         {
                             // LONG予約
 							m_position.reserveLongOrder(curCandle);
@@ -2710,40 +2711,41 @@ namespace CryptoBoxer
 					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) )
                     {
                         //Console.WriteLine("Try Short Entry Order.");
-                        
-						if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
-                        {
-                            SendChildOrderResponse retObj = null;
-                            int retry_cnt = 0;
-                            while (true)
-                            {
-                                retry_cnt++;
-                                retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount); ;
-                                if (retObj == null)
-                                {
-                                    
-         //                           System.Threading.Thread.Sleep(1000);
-									//if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
-                                    //{
-                                    //    m_config.amount = m_config.amount - 0.01;
-                                    //    postSlack(string.Format("failed to Short Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                    //    continue;
-                                    //}
-                                    postSlack(string.Format("failed to Short Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
-                                    result = -1;
-                                    return result;
-                                }
-                                break;
-                            }
-                            // 注文成功
 
-							m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
-							postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-							                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
+                        //if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
+                        //                  {
+                        //                      SendChildOrderResponse retObj = null;
+                        //                      int retry_cnt = 0;
+                        //                      while (true)
+                        //                      {
+                        //                          retry_cnt++;
+                        //                          retObj = await SendChildOrder.SellMarket(m_authBitflyer, m_config.product_bitflyer, m_config.amount); ;
+                        //                          if (retObj == null)
+                        //                          {
+
+                        //   //                           System.Threading.Thread.Sleep(1000);
+                        //			//if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
+                        //                              //{
+                        //                              //    m_config.amount = m_config.amount - 0.01;
+                        //                              //    postSlack(string.Format("failed to Short Entry Order. Reduce amount. Retry. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                        //                              //    continue;
+                        //                              //}
+                        //                              postSlack(string.Format("failed to Short Entry Order. retry_cnt={0} amount={1}", retry_cnt, m_config.amount));
+                        //                              result = -1;
+                        //                              return result;
+                        //                          }
+                        //                          break;
+                        //                      }
+                        //                      // 注文成功
+
+                        //	m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+                        //	postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                        //	                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
 
 
-                        }
-						else
+                        //                  }
+                        //else
+                        if (isBeg && (isCrossedSub || isCrossed))
                         {
                             // SHORT予約
 							m_position.reserveShortOrder(curCandle);
@@ -2771,7 +2773,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-							if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
+                            //if (isBeg && (isCrossedSub || isFibLong || isCrossingSub))
+                            if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong))
                             {
                                 needEntry = true;
                             }
@@ -2854,7 +2857,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-							if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
+                            //if (isBeg && (isCrossedSub || isFibShort || isCrossingSub))
+                            if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
                             }
@@ -3103,20 +3107,21 @@ namespace CryptoBoxer
                                    
 					if (isLong && isGolden)
 					{
-						if (isBeg && ((isCrossedSub || isFibLong) || isCrossingSub ) )
-                        {
+                        //if (isBeg && ((isCrossedSub || isFibLong) || isCrossingSub ) )
+                        //                  {
 
-                            // 注文成功
-                            string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
+                        //                      // 注文成功
+                        //                      string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
-							m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1) );
+                        //	m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1) );
 
-							postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-							                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true);
+                        //	postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                        //	                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true);
 
-                            long_entry_cnt++;                            
-                        }
-                        else
+                        //                      long_entry_cnt++;                            
+                        //                  }
+                        //                  else
+                        if (isBeg && (isCrossedSub || isCrossed) )
                         {
 							// LONG予約
 							m_position.reserveLongOrder(curCandle);
@@ -3126,19 +3131,20 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-						if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
-                        {
-                            // 注文成功
-                            string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
+                        //if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
+                        //                  {
+                        //                      // 注文成功
+                        //                      string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
-							m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+                        //	m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
 
-							postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-							                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
+                        //	postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                        //	                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
 
-                            short_entry_cnt++;                     
-                        }
-                        else
+                        //                      short_entry_cnt++;                     
+                        //                  }
+                        //                  else
+                        if (isBeg && (isCrossedSub || isCrossed))
                         {
                             // SHORT予約
 							m_position.reserveShortOrder(curCandle);
@@ -3155,7 +3161,8 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-							if(isBeg && ( (isCrossedSub || isFibLong) || isCrossingSub ) )
+                            //if(isBeg && ( (isCrossedSub || isFibLong) || isCrossingSub ) )
+                            if (isBeg && ( (isCrossedSub&&isCrossing) || isCrossingSub || isFibLong) )
                             {
 								needEntry = true;
                             }
@@ -3213,7 +3220,8 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-							if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
+                            //if (isBeg && ((isCrossedSub || isFibShort) || isCrossingSub ))
+                            if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
                             }
@@ -3523,8 +3531,15 @@ namespace CryptoBoxer
                 //    result = false;
                 //    return result;
                 //}
-                
-				if (curCandle.vola_ma <= 750.0)//600
+
+                //double shortVola = curCandle.open - curCandle.last;
+                //if (shortVola <= 1500.0 || curCandle.vola_ma <= 300.0)
+                //{
+                //    result = false;
+                //    return result;
+                //}
+
+                if (curCandle.vola_ma <= 750.0)
                 {
                     result = false;
                     return result;
@@ -3608,7 +3623,7 @@ namespace CryptoBoxer
                 else
                 {
                     // 現在値がフロントラインより上
-                    
+
                     if (Math.Abs(position) <= threshold)
                     {
                         // ENTRYしない
@@ -3628,8 +3643,15 @@ namespace CryptoBoxer
                 //    result = false;
                 //    return result;
                 //}
-                
-				if (curCandle.vola_ma <= 750.0)
+
+                //double longVola = curCandle.last - curCandle.open;
+                //if (longVola <= 1500.0 || curCandle.vola_ma <= 300.0)
+                //{
+                //    result = false;
+                //    return result;
+                //}
+
+                if (curCandle.vola_ma <= 750.0)
                 {
                     result = false;
                     return result;
