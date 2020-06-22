@@ -3523,8 +3523,8 @@ namespace CryptoBoxer
                 //    result = false;
                 //    return result;
                 //}
-
-				if (curCandle.vola_ma <= 850.0)
+                
+				if (curCandle.vola_ma <= 750.0)//600
                 {
                     result = false;
                     return result;
@@ -3608,7 +3608,7 @@ namespace CryptoBoxer
                 else
                 {
                     // 現在値がフロントラインより上
-
+                    
                     if (Math.Abs(position) <= threshold)
                     {
                         // ENTRYしない
@@ -3629,7 +3629,7 @@ namespace CryptoBoxer
                 //    return result;
                 //}
                 
-				if (curCandle.vola_ma <= 850.0)
+				if (curCandle.vola_ma <= 750.0)
                 {
                     result = false;
                     return result;
