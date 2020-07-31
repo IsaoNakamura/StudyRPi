@@ -2594,7 +2594,7 @@ namespace CryptoBoxer
                 }
 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				int fib_index = 1;
+				int fib_index = 3;
                 double fib_rate = fib_rates[fib_index];
                 double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -3056,7 +3056,7 @@ namespace CryptoBoxer
                 
                 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 }; 
-				int fib_index = 1;            
+				int fib_index = 3;            
 				double fib_rate = fib_rates[fib_index];
 				double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
