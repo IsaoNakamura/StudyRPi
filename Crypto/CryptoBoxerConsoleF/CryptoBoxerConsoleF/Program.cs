@@ -12,7 +12,8 @@ namespace CryptoBoxerConsoleF
     {
         static void Main(string[] args)
         {
-            Boxer m_boxer = Boxer.createBoxer(null,@"./boxerConfig.json");
+            string configPath = @"./boxerConfig.json";
+            Boxer m_boxer = Boxer.createBoxer(null, configPath);
             if(m_boxer==null)
             {
                 return;
