@@ -2594,7 +2594,7 @@ namespace CryptoBoxer
                 }
 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				int fib_index = 4;
+				int fib_index = 2;
                 double fib_rate = fib_rates[fib_index];
                 double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -2773,7 +2773,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && (((isCrossedSub && isCrossing) || isCrossingSub) && isFibLong))
+                            if (isBeg && (isCrossingSub && isFibLong))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong))
                             {
                                 needEntry = true;
@@ -2857,7 +2857,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && (((isCrossedSub && isCrossing) || isCrossingSub) && isFibShort))
+                            if (isBeg && (isCrossingSub && isFibShort) )
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
@@ -3056,7 +3056,7 @@ namespace CryptoBoxer
                 
                 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 }; 
-				int fib_index = 4;            
+				int fib_index = 2;            
 				double fib_rate = fib_rates[fib_index];
 				double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -3161,7 +3161,7 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-                            if (isBeg && ( ((isCrossedSub && isCrossing) || isCrossingSub) && isFibLong))
+                            if (isBeg && ( isCrossingSub && isFibLong))
                             //if (isBeg && ( (isCrossedSub&&isCrossing) || isCrossingSub || isFibLong) )
                             {
 								needEntry = true;
@@ -3220,7 +3220,7 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-                            if (isBeg && (((isCrossedSub && isCrossing) || isCrossingSub) && isFibShort))
+                            if (isBeg && (isCrossingSub && isFibShort))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
@@ -3532,14 +3532,14 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                //double shortVola = curCandle.open - curCandle.last;
-                //if (shortVola <= 1500.0 || curCandle.vola_ma <= 300.0)
-                //{
-                //    result = false;
-                //    return result;
-                //}
+                double shortVola = curCandle.open - curCandle.last;
+                if (shortVola < curCandle.vola_ma * 1.8)
+                {
+                    result = false;
+                    return result;
+                }
 
-                if (curCandle.vola_ma <= 750.0)
+                if (curCandle.vola_ma <= 200.0)//750
                 {
                     result = false;
                     return result;
@@ -3644,14 +3644,14 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                //double longVola = curCandle.last - curCandle.open;
-                //if (longVola <= 1500.0 || curCandle.vola_ma <= 300.0)
-                //{
-                //    result = false;
-                //    return result;
-                //}
+                double longVola = curCandle.last - curCandle.open;
+                if (longVola <= curCandle.vola_ma * 1.8)
+                {
+                    result = false;
+                    return result;
+                }
 
-                if (curCandle.vola_ma <= 750.0)
+                if (curCandle.vola_ma <= 200.0)//750
                 {
                     result = false;
                     return result;
