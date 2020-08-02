@@ -2594,7 +2594,7 @@ namespace CryptoBoxer
                 }
 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				int fib_index = 2;
+				int fib_index = 3;
                 double fib_rate = fib_rates[fib_index];
                 double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -2699,7 +2699,7 @@ namespace CryptoBoxer
 
                         //                  }
                         //else
-                        if (isBeg && (isCrossedSub || isCrossed))
+                        if (isBeg /*&& (isCrossedSub || isCrossed)*/)
                         {
                             // LONG予約
 							m_position.reserveLongOrder(curCandle);
@@ -2745,7 +2745,7 @@ namespace CryptoBoxer
 
                         //                  }
                         //else
-                        if (isBeg && (isCrossedSub || isCrossed))
+                        if (isBeg /*&& (isCrossedSub || isCrossed)*/)
                         {
                             // SHORT予約
 							m_position.reserveShortOrder(curCandle);
@@ -2773,7 +2773,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && (isCrossingSub && isFibLong))
+                            if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong)))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong))
                             {
                                 needEntry = true;
@@ -2857,7 +2857,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && (isCrossingSub && isFibShort) )
+                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort)))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
@@ -3054,9 +3054,9 @@ namespace CryptoBoxer
                     return result;
                 }
                 
-                
-				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 }; 
-				int fib_index = 2;            
+                //                      [0]   [1]    [2]  [3]    [4]   [5]  [6]
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
+                int fib_index = 3;            
 				double fib_rate = fib_rates[fib_index];
 				double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -3121,7 +3121,7 @@ namespace CryptoBoxer
                         //                      long_entry_cnt++;                            
                         //                  }
                         //                  else
-                        if (isBeg && (isCrossedSub || isCrossed) )
+                        if (isBeg /*&& (isCrossedSub || isCrossed)*/ )
                         {
 							// LONG予約
 							m_position.reserveLongOrder(curCandle);
@@ -3144,7 +3144,7 @@ namespace CryptoBoxer
                         //                      short_entry_cnt++;                     
                         //                  }
                         //                  else
-                        if (isBeg && (isCrossedSub || isCrossed))
+                        if (isBeg /*&& (isCrossedSub || isCrossed)*/)
                         {
                             // SHORT予約
 							m_position.reserveShortOrder(curCandle);
@@ -3161,7 +3161,7 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-                            if (isBeg && ( isCrossingSub && isFibLong))
+                            if (isBeg && ( (isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) ) )
                             //if (isBeg && ( (isCrossedSub&&isCrossing) || isCrossingSub || isFibLong) )
                             {
 								needEntry = true;
@@ -3220,7 +3220,7 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-                            if (isBeg && (isCrossingSub && isFibShort))
+                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort)))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
