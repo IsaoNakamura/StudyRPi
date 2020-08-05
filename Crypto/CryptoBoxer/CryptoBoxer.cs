@@ -2773,7 +2773,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong)))
+                            if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) || isFibLong))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong))
                             {
                                 needEntry = true;
@@ -2794,7 +2794,7 @@ namespace CryptoBoxer
                                     }
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = curCandle.last - m_position.reserved_price;
-									if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossing || isCrossingSub || isFibLong))
+                                    if ((rsv_last > fomo_limit) && !isCrossedSub && ((isCrossing || isCrossingSub) && isFibLong))
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -2857,7 +2857,7 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort)))
+                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort) || isFibShort))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
@@ -2878,7 +2878,7 @@ namespace CryptoBoxer
                                     }
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = m_position.reserved_price - curCandle.last;
-									if ((rsv_last > fomo_limit) && !isCrossedSub && ( isCrossing || isCrossingSub || isFibShort))
+                                    if ((rsv_last > fomo_limit) && !isCrossedSub && ((isCrossing || isCrossingSub) && isFibShort))
                                     {
                                         needEntry = true;
                                         postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3161,7 +3161,7 @@ namespace CryptoBoxer
 						if (isGolden)
                         {
 							bool needEntry = false;
-                            if (isBeg && ( (isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) ) )
+                            if (isBeg && ( (isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) || isFibLong ) )
                             //if (isBeg && ( (isCrossedSub&&isCrossing) || isCrossingSub || isFibLong) )
                             {
 								needEntry = true;
@@ -3184,7 +3184,7 @@ namespace CryptoBoxer
 									double rsv_last = curCandle.last - m_position.reserved_price;
                                     //if (isBeg)
                                     {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && (isCrossing || isCrossingSub || isFibLong) )
+										if ((rsv_last > fomo_limit) && !isCrossedSub && ( (isCrossing || isCrossingSub) && isFibLong) )
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3220,7 +3220,7 @@ namespace CryptoBoxer
 						if (!isGolden)
                         {                     
 							bool needEntry = false;
-                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort)))
+                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort) || isFibShort ))
                             //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
                             {
                                 needEntry = true;
@@ -3242,7 +3242,7 @@ namespace CryptoBoxer
                                     double cmp_rate = ema_last / ema_rsv;
                                     double rsv_last = m_position.reserved_price - curCandle.last;
                                     {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && ( isCrossing || isCrossingSub || isFibShort) )
+										if ((rsv_last > fomo_limit) && !isCrossedSub && ( (isCrossing || isCrossingSub) && isFibShort) )
                                         {
                                             needEntry = true;
                                             postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
@@ -3533,7 +3533,7 @@ namespace CryptoBoxer
                 //}
 
                 double shortVola = curCandle.open - curCandle.last;
-                if (shortVola < curCandle.vola_ma * 1.8)
+                if (shortVola < curCandle.vola_ma * 1.5)
                 {
                     result = false;
                     return result;
@@ -3645,7 +3645,7 @@ namespace CryptoBoxer
                 //}
 
                 double longVola = curCandle.last - curCandle.open;
-                if (longVola <= curCandle.vola_ma * 1.8)
+                if (longVola <= curCandle.vola_ma * 1.5)
                 {
                     result = false;
                     return result;
@@ -3790,15 +3790,15 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    else if (profit >= (frontline_ahead * bit_forward_rate))
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * bit_forward_rate);
-                        m_frontlineShort = m_frontlineShort - forward;
-                        // SHORT継続
-                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= (frontline_ahead * bit_forward_rate))
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * bit_forward_rate);
+                    //    m_frontlineShort = m_frontlineShort - forward;
+                    //    // SHORT継続
+                    //    postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
+                    //    result = false;
+                    //}
 					else if (isGolden)
                     {
                         // EXIT
@@ -4035,15 +4035,15 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    else if (profit >= (frontline_ahead * bit_forward_rate))
-                    {
-                        // 最前線を前進
-                        double forward = Math.Round(profit * bit_forward_rate);
-                        m_frontlineLong = m_frontlineLong + forward;
-                        // LONG継続
-                        postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
-                        result = false;
-                    }
+                    //else if (profit >= (frontline_ahead * bit_forward_rate))
+                    //{
+                    //    // 最前線を前進
+                    //    double forward = Math.Round(profit * bit_forward_rate);
+                    //    m_frontlineLong = m_frontlineLong + forward;
+                    //    // LONG継続
+                    //    postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
+                    //    result = false;
+                    //}
                     else if (!isGolden)
                     {
                         // EXIT
