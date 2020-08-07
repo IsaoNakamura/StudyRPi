@@ -2773,8 +2773,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) || isFibLong))
-                            //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibLong))
+                            //if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) || isFibLong))
+                            if (isBeg && ( isCrossingSub || isFibLong) )
                             {
                                 needEntry = true;
                             }
@@ -2857,8 +2857,8 @@ namespace CryptoBoxer
                             }
 
                             bool needEntry = false;
-                            if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort) || isFibShort))
-                            //if (isBeg && ((isCrossedSub && isCrossing) || isCrossingSub || isFibShort))
+                            //if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort) || isFibShort))
+                            if (isBeg && ( isCrossingSub || isFibShort) )
                             {
                                 needEntry = true;
                             }
