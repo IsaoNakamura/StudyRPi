@@ -3533,7 +3533,7 @@ namespace CryptoBoxer
                 //}
 
                 double shortVola = curCandle.open - curCandle.last;
-                if (shortVola < curCandle.vola_ma * 1.5)
+                if (shortVola < curCandle.vola_ma * 2.5)
                 {
                     result = false;
                     return result;
@@ -3645,7 +3645,7 @@ namespace CryptoBoxer
                 //}
 
                 double longVola = curCandle.last - curCandle.open;
-                if (longVola <= curCandle.vola_ma * 1.5)
+                if (longVola <= curCandle.vola_ma * 2.5)
                 {
                     result = false;
                     return result;
