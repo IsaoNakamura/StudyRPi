@@ -79,8 +79,8 @@ if __name__ == '__main__':
         dd_str = ''
         for dd in dd_list:
             dd_str+=dd.text
-            dd_str+='\t'
-        print('{}\t{}'.format(company.text,dd_str))
+            dd_str+='_'
+        print('{}_{}'.format(company.text,dd_str))
 
  
     '''
