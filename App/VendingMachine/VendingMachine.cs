@@ -53,6 +53,24 @@ namespace VendingMachine
                     new Tuple<string, int>("お茶", 130)
                 };
 
+                // サポートする硬貨を
+                int[] supportCoin = { 500, 100, 10, 50 };
+
+                // サポートする紙幣を設定
+                int[] supportBill = {};
+
+                // サポートする硬貨を設定
+                foreach(int coin in supportCoin)
+                {
+                    controller.m_supportCoin.Add(coin);
+                }
+
+                // サポートする紙幣を設定
+                foreach (int bill in supportBill)
+                {
+                    controller.m_supportBill.Add(bill);
+                }
+
                 foreach (Tuple<string, int> element in lineup)
                 {
                     // 価格テーブルにドリンク名と金額を追加

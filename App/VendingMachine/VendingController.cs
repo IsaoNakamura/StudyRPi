@@ -12,6 +12,9 @@ namespace VendingMachine
         private Dictionary<String, DrinkStorage> m_dictDrinkStorage { get; set; }
         public Dictionary<String, int> m_dictDrinkPrice { get; private set; }
 
+        public List<int> m_supportCoin { get; private set; }
+        public List<int> m_supportBill { get; private set; }
+
         private VendingController()
         {
             clear();
@@ -35,6 +38,18 @@ namespace VendingMachine
             {
                 m_dictDrinkPrice.Clear();
                 m_dictDrinkPrice = null;
+            }
+
+            if (m_supportCoin != null)
+            {
+                m_supportCoin.Clear();
+                m_supportCoin = null;
+            }
+
+            if (m_supportBill != null)
+            {
+                m_supportBill.Clear();
+                m_supportBill = null;
             }
         }
 
@@ -62,6 +77,18 @@ namespace VendingMachine
 
                 controller.m_dictDrinkPrice = new Dictionary<String, int>();
                 if (controller.m_dictDrinkPrice == null)
+                {
+                    return result;
+                }
+
+                controller.m_supportCoin = new List<int>();
+                if (controller.m_supportCoin == null)
+                {
+                    return result;
+                }
+
+                controller.m_supportBill = new List<int>();
+                if (controller.m_supportBill == null)
                 {
                     return result;
                 }
@@ -163,9 +190,75 @@ namespace VendingMachine
             return result;
         }
 
+        private bool isEmptyAllStorage()
+        {
+            bool result = false;
+            try
+            {
+                bool isALlEmpty = true;
+                foreach (KeyValuePair<string, DrinkStorage> element in m_dictDrinkStorage)
+                {
+                    if(!element.Value.isEmpty())
+                    {
+                        isALlEmpty = false;
+                        break;
+                    }
+                }
+
+                result = isALlEmpty;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        private bool checkInputCoinType(in int input_amount)
+        {
+            bool result = false;
+            try
+            {
+                if(m_supportCoin==null)
+                {
+                    return result;
+                }
+
+                if(m_supportCoin.Count <= 0)
+                {
+                    return result;
+                }
+
+                m_supportCoin.Sort();
+
+                int minCoin = m_supportCoin.First();
+                int maxCoin = m_supportCoin.Last();
+
+                if (input_amount % minCoin != 0)
+                {
+                    return result;
+                }
+
+                result = true;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
         public int mainLoop()
         {
             int result = -1;
+            int input_amount = 0;
 
             try
             {
@@ -179,13 +272,23 @@ namespace VendingMachine
                     return result;
                 }
 
+                if(m_supportCoin == null)
+                {
+                    return result;
+                }
+                m_supportCoin.Sort();
+
+                if (m_supportBill == null)
+                {
+                    return result;
+                }
+                m_supportBill.Sort();
 
                 List<String> lineup = m_dictDrinkPrice.Keys.ToList();
-                lineup.OrderBy(val => val);
+                lineup.Sort();
 
                 while (true)
                 {
-
                     Console.WriteLine("いらっしゃいませ！");
                     Console.WriteLine("これらの飲み物があります。どれになさいますか？");
 
@@ -193,10 +296,6 @@ namespace VendingMachine
                     {
                         Console.WriteLine("\t{0}:\t{1}", drink_name, m_dictDrinkPrice[drink_name]);
                     }
-
-
-                    int input_amount = 0;
-                    String select_name = "";
 
 
                     Console.WriteLine("「飲み物名:投入金額」の形式で入力ください。");
@@ -212,13 +311,13 @@ namespace VendingMachine
                         continue;
                     }
 
-                    select_name = inputs[0];
+                    String select_name = inputs[0];
                     input_amount = int.Parse(inputs[1]);
 
                     // 投入貨幣チェック
-                    if (input_amount % 10 != 0)
+                    if (!checkInputCoinType(in input_amount))
                     {
-                        Console.WriteLine("硬貨10円, 50円, 100円, 500円のみ利用可能です。");
+                        Console.WriteLine("硬貨は10円, 50円, 100円, 500円のみ利用可能です。");
                         Console.WriteLine("投入した金額「{0}」円をお返しします。", input_amount);
                         Console.WriteLine("\n");
                         continue;
@@ -252,9 +351,6 @@ namespace VendingMachine
                     DrinkStorage drinkStorage = null;
                     if (getStorage(out drinkStorage, select_name) != 0)
                     {
-                        Console.WriteLine("致命的なエラーが発生しました。");
-                        Console.WriteLine("投入した金額「{0}」円をお返しします。", input_amount);
-                        Console.WriteLine("\n");
                         return result;
                     }
 
@@ -266,43 +362,24 @@ namespace VendingMachine
                         continue;
                     }
 
+                    // ストレージからドリンクを出す
                     Drink drink = null;
                     if (drinkStorage.popDrink(out drink) != 0)
                     {
-                        Console.WriteLine("致命的なエラーが発生しました。");
-                        Console.WriteLine("投入した金額「{0}」円をお返しします。", input_amount);
-                        Console.WriteLine("\n");
                         return result;
                     }
 
                     if (drink == null)
                     {
-                        Console.WriteLine("致命的なエラーが発生しました。");
-                        Console.WriteLine("投入した金額「{0}」円をお返しします。", input_amount);
-                        Console.WriteLine("\n");
                         return result;
                     }
 
-                    Console.WriteLine("{0}が買えました。お釣りは{1}円です。", drink.m_name, input_amount - drink_price);
+                    input_amount = input_amount - drink_price;
+
+                    Console.WriteLine("{0}が買えました。お釣りは{1}円です。", drink.m_name, input_amount);
                     Console.WriteLine("\n");
 
-                    bool isALlEmpty = true;
-                    foreach (String drink_name in lineup)
-                    {
-                        DrinkStorage drinkStorageWk = null;
-                        if (getStorage(out drinkStorageWk, drink_name) != 0)
-                        {
-                            Console.WriteLine("致命的なエラーが発生しました。");
-                            Console.WriteLine("\n");
-                            return result;
-                        }
-                        if (!drinkStorageWk.isEmpty())
-                        {
-                            isALlEmpty = false;
-                        }
-                    }
-
-                    if (isALlEmpty)
+                    if (isEmptyAllStorage())
                     {
                         Console.WriteLine("全ての商品は売り切れです。ありがとうございました。");
                         Console.WriteLine("\n");
@@ -321,6 +398,9 @@ namespace VendingMachine
             {
                 if (result != 0)
                 {
+                    Console.WriteLine("致命的なエラーが発生しました。");
+                    Console.WriteLine("投入した金額「{0}」円をお返しします。", input_amount);
+                    Console.WriteLine("\n");
                 }
             }
             return result;
