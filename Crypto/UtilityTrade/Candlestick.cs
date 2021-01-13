@@ -2011,7 +2011,7 @@ namespace UtilityTrade
         public int getEMACrossState
         (
             out bool isGolden, 
-            out bool isFirst, 
+            out bool isBeg, 
             out int back_cnt, 
             out double cur_ema_length, 
             out bool isTouchEma,
@@ -2020,14 +2020,14 @@ namespace UtilityTrade
             out int high_max_idx,
             out double low_min,
             out int low_min_idx,
-            double threshold_rate = 0.6,
+            double threshold_rate = 0.5,
             double ema_touch_play = 0.0,
 			int cross_over_cnt = 65
         )
         {
             int result = -1;
             isGolden = false;
-            isFirst = false;
+            isBeg = false;
             back_cnt = 0;
             cur_ema_length = 0.0;
             isTouchEma = false;
@@ -2083,7 +2083,7 @@ namespace UtilityTrade
                 {
                     // CROSS
                     cur_cross_state = 0;
-                    isFirst = true;
+                    isBeg = true;
                 }
 
                 double max_ema_length = 0.0;
@@ -2171,19 +2171,7 @@ namespace UtilityTrade
                     }
                 }
 
-				if (cur_cross_state != 0)
-                {
-                    if (cur_ema_length < (max_ema_length * threshold_rate))
-                    {
-                        // 収束中
-                        isFirst = false;
-                    }
-                    else
-                    {
-                        // 拡大中
-                        isFirst = true;
-                    }
-                }
+
 
 				if(itr_idx > cross_over_cnt)
 				{
@@ -2217,9 +2205,388 @@ namespace UtilityTrade
                     }               
 				}
 
-				//high_max_idx = candle_cnt - high_max_idx;
-				//low_min_idx = candle_cnt - low_min_idx;
-                            
+                List<double> peakList = new List<double>();
+                List<int> peakListIdx = new List<int>();
+                SortedSet<int> peakListMax = new SortedSet<int>();
+                SortedSet<int> peakListMin = new SortedSet<int>();
+                //if (itr_idx > back_cnt)
+                {
+                    int end_idx = beg_idx - back_cnt;
+
+                    Candlestick endCandle = m_candleList[end_idx];
+                    if(endCandle == null)
+                    {
+                        return result;
+                    }
+
+                    double value_min = curCandle.ema;
+                    double value_max = curCandle.ema;
+                    if (isGolden)
+                    {
+                        value_min = value_max = curCandle.ema - curCandle.ema_sub;
+                    }
+                    else
+                    {
+                        value_min = value_max = curCandle.ema_sub - curCandle.ema;
+                    }
+                    int value_min_idx = cur_idx;
+                    int value_max_idx = cur_idx;
+                    for (int i = cur_idx; i >= end_idx; i--)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        double value = 0.0;
+                        if(isGolden)
+                        {
+                            value = candle.ema - candle.ema_sub;
+                        }
+                        else
+                        {
+                            value = candle.ema_sub - candle.ema;
+                        }
+
+                        if (value < value_min)
+                        {
+                            value_min = value;
+                            value_min_idx = i;
+                        }
+
+                        if (value > value_max)
+                        {
+                            value_max = value;
+                            value_max_idx = i;
+                        }
+                    }
+                    //Console.WriteLine("#Diff ema");
+                    //for (int i=end_idx; i<=cur_idx; i++)
+                    //{
+                    //    Candlestick candle = m_candleList[i];
+                    //    if (candle == null)
+                    //    {
+                    //        continue;
+                    //    }
+                    //    double value = 0.0;
+                    //    if (isGolden)
+                    //    {
+                    //        value = candle.ema - candle.ema_sub;
+                    //    }
+                    //    else
+                    //    {
+                    //        value = candle.ema_sub - candle.ema;
+                    //    }
+                    //    value = (value - value_min) / (value_max - value_min);
+                    //    Console.WriteLine("{0}", value);
+                    //}
+
+                    double peak_min = value_max;
+                    double peak_max = value_min;
+                    int peak_min_idx = value_max_idx;
+                    int peak_max_idx = value_min_idx;
+                    int stride_idx = 0;
+                    //for (int i = cur_idx; i >= end_idx; i--)
+                    for (int i = end_idx; i <= cur_idx; i++)
+                    {
+                        Candlestick candle = m_candleList[i];
+                        if (candle == null)
+                        {
+                            continue;
+                        }
+
+                        double value = 0.0;
+                        if (isGolden)
+                        {
+                            value = candle.ema - candle.ema_sub;
+                        }
+                        else
+                        {
+                            value = candle.ema_sub - candle.ema;
+                        }
+                        double norm = (value - value_min) / (value_max - value_min);
+
+                        if (value < peak_min)
+                        {
+                            // UPDATE(MIN)
+                            peak_min = value;
+                            peak_min_idx = i;
+                        }
+
+                        if (value > peak_max)
+                        {
+                            // UPDATE(MAX)
+                            peak_max = value;
+                            peak_max_idx = i;
+                        }
+
+                        stride_idx++;
+                        if (stride_idx >= 5 || ( (stride_idx < 5) && (i == cur_idx) ) )
+                        {
+                            //if(peak_min_idx!= peak_max_idx)
+                            { 
+                                peakListMin.Add(peak_min_idx);
+                                peakListMax.Add(peak_max_idx);
+                            }
+
+                            // Reset
+                            peak_min = value_max;
+                            peak_max = value_min;
+                            peak_min_idx = value_max_idx;
+                            peak_max_idx = value_min_idx;
+                            stride_idx = 0;
+                        }
+                    }
+
+                    if(peakListMax.Count()!=peakListMin.Count())
+                    {
+                        return result;
+                    }
+
+                    bool isLastMax = false;
+                    bool isZero = true;
+                    for(int i=0; i<peakListMax.Count();i++)
+                    {
+                        int min_idx = peakListMin.ElementAt(i);
+                        int max_idx = peakListMax.ElementAt(i);
+
+                        Candlestick minCandle = m_candleList[min_idx];
+                        if (minCandle == null)
+                        {
+                            continue;
+                        }
+
+                        Candlestick maxCandle = m_candleList[max_idx];
+                        if (maxCandle == null)
+                        {
+                            continue;
+                        }
+
+                        double minValue = 0.0;
+                        double maxValue = 0.0;
+                        if (isGolden)
+                        {
+                            minValue = minCandle.ema - minCandle.ema_sub;
+                            maxValue = maxCandle.ema - maxCandle.ema_sub;
+                        }
+                        else
+                        {
+                            minValue = minCandle.ema_sub - minCandle.ema;
+                            maxValue = maxCandle.ema_sub - maxCandle.ema;
+                        }
+
+                        if (min_idx < max_idx)
+                        {
+                            // min max の順で格納
+                            if(isZero)
+                            {
+                                peakList.Add(minValue);
+                                peakList.Add(maxValue);
+                                isLastMax = true;
+                                isZero = false;
+                                peakListIdx.Add(min_idx);
+                                peakListIdx.Add(max_idx);
+                            }
+                            else
+                            {
+                                if (isLastMax)
+                                {
+                                    // 前回もmin max の順
+
+                                    if (peakList.Last() < minValue)
+                                    {
+                                        // 前回maxの方が今回minより小さい
+
+                                        // 今回のminは入れない
+                                        // 前回maxを今回maxに入れ替え
+                                        peakList[peakList.Count() - 1] = maxValue;
+                                        peakListIdx[peakListIdx.Count() - 1] = max_idx;
+                                        isLastMax = true;
+                                    }
+                                    else if (peakList.Last() > minValue)
+                                    {
+                                        // 前回maxの方が今回minより大きい
+
+                                        // 同じ順序で格納
+                                        
+                                        if (peakListIdx.Last() != min_idx)
+                                        {
+                                            peakList.Add(minValue);
+                                            peakListIdx.Add(min_idx);
+                                        }
+                                        if(peakListIdx.Last()!=max_idx)
+                                        {
+                                            peakList.Add(maxValue);
+                                            peakListIdx.Add(max_idx);
+                                        }
+                                        isLastMax = true;
+                                    }
+                                }
+                                else
+                                {
+                                    // 前回はmax min の順
+                                    
+                                    if (peakList.Last() > minValue)
+                                    {
+                                        // 前回minより今回minの方が小さい
+                                        // 前回minを今回minに入れ替え
+                                        peakList[peakList.Count()-1] = minValue;
+                                        peakListIdx[peakListIdx.Count() - 1] = min_idx;
+                                    }
+                                    else if(peakList.Last() < minValue)
+                                    {
+                                        // 前回minは今回minより小さい
+                                        // 今回minは入れない
+                                    }
+                                    
+                                    if (peakListIdx.Last() != max_idx)
+                                    {
+                                        peakList.Add(maxValue);
+                                        peakListIdx.Add(max_idx);
+                                        
+                                    }
+                                    isLastMax = true;
+
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // max min の順で格納
+                            if (isZero)
+                            {
+                                peakList.Add(maxValue);
+                                peakList.Add(minValue);
+                                isLastMax = false;
+                                isZero = true;
+                                peakListIdx.Add(max_idx);
+                                peakListIdx.Add(min_idx);
+                            }
+                            else
+                            {
+                                if (!isLastMax)
+                                {
+                                    // 前回もmax min の順
+
+                                    if (peakList.Last() > maxValue)
+                                    {
+                                        // 前回minの方が今回maxより大きい
+
+                                        // 今回のmaxは入れない
+                                        // 前回minの今回のminに入れ替え
+                                        peakList[peakList.Count() - 1] = minValue;
+                                        peakListIdx[peakListIdx.Count() - 1] = min_idx;
+                                        isLastMax = false;
+                                    }
+                                    else if (peakList.Last() < maxValue)
+                                    {
+                                        // 前回minの方が今回maxより小さい
+
+                                        // 同じ順序で格納
+                                        
+                                        if (peakListIdx.Last() != max_idx)
+                                        {
+                                            peakList.Add(maxValue);
+                                            peakListIdx.Add(max_idx);
+                                        }
+                                        
+                                        if (peakListIdx.Last() != min_idx)
+                                        {
+                                            peakList.Add(minValue);
+                                            peakListIdx.Add(min_idx);
+                                        }
+                                        isLastMax = false;
+                                    }
+                                }
+                                else
+                                {
+                                    // 前回はmin max の順
+                                    
+                                    if (peakList.Last() < maxValue)
+                                    {
+                                        // 前回maxより今回maxの方が大きい
+                                        // 前回maxを今回maxに入れ替え
+                                        peakList[peakList.Count() - 1] = maxValue;
+                                        peakListIdx[peakListIdx.Count() - 1] = max_idx;
+                                    }
+                                    else if (peakList.Last() > maxValue)
+                                    {
+                                        // 前回maxは今回maxより大きい
+                                        // 今回maxは入れない
+                                    }
+                                    
+                                    if (peakListIdx.Last() != min_idx)
+                                    {
+                                        peakList.Add(minValue);
+                                        peakListIdx.Add(min_idx);
+                                    }
+                                    isLastMax = false;
+                                }
+
+                            }
+                        }
+                    }
+
+                    if (cur_cross_state != 0)
+                    {
+                        //if (cur_ema_length < (max_ema_length * threshold_rate))
+                        //{
+                        //    // 収束中
+                        //    isBeg = false;
+                        //}
+                        //else
+                        //{
+                        //    // 拡大中
+                        //    isBeg = true;
+                        //}
+
+                        //Console.WriteLine("#MinMax ema");
+                        //foreach (double value in peakList)
+                        //for (int i = 0; i < peakList.Count(); i++)
+                        //{
+                        //    double value = peakList[i];
+                        //    int index = peakListIdx[i];
+                        //    Console.WriteLine("{0} {1}", index, (value - value_min) / (value_max - value_min));
+                        //}
+                        if (peakList.Count() > 2)
+                        {
+                            double valueA = peakList[peakList.Count() - 2];
+                            double valueB = peakList[peakList.Count() - 1];
+                            double normValA = (valueA - peakList.Min()) / (peakList.Max() - peakList.Min());
+                            double normValB = (valueB - peakList.Min()) / (peakList.Max() - peakList.Min());
+
+                            int indexA = peakListIdx[peakListIdx.Count() - 2];
+                            int indexB = peakListIdx[peakListIdx.Count() - 1];
+                            double normIdxA = (double)(indexA - peakListIdx.Min()) / (double)(peakListIdx.Max() - peakListIdx.Min());
+                            double normIdxB = (double)(indexB - peakListIdx.Min()) / (double)(peakListIdx.Max() - peakListIdx.Min());
+
+                            double tilt = (normValB - normValA) / (normIdxB - normIdxA);
+                            //Console.WriteLine("{0} {1}", tilt, normValB);
+
+                            if(tilt >= -1.5 && normValB >= threshold_rate)
+                            {
+                                // 拡大中
+                                isBeg = true;
+                            }
+                            else
+                            {
+                                // 収束中
+                                isBeg = false;
+                            }
+                        }
+                    }
+
+
+
+
+                }
+
+                //high_max_idx = candle_cnt - high_max_idx;
+                //low_min_idx = candle_cnt - low_min_idx;
+
+
+
                 result = 0;
             }
             catch (Exception ex)
