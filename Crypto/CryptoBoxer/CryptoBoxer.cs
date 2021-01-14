@@ -3107,7 +3107,7 @@ namespace CryptoBoxer
                                    
 					if (isLong && isGolden)
 					{
-                        if (isBeg && (isFibLong || isCrossingSub))
+                        if (isBeg && (isFibLong || isCrossingSub ))
                         {
 
                             // 注文成功
@@ -3131,7 +3131,7 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden)
 					{
-                        if (isBeg && (isFibShort || isCrossingSub))
+                        if (isBeg && (isFibShort || isCrossingSub ))
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -3221,7 +3221,7 @@ namespace CryptoBoxer
                         {                     
 							bool needEntry = false;
                             //if (isBeg && ((isCrossingSub && isFibShort) /*|| (isCrossing && isCrossedSub && isFibShort)*/ || isFibShort ))
-                            if (isBeg && (isCrossingSub || isFibShort) )
+                            if (isBeg && (isCrossingSub && isFibShort) )
                             {
                                 needEntry = true;
                             }
@@ -3703,7 +3703,7 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = curCandle.vola_ma * 3.0;// m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = curCandle.vola_ma * 3.2;// m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
                 //double frontline_ahead = (m_config.frontline_ahead*0.5) + ( (m_config.frontline_ahead*0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
@@ -3951,7 +3951,7 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = m_config.frontline_ahead * 3.0;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = m_config.frontline_ahead * 3.2;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
                 //double frontline_ahead = (m_config.frontline_ahead * 0.5) + ((m_config.frontline_ahead * 0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
