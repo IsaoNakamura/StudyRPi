@@ -2345,7 +2345,7 @@ namespace UtilityTrade
                     }
 
                     bool isLastMax = false;
-                    bool isZero = true;
+                    bool isFirst = true;
                     for(int i=0; i<peakListMax.Count();i++)
                     {
                         int min_idx = peakListMin.ElementAt(i);
@@ -2379,12 +2379,12 @@ namespace UtilityTrade
                         if (min_idx < max_idx)
                         {
                             // min max の順で格納
-                            if(isZero)
+                            if(isFirst)
                             {
                                 peakList.Add(minValue);
                                 peakList.Add(maxValue);
                                 isLastMax = true;
-                                isZero = false;
+                                isFirst = false;
                                 peakListIdx.Add(min_idx);
                                 peakListIdx.Add(max_idx);
                             }
@@ -2454,12 +2454,12 @@ namespace UtilityTrade
                         else
                         {
                             // max min の順で格納
-                            if (isZero)
+                            if (isFirst)
                             {
                                 peakList.Add(maxValue);
                                 peakList.Add(minValue);
                                 isLastMax = false;
-                                isZero = true;
+                                isFirst = true;
                                 peakListIdx.Add(max_idx);
                                 peakListIdx.Add(min_idx);
                             }
