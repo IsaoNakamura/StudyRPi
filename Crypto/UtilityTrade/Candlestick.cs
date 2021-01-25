@@ -3341,6 +3341,305 @@ namespace UtilityTrade
             }
             return result;
         }
+
+        public int calcPeakList
+        (
+            ref List<double> peakMinValueList,
+            ref List<double> peakMaxValueList,
+            ref List<int> peakMinIndexList,
+            ref List<int> peakMaxIndexList,
+            in int cur_idx,
+            in int back_idx,
+            in int stride_num = 5
+        )
+        {
+            int result = -1;
+
+            try
+            {
+                if (peakMinValueList == null)
+                {
+                    return result;
+                }
+                peakMinValueList.Clear();
+
+                if (peakMaxValueList == null)
+                {
+                    return result;
+                }
+                peakMaxValueList.Clear();
+
+                if (peakMinIndexList == null)
+                {
+                    return result;
+                }
+                peakMinIndexList.Clear();
+
+                if (peakMaxIndexList == null)
+                {
+                    return result;
+                }
+                peakMaxIndexList.Clear();
+
+                SortedSet<int> minIndexList = new SortedSet<int>();
+                SortedSet<int> maxIndexList = new SortedSet<int>();
+                if (calcMinMaxList(ref minIndexList, ref maxIndexList, cur_idx, back_idx, stride_num) != 0)
+                {
+                    return result;
+                }
+
+                bool isLastMax = false;
+                bool isFirst = true;
+                for (int i = 0; i < maxIndexList.Count(); i++)
+                {
+                    int min_idx = minIndexList.ElementAt(i);
+                    int max_idx = maxIndexList.ElementAt(i);
+
+                    Candlestick minCandle = m_candleList[min_idx];
+                    if (minCandle == null)
+                    {
+                        continue;
+                    }
+
+                    Candlestick maxCandle = m_candleList[max_idx];
+                    if (maxCandle == null)
+                    {
+                        continue;
+                    }
+
+                    double min_value = minCandle.low;
+                    double max_value = maxCandle.high;
+
+                    if (min_idx < max_idx)
+                    {
+                        // min max の順で格納
+                        if (isFirst)
+                        {
+                            peakMinValueList.Add(min_value);
+                            peakMaxValueList.Add(max_value);
+                            isLastMax = true;
+                            isFirst = false;
+                            peakMinIndexList.Add(min_idx);
+                            peakMaxIndexList.Add(max_idx);
+                        }
+                        else
+                        {
+                            if (isLastMax)
+                            {
+                                // 前回もmin max の順
+
+                                if (peakMaxValueList.Last() < min_value)
+                                {
+                                    // 前回maxの方が今回minより小さい
+
+                                    // 今回のminは入れない
+                                    // 前回maxを今回maxに入れ替え
+                                    peakMaxValueList[peakMaxValueList.Count() - 1] = max_value;
+                                    peakMaxIndexList[peakMaxIndexList.Count() - 1] = max_idx;
+                                    isLastMax = true;
+                                }
+                                else if (peakMaxValueList.Last() > min_value)
+                                {
+                                    // 前回maxの方が今回minより大きい
+
+                                    // 今回minから前回maxの間で最も小さい位置を算出
+                                    double scope_min_value = min_value;
+                                    double scope_max_value = 0.0;
+                                    int scope_min_idx = min_idx;
+                                    int scope_max_idx = -1;
+                                    int last_idx = peakMaxIndexList.Last();// +1;
+                                    if (min_idx > last_idx)
+                                    {
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in min_idx, in last_idx) != 0)
+                                        {
+                                            return result;
+                                        }
+                                    }
+
+                                    // 同じ順序で格納
+                                    peakMinValueList.Add(scope_min_value);
+                                    peakMinIndexList.Add(scope_min_idx);
+
+                                    peakMaxValueList.Add(max_value);
+                                    peakMaxIndexList.Add(max_idx);
+                                    isLastMax = true;
+                                }
+                            }
+                            else
+                            {
+                                // 前回はmax min の順
+
+                                if (peakMinValueList.Last() > min_value)
+                                {
+                                    // 前回minより今回minの方が小さい
+                                    // 前回minを今回minに入れ替え
+                                    peakMinValueList[peakMinValueList.Count() - 1] = min_value;
+                                    peakMinIndexList[peakMinIndexList.Count() - 1] = min_idx;
+                                }
+                                else if (peakMinValueList.Last() < min_value)
+                                {
+                                    // 前回minは今回minより小さい
+                                    // 今回minは入れない
+                                }
+
+                                peakMaxValueList.Add(max_value);
+                                peakMaxIndexList.Add(max_idx);
+                                isLastMax = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // max min の順で格納
+                        if (isFirst)
+                        {
+                            peakMaxValueList.Add(max_value);
+                            peakMinValueList.Add(min_value);
+                            isLastMax = false;
+                            isFirst = false;
+                            peakMaxIndexList.Add(max_idx);
+                            peakMinIndexList.Add(min_idx);
+                        }
+                        else
+                        {
+                            if (!isLastMax)
+                            {
+                                // 前回もmax min の順
+
+                                if (peakMinValueList.Last() > max_value)
+                                {
+                                    // 前回minの方が今回maxより大きい
+
+                                    // 今回のmaxは入れない
+                                    // 前回minの今回のminに入れ替え
+                                    peakMinValueList[peakMinValueList.Count() - 1] = min_value;
+                                    peakMinIndexList[peakMinIndexList.Count() - 1] = min_idx;
+                                    isLastMax = false;
+                                }
+                                else if (peakMinValueList.Last() < max_value)
+                                {
+                                    // 前回minの方が今回maxより小さい
+
+                                    // 今回maxから前回minの間で最も小さい位置を算出
+                                    double scope_min_value = 0.0;
+                                    double scope_max_value = max_value;
+                                    int scope_min_idx = -1;
+                                    int scope_max_idx = max_idx;
+                                    int last_idx = peakMinIndexList.Last();// +1;
+                                    if (max_idx > last_idx)
+                                    {
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in max_idx, in last_idx) != 0)
+                                        {
+                                            return result;
+                                        }
+                                    }
+
+                                    // 同じ順序で格納
+                                    peakMaxValueList.Add(scope_max_value);
+                                    peakMaxIndexList.Add(scope_max_idx);
+
+                                    peakMinValueList.Add(min_value);
+                                    peakMinIndexList.Add(min_idx);
+                                    isLastMax = false;
+                                }
+                            }
+                            else
+                            {
+                                // 前回はmin max の順
+
+                                if (peakMaxValueList.Last() < max_value)
+                                {
+                                    // 前回maxより今回maxの方が大きい
+                                    // 前回maxを今回maxに入れ替え
+                                    peakMaxValueList[peakMaxValueList.Count() - 1] = max_value;
+                                    peakMaxIndexList[peakMaxIndexList.Count() - 1] = max_idx;
+                                }
+                                else if (peakMaxValueList.Last() > max_value)
+                                {
+                                    // 前回maxは今回maxより大きい
+                                    // 今回maxは入れない
+                                }
+
+                                peakMinValueList.Add(min_value);
+                                peakMinIndexList.Add(min_idx);
+                                isLastMax = false;
+                            }
+                        }
+                    }
+                }
+
+                //Console.WriteLine("#Peak");
+                //for (int i = back_idx; i <= cur_idx; i++)
+                //{
+                //    Candlestick candle = m_candleList[i];
+                //    if (candle == null)
+                //    {
+                //        continue;
+                //    }
+                //    double high = (candle.high - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //    double open = (candle.open - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //    double last = (candle.last - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //    double low = (candle.low - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //    int peakMinIndex = peakMinIndexList.IndexOf(i);
+                //    int peakMaxIndex = peakMaxIndexList.IndexOf(i);
+
+                //    if (peakMinIndex >= 0 && peakMaxIndex>=0)
+                //    {
+                //        double peakMin = (peakMinValueList[peakMinIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //        double peakMax = (peakMaxValueList[peakMaxIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //        Console.WriteLine("{0},'{1},{2},{3},{4},{5}", i, candle.timestamp, high, low, peakMin, peakMax);
+                //    }
+                //    else if(peakMinIndex >= 0)
+                //    {
+                //        double peakMin = (peakMinValueList[peakMinIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //        Console.WriteLine("{0},'{1},{2},{3},{4},", i, candle.timestamp, high, low, peakMin);
+                //    }
+                //    else if(peakMaxIndex >= 0)
+                //    {
+                //        double peakMax = (peakMaxValueList[peakMaxIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
+                //        Console.WriteLine("{0},'{1},{2},{3},,{4}", i, candle.timestamp, high, low, peakMax);
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("{0},'{1},{2},{3},,", i, candle.timestamp, high, low);
+                //    }
+                //}
+                result = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                if (result != 0)
+                {
+                    if (peakMinValueList != null)
+                    {
+                        peakMinValueList.Clear();
+                    }
+
+                    if (peakMinIndexList != null)
+                    {
+                        peakMinIndexList.Clear();
+                    }
+
+                    if (peakMaxValueList != null)
+                    {
+                        peakMaxValueList.Clear();
+                    }
+
+                    if (peakMaxIndexList != null)
+                    {
+                        peakMaxIndexList.Clear();
+                    }
+                }
+            }
+            return result;
+        }
+
+
         public int calcZigzagList
         (
             ref List<double> peakValueList,

@@ -464,7 +464,7 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                List<double> curCandleFactor = candles[0];
+                List<double> curCandleFactor = candles.Last();
                 DateTime test_end_timestamp = DateTimeOffset.FromUnixTimeSeconds((long)curCandleFactor[0]).LocalDateTime;
                 DateTime test_beg_timestamp = test_end_timestamp.AddHours(-backtest_hour);
 
@@ -1565,7 +1565,9 @@ namespace CryptoBoxer
                     //long after_secounds_top = (buffer_num_top + test_num_top) * m_config.periods_top;
                     //BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
 
-                    BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds);
+                    long after_secounds_top = after_secounds * 6;//(m_config.periods_top / m_config.periods);
+
+                    BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
 
                     if (applyCandlestick(m_candleBufTop, testCandleBuf_top, in ohlc_top, m_config.periods_top, m_config.backtest_hour, false) != 0)
                     {
@@ -2784,7 +2786,7 @@ namespace CryptoBoxer
                 }
 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				int fib_index = 2;
+				int fib_index = 1;
                 double fib_rate = fib_rates[fib_index];
                 double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -2828,6 +2830,141 @@ namespace CryptoBoxer
 
 				double fomo_limit = 6800.0 + curCandle.vola_ma;
 
+                bool isBreakTrendTop = false;
+                bool isBreakTrendBottom = false;
+                {
+                    List<double> peakMinValueList = new List<double>();
+                    List<double> peakMaxValueList = new List<double>();
+                    List<int> peakMinIndexList = new List<int>();
+                    List<int> peakMaxIndexList = new List<int>();
+                    int cur_idx = m_candleBufTop.getLastCandleIndex();
+                    int back_idx = 0;// cur_idx - 201;
+                    int sample_num = 240;//12;// 240;//60;//15;
+                    if (m_candleBufTop.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
+                    {
+                        return result;
+                    }
+
+                    if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
+                    {
+
+                        int peakMinLastIdx = peakMinIndexList.Last();
+                        int peakMaxLastidx = peakMaxIndexList.Last();
+                        if (peakMinLastIdx < peakMaxLastidx)
+                        {
+                            // peakMinは確定
+                            // peakMaxは暫定
+
+                            int peakIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
+                            int peakIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
+
+                            int diff_sec = (peakIdxB - peakIdxA) * m_config.periods_top;
+
+                            double peakValueA = peakMinValueList[peakMinValueList.Count() - 2];
+                            double peakValueB = peakMinValueList[peakMinValueList.Count() - 1];
+
+                            double tilt = (peakValueB - peakValueA) / (double)(diff_sec);
+
+                            Candlestick peakCandleA = m_candleBufTop.getCandle(peakIdxA);
+                            if (peakCandleA == null)
+                            {
+                                return result;
+                            }
+
+                            Candlestick peakCandleB = m_candleBufTop.getCandle(peakIdxB);
+                            if (peakCandleB == null)
+                            {
+                                return result;
+                            }
+
+                            DateTime peakTimeA = DateTime.Parse(peakCandleA.timestamp);
+                            DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
+                            TimeSpan span = curTime - peakTimeA;
+                            int elapsed_sec = (int)(span.TotalSeconds);
+
+                            double trendValue = tilt * elapsed_sec + peakValueA;
+
+                            if (curCandle.last < trendValue)
+                            {
+                                // 下側トレンドラインを割った
+                                // LONGは要注意
+                                isBreakTrendBottom = true;
+
+                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Break TrendLine(Bottom). from={0} to={1} tilt={2:0.00} trend={3:0} cur={4}"
+                                          , peakCandleA.timestamp
+                                          , peakCandleB.timestamp
+                                          , tilt
+                                          , trendValue
+                                          , curCandle.last
+                                        ), false
+                                    );
+                                }
+                            }
+                        }
+                        else if (peakMinLastIdx > peakMaxLastidx)
+                        {
+                            // peakMinは暫定
+                            // peakMaxは確定
+
+                            int peakIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
+                            int peakIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
+
+                            int diff_sec = (peakIdxB - peakIdxA) * m_config.periods_top;
+
+                            double peakValueA = peakMinValueList[peakMinValueList.Count() - 2];
+                            double peakValueB = peakMinValueList[peakMinValueList.Count() - 1];
+
+                            double tilt = (peakValueB - peakValueA) / (double)(diff_sec);
+
+                            Candlestick peakCandleA = m_candleBufTop.getCandle(peakIdxA);
+                            if (peakCandleA == null)
+                            {
+                                return result;
+                            }
+
+                            Candlestick peakCandleB = m_candleBufTop.getCandle(peakIdxB);
+                            if (peakCandleB == null)
+                            {
+                                return result;
+                            }
+
+                            DateTime peakTimeA = DateTime.Parse(peakCandleA.timestamp);
+                            DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
+                            TimeSpan span = curTime - peakTimeA;
+                            int elapsed_sec = (int)(span.TotalSeconds);
+
+                            double trendValue = tilt * elapsed_sec + peakValueA;
+
+                            if (curCandle.last > trendValue)
+                            {
+                                // 上側トレンドラインを割った
+                                // SHORTは要注意
+                                isBreakTrendTop = true;
+
+                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Break TrendLine(Top). from={0} to={1} tilt={2:0.00} trend={3:0} cur={4}"
+                                          , peakCandleA.timestamp
+                                          , peakCandleB.timestamp
+                                          , tilt
+                                          , trendValue
+                                          , curCandle.last
+                                        ), false
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
@@ -2853,7 +2990,7 @@ namespace CryptoBoxer
                         }
                     }
                      
-					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) )
+					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) && !isBreakTrendBottom)
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
 
@@ -2898,7 +3035,7 @@ namespace CryptoBoxer
 
                         }
                     }
-					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) )
+					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) && !isBreakTrendTop)
                     {
                         //Console.WriteLine("Try Short Entry Order.");
 
@@ -2949,7 +3086,7 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-                        if (isGolden)
+                        if (isGolden && !isBreakTrendBottom)
                         {
                             
                             if (curCandle.disparity_rate >= disparity_border)
@@ -3034,7 +3171,7 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-                        if (!isGolden)
+                        if (!isGolden && !isBreakTrendTop)
                         {
 							if (curCandle.disparity_rate <= -disparity_border)
                             {
@@ -3246,7 +3383,7 @@ namespace CryptoBoxer
                 
                 //                      [0]   [1]    [2]  [3]    [4]   [5]  [6]
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-                int fib_index = 2;            
+                int fib_index = 1;            
 				double fib_rate = fib_rates[fib_index];
 				double fib_long = high_max - (high_max - low_min) * fib_rate;
 				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
@@ -3280,20 +3417,21 @@ namespace CryptoBoxer
                     }
                 }
 
-                //if (curCandle.timestamp == "2021/01/18 23:00:00")//
-                //if(curCandle.timestamp == "2021/01/18 19:29:00")
-                //if (curCandle.timestamp == "2021/01/19 23:50:00")//2021/01/25 2:26:00
-                if (curCandle.timestamp == "2021/01/25 2:26:00")//
+                bool isFibLong = curCandle.isCross(fib_long);
+                bool isFibShort = curCandle.isCross(fib_short);
+                
+				bool isCrossing = curCandle.isCrossEMA(0.0);
+				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
+                
+				double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
+                
+				Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
+				Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
+
+                //if (curCandle.timestamp == "2021/01/25 3:55:00")
+                bool isBreakTrendTop = false;
+                bool isBreakTrendBottom = false;
                 {
-                    List<double> peakValueList = new List<double>();
-                    List<int> peakIndexList = new List<int>();
-                    int cur_idx = m_candleBufTop.getLastCandleIndex();
-                    int back_idx = 0;// cur_idx - 201;
-                    int sample_num = 12;// 240;//60;//15;
-                    if (m_candleBufTop.calcPeakList(ref peakValueList, ref peakIndexList, cur_idx, back_idx, sample_num) != 0)
-                    {
-                        return result;
-                    }
                     //List<double> zigzagValueList = new List<double>();
                     //List<int> zigzagIndexList = new List<int>();
                     //double depth = 0.25;
@@ -3304,26 +3442,157 @@ namespace CryptoBoxer
                     //{
                     //    return result;
                     //}
+
+                    //List<double> peakValueList = new List<double>();
+                    //List<int> peakIndexList = new List<int>();
+                    //int cur_idx = m_candleBufTop.getLastCandleIndex();
+                    //int back_idx = 0;// cur_idx - 201;
+                    //int sample_num = 240;//12;// 240;//60;//15;
+                    //if (m_candleBufTop.calcPeakList(ref peakValueList, ref peakIndexList, cur_idx, back_idx, sample_num) != 0)
+                    //{
+                    //    return result;
+                    //}
+
+                    List<double> peakMinValueList = new List<double>();
+                    List<double> peakMaxValueList = new List<double>();
+                    List<int> peakMinIndexList = new List<int>();
+                    List<int> peakMaxIndexList = new List<int>();
+                    int cur_idx = m_candleBufTop.getLastCandleIndex();
+                    int back_idx = 0;// cur_idx - 201;
+                    int sample_num = 240;//240;//12;// 240;//60;//15;
+                    if (m_candleBufTop.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
+                    {
+                        return result;
+                    }
+
+                    if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
+                    {
+
+                        int peakMinLastIdx = peakMinIndexList.Last();
+                        int peakMaxLastidx = peakMaxIndexList.Last();
+                        if (peakMinLastIdx < peakMaxLastidx)
+                        {
+                            // peakMinは確定
+                            // peakMaxは暫定
+
+                            int peakIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
+                            int peakIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
+
+                            int diff_sec = (peakIdxB - peakIdxA) * m_config.periods_top;
+
+                            double peakValueA = peakMinValueList[peakMinValueList.Count() - 2];
+                            double peakValueB = peakMinValueList[peakMinValueList.Count() - 1];
+
+                            double tilt = (peakValueB - peakValueA) / (double)(diff_sec);
+
+                            Candlestick peakCandleA = m_candleBufTop.getCandle(peakIdxA);
+                            if (peakCandleA == null)
+                            {
+                                return result;
+                            }
+
+                            Candlestick peakCandleB = m_candleBufTop.getCandle(peakIdxB);
+                            if (peakCandleB == null)
+                            {
+                                return result;
+                            }
+
+                            DateTime peakTimeA = DateTime.Parse(peakCandleA.timestamp);
+                            DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
+                            TimeSpan span = curTime - peakTimeA;
+                            int elapsed_sec = (int)(span.TotalSeconds);
+
+                            double trendValue = tilt * elapsed_sec + peakValueA;
+
+                            if (curCandle.last < trendValue)
+                            {
+                                // 下側トレンドラインを割った
+                                // LONGは要注意
+                                isBreakTrendBottom = true;
+
+                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Break TrendLine(Bottom). from={0} to={1} tilt={2:0.00} trend={3:0} cur={4}"
+                                          , peakCandleA.timestamp
+                                          , peakCandleB.timestamp
+                                          , tilt
+                                          , trendValue
+                                          , curCandle.last
+                                        ), true
+                                    );
+                                }
+                            }
+                        }
+                        else if (peakMinLastIdx > peakMaxLastidx)
+                        {
+                            // peakMinは暫定
+                            // peakMaxは確定
+
+                            int peakIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
+                            int peakIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
+
+                            int diff_sec = (peakIdxB - peakIdxA) * m_config.periods_top;
+
+                            double peakValueA = peakMinValueList[peakMinValueList.Count() - 2];
+                            double peakValueB = peakMinValueList[peakMinValueList.Count() - 1];
+
+                            double tilt = (peakValueB - peakValueA) / (double)(diff_sec);
+
+                            Candlestick peakCandleA = m_candleBufTop.getCandle(peakIdxA);
+                            if (peakCandleA == null)
+                            {
+                                return result;
+                            }
+
+                            Candlestick peakCandleB = m_candleBufTop.getCandle(peakIdxB);
+                            if (peakCandleB == null)
+                            {
+                                return result;
+                            }
+
+                            DateTime peakTimeA = DateTime.Parse(peakCandleA.timestamp);
+                            DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
+                            TimeSpan span = curTime - peakTimeA;
+                            int elapsed_sec = (int)(span.TotalSeconds);
+
+                            double trendValue = tilt * elapsed_sec + peakValueA;
+
+                            if (curCandle.last > trendValue)
+                            {
+                                // 上側トレンドラインを割った
+                                // SHORTは要注意
+                                isBreakTrendTop = true;
+
+                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Break TrendLine(Top). from={0} to={1} tilt={2:0.00} trend={3:0} cur={4}"
+                                          , peakCandleA.timestamp
+                                          , peakCandleB.timestamp
+                                          , tilt
+                                          , trendValue
+                                          , curCandle.last
+                                        ), true
+                                    );
+                                }
+                            }
+                        }
+                    }
                 }
 
-                bool isFibLong = curCandle.isCross(fib_long);
-				bool isFibShort = curCandle.isCross(fib_short);
-                
-				bool isCrossing = curCandle.isCrossEMA(0.0);
-				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
-                
-				double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
-                
-				Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
-				Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
-                
+
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
                                    
-					if (isLong && isGolden)
+					if (isLong && isGolden && !isBreakTrendBottom)
 					{
-                        if (isBeg && (isFibLong || isCrossingSub ))
+                        if (isBeg && (isFibLong || isCrossingSub) )
                         {
 
                             // 注文成功
@@ -3345,9 +3614,9 @@ namespace CryptoBoxer
 							                        , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_long, isFibLong, high_max, low_min), true);
 						}
 					}
-					else if (isShort && !isGolden)
+					else if (isShort && !isGolden && !isBreakTrendTop)
 					{
-                        if (isBeg && (isFibShort || isCrossingSub ))
+                        if (isBeg && (isFibShort || isCrossingSub ) )
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -3374,11 +3643,11 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-						if (isGolden)
+						if (isGolden && !isBreakTrendBottom)
                         {
 							bool needEntry = false;
                             //if (isBeg && ( (isCrossingSub && isFibLong) /*|| (isCrossing && isCrossedSub && isFibLong)*/ || isFibLong ) )
-                            if (isBeg && ( isCrossingSub || isFibLong) )
+                            if (isBeg && ( isCrossingSub || isFibLong ) )
                             {
 								needEntry = true;
                             }
@@ -3433,11 +3702,11 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-						if (!isGolden)
+						if (!isGolden && !isBreakTrendTop)
                         {                     
 							bool needEntry = false;
                             //if (isBeg && ((isCrossingSub && isFibShort) /*|| (isCrossing && isCrossedSub && isFibShort)*/ || isFibShort ))
-                            if (isBeg && (isCrossingSub && isFibShort) )
+                            if (isBeg && (isCrossingSub || isFibShort ) )
                             {
                                 needEntry = true;
                             }
