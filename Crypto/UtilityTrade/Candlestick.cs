@@ -2376,10 +2376,10 @@ namespace UtilityTrade
         (
             ref SortedSet<int> minIndexList,
             ref SortedSet<int> maxIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in bool isGolden,
-            in int stride_num
+            int cur_idx,
+            int back_idx,
+            bool isGolden,
+            int stride_num
         )
         {
             int result = -1;
