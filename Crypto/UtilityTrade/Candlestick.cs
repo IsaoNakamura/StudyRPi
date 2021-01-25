@@ -2398,12 +2398,12 @@ namespace UtilityTrade
 
                 minIndexList.Clear();
                 maxIndexList.Clear();
-
+                
                 double value_min = 0.0;
                 double value_max = 0.0;
                 int value_min_idx = -1;
                 int value_max_idx = -1;
-                if (getMinMaxEmaDiff(out value_min, out value_max, out value_min_idx, out value_max_idx, in cur_idx, in back_idx, in isGolden) != 0)
+                if (getMinMaxEmaDiff(out value_min, out value_max, out value_min_idx, out value_max_idx, cur_idx, back_idx, isGolden) != 0)
                 {
                     return result;
                 }
@@ -2493,10 +2493,10 @@ namespace UtilityTrade
         (
             ref List<double> peakValueList,
             ref List<int> peakIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in bool isGolden,
-            in int stride_num = 5
+            int cur_idx,
+            int back_idx,
+            bool isGolden,
+            int stride_num = 5
         )
         {
             int result = -1;
@@ -2737,9 +2737,9 @@ namespace UtilityTrade
             out double value_max,
             out int value_min_idx,
             out int value_max_idx,
-            in int cur_idx,
-            in int back_idx,
-            in bool isGolden
+            int cur_idx,
+            int back_idx,
+            bool isGolden
         )
         {
             int result = 0;
@@ -2865,8 +2865,8 @@ namespace UtilityTrade
             out double value_max,
             out int value_min_idx,
             out int value_max_idx,
-            in int cur_idx,
-            in int back_idx
+            int cur_idx,
+            int back_idx
         )
         {
             int result = 0;
@@ -2937,9 +2937,9 @@ namespace UtilityTrade
         (
            ref SortedSet<int> minIndexList,
            ref SortedSet<int> maxIndexList,
-           in int cur_idx,
-           in int back_idx,
-           in int stride_num
+           int cur_idx,
+           int back_idx,
+           int stride_num
         )
         {
             int result = -1;
@@ -2968,7 +2968,7 @@ namespace UtilityTrade
                 double value_max = 0.0;
                 int value_min_idx = -1;
                 int value_max_idx = -1;
-                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, in cur_idx, in back_idx) != 0)
+                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, cur_idx, back_idx) != 0)
                 {
                     return result;
                 }
@@ -2988,7 +2988,7 @@ namespace UtilityTrade
                         double scope_max = 0.0;
                         int scope_min_idx = -1;
                         int scope_max_idx = -1;
-                        if (getMinMaxCandle(out scope_min, out scope_max, out scope_min_idx, out scope_max_idx, in now_idx, in old_idx) != 0)
+                        if (getMinMaxCandle(out scope_min, out scope_max, out scope_min_idx, out scope_max_idx, now_idx, old_idx) != 0)
                         {
                             return result;
                         }
@@ -3036,9 +3036,9 @@ namespace UtilityTrade
         (
             ref List<double> peakValueList,
             ref List<int> peakIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in int stride_num = 5
+            int cur_idx,
+            int back_idx,
+            int stride_num = 5
         )
         {
             int result = -1;
@@ -3127,7 +3127,7 @@ namespace UtilityTrade
                                     int last_idx = peakIndexList.Last();// +1;
                                     if (min_idx > last_idx)
                                     {
-                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in min_idx, in last_idx) != 0)
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, min_idx, last_idx) != 0)
                                         {
                                             return result;
                                         }
@@ -3216,7 +3216,7 @@ namespace UtilityTrade
                                     int last_idx = peakIndexList.Last();// +1;
                                     if (max_idx > last_idx)
                                     {
-                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in max_idx, in last_idx) != 0)
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, max_idx, last_idx) != 0)
                                         {
                                             return result;
                                         }
@@ -3348,9 +3348,9 @@ namespace UtilityTrade
             ref List<double> peakMaxValueList,
             ref List<int> peakMinIndexList,
             ref List<int> peakMaxIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in int stride_num = 5
+            int cur_idx,
+            int back_idx,
+            int stride_num = 5
         )
         {
             int result = -1;
@@ -3450,7 +3450,7 @@ namespace UtilityTrade
                                     int last_idx = peakMaxIndexList.Last();// +1;
                                     if (min_idx > last_idx)
                                     {
-                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in min_idx, in last_idx) != 0)
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, min_idx, last_idx) != 0)
                                         {
                                             return result;
                                         }
@@ -3528,7 +3528,7 @@ namespace UtilityTrade
                                     int last_idx = peakMinIndexList.Last();// +1;
                                     if (max_idx > last_idx)
                                     {
-                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, in max_idx, in last_idx) != 0)
+                                        if (getMinMaxCandle(out scope_min_value, out scope_max_value, out scope_min_idx, out scope_max_idx, max_idx, last_idx) != 0)
                                         {
                                             return result;
                                         }
@@ -3644,9 +3644,9 @@ namespace UtilityTrade
         (
             ref List<double> peakValueList,
             ref List<int> peakIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in double deviation // 反転率
+            int cur_idx,
+            int back_idx,
+            double deviation // 反転率
         )
         {
             int result = -1;
@@ -3669,7 +3669,7 @@ namespace UtilityTrade
                 double value_max = 0.0;
                 int value_min_idx = -1;
                 int value_max_idx = -1;
-                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, in cur_idx, in back_idx) != 0)
+                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, cur_idx, back_idx) != 0)
                 {
                     return result;
                 }
@@ -3871,11 +3871,11 @@ namespace UtilityTrade
         (
             ref List<double> peakValueList,
             ref List<int> peakIndexList,
-            in int cur_idx,
-            in int back_idx,
-            in double depth,    // 参照する値幅の上限値
-            in int backstep,    // 参照するローソク本数
-            in double deviation // 反転率
+            int cur_idx,
+            int back_idx,
+            double depth,    // 参照する値幅の上限値
+            int backstep,    // 参照するローソク本数
+            double deviation // 反転率
         )
         {
             int result = -1;
@@ -3898,7 +3898,7 @@ namespace UtilityTrade
                 double value_max = 0.0;
                 int value_min_idx = -1;
                 int value_max_idx = -1;
-                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, in cur_idx, in back_idx) != 0)
+                if (getMinMaxCandle(out value_min, out value_max, out value_min_idx, out value_max_idx, cur_idx, back_idx) != 0)
                 {
                     return result;
                 }

@@ -315,7 +315,7 @@ namespace CryptoBoxer
         private int applyCandlestick
         (
             CandleBuffer candleBuf,
-            in BitflyerOhlc ohlc,
+            BitflyerOhlc ohlc,
             int periods,
             bool isCalcIndicator = true
         )
@@ -414,7 +414,7 @@ namespace CryptoBoxer
         (
             CandleBuffer pastCandleBuf,
             CandleBuffer testCandleBuf,
-            in BitflyerOhlc ohlc,
+            BitflyerOhlc ohlc,
             int periods,
             int backtest_hour,
             bool isCalcIndicator = true
@@ -537,7 +537,7 @@ namespace CryptoBoxer
         (
             CandleBuffer pastCandleBuf,
             CandleBuffer testCandleBuf,
-            in string filePath,
+            string filePath,
             int periods,
             int backtest_hour,
             bool isCalcIndicator = true)
@@ -1137,14 +1137,14 @@ namespace CryptoBoxer
                 postSlack(string.Format("losscut_value={0}", m_config.losscut_value));
                 //postSlack(string.Format("buffer_num={0}", m_config.buffer_num));
                 //postSlack(string.Format("backtest_hour={0}", m_config.backtest_hour));
-
+                
                 //System.Threading.Thread.Sleep(3000);
 
                 // Cryptowatchから過去のデータを取得
                 long after_secounds = m_candleBuf.m_buffer_num * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
                 //if (applyCandlestick(m_candleBuf, in ohlc, m_config.periods, 0, m_candleBuf.m_buffer_num) != 0)
-                if (applyCandlestick(m_candleBuf, in ohlc, m_config.periods) != 0)
+                if (applyCandlestick(m_candleBuf, ohlc, m_config.periods) != 0)
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     return;
@@ -1528,7 +1528,7 @@ namespace CryptoBoxer
 
                 if(!isLoadFile)
                 {
-                    if (applyCandlestick(m_candleBuf, testCandleBuf, in ohlc, m_config.periods, m_config.backtest_hour, false) != 0)
+                    if (applyCandlestick(m_candleBuf, testCandleBuf, ohlc, m_config.periods, m_config.backtest_hour, false) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick()");
                         return;
@@ -1549,7 +1549,7 @@ namespace CryptoBoxer
                     Console.WriteLine("candle's count is 0");
                     return;
                 }
-
+                
                 int test_num_top = (m_config.backtest_hour * 60 * 60) / m_config.periods_top;
                 CandleBuffer testCandleBuf_top = CandleBuffer.createCandleBuffer(test_num_top);
                 if (testCandleBuf_top == null)
@@ -1569,7 +1569,7 @@ namespace CryptoBoxer
 
                     BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
 
-                    if (applyCandlestick(m_candleBufTop, testCandleBuf_top, in ohlc_top, m_config.periods_top, m_config.backtest_hour, false) != 0)
+                    if (applyCandlestick(m_candleBufTop, testCandleBuf_top, ohlc_top, m_config.periods_top, m_config.backtest_hour, false) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick()");
                         return;
