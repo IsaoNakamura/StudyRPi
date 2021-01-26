@@ -3925,7 +3925,9 @@ namespace UtilityTrade
                     foreach (double topTilt in topTiltList)
                     {
                         double topTrendValue = topTilt * topElapsed_sec + topPeakValue;
-                        if (topTrendValue < curCandle.last)
+                        double diff = topTrendValue - curCandle.low;
+                        //if (topTrendValue < curCandle.last)
+                        if(diff<0.0)
                         {
                             isBreakTop = true;
                             break;
@@ -3945,8 +3947,9 @@ namespace UtilityTrade
                     foreach (double bottomTilt in bottomTiltList)
                     {
                         double bottomTrendValue = bottomTilt * bottomElapsed_sec + bottomPeakValue;
-
-                        if (bottomTrendValue > curCandle.last)
+                        double diff = curCandle.high - bottomTrendValue;
+                        //if (bottomTrendValue > curCandle.last)
+                        if(diff<0.0)
                         {
                             isBreakBottom = true;
                             break;
