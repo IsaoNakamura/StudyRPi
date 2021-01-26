@@ -3644,8 +3644,8 @@ namespace UtilityTrade
             ref List<double> tiltList,
             out double basePeakValue,
             out int basePeakIdx,
-            in List<double> peakValueList,
-            in List<int> peakIndexList,
+            List<double> peakValueList,
+            List<int> peakIndexList,
             int periods,
             bool isTop
         )
@@ -3855,11 +3855,11 @@ namespace UtilityTrade
         (
             out bool isBreakTop,
             out bool isBreakBottom,
-            in Candlestick curCandle,
-            in List<double> peakMinValueList,
-            in List<double> peakMaxValueList,
-            in List<int> peakMinIndexList,
-            in List<int> peakMaxIndexList,
+            Candlestick curCandle,
+            List<double> peakMinValueList,
+            List<double> peakMaxValueList,
+            List<int> peakMinIndexList,
+            List<int> peakMaxIndexList,
             int periods
         )
         {
@@ -3898,15 +3898,15 @@ namespace UtilityTrade
                 List<double> topTiltList = new List<double>();
                 double topPeakValue = 0.0;
                 int topPeakIdx = -1;
-                if (calcBigTrendTilt(ref topTiltList, out topPeakValue, out topPeakIdx, in peakMaxValueList, in peakMaxIndexList, periods, true)!=0)
+                if (calcBigTrendTilt(ref topTiltList, out topPeakValue, out topPeakIdx, peakMaxValueList, peakMaxIndexList, periods, true)!=0)
                 {
                     return result;
                 }
-
+                
                 List<double> bottomTiltList = new List<double>();
                 double bottomPeakValue = 0.0;
                 int bottomPeakIdx = -1;
-                if (calcBigTrendTilt(ref bottomTiltList, out bottomPeakValue, out bottomPeakIdx, in peakMinValueList, in peakMinIndexList, periods, false) != 0)
+                if (calcBigTrendTilt(ref bottomTiltList, out bottomPeakValue, out bottomPeakIdx, peakMinValueList, peakMinIndexList, periods, false) != 0)
                 {
                     return result;
                 }
@@ -3975,10 +3975,10 @@ namespace UtilityTrade
 
         public int printPeakList
         (
-            in List<double> peakMinValueList,
-            in List<double> peakMaxValueList,
-            in List<int> peakMinIndexList,
-            in List<int> peakMaxIndexList,
+            List<double> peakMinValueList,
+            List<double> peakMaxValueList,
+            List<int> peakMinIndexList,
+            List<int> peakMaxIndexList,
             int cur_idx,
             int back_idx
         )

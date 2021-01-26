@@ -2851,7 +2851,7 @@ namespace CryptoBoxer
                     {
                         bool isBreakBigTrendTop = false;
                         bool isBreakBigTrendBtm = false;
-                        if (m_candleBufTop.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, in curCandle, in peakMinValueList, in peakMaxValueList, in peakMinIndexList, in peakMaxIndexList, m_config.periods_top) != 0)
+                        if (m_candleBufTop.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, curCandle, peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, m_config.periods_top) != 0)
                         {
                             return result;
                         }
@@ -3379,7 +3379,7 @@ namespace CryptoBoxer
                     {
                         bool isBreakBigTrendTop = false;
                         bool isBreakBigTrendBtm = false;
-                        if (m_candleBufTop.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, in curCandle, in peakMinValueList, in peakMaxValueList, in peakMinIndexList, in peakMaxIndexList, m_config.periods_top) != 0)
+                        if (m_candleBufTop.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, curCandle, peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, m_config.periods_top) != 0)
                         {
                             return result;
                         }
