@@ -3039,7 +3039,7 @@ namespace CryptoBoxer
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
                         int back_idx = 0;
-                        int sample_num = 60;
+                        int sample_num = 140;
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
@@ -3718,6 +3718,12 @@ namespace CryptoBoxer
                             return result;
                         }
 
+                        //if (curCandle.timestamp == "2021/01/27 18:30:00")
+                        //{
+                        //    Console.WriteLine("#TrendLine Big");
+                        //    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                        //}
+
                         if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
                         {
                             if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, curCandle, peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, periods) != 0)
@@ -3774,7 +3780,7 @@ namespace CryptoBoxer
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
                         int back_idx = 0;
-                        int sample_num = 60;
+                        int sample_num = 140;
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
@@ -3802,41 +3808,20 @@ namespace CryptoBoxer
                                 peakMinIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
                                 peakMinIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
 
-                                if (cur_idx == peakMaxIndexList.Last())
-                                {
-                                    // peakMaxは暫定
-                                    peakMaxValueA = peakMaxValueList[peakMaxValueList.Count() - 3];
-                                    peakMaxValueB = peakMaxValueList[peakMaxValueList.Count() - 2];
-                                    peakMaxIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 3];
-                                    peakMaxIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 2];
-                                }
-                                else
-                                {
-                                    // peakMaxは確定
-                                    peakMaxValueA = peakMaxValueList[peakMaxValueList.Count() - 2];
-                                    peakMaxValueB = peakMaxValueList[peakMaxValueList.Count() - 1];
-                                    peakMaxIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
-                                    peakMaxIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
-                                }
+                                // peakMaxは確定
+                                peakMaxValueA = peakMaxValueList[peakMaxValueList.Count() - 2];
+                                peakMaxValueB = peakMaxValueList[peakMaxValueList.Count() - 1];
+                                peakMaxIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
+                                peakMaxIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
+
                             }
                             else if (peakMinLastIdx > peakMaxLastidx)
                             {
-                                if (cur_idx == peakMinIndexList.Last())
-                                {
-                                    // peakMinは暫定
-                                    peakMinValueA = peakMinValueList[peakMinValueList.Count() - 3];
-                                    peakMinValueB = peakMinValueList[peakMinValueList.Count() - 2];
-                                    peakMinIdxA = peakMinIndexList[peakMinIndexList.Count() - 3];
-                                    peakMinIdxB = peakMinIndexList[peakMinIndexList.Count() - 2];
-                                }
-                                else
-                                {
-                                    // peakMinは確定
-                                    peakMinValueA = peakMinValueList[peakMinValueList.Count() - 2];
-                                    peakMinValueB = peakMinValueList[peakMinValueList.Count() - 1];
-                                    peakMinIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
-                                    peakMinIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
-                                }
+                                // peakMinは確定
+                                peakMinValueA = peakMinValueList[peakMinValueList.Count() - 2];
+                                peakMinValueB = peakMinValueList[peakMinValueList.Count() - 1];
+                                peakMinIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
+                                peakMinIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
 
                                 // peakMaxは確定
                                 peakMaxValueA = peakMaxValueList[peakMaxValueList.Count() - 2];
@@ -3899,6 +3884,52 @@ namespace CryptoBoxer
                                         //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                                     }
                                 }
+
+                                //bool isTouchedTop = false;
+                                //bool isTouchedBottom = false;
+                                //{
+                                //    if (curCandle.timestamp == "2021/01/27 18:30:00")
+                                //    {
+                                //        Console.WriteLine("#TrendLine Small");
+                                //        //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                                //    }
+
+                                //    int touchedTopIdx = -1;
+                                //    int touchedBtmIdx = -1;
+                                //    for (int i = (candleBuf.getCandleCount() - 1); i >= 0; i--)
+                                //    {
+                                //        Candlestick candle = candleBuf.getCandle(i);
+                                //        if (candle == null)
+                                //        {
+                                //            continue;
+                                //        }
+
+                                //        DateTime time = DateTime.Parse(candle.timestamp);
+                                //        TimeSpan span = time - peakMinTimeA;
+                                //        int elapsed_sec = (int)(span.TotalSeconds);
+
+                                //        if (!isTouchedBottom)
+                                //        {
+                                //            double bottomTrendValue = tiltBottom * elapsed_sec + peakMinValueA;
+                                //            double bottomDiff = candle.low - bottomTrendValue;
+                                //            if (bottomDiff < 0.0)
+                                //            {
+                                //                touchedBtmIdx = i;
+                                //                break;
+                                //            }
+
+                                //        }
+                                //    }
+
+                                //    if (touchedBtmIdx >= 0)
+                                //    {
+                                //        int candle_cnt = (candleBuf.getCandleCount() - 1) - touchedBtmIdx;
+                                //        if (candle_cnt < 10)
+                                //        {
+                                //            isTouchedBottom = true;
+                                //        }
+                                //    }
+                                //}
                             }
 
                             // MAX(TOP)    /////////

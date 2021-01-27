@@ -3983,6 +3983,76 @@ namespace UtilityTrade
                     }
                 }
 
+                //bool isTouchedTop = false;
+                //bool isTouchedBottom = false;
+                //{
+                //    if (curCandle.timestamp == "2021/01/26 23:50:00")
+                //    {
+                //        Console.WriteLine();
+                //    }
+
+                //    int touchedTopIdx = -1;
+                //    int touchedBtmIdx = -1;
+                //    //foreach (Candlestick candle in m_candleList.Reverse<Candlestick>() )
+                //    for (int i = (m_candleList.Count - 1); i >= 0; i--)
+                //    {
+                //        Candlestick candle = m_candleList[i];
+                //        if (candle == null)
+                //        {
+                //            continue;
+                //        }
+
+                //        DateTime time = DateTime.Parse(candle.timestamp);
+                //        TimeSpan span = curTime - time;
+                //        int elapsed_sec = (int)(span.TotalSeconds);
+
+                //        if (!isTouchedTop)
+                //        {
+                //            foreach (double topTilt in topTiltList)
+                //            {
+                //                double topTrendValue = topTilt * elapsed_sec + topPeakValue;
+                //                double diff = topTrendValue - candle.high;
+                //                if (diff < 0.0)
+                //                {
+                //                    touchedTopIdx = i;
+                //                    break;
+                //                }
+                //            }
+                //        }
+
+                //        if (!isTouchedBottom)
+                //        {
+                //            foreach (double bottomTilt in bottomTiltList)
+                //            {
+                //                double bottomTrendValue = bottomTilt * elapsed_sec + bottomPeakValue;
+                //                double diff = candle.low - bottomTrendValue;
+                //                if (diff < 0.0)
+                //                {
+                //                    touchedBtmIdx = i;
+                //                    break;
+                //                }
+                //            }
+                //        }
+                //    }
+                //    if(touchedTopIdx>=0)
+                //    {
+                //        int candle_cnt = (m_candleList.Count - 1) - touchedTopIdx;
+                //        if (candle_cnt < 10)
+                //        {
+                //            isTouchedTop = true;
+                //        }
+                //    }
+
+                //    if (touchedBtmIdx >= 0)
+                //    {
+                //        int candle_cnt = (m_candleList.Count - 1) - touchedBtmIdx;
+                //        if (candle_cnt < 10)
+                //        {
+                //            isTouchedBottom = true;
+                //        }
+                //    }
+                //}
+
                 result = 0;
             }
             catch (Exception ex)
