@@ -3973,7 +3973,9 @@ namespace CryptoBoxer
                                    
 					if (isLong && isGolden && !isBreakTrendBottom)
 					{
-                        if (isBeg && (isFibLong || isCrossingSub) )
+                        //if (isBeg && ((isCrossing && isBreakTrendTop) || isFibLong))
+                        if (isBeg && ((isCrossingSub && isBreakTrendTop) || isFibLong))
+                        //if (isBeg && (isFibLong || isCrossingSub || (isBreakTrendTop && isCrossing) ) )
                         {
 
                             // 注文成功
@@ -3997,7 +3999,9 @@ namespace CryptoBoxer
 					}
 					else if (isShort && !isGolden && !isBreakTrendTop)
 					{
-                        if (isBeg && (isFibShort || isCrossingSub ) )
+                        //if (isBeg && ((isCrossing && isBreakTrendBottom) || isFibShort))
+                        if (isBeg && ((isCrossingSub && isBreakTrendBottom) || isFibShort))
+                        //if (isBeg && (isFibShort || isCrossingSub || (isBreakTrendBottom && isCrossing) ) )
                         {
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
@@ -4027,8 +4031,9 @@ namespace CryptoBoxer
 						if (isGolden && !isBreakTrendBottom)
                         {
 							bool needEntry = false;
-                            //if (isBeg && ( (isCrossingSub && isFibLong) /*|| (isCrossing && isCrossedSub && isFibLong)*/ || isFibLong ) )
-                            if (isBeg && ( isCrossingSub || isFibLong ) )
+                            //if (isBeg && ((isCrossing && isBreakTrendTop) || isFibLong))
+                            if (isBeg && ( (isCrossingSub && isBreakTrendTop ) || isFibLong )  )
+                            //if (isBeg && ( isCrossingSub || isFibLong || (isBreakTrendTop && isCrossing) ) )
                             {
 								needEntry = true;
                             }
@@ -4086,8 +4091,9 @@ namespace CryptoBoxer
 						if (!isGolden && !isBreakTrendTop)
                         {                     
 							bool needEntry = false;
-                            //if (isBeg && ((isCrossingSub && isFibShort) /*|| (isCrossing && isCrossedSub && isFibShort)*/ || isFibShort ))
-                            if (isBeg && (isCrossingSub || isFibShort ) )
+                            //if (isBeg && ((isCrossing && isBreakTrendBottom) || isFibShort))
+                            if (isBeg && ( (isCrossingSub && isBreakTrendBottom) || isFibShort) )
+                            //if (isBeg && (isCrossingSub || isFibShort || (isBreakTrendBottom && isCrossing) ) )
                             {
                                 needEntry = true;
                             }
