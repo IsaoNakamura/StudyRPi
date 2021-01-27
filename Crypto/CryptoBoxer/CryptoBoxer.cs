@@ -3872,8 +3872,8 @@ namespace CryptoBoxer
                                 int elapsedMin_sec = (int)(spanMin.TotalSeconds);
 
                                 double trendBottom = tiltBottom * elapsedMin_sec + peakMinValueA;
+                                //double diff = curCandle.last - trendBottom;
                                 double diff = curCandle.high - trendBottom;
-                                //if (curCandle.last < trendBottom)
                                 if (diff < 0.0)
                                 {
                                     // 下側トレンドラインを割った
@@ -3928,7 +3928,7 @@ namespace CryptoBoxer
 
                                 double trendTop = tiltTop * elapsedMax_sec + peakMaxValueA;
                                 double diff = trendTop - curCandle.low;
-                                //if (curCandle.last > trendTop)
+                                //double diff = trendTop - curCandle.last;
                                 if (diff < 0.0)
                                 {
                                     // 上側トレンドラインを割った
