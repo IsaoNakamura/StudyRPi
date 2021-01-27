@@ -3568,6 +3568,24 @@ namespace UtilityTrade
                     }
                 }
 
+                if (peakMinValueList.Count() > 0)
+                {
+                    if (peakMinIndexList.Last() == cur_idx)
+                    {
+                        peakMinIndexList.RemoveAt(peakMinIndexList.Count() - 1);
+                        peakMinValueList.RemoveAt(peakMinValueList.Count() - 1);
+                    }
+                }
+
+                if (peakMaxValueList.Count() > 0)
+                {
+                    if (peakMaxIndexList.Last() == cur_idx)
+                    {
+                        peakMaxIndexList.RemoveAt(peakMaxIndexList.Count() - 1);
+                        peakMaxValueList.RemoveAt(peakMaxValueList.Count() - 1);
+                    }
+                }
+
                 //Console.WriteLine("#Peak");
                 //for (int i = back_idx; i <= cur_idx; i++)
                 //{
@@ -3921,6 +3939,10 @@ namespace UtilityTrade
                     DateTime topTime = DateTime.Parse(topCandle.timestamp);
                     TimeSpan topSpan = curTime - topTime;
                     int topElapsed_sec = (int)(topSpan.TotalSeconds);
+                    if(topElapsed_sec==0)
+                    {
+                        Console.WriteLine();
+                    }
 
                     foreach (double topTilt in topTiltList)
                     {
@@ -3943,6 +3965,10 @@ namespace UtilityTrade
                     DateTime bottomTime = DateTime.Parse(bottomCandle.timestamp);
                     TimeSpan bottomSpan = curTime - bottomTime;
                     int bottomElapsed_sec = (int)(bottomSpan.TotalSeconds);
+                    if (bottomElapsed_sec == 0)
+                    {
+                        Console.WriteLine();
+                    }
 
                     foreach (double bottomTilt in bottomTiltList)
                     {
