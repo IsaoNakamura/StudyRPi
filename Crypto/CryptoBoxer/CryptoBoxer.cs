@@ -1865,6 +1865,12 @@ namespace CryptoBoxer
                     UpdateViewDelegate();
                 }
 
+                long_lc_cnt = 0;
+                short_lc_cnt = 0;
+                double long_win_profit = 0.0;
+                double short_win_profit = 0.0;
+                double long_lose_profit = 0.0;
+                double short_lose_profit = 0.0;
                 foreach (Position position in m_posArray)
                 {
                     if (position == null)
@@ -1879,10 +1885,51 @@ namespace CryptoBoxer
 
                     //postSlack(string.Format("pos={0,5}, profit={1:0}, entry={2:0}, exit={3:0}", state, profit, entry_price, exit_price));
                     Console.WriteLine("pos={0,5},profit={1:0},entry={2:0},exit={3:0},from={4},to={5}", state, profit, entry_price, exit_price, position.entry_date, position.exit_date);
+                    if (state == "LONG")
+                    {
+                        if (profit < 0)
+                        {
+                            long_lc_cnt++;
+                            long_lose_profit += profit;
+                        }
+                        else
+                        {
+                            long_win_profit += profit;
+                        }    
+
+                    }
+                    else if (state == "SHORT")
+                    {
+                        if (profit < 0)
+                        {
+                            short_lc_cnt++;
+                            short_lose_profit += profit;
+                        }
+                        else
+                        {
+                            short_win_profit += profit;
+                        }
+                    }
+
                 }
 
                 //System.Threading.Thread.Sleep(3000);
                 postSlack(string.Format("PROFIT_SUM={0:0}, LONG={1}, SHORT={2}, LONG_LC={3}, SHORT_LC={4}", m_profitSum, long_entry_cnt, short_entry_cnt, long_lc_cnt, short_lc_cnt), true);
+
+                double win_rate = (double)( (long_entry_cnt - long_lc_cnt) + (short_entry_cnt - short_lc_cnt) ) / (double)(long_entry_cnt+short_entry_cnt) * 100.0;
+                int profit_of_amount = (int)(m_profitSum * m_config.amount);
+                double profit_per_entry = m_profitSum / (double)(long_entry_cnt + short_entry_cnt);
+                postSlack(string.Format("  WIN_RATE={0:0}[%], PROFIT_RATE={1:0}[yen/entry], PROFIT_SUM(xAmount)={2}[yen]", win_rate, profit_per_entry, profit_of_amount), true);
+
+                double long_win_rate = (double)(long_entry_cnt - long_lc_cnt) / (double)long_entry_cnt * 100.0;
+                double long_profit_per_win = long_win_profit / (double)(long_entry_cnt - long_lc_cnt);
+                double long_profit_per_lose = long_lose_profit / (double)(long_lc_cnt);
+                postSlack(string.Format("  LONG  WIN_RATE={0:0}[%], PROFIT_WIN={1:0}[yen/win], PROFIT_LOSE={2:0}[yen/lose]", long_win_rate, long_profit_per_win, long_profit_per_lose), true);
+
+                double short_win_rate = (double)(short_entry_cnt - short_lc_cnt) / (double)short_entry_cnt * 100.0;
+                double short_profit_per_win = short_win_profit / (double)(short_entry_cnt - short_lc_cnt);
+                double short_profit_per_lose = short_lose_profit / (double)(short_lc_cnt);
+                postSlack(string.Format("  SHORT WIN_RATE={0:0}[%], PROFIT_WIN={1:0}[yen/win], PROFIT_LOSE={2:0}[yen/lose]", short_win_rate, short_profit_per_win, short_profit_per_lose), true);
 
                 //System.Threading.Thread.Sleep(3000);
                 postSlack("====  END BACKTEST  ====", true);
@@ -3718,10 +3765,10 @@ namespace CryptoBoxer
                             return result;
                         }
 
-                        //if (curCandle.timestamp == "2021/01/27 18:30:00")
+                        //if (curCandle.timestamp == "2021/01/28 17:00:00")
                         //{
                         //    Console.WriteLine("#TrendLine Big");
-                        //    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                        //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                         //}
 
                         if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
@@ -3735,7 +3782,7 @@ namespace CryptoBoxer
                             {
                                 // 下側トレンドラインを割った
                                 // LONGは要注意
-                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                //if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -3753,7 +3800,7 @@ namespace CryptoBoxer
                                 // 上側トレンドラインを割った
                                 // SHORTは要注意
 
-                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                //if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -3780,7 +3827,7 @@ namespace CryptoBoxer
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
                         int back_idx = 0;
-                        int sample_num = 140;
+                        int sample_num = 140;//180
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
@@ -3865,7 +3912,7 @@ namespace CryptoBoxer
                                     // LONGは要注意
                                     isBreakSmallTrendBtm = true;
 
-                                    if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                    //if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
                                     {
                                         postSlack
                                         (
@@ -3880,7 +3927,7 @@ namespace CryptoBoxer
                                             ), true
                                         );
 
-                                        candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMinIdxA);
+                                        //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMinIdxA);
                                         //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                                     }
                                 }
@@ -3888,11 +3935,11 @@ namespace CryptoBoxer
                                 //bool isTouchedTop = false;
                                 //bool isTouchedBottom = false;
                                 //{
-                                //    if (curCandle.timestamp == "2021/01/27 18:30:00")
-                                //    {
-                                //        Console.WriteLine("#TrendLine Small");
-                                //        //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
-                                //    }
+                                //if (curCandle.timestamp == "2021/01/28 17:00:00")
+                                //{
+                                //    Console.WriteLine("#TrendLine Small");
+                                //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                                //}
 
                                 //    int touchedTopIdx = -1;
                                 //    int touchedBtmIdx = -1;
@@ -3966,7 +4013,7 @@ namespace CryptoBoxer
                                     // SHORTは要注意
                                     isBreakSmallTrendTop = true;
 
-                                    if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                    //if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
                                     {
                                         postSlack
                                         (
@@ -3981,7 +4028,7 @@ namespace CryptoBoxer
                                             ), true
                                         );
 
-                                        candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMaxIdxA);
+                                        //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMaxIdxA);
                                         //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                                     }
                                 }
@@ -4606,7 +4653,7 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = curCandle.vola_ma * 3.2;// m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = curCandle.vola_ma * 3.2;//3.2;// m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
                 //double frontline_ahead = (m_config.frontline_ahead*0.5) + ( (m_config.frontline_ahead*0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
@@ -4854,7 +4901,7 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = m_config.frontline_ahead * 3.2;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = m_config.frontline_ahead * 3.2;//3.2;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
                 //double frontline_ahead = (m_config.frontline_ahead * 0.5) + ((m_config.frontline_ahead * 0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
