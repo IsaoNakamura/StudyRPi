@@ -1150,7 +1150,7 @@ namespace CryptoBoxer
                     return;
                 }
 
-                long after_secounds_top = after_secounds * 6;//(m_config.periods_top / m_config.periods);
+                long after_secounds_top = after_secounds * (m_config.periods_top / m_config.periods);//6;//
                 BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
                 if (applyCandlestick(m_candleBufTop, ohlc_top, m_config.periods_top, false) != 0)
                 {

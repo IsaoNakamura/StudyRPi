@@ -3725,6 +3725,12 @@ namespace UtilityTrade
                     int nextPeakIdx = peakIndexList[i];
                     double nextPeakValue = peakValueList[i];
 
+                    Candlestick nextPeakCandle = getCandle(nextPeakIdx);
+                    if (nextPeakCandle == null)
+                    {
+                        return result;
+                    }
+
                     int nextElapsed_sec = (nextPeakIdx - mostPeakIdx) * periods;
                     double nextTilt = (nextPeakValue - mostPeakValue) / (double)(nextElapsed_sec);
 
@@ -3750,7 +3756,7 @@ namespace UtilityTrade
                             {
                                 // 割っている
                                 isBreak = true;
-                                break;
+                                //break;
                             }
                         }
                         else
@@ -3759,8 +3765,27 @@ namespace UtilityTrade
                             {
                                 // 割っている
                                 isBreak = true;
-                                break;
+                                //break;
                             }
+                        }
+                        if(isBreak)
+                        {
+                            //if (j == (peakIndexList.Count() - 1))
+                            //{
+                            //    // 割ったものが最後のひとつの場合
+                            //    // C-Fork成立
+                            //    isBreak = false;
+                            //    Console.WriteLine
+                            //    (
+                            //        string.Format("## CFork-Warn. BigTrendLine. isTop={0} Z={1} A={2} B={3}"
+                            //          , isTop
+                            //          , mostPeakCandle.timestamp
+                            //          , nextPeakCandle.timestamp
+                            //          , subCandle.timestamp
+                            //        )
+                            //    );
+                            //}
+                            break;
                         }
 
                     }
