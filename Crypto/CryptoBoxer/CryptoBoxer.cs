@@ -2998,9 +2998,20 @@ namespace CryptoBoxer
                         }
                     }
                 }
-                bool isFibLong = curCandle.isCross(fib_long);
-                bool isFibShort = curCandle.isCross(fib_short);
 
+                bool isBBHighLeak = false;// curCandle.boll_high;// curCandle.isTouchBollHigh() || curCandle.isTouchBollHighTop();
+                if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
+                {
+                    isBBHighLeak = true;
+                }
+                bool isBBLowLeak = false;// curCandle.isTouchBollLow() || curCandle.isTouchBollLowTop();
+                if (curCandle.boll_low < curCandle.boll_low_top || curCandle.isTouchBollLowTop())
+                {
+                    isBBLowLeak = true;
+                }
+
+                bool isFibLong = curCandle.isCross(fib_long) && !isBBHighLeak;
+                bool isFibShort = curCandle.isCross(fib_short) && !isBBLowLeak;
 
                 const double disparity_border = 4.9;
 
@@ -3796,8 +3807,20 @@ namespace CryptoBoxer
                     }
                 }
 
-                bool isFibLong = curCandle.isCross(fib_long);
-                bool isFibShort = curCandle.isCross(fib_short);
+
+                bool isBBHighLeak = false;// curCandle.boll_high;// curCandle.isTouchBollHigh() || curCandle.isTouchBollHighTop();
+                if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
+                {
+                    isBBHighLeak = true;
+                }
+                bool isBBLowLeak = false;// curCandle.isTouchBollLow() || curCandle.isTouchBollLowTop();
+                if (curCandle.boll_low < curCandle.boll_low_top || curCandle.isTouchBollLowTop())
+                {
+                    isBBLowLeak = true;
+                }
+
+                bool isFibLong = curCandle.isCross(fib_long) && !isBBHighLeak;
+                bool isFibShort = curCandle.isCross(fib_short) && !isBBLowLeak;
                 
 				bool isCrossing = curCandle.isCrossEMA(0.0);
                 bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
@@ -3806,6 +3829,7 @@ namespace CryptoBoxer
                 
 				Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
 				Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
+
 
                 bool isBreakTrendTop = false;
                 bool isBreakTrendBottom = false;
