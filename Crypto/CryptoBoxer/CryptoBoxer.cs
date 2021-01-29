@@ -1144,14 +1144,17 @@ namespace CryptoBoxer
                 long after_secounds = m_candleBuf.m_buffer_num * m_config.periods;
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(60000);
-
                     BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
                     //if (applyCandlestick(m_candleBuf, in ohlc, m_config.periods, 0, m_candleBuf.m_buffer_num) != 0)
                     if (applyCandlestick(m_candleBuf, ohlc, m_config.periods) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick()");
+                        System.Threading.Thread.Sleep(60000);
                         //return;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
 
