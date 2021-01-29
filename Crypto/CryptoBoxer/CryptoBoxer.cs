@@ -2999,19 +2999,19 @@ namespace CryptoBoxer
                     }
                 }
 
-                bool isBBHighLeak = false;// curCandle.boll_high;// curCandle.isTouchBollHigh() || curCandle.isTouchBollHighTop();
+                bool isBBHighLeak = false;
                 if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
                 {
                     isBBHighLeak = true;
                 }
-                bool isBBLowLeak = false;// curCandle.isTouchBollLow() || curCandle.isTouchBollLowTop();
+                bool isBBLowLeak = false;
                 if (curCandle.boll_low < curCandle.boll_low_top || curCandle.isTouchBollLowTop())
                 {
                     isBBLowLeak = true;
                 }
 
-                bool isFibLong = curCandle.isCross(fib_long) && !isBBHighLeak;
-                bool isFibShort = curCandle.isCross(fib_short) && !isBBLowLeak;
+                bool isFibLong = curCandle.isCross(fib_long);
+                bool isFibShort = curCandle.isCross(fib_short);
 
                 const double disparity_border = 4.9;
 
@@ -3379,7 +3379,7 @@ namespace CryptoBoxer
                         }
                     }
                      
-					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) && !isBreakTrendBottom)
+					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) && !isBreakTrendBottom && !isBBHighLeak)
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
 
@@ -3424,7 +3424,7 @@ namespace CryptoBoxer
 
                         }
                     }
-					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) && !isBreakTrendTop)
+					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) && !isBreakTrendTop && !isBBLowLeak)
                     {
                         //Console.WriteLine("Try Short Entry Order.");
 
@@ -3475,7 +3475,7 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-                        if (isGolden && !isBreakTrendBottom)
+                        if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
                         {
                             
                             if (curCandle.disparity_rate >= disparity_border)
@@ -3560,7 +3560,7 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-                        if (!isGolden && !isBreakTrendTop)
+                        if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
                         {
 							if (curCandle.disparity_rate <= -disparity_border)
                             {
@@ -3807,20 +3807,19 @@ namespace CryptoBoxer
                     }
                 }
 
-
-                bool isBBHighLeak = false;// curCandle.boll_high;// curCandle.isTouchBollHigh() || curCandle.isTouchBollHighTop();
+                bool isBBHighLeak = false;
                 if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
                 {
                     isBBHighLeak = true;
                 }
-                bool isBBLowLeak = false;// curCandle.isTouchBollLow() || curCandle.isTouchBollLowTop();
+                bool isBBLowLeak = false;
                 if (curCandle.boll_low < curCandle.boll_low_top || curCandle.isTouchBollLowTop())
                 {
                     isBBLowLeak = true;
                 }
 
-                bool isFibLong = curCandle.isCross(fib_long) && !isBBHighLeak;
-                bool isFibShort = curCandle.isCross(fib_short) && !isBBLowLeak;
+                bool isFibLong = curCandle.isCross(fib_long);
+                bool isFibShort = curCandle.isCross(fib_short);
                 
 				bool isCrossing = curCandle.isCrossEMA(0.0);
                 bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
@@ -4220,7 +4219,7 @@ namespace CryptoBoxer
                 {
                     // NONEポジションの場合
                                    
-					if (isLong && isGolden && !isBreakTrendBottom)
+					if (isLong && isGolden && !isBreakTrendBottom && !isBBHighLeak)
 					{
                         //if (isBeg && ((isCrossing && isBreakTrendTop) || isFibLong))
                         if (isBeg && ((isCrossingSub && isBreakTrendTop) || isFibLong))
@@ -4246,7 +4245,7 @@ namespace CryptoBoxer
 							                        , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_long, isFibLong, high_max, low_min), true);
 						}
 					}
-					else if (isShort && !isGolden && !isBreakTrendTop)
+					else if (isShort && !isGolden && !isBreakTrendTop && !isBBLowLeak)
 					{
                         //if (isBeg && ((isCrossing && isBreakTrendBottom) || isFibShort))
                         if (isBeg && ((isCrossingSub && isBreakTrendBottom) || isFibShort))
@@ -4277,7 +4276,7 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-						if (isGolden && !isBreakTrendBottom)
+						if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
                         {
 							bool needEntry = false;
                             //if (isBeg && ((isCrossing && isBreakTrendTop) || isFibLong))
@@ -4337,7 +4336,7 @@ namespace CryptoBoxer
                     }
                     else if (m_position.isShortReserved())
                     {
-						if (!isGolden && !isBreakTrendTop)
+						if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
                         {                     
 							bool needEntry = false;
                             //if (isBeg && ((isCrossing && isBreakTrendBottom) || isFibShort))
