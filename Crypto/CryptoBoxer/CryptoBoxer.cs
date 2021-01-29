@@ -3086,7 +3086,7 @@ namespace CryptoBoxer
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
                         int back_idx = 0;
-                        int sample_num = 140;// 150;//140;//180
+                        int sample_num = 130;// 150;//140;//180
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
@@ -3226,7 +3226,7 @@ namespace CryptoBoxer
                                           , isCFork
                                           , isBreakZA
                                           , isBreakAB
-                                        ), true
+                                        ), false
                                     );
 
                                     //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMinIdxZ);
@@ -3322,7 +3322,7 @@ namespace CryptoBoxer
                                           , isCFork
                                           , isBreakZA
                                           , isBreakAB
-                                        ), true
+                                        ), false
                                     );
 
                                     //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMaxIdxZ);
@@ -3890,7 +3890,7 @@ namespace CryptoBoxer
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
                         int back_idx = 0;
-                        int sample_num = 140;// 150;//140;//180
+                        int sample_num = 130;// 150;//140;//180
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
