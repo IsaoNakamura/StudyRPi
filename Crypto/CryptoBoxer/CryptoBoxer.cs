@@ -3049,12 +3049,42 @@ namespace CryptoBoxer
                             return result;
                         }
 
-                        if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
+                        if(peakMaxIndexList.Count()>2)
                         {
-                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, curCandle, peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, periods) != 0)
+                            Candlestick fromCandle = null;
+                            Candlestick toCandle = null;
+                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out fromCandle, out toCandle, curCandle, peakMaxValueList, peakMaxIndexList, periods, true) != 0)
                             {
                                 return result;
                             }
+
+                            if(isBreakBigTrendTop)
+                            {
+                                // 上側トレンドラインを割った
+                                // SHORTは要注意
+
+                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Short-Warn. Break-BigTrendLine(Top). from={0} to={1}"
+                                          , fromCandle.timestamp
+                                          , toCandle.timestamp
+                                        ), false
+                                    );
+                                }
+                            }
+                        }
+
+                        if (peakMinIndexList.Count() > 2)
+                        {
+                            Candlestick fromCandle = null;
+                            Candlestick toCandle = null;
+                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendBtm, out fromCandle, out toCandle, curCandle, peakMinValueList, peakMinIndexList, periods, false) != 0)
+                            {
+                                return result;
+                            }
+
 
                             if (isBreakBigTrendBtm)
                             {
@@ -3064,28 +3094,9 @@ namespace CryptoBoxer
                                 {
                                     postSlack
                                     (
-                                        string.Format("## Long-Warn. Break-BigTrendLine(Bottom). cur={0} isFib={1} isCrossSub={2}"
-                                          , curCandle.last
-                                          , isFibShort
-                                          , isCrossingSub
-                                        ), false
-                                    );
-                                }
-                            }
-
-                            if (isBreakBigTrendTop)
-                            {
-                                // 上側トレンドラインを割った
-                                // SHORTは要注意
-
-                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Short-Warn. Break-BigTrendLine(Top). cur={0} isFib={1} isCrossSub={2}"
-                                          , curCandle.last
-                                          , isFibLong
-                                          , isCrossingSub
+                                        string.Format("## Long-Warn. Break-BigTrendLine(Top). from={0} to={1}"
+                                          , fromCandle.timestamp
+                                          , toCandle.timestamp
                                         ), false
                                     );
                                 }
@@ -3852,56 +3863,67 @@ namespace CryptoBoxer
                         List<int> peakMinIndexList = new List<int>();
                         List<int> peakMaxIndexList = new List<int>();
                         int cur_idx = candleBuf.getLastCandleIndex();
-                        int back_idx = 0;;
+                        int back_idx = 0; ;
                         int sample_num = 200;
                         if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
                         {
                             return result;
                         }
 
-                        //if (curCandle.timestamp == "2021/01/28 17:00:00")
+                        //if(curCandle.timestamp== "2021/02/01 10:55:00")
                         //{
-                        //    Console.WriteLine("#TrendLine Big");
+                        //    Console.WriteLine("# BigTrendPeakList");
                         //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                         //}
 
-                        if (peakMinIndexList.Count() > 2 && peakMaxIndexList.Count() > 2)
+                        if(peakMaxIndexList.Count()>2)
                         {
-                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out isBreakBigTrendBtm, curCandle, peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, periods) != 0)
+                            Candlestick fromCandle = null;
+                            Candlestick toCandle = null;
+                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out fromCandle, out toCandle, curCandle, peakMaxValueList, peakMaxIndexList, periods, true) != 0)
                             {
                                 return result;
                             }
+
+                            if(isBreakBigTrendTop)
+                            {
+                                // 上側トレンドラインを割った
+                                // SHORTは要注意
+
+                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                {
+                                    postSlack
+                                    (
+                                        string.Format("## Short-Warn. Break-BigTrendLine(Top). from={0} to={1}"
+                                          , fromCandle.timestamp
+                                          , toCandle.timestamp
+                                        ), true
+                                    );
+                                }
+                            }
+                        }
+
+                        if (peakMinIndexList.Count() > 2)
+                        {
+                            Candlestick fromCandle = null;
+                            Candlestick toCandle = null;
+                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendBtm, out fromCandle, out toCandle, curCandle, peakMinValueList, peakMinIndexList, periods, false) != 0)
+                            {
+                                return result;
+                            }
+
 
                             if (isBreakBigTrendBtm)
                             {
                                 // 下側トレンドラインを割った
                                 // LONGは要注意
-                                //if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
                                 {
                                     postSlack
                                     (
-                                        string.Format("## Long-Warn. Break-BigTrendLine(Bottom). cur={0} isFib={1} isCrossSub={2}"
-                                          , curCandle.last
-                                          , isFibShort
-                                          , isCrossingSub
-                                        ), true
-                                    );
-                                }
-                            }
-
-                            if (isBreakBigTrendTop)
-                            {
-                                // 上側トレンドラインを割った
-                                // SHORTは要注意
-
-                                //if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Short-Warn. Break-BigTrendLine(Top). cur={0} isFib={1} isCrossSub={2}"
-                                          , curCandle.last
-                                          , isFibLong
-                                          , isCrossingSub
+                                        string.Format("## Long-Warn. Break-BigTrendLine(Btm). from={0} to={1}"
+                                          , fromCandle.timestamp
+                                          , toCandle.timestamp
                                         ), true
                                     );
                                 }
@@ -3926,6 +3948,12 @@ namespace CryptoBoxer
                         {
                             return result;
                         }
+
+                        //if (curCandle.timestamp == "2021/02/01 10:55:00")
+                        //{
+                        //    Console.WriteLine("# SmallTrendPeakList");
+                        //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                        //}
 
                         if (peakMinIndexList.Count() > 3 && peakMaxIndexList.Count() > 3)
                         {
@@ -4050,7 +4078,6 @@ namespace CryptoBoxer
                                 isBreakSmallTrendBtm = isBreakZA || (isCFork && isBreakAB);
 
                                 if (isBreakSmallTrendBtm && isLong && isGolden && isBeg && (isFibLong || isCrossingSub))
-                                //if(isBreakSmallTrendBtm)
                                 {
                                     postSlack
                                     (
@@ -4193,7 +4220,6 @@ namespace CryptoBoxer
                                 isBreakSmallTrendTop = isBreakZA || (isCFork && isBreakAB);
 
                                 if (isBreakSmallTrendTop && isShort && !isGolden && isBeg && (isFibShort || isCrossingSub))
-                                //if (isBreakSmallTrendTop)
                                 {
                                     postSlack
                                     (

@@ -3585,43 +3585,6 @@ namespace UtilityTrade
                         peakMaxValueList.RemoveAt(peakMaxValueList.Count() - 1);
                     }
                 }
-
-                //Console.WriteLine("#Peak");
-                //for (int i = back_idx; i <= cur_idx; i++)
-                //{
-                //    Candlestick candle = m_candleList[i];
-                //    if (candle == null)
-                //    {
-                //        continue;
-                //    }
-                //    double high = (candle.high - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //    double open = (candle.open - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //    double last = (candle.last - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //    double low = (candle.low - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //    int peakMinIndex = peakMinIndexList.IndexOf(i);
-                //    int peakMaxIndex = peakMaxIndexList.IndexOf(i);
-
-                //    if (peakMinIndex >= 0 && peakMaxIndex>=0)
-                //    {
-                //        double peakMin = (peakMinValueList[peakMinIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //        double peakMax = (peakMaxValueList[peakMaxIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //        Console.WriteLine("{0},'{1},{2},{3},{4},{5}", i, candle.timestamp, high, low, peakMin, peakMax);
-                //    }
-                //    else if(peakMinIndex >= 0)
-                //    {
-                //        double peakMin = (peakMinValueList[peakMinIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //        Console.WriteLine("{0},'{1},{2},{3},{4},", i, candle.timestamp, high, low, peakMin);
-                //    }
-                //    else if(peakMaxIndex >= 0)
-                //    {
-                //        double peakMax = (peakMaxValueList[peakMaxIndex] - peakMinValueList.Min()) / (peakMaxValueList.Max() - peakMinValueList.Min());
-                //        Console.WriteLine("{0},'{1},{2},{3},,{4}", i, candle.timestamp, high, low, peakMax);
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("{0},'{1},{2},{3},,", i, candle.timestamp, high, low);
-                //    }
-                //}
                 result = 0;
             }
             catch (Exception ex)
@@ -3660,8 +3623,9 @@ namespace UtilityTrade
         public int calcBigTrendTilt
         (
             ref List<double> tiltList,
-            out double basePeakValue,
-            out int basePeakIdx,
+            ref List<int> toPeakIndexList,
+            out double fromPeakValue,
+            out int fromPeakIdx,
             List<double> peakValueList,
             List<int> peakIndexList,
             int periods,
@@ -3671,12 +3635,17 @@ namespace UtilityTrade
             int result = -1;
 
 
-            basePeakValue = 0.0;
-            basePeakIdx = -1;
+            fromPeakValue = 0.0;
+            fromPeakIdx = -1;
 
             try
             {
                 if(tiltList==null)
+                {
+                    return result;
+                }
+
+                if(toPeakIndexList==null)
                 {
                     return result;
                 }
@@ -3806,6 +3775,12 @@ namespace UtilityTrade
                     int nextPeakIdx = peakIndexList[i];
                     double nextPeakValue = peakValueList[i];
 
+                    Candlestick nextPeakCandle = getCandle(nextPeakIdx);
+                    if (nextPeakCandle == null)
+                    {
+                        return result;
+                    }
+
                     int nextElapsed_sec = (mostPeakIdx - nextPeakIdx) * periods;
                     double nextTilt = (mostPeakValue - nextPeakValue) / (double)(nextElapsed_sec);
 
@@ -3864,15 +3839,17 @@ namespace UtilityTrade
                 if (fwdIdx >= 0)
                 {
                     tiltList.Add(fwdTilt);
+                    toPeakIndexList.Add(fwdIdx);
                 }
 
                 if (bwdIdx >= 0)
                 {
                     tiltList.Add(bwdTilt);
+                    toPeakIndexList.Add(bwdIdx);
                 }
 
-                basePeakValue = mostPeakValue;
-                basePeakIdx = mostPeakIdx;
+                fromPeakValue = mostPeakValue;
+                fromPeakIdx = mostPeakIdx;
 
                 result = 0;
             }
@@ -3886,30 +3863,30 @@ namespace UtilityTrade
                 if (result != 0)
                 {
                     tiltList.Clear();
-                    basePeakValue = 0.0;
-                    basePeakIdx = -1;
+                    fromPeakValue = 0.0;
+                    fromPeakIdx = -1;
                 }
             }
             return result;
         }
 
-
         public int calcBreakBigTrendLine
         (
-            out bool isBreakTop,
-            out bool isBreakBottom,
+            out bool isBreak,
+            out Candlestick fromCandle,
+            out Candlestick toCandle,
             Candlestick curCandle,
-            List<double> peakMinValueList,
-            List<double> peakMaxValueList,
-            List<int> peakMinIndexList,
-            List<int> peakMaxIndexList,
-            int periods
+            List<double> peakValueList,
+            List<int> peakIndexList,
+            int periods,
+            bool isTop
         )
         {
             int result = -1;
 
-            isBreakTop = false;
-            isBreakBottom = false;
+            isBreak = false;
+            fromCandle = null;
+            toCandle = null;
 
             try
             {
@@ -3918,165 +3895,67 @@ namespace UtilityTrade
                     return result;
                 }
 
-                if (peakMinValueList == null)
+                if (peakValueList == null)
                 {
                     return result;
                 }
 
-                if (peakMaxValueList == null)
+                if (peakIndexList == null)
                 {
                     return result;
                 }
 
-                if (peakMinIndexList == null)
-                {
-                    return result;
-                }
-
-                if (peakMaxIndexList == null)
-                {
-                    return result;
-                }
-
-                List<double> topTiltList = new List<double>();
-                double topPeakValue = 0.0;
-                int topPeakIdx = -1;
-                if (calcBigTrendTilt(ref topTiltList, out topPeakValue, out topPeakIdx, peakMaxValueList, peakMaxIndexList, periods, true)!=0)
-                {
-                    return result;
-                }
-                
-                List<double> bottomTiltList = new List<double>();
-                double bottomPeakValue = 0.0;
-                int bottomPeakIdx = -1;
-                if (calcBigTrendTilt(ref bottomTiltList, out bottomPeakValue, out bottomPeakIdx, peakMinValueList, peakMinIndexList, periods, false) != 0)
+                List<double> tiltList = new List<double>();
+                List<int> toIndexListTop = new List<int>();
+                double fromValue = 0.0;
+                int fromIdx = -1;
+                if (calcBigTrendTilt(ref tiltList, ref toIndexListTop, out fromValue, out fromIdx, peakValueList, peakIndexList, periods, isTop) != 0)
                 {
                     return result;
                 }
 
                 DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
+                fromCandle = getCandle(fromIdx);
+                if (fromCandle == null)
                 {
-                    Candlestick topCandle = getCandle(topPeakIdx);
-                    if (topCandle == null)
+                    return result;
+                }
+                DateTime fromTime = DateTime.Parse(fromCandle.timestamp);
+                TimeSpan span = curTime - fromTime;
+                int elapsed_sec = (int)(span.TotalSeconds);
+                if (elapsed_sec == 0)
+                {
+                    Console.WriteLine();
+                }
+
+                for(int i=0; i<tiltList.Count(); i++)
+                {
+                    double tilt = tiltList[i];
+                    int toIndex = peakIndexList[toIndexListTop[i]];
+                    double trendValue = tilt * elapsed_sec + fromValue;
+
+                    toCandle = getCandle(toIndex);
+                    if (toCandle == null)
                     {
                         return result;
                     }
-                    DateTime topTime = DateTime.Parse(topCandle.timestamp);
-                    TimeSpan topSpan = curTime - topTime;
-                    int topElapsed_sec = (int)(topSpan.TotalSeconds);
-                    if(topElapsed_sec==0)
-                    {
-                        Console.WriteLine();
-                    }
 
-                    foreach (double topTilt in topTiltList)
+                    double diff = 0.0;
+                    if (isTop)
                     {
-                        double topTrendValue = topTilt * topElapsed_sec + topPeakValue;
-                        //double diff = topTrendValue - curCandle.last;
-                        double diff = topTrendValue - curCandle.low;
-                        if (diff<0.0)
-                        {
-                            isBreakTop = true;
-                            break;
-                        }
+                        diff = trendValue - curCandle.low;
+                    }
+                    else
+                    {
+                        diff = curCandle.high - trendValue;
+                    }
+                    if (diff < 0.0)
+                    {
+                        isBreak = true;
+                        break;
                     }
                 }
-                {
-                    Candlestick bottomCandle = getCandle(bottomPeakIdx);
-                    if (bottomCandle == null)
-                    {
-                        return result;
-                    }
-                    DateTime bottomTime = DateTime.Parse(bottomCandle.timestamp);
-                    TimeSpan bottomSpan = curTime - bottomTime;
-                    int bottomElapsed_sec = (int)(bottomSpan.TotalSeconds);
-                    if (bottomElapsed_sec == 0)
-                    {
-                        Console.WriteLine();
-                    }
-
-                    foreach (double bottomTilt in bottomTiltList)
-                    {
-                        double bottomTrendValue = bottomTilt * bottomElapsed_sec + bottomPeakValue;
-                        //double diff = curCandle.last - bottomTrendValue;
-                        double diff = curCandle.high - bottomTrendValue;
-                        if (diff<0.0)
-                        {
-                            isBreakBottom = true;
-                            break;
-                        }
-                    }
-                }
-
-                //bool isTouchedTop = false;
-                //bool isTouchedBottom = false;
-                //{
-                //    if (curCandle.timestamp == "2021/01/26 23:50:00")
-                //    {
-                //        Console.WriteLine();
-                //    }
-
-                //    int touchedTopIdx = -1;
-                //    int touchedBtmIdx = -1;
-                //    //foreach (Candlestick candle in m_candleList.Reverse<Candlestick>() )
-                //    for (int i = (m_candleList.Count - 1); i >= 0; i--)
-                //    {
-                //        Candlestick candle = m_candleList[i];
-                //        if (candle == null)
-                //        {
-                //            continue;
-                //        }
-
-                //        DateTime time = DateTime.Parse(candle.timestamp);
-                //        TimeSpan span = curTime - time;
-                //        int elapsed_sec = (int)(span.TotalSeconds);
-
-                //        if (!isTouchedTop)
-                //        {
-                //            foreach (double topTilt in topTiltList)
-                //            {
-                //                double topTrendValue = topTilt * elapsed_sec + topPeakValue;
-                //                double diff = topTrendValue - candle.high;
-                //                if (diff < 0.0)
-                //                {
-                //                    touchedTopIdx = i;
-                //                    break;
-                //                }
-                //            }
-                //        }
-
-                //        if (!isTouchedBottom)
-                //        {
-                //            foreach (double bottomTilt in bottomTiltList)
-                //            {
-                //                double bottomTrendValue = bottomTilt * elapsed_sec + bottomPeakValue;
-                //                double diff = candle.low - bottomTrendValue;
-                //                if (diff < 0.0)
-                //                {
-                //                    touchedBtmIdx = i;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //    }
-                //    if(touchedTopIdx>=0)
-                //    {
-                //        int candle_cnt = (m_candleList.Count - 1) - touchedTopIdx;
-                //        if (candle_cnt < 10)
-                //        {
-                //            isTouchedTop = true;
-                //        }
-                //    }
-
-                //    if (touchedBtmIdx >= 0)
-                //    {
-                //        int candle_cnt = (m_candleList.Count - 1) - touchedBtmIdx;
-                //        if (candle_cnt < 10)
-                //        {
-                //            isTouchedBottom = true;
-                //        }
-                //    }
-                //}
 
                 result = 0;
             }
@@ -4089,8 +3968,9 @@ namespace UtilityTrade
             {
                 if (result != 0)
                 {
-                    isBreakTop = false;
-                    isBreakBottom = false;
+                    isBreak = false;
+                    fromCandle = null;
+                    toCandle = null;
                 }
             }
             return result;
