@@ -20,7 +20,7 @@
   "back_cnt": 3,
   "expiration_cnt": 3,
   "expiration_ema_diff": 5000.0,
-  "losscut_value": -1600,
+  "losscut_value": -20000,
   "entry_offset": 500.0,
   "boll_outside_check": 0,
   "lc_boll_outside_check": 0,

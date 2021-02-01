@@ -513,9 +513,9 @@ namespace CryptoBoxer
                     if (isCalcIndicator)
                     {
                         calcIndicator(curCandleBuf, ref candle);
-                        Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                        //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
                     }
-                    //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
                 }
 
             }
@@ -4461,45 +4461,50 @@ namespace CryptoBoxer
                 }
                 
 				{
-                    double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
-                    const int past_num = 4;
+                    //double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                    //const int past_num = 4;
 
                     double profit = curCandle.last - m_position.entry_price;
-
-
-
-                    if (profit <= m_config.losscut_value)
-                    {
-                        if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
-                        {
-                            if ((curCandle.last - curCandle.ema_sub) > 0.0)
-                            {
-                                result = true;
-                                return result;
-                            }
-                            m_position.escape_flag = true;
-                        }
-                    }
-
-                    if (m_position.escape_flag)
-                    {
-                        if (profit >= m_config.losscut_value)
-                        {
-                            m_position.escape_flag = false;
-                        }
-                        else if (curCandle.isCrossEMAsub())
-                        {
-                            result = true;
-                            return result;
-                        }
-                    }
-
-
-                    if (profit <= -7000.0)
+                    if(profit * m_config.amount <= m_config.losscut_value)
                     {
                         result = true;
                         return result;
                     }
+
+
+
+                    //if (profit <= m_config.losscut_value)
+                    //{
+                    //    if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
+                    //    {
+                    //        if ((curCandle.last - curCandle.ema_sub) > 0.0)
+                    //        {
+                    //            result = true;
+                    //            return result;
+                    //        }
+                    //        m_position.escape_flag = true;
+                    //    }
+                    //}
+
+                    //if (m_position.escape_flag)
+                    //{
+                    //    if (profit >= m_config.losscut_value)
+                    //    {
+                    //        m_position.escape_flag = false;
+                    //    }
+                    //    else if (curCandle.isCrossEMAsub())
+                    //    {
+                    //        result = true;
+                    //        return result;
+                    //    }
+                    //}
+
+
+                    //if (profit <= -7000.0)
+                    //{
+                    //    result = true;
+                    //    return result;
+                    //}
 
 
                 }
@@ -4535,42 +4540,48 @@ namespace CryptoBoxer
                 }
                 
 				{
-                    double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
-                    const int past_num = 4;
+                    //double threshold = Math.Abs(m_config.losscut_value);//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                    //const int past_num = 4;
 
                     double profit = m_position.entry_price - curCandle.last;
 
-                    if (profit <= m_config.losscut_value)
-					{
-                        if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
-                        {
-                            if ((curCandle.last - curCandle.ema_sub) < 0.0)
-                            {
-                                result = true;
-                                return result;
-                            }
-                            m_position.escape_flag = true;
-                        }
-					}
-
-                    if (m_position.escape_flag)
-                    {
-                        if (profit >= m_config.losscut_value)
-                        {
-                            m_position.escape_flag = false;
-                        }
-                        else if (curCandle.isCrossEMAsub())
-                        {
-                            result = true;
-                            return result;
-                        }
-                    }
-
-                    if (profit <= -7000.0)
+                    if (profit * m_config.amount <= m_config.losscut_value)
                     {
                         result = true;
                         return result;
                     }
+
+                    //               if (profit <= m_config.losscut_value)
+                    //{
+                    //                   if (!m_candleBuf.isHangAround(curCandle.last, threshold, past_num))
+                    //                   {
+                    //                       if ((curCandle.last - curCandle.ema_sub) < 0.0)
+                    //                       {
+                    //                           result = true;
+                    //                           return result;
+                    //                       }
+                    //                       m_position.escape_flag = true;
+                    //                   }
+                    //}
+
+                    //               if (m_position.escape_flag)
+                    //               {
+                    //                   if (profit >= m_config.losscut_value)
+                    //                   {
+                    //                       m_position.escape_flag = false;
+                    //                   }
+                    //                   else if (curCandle.isCrossEMAsub())
+                    //                   {
+                    //                       result = true;
+                    //                       return result;
+                    //                   }
+                    //               }
+
+                    //               if (profit <= -7000.0)
+                    //               {
+                    //                   result = true;
+                    //                   return result;
+                    //               }
 
 
                 }
@@ -4913,17 +4924,17 @@ namespace CryptoBoxer
                 {
                     // フロントラインがENTRY位置と同じ場合
 
-                    //if (isConditionShortLosscut() /*|| isGolden || (!isGolden && !isBeg)*/ )
-                    //{
-                    //    // EXIT
-                    //    postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineShort), onlyConsole);
-                    //    result = true;
+                    if (isConditionShortLosscut() /*|| isGolden || (!isGolden && !isBeg)*/ )
+                    {
+                        // EXIT
+                        postSlack(string.Format("## Losscut short position ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit * m_config.amount, m_frontlineShort), onlyConsole);
+                        result = true;
 
-                    //    // 最前線を後退
-                    //    m_frontlineShort = curCandle.last;
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
 
-                    //    short_lc_cnt++;
-                    //}
+                        //short_lc_cnt++;
+                    }
                     //else if (profit >= frontline_ahead_force)
                     //{
                     //    // 最前線を前進
@@ -4934,7 +4945,7 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                     //    result = false;
                     //}
-                    //else
+                    else
                     if (profit >= frontline_ahead)
                     {
                         // 最前線を前進
@@ -5159,17 +5170,17 @@ namespace CryptoBoxer
                 if (Math.Abs(m_frontlineLong - m_position.entry_price) <= double.Epsilon)
                 {
                     // フロントラインがENTRY位置と同じ場合
-                    //if (isConditionLongLosscut() /*|| !isGolden || (isGolden && !isBeg)*/)
-                    //{
-                    //    // EXIT
-                    //    postSlack(string.Format("## front-line is break ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit, m_frontlineLong), onlyConsole);
-                    //    result = true;
+                    if (isConditionLongLosscut() /*|| !isGolden || (isGolden && !isBeg)*/)
+                    {
+                        // EXIT
+                        postSlack(string.Format("## Losscut Long position ##. last={0:0} pos={1:0} front={2:0} ", curCandle.last, profit*m_config.amount, m_frontlineLong), onlyConsole);
+                        result = true;
 
-                    //    // 最前線を後退
-                    //    m_frontlineLong = curCandle.last;
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
 
-                    //    long_lc_cnt++;
-                    //}
+                        //long_lc_cnt++;
+                    }
                     //else if (profit >= frontline_ahead_force)
                     //{
                     //    // 最前線を前進
@@ -5180,7 +5191,7 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
                     //    result = false;
                     //}
-                    //else
+                    else
                     if (profit >= frontline_ahead)
                     {
                         // 最前線を前進
@@ -5200,7 +5211,7 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
                     //    result = false;
                     //}
-                    //else
+                    else
                     if (!isGolden)
                     {
                         // EXIT
