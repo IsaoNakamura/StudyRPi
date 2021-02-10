@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitySlack", "UtilitySlack.csproj", "{378A4147-A7A5-4C24-BA98-563913076870}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBasic", "..\UtilityBasic\UtilityBasic.csproj", "{824C2C63-5A6A-40AB-8BDC-88767458212E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{378A4147-A7A5-4C24-BA98-563913076870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{378A4147-A7A5-4C24-BA98-563913076870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{378A4147-A7A5-4C24-BA98-563913076870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{378A4147-A7A5-4C24-BA98-563913076870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{824C2C63-5A6A-40AB-8BDC-88767458212E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{824C2C63-5A6A-40AB-8BDC-88767458212E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{824C2C63-5A6A-40AB-8BDC-88767458212E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{824C2C63-5A6A-40AB-8BDC-88767458212E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityCryptowatch", "UtilityCryptowatch.csproj", "{4DA2F8C6-7626-475E-A8B2-D807FD09228F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBasic", "..\UtilityBasic\UtilityBasic.csproj", "{C4F01AF9-22C5-443C-A0E0-F063BC8769F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4DA2F8C6-7626-475E-A8B2-D807FD09228F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DA2F8C6-7626-475E-A8B2-D807FD09228F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DA2F8C6-7626-475E-A8B2-D807FD09228F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DA2F8C6-7626-475E-A8B2-D807FD09228F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4F01AF9-22C5-443C-A0E0-F063BC8769F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4F01AF9-22C5-443C-A0E0-F063BC8769F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4F01AF9-22C5-443C-A0E0-F063BC8769F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4F01AF9-22C5-443C-A0E0-F063BC8769F5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
