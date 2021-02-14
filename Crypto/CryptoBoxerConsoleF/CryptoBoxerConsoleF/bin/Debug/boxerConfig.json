@@ -13,7 +13,7 @@
   "ema_diff_near": 100.0,
   "ema_cross_near": 500.0,
   "buffer_num": 1440,
-  "backtest_hour": 213,
+  "backtest_hour": 48,
   "backtest_flag": 1,
   "boll_diff_play": 500.0,
   "next_open_diff": 500.0,
