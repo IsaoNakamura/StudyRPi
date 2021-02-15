@@ -3028,6 +3028,8 @@ namespace CryptoBoxer
             int result = 0;
             try
             {
+                const double disparity_border = 4.9;
+
                 if (!m_position.isNone())
                 {
                     if (!m_position.isReserved())
@@ -3044,458 +3046,39 @@ namespace CryptoBoxer
                     return result;
                 }
 
-
-                bool isLong = isConditionLongEntryFL(next_open, false);
-                bool isShort = isConditionShortEntryFL(next_open, false);
-                //isLong = false;
-                //isShort = false;
-
-				double beg_threshold = 0.5;
-				double ema_touch_play = 0.0;//1300.0 - curCandle.vola_ma;//curCandle.vola_ma + 1000.0;//1400.0;
-                if (ema_touch_play < 0.0)
-                {
-                    ema_touch_play = 0.0;
-                }
-				bool isGolden = false;
-                bool isBeg = false;
-                int back_cnt = 0;
-                double cur_ema_length = 0.0;
-                bool isCrossed = false;
-                bool isCrossedSub = false;
-                double high_max = 0.0;
-                double low_min = 0.0;
-				int high_max_idx = 0;
-                int low_min_idx = 0;
-				if(
-						m_candleBuf.getEMACrossState(
-                        out isGolden,
-                        out isBeg,
-                        out back_cnt,
-                        out cur_ema_length,
-                        out isCrossed,
-                        out isCrossedSub,
-                        out high_max,
-					    out high_max_idx,
-                        out low_min,
-	    				out low_min_idx,
-                        beg_threshold,
-                        ema_touch_play)
-                   != 0
-				)
+                bool isLong = false;
+                bool isShort = false;
+                bool isLongReserve = false;
+                bool isShortReserve = false;
+                bool isFibLong = false;
+                bool isFibShort = false;
+                int fib_long_index = -1;
+                int fib_short_index = -1;
+                if (
+                    calcConditionEntry
+                    (
+                        out isLong,
+                        out isShort,
+                        out isLongReserve,
+                        out isShortReserve,
+                        out isFibLong,
+                        out isFibShort,
+                        out fib_long_index,
+                        out fib_short_index,
+                        next_open
+                     ) != 0
+                )
                 {
                     result = -1;
                     return result;
                 }
-                //isBeg = true;
-
-
-                double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				int fib_index = 1;
-                double fib_rate = fib_rates[fib_index];
-                double fib_long = high_max - (high_max - low_min) * fib_rate;
-				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
-
-                int fib_long_index = fib_index;
-                int fib_short_index = fib_index;
-
-                double cmp_long = curCandle.last;
-                if (fib_long > (cmp_long/* + ema_touch_play*/))
-                {
-                    for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
-                    {
-                        fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
-                        if (fib_long <= cmp_long)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                double cmp_short = curCandle.last;
-                if (fib_short < (cmp_short/* + ema_touch_play*/))
-                {
-                    for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
-                    {
-						fib_short = high_max - (high_max - low_min) * (1.0-fib_rates[fib_short_index]);
-                        if (fib_short >= cmp_short)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                bool isBBHighLeak = false;
-                if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
-                {
-                    isBBHighLeak = true;
-                }
-                bool isBBLowLeak = false;
-                if (curCandle.boll_low < curCandle.boll_low_top || curCandle.isTouchBollLowTop())
-                {
-                    isBBLowLeak = true;
-                }
-
-                bool isFibLong = curCandle.isCross(fib_long);
-                bool isFibShort = curCandle.isCross(fib_short);
-
-                const double disparity_border = 4.9;
-
-				bool isCrossing = curCandle.isCrossEMA();
-				bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
-
-				double fomo_limit = 6800.0 + curCandle.vola_ma;
-
-                bool isBreakTrendTop = false;
-                bool isBreakTrendBottom = false;
-                {
-                    bool isBreakBigTrendTop = false;
-                    bool isBreakBigTrendBtm = false;
-                    {
-                        CandleBuffer candleBuf = m_candleBufTop;
-                        int periods = m_config.periods_top;
-
-                        List<double> peakMinValueList = new List<double>();
-                        List<double> peakMaxValueList = new List<double>();
-                        List<int> peakMinIndexList = new List<int>();
-                        List<int> peakMaxIndexList = new List<int>();
-                        int cur_idx = candleBuf.getLastCandleIndex();
-                        int back_idx = 0; ;
-                        int sample_num = 200;
-                        if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
-                        {
-                            return result;
-                        }
-
-                        if(peakMaxIndexList.Count()>2)
-                        {
-                            Candlestick fromCandle = null;
-                            Candlestick toCandle = null;
-                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendTop, out fromCandle, out toCandle, curCandle, peakMaxValueList, peakMaxIndexList, periods, true) != 0)
-                            {
-                                return result;
-                            }
-
-                            if(isBreakBigTrendTop)
-                            {
-                                // 上側トレンドラインを割った
-                                // SHORTは要注意
-
-                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Short-Warn. Break-BigTrendLine(Top). from={0} to={1}"
-                                          , fromCandle.timestamp
-                                          , toCandle.timestamp
-                                        ), false
-                                    );
-                                }
-                            }
-                        }
-
-                        if (peakMinIndexList.Count() > 2)
-                        {
-                            Candlestick fromCandle = null;
-                            Candlestick toCandle = null;
-                            if (candleBuf.calcBreakBigTrendLine(out isBreakBigTrendBtm, out fromCandle, out toCandle, curCandle, peakMinValueList, peakMinIndexList, periods, false) != 0)
-                            {
-                                return result;
-                            }
-
-
-                            if (isBreakBigTrendBtm)
-                            {
-                                // 下側トレンドラインを割った
-                                // LONGは要注意
-                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Long-Warn. Break-BigTrendLine(Top). from={0} to={1}"
-                                          , fromCandle.timestamp
-                                          , toCandle.timestamp
-                                        ), false
-                                    );
-                                }
-                            }
-                        }
-                    }
-
-                    bool isBreakSmallTrendTop = false;
-                    bool isBreakSmallTrendBtm = false;
-                    {
-                        CandleBuffer candleBuf = m_candleBufTop;
-                        int periods = m_config.periods_top;
-
-                        List<double> peakMinValueList = new List<double>();
-                        List<double> peakMaxValueList = new List<double>();
-                        List<int> peakMinIndexList = new List<int>();
-                        List<int> peakMaxIndexList = new List<int>();
-                        int cur_idx = candleBuf.getLastCandleIndex();
-                        int back_idx = 0;
-                        int sample_num = 130;// 150;//140;//180
-                        if (candleBuf.calcPeakList(ref peakMinValueList, ref peakMaxValueList, ref peakMinIndexList, ref peakMaxIndexList, cur_idx, back_idx, sample_num) != 0)
-                        {
-                            return result;
-                        }
-
-                        if (peakMinIndexList.Count() > 3 && peakMaxIndexList.Count() > 3)
-                        {
-                            double peakMinValueZ = 0.0;
-                            double peakMinValueA = 0.0;
-                            double peakMinValueB = 0.0;
-                            int peakMinIdxZ = -1;
-                            int peakMinIdxA = -1;
-                            int peakMinIdxB = -1;
-
-                            double peakMaxValueZ = 0.0;
-                            double peakMaxValueA = 0.0;
-                            double peakMaxValueB = 0.0;
-                            int peakMaxIdxZ = -1;
-                            int peakMaxIdxA = -1;
-                            int peakMaxIdxB = -1;
-
-                            int peakMinLastIdx = peakMinIndexList.Last();
-                            int peakMaxLastidx = peakMaxIndexList.Last();
-
-                            // peakMinは確定
-                            peakMinValueZ = peakMinValueList[peakMinValueList.Count() - 3];
-                            peakMinValueA = peakMinValueList[peakMinValueList.Count() - 2];
-                            peakMinValueB = peakMinValueList[peakMinValueList.Count() - 1];
-                            peakMinIdxZ = peakMinIndexList[peakMinIndexList.Count() - 3];
-                            peakMinIdxA = peakMinIndexList[peakMinIndexList.Count() - 2];
-                            peakMinIdxB = peakMinIndexList[peakMinIndexList.Count() - 1];
-
-                            // peakMaxは確定
-                            peakMaxValueZ = peakMaxValueList[peakMaxValueList.Count() - 3];
-                            peakMaxValueA = peakMaxValueList[peakMaxValueList.Count() - 2];
-                            peakMaxValueB = peakMaxValueList[peakMaxValueList.Count() - 1];
-                            peakMaxIdxZ = peakMaxIndexList[peakMaxIndexList.Count() - 3];
-                            peakMaxIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
-                            peakMaxIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
-
-                            DateTime curTime = DateTime.Parse(curCandle.timestamp);
-
-                            // MIN(BOTTOM) /////////
-                            if (peakMinIdxA >= 0)
-                            {
-                                int diffZA_sec = (peakMinIdxA - peakMinIdxZ) * periods;
-                                double tiltZA = (peakMinValueA - peakMinValueZ) / (double)(diffZA_sec);
-
-                                int diffAB_sec = (peakMinIdxB - peakMinIdxA) * periods;
-                                double tiltAB = (peakMinValueB - peakMinValueA) / (double)(diffAB_sec);
-
-                                Candlestick peakMinCandleZ = candleBuf.getCandle(peakMinIdxZ);
-                                if (peakMinCandleZ == null)
-                                {
-                                    return result;
-                                }
-
-                                Candlestick peakMinCandleA = candleBuf.getCandle(peakMinIdxA);
-                                if (peakMinCandleA == null)
-                                {
-                                    return result;
-                                }
-
-                                Candlestick peakMinCandleB = candleBuf.getCandle(peakMinIdxB);
-                                if (peakMinCandleB == null)
-                                {
-                                    return result;
-                                }
-
-                                DateTime peakMinTimeZ = DateTime.Parse(peakMinCandleZ.timestamp);
-                                DateTime peakMinTimeA = DateTime.Parse(peakMinCandleA.timestamp);
-                                DateTime peakMinTimeB = DateTime.Parse(peakMinCandleB.timestamp);
-
-                                bool isCFork = false;
-                                {
-                                    TimeSpan spanZB = peakMinTimeB - peakMinTimeZ;
-                                    double elapsedZB = spanZB.TotalSeconds;
-                                    double btmZB = tiltZA * elapsedZB + peakMinValueZ;
-                                    double diffZB = peakMinValueB - btmZB;
-                                    if (peakMinValueB < btmZB)
-                                    {
-                                        // C-Forkが成立した
-                                        isCFork = true;
-                                    }
-                                    else
-                                    {
-                                        // C-Forkが成立しない
-                                    }
-                                }
-
-                                bool isBreakZA = false;
-                                {
-                                    TimeSpan spanZC = curTime - peakMinTimeZ;
-                                    double elapsedZC = spanZC.TotalSeconds;
-                                    double btmZC = tiltZA * elapsedZC + peakMinValueZ;
-                                    double diffZC = curCandle.high - btmZC;
-                                    if (diffZC < 0.0)
-                                    {
-                                        // トレンドラインZAを割った場合
-                                        // LONG-WARN
-                                        isBreakZA = true;
-                                    }
-                                }
-
-                                bool isBreakAB = false;
-                                {
-                                    TimeSpan spanAC = curTime - peakMinTimeA;
-                                    int elapsedAC = (int)(spanAC.TotalSeconds);
-                                    double btmAB = tiltAB * elapsedAC + peakMinValueA;
-
-                                    double diffAB = curCandle.high - btmAB;
-                                    if (diffAB < 0.0)
-                                    {
-                                        // 下側トレンドラインABを割った
-                                        // LONGは要注意
-                                        //isBreakSmallTrendBtm = true;
-                                        isBreakAB = true;
-                                    }
-                                    else
-                                    {
-                                        // 下側トレンドラインABを割っていない
-                                    }
-                                }
-                                //isBreakSmallTrendBtm = isBreakZA || isBreakAB;
-                                //isBreakSmallTrendBtm = isBreakAB || (isCFork && isBreakZA);
-                                isBreakSmallTrendBtm = isBreakZA || (isCFork && isBreakAB);
-
-                                if (isBreakSmallTrendBtm && isLong && isGolden && isBeg && (isFibLong || isCrossingSub))
-                                //if(isBreakSmallTrendBtm)
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Long-Warn. Break-SmallTrendLine(Bottom).Z={0} A={1} B={2} CFork={3} isBreakZA={4} isBreakAB={5}"
-                                          , peakMinCandleZ.timestamp
-                                          , peakMinCandleA.timestamp
-                                          , peakMinCandleB.timestamp
-                                          , isCFork
-                                          , isBreakZA
-                                          , isBreakAB
-                                        ), false
-                                    );
-
-                                    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMinIdxZ);
-                                    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
-                                }
-                            }
-
-                            // MAX(TOP)    /////////
-                            if (peakMaxIdxA >= 0)
-                            {
-                                int diffZA_sec = (peakMaxIdxA - peakMaxIdxZ) * periods;
-                                double tiltZA = (peakMaxValueA - peakMaxValueZ) / (double)(diffZA_sec);
-
-                                int diffAB_sec = (peakMaxIdxB - peakMaxIdxA) * periods;
-                                double tiltAB = (peakMaxValueB - peakMaxValueA) / (double)(diffAB_sec);
-
-                                Candlestick peakMaxCandleZ = candleBuf.getCandle(peakMaxIdxZ);
-                                if (peakMaxCandleZ == null)
-                                {
-                                    return result;
-                                }
-
-                                Candlestick peakMaxCandleA = candleBuf.getCandle(peakMaxIdxA);
-                                if (peakMaxCandleA == null)
-                                {
-                                    return result;
-                                }
-
-                                Candlestick peakMaxCandleB = candleBuf.getCandle(peakMaxIdxB);
-                                if (peakMaxCandleB == null)
-                                {
-                                    return result;
-                                }
-
-                                DateTime peakMaxTimeZ = DateTime.Parse(peakMaxCandleZ.timestamp);
-                                DateTime peakMaxTimeA = DateTime.Parse(peakMaxCandleA.timestamp);
-                                DateTime peakMaxTimeB = DateTime.Parse(peakMaxCandleB.timestamp);
-
-                                bool isCFork = false;
-                                {
-                                    TimeSpan spanZB = peakMaxTimeB - peakMaxTimeZ;
-                                    double elapsedZB = spanZB.TotalSeconds;
-                                    double topZB = tiltZA * elapsedZB + peakMaxValueZ;
-                                    if (peakMaxValueB > topZB)
-                                    {
-                                        // C-Forkが成立した
-                                        isCFork = true;
-                                    }
-                                }
-
-                                bool isBreakZA = false;
-                                {
-                                    TimeSpan spanZC = curTime - peakMaxTimeZ;
-                                    double elapsedZC = spanZC.TotalSeconds;
-                                    double topZC = tiltZA * elapsedZC + peakMaxValueZ;
-                                    double diffZC = topZC - curCandle.low;
-                                    if (diffZC < 0.0)
-                                    {
-                                        // トレンドラインZAを割った場合
-                                        // LONG-WARN
-                                        isBreakZA = true;
-                                    }
-                                }
-
-                                bool isBreakAB = false;
-                                {
-                                    TimeSpan spanAC = curTime - peakMaxTimeA;
-                                    int elapsedAC = (int)(spanAC.TotalSeconds);
-                                    double topAB = tiltAB * elapsedAC + peakMaxValueA;
-
-                                    double diffAB = topAB - curCandle.low;
-                                    if (diffAB < 0.0)
-                                    {
-                                        // 下側トレンドラインABを割った
-                                        // LONGは要注意
-                                        //isBreakSmallTrendBtm = true;
-                                        isBreakAB = true;
-                                    }
-                                }
-
-                                //isBreakSmallTrendTop = isBreakZA || isBreakAB;
-                                //isBreakSmallTrendTop = isBreakAB || (isCFork && isBreakZA);
-                                isBreakSmallTrendTop = isBreakZA || (isCFork && isBreakAB);
-
-                                if (isBreakSmallTrendTop && isShort && !isGolden && isBeg && (isFibShort || isCrossingSub))
-                                {
-                                    postSlack
-                                    (
-                                        string.Format("## Short-Warn. Break-SmallTrendLine(Top). Z={0} A={1} B={2} CFork={3} isBreakZA={4} isBreakAB={5}"
-                                          , peakMaxCandleZ.timestamp
-                                          , peakMaxCandleA.timestamp
-                                          , peakMaxCandleB.timestamp
-                                          , isCFork
-                                          , isBreakZA
-                                          , isBreakAB
-                                        ), false
-                                    );
-
-                                    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMaxIdxZ);
-                                    //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
-                                }
-                            }
-                        }
-                    }
-                    isBreakTrendTop = isBreakBigTrendTop || isBreakSmallTrendTop;
-                    isBreakTrendBottom = isBreakBigTrendBtm || isBreakSmallTrendBtm;
-
-
-                    //isBreakTrendTop = isBreakSmallTrendTop;
-                    //isBreakTrendBottom = isBreakSmallTrendBtm;
-
-                    //isBreakTrendTop = isBreakBigTrendTop;
-                    //isBreakTrendBottom = isBreakBigTrendBtm;
-                }
-
 
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
 
 
-                    if (isLong || isShort)
+                    if (isLong || isShort || isLongReserve || isShortReserve)
                     {
                         bool isActive = await Trade.isActive(m_authBitflyer, m_config.product_bitflyer);
                         if (isActive)
@@ -3514,12 +3097,12 @@ namespace CryptoBoxer
                             return result;
                         }
                     }
-                     
-					if (isLong && isGolden && (curCandle.disparity_rate < disparity_border) && !isBreakTrendBottom && !isBBHighLeak)
+
+                    if ( (isLong || isLongReserve) && (curCandle.disparity_rate < disparity_border) )
                     {
                         //Console.WriteLine("Try Long Entry Order.");                  
 
-                        if (isBeg && (isFibLong || isCrossingSub))
+                        if (isLong && !isLongReserve)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -3546,25 +3129,30 @@ namespace CryptoBoxer
 
                             m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
 
-                            postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-                                                , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                            //postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                            //                    , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                            postSlack(string.Format("{0} Long Entry Order ID = {1} isFib({2})={3}"
+                                                , curCandle.timestamp, retObj.child_order_acceptance_id, fib_long_index, isFibLong));
+
 
                         }
                         else
-                        if (isBeg)
+                        if (!isLong && isLongReserve)
                         {
                             // LONG予約
 							m_position.reserveLongOrder(curCandle);
- 							postSlack(string.Format("{0} Long Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
-                                                      , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                            //postSlack(string.Format("{0} Long Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
+                            //                                              , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                            postSlack(string.Format("{0} Long Reserved. isFib({1})={2}"
+                                                                          , curCandle.timestamp, fib_long_index, isFibLong));
 
                         }
                     }
-					else if (isShort && !isGolden && (curCandle.disparity_rate > -disparity_border) && !isBreakTrendTop && !isBBLowLeak)
+					else if ( (isShort || isShortReserve) && (curCandle.disparity_rate > -disparity_border) )
                     {
                         //Console.WriteLine("Try Short Entry Order.");
 
-                        if (isBeg && (isFibShort || isCrossingSub))
+                        if (isShort && !isShortReserve)
                         {
                             SendChildOrderResponse retObj = null;
                             int retry_cnt = 0;
@@ -3575,7 +3163,7 @@ namespace CryptoBoxer
                                 if (retObj == null)
                                 {
 
-                                    //                           System.Threading.Thread.Sleep(1000);
+                                    //System.Threading.Thread.Sleep(1000);
                                     //if (retry_cnt <= 1 && (m_config.amount - 0.01) > 0)
                                     //{
                                     //    m_config.amount = m_config.amount - 0.01;
@@ -3591,18 +3179,21 @@ namespace CryptoBoxer
                             // 注文成功
 
                             m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
-                            postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-                                                    , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
-
+                            //postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                            //                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
+                            postSlack(string.Format("{0} Short Entry Order ID = {1} isFib({2})={3}"
+                                                    , curCandle.timestamp, retObj.child_order_acceptance_id, fib_short_index, isFibShort));
 
                         }
                         else
-                        if (isBeg)
+                        if (!isShort && isShortReserve)
                         {
                             // SHORT予約
 							m_position.reserveShortOrder(curCandle);
-							postSlack(string.Format("{0} Short Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
-                                                    , curCandle.timestamp, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
+                            //postSlack(string.Format("{0} Short Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
+                            //                                             , curCandle.timestamp, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
+                            postSlack(string.Format("{0} Short Reserved. isFib({1})={2}"
+                                                                         , curCandle.timestamp, fib_short_index, isFibShort));
 
                         }
                     }
@@ -3611,9 +3202,8 @@ namespace CryptoBoxer
                 {
                     if (m_position.isLongReserved())
                     {
-                        if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
+                        if (isLongReserve)
                         {
-                            
                             if (curCandle.disparity_rate >= disparity_border)
                             {
 								// LONG予約キャンセル
@@ -3624,38 +3214,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            bool needEntry = false;
-                            //if (isBeg && ((isCrossingSub && isFibLong) || (isCrossing && isCrossedSub && isFibLong) || isFibLong))
-                            if (isBeg && ( isCrossingSub || isFibLong) )
-                            {
-                                needEntry = true;
-                            }
-                            else
-                            {
-                                //if (isBeg)
-                                {
-                                    double ema_rsv = m_position.reserved_price - curCandle.ema;
-                                    double ema_last = 0.0;
-                                    if (isCrossedSub)
-                                    {
-                                        ema_last = curCandle.last - curCandle.ema;
-                                    }
-                                    else
-                                    {
-                                        ema_last = curCandle.last - curCandle.ema_sub;
-                                    }
-                                    double cmp_rate = ema_last / ema_rsv;
-                                    double rsv_last = curCandle.last - m_position.reserved_price;
-                                    if ((rsv_last > fomo_limit) && !isCrossedSub && ((isCrossing || isCrossingSub) && isFibLong))
-                                    {
-                                        needEntry = true;
-                                        postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                  , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
-                                    }
-                                }
-                            }
-
-                            if (needEntry)
+                            if (isLong)
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -3681,22 +3240,26 @@ namespace CryptoBoxer
                                 // 注文成功
 
 								m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
-                                
-								postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-								                        , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+
+                                //postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                                //                        , curCandle.timestamp, retObj.child_order_acceptance_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong));
+                                postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isFib({2})={3}"
+                                                        , curCandle.timestamp, retObj.child_order_acceptance_id, fib_long_index, isFibLong));
                             }
                         }
                         else
                         {
                             // LONG予約キャンセル
                             m_position.cancelReserveOrder();
-                            postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} isEma={4}"
-							                        , curCandle.timestamp, isLong, isGolden, isBeg, isCrossedSub));
+                            //postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} isEma={4}"
+                            //   , curCandle.timestamp, isLong, isGolden, isBeg, isCrossedSub));
+                            postSlack(string.Format("{0} Cancel Long Reserved. isLong={1}"
+                               , curCandle.timestamp, isLong));
                         }
                     }
                     else if (m_position.isShortReserved())
                     {
-                        if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
+                        if (isShortReserve)
                         {
 							if (curCandle.disparity_rate <= -disparity_border)
                             {
@@ -3708,38 +3271,7 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            bool needEntry = false;
-                            //if (isBeg && ((isCrossingSub && isFibShort) || (isCrossing && isCrossedSub && isFibShort) || isFibShort))
-                            if (isBeg && (isFibShort || isCrossingSub))
-                            {
-                                needEntry = true;
-                            }
-                            else
-                            {
-                                //if (isBeg)
-                                {
-                                    double ema_rsv = curCandle.ema - m_position.reserved_price;
-                                    double ema_last = 0.0;
-                                    if (isCrossedSub)
-                                    {
-                                        ema_last = curCandle.ema - curCandle.last;
-                                    }
-                                    else
-                                    {
-                                        ema_last = curCandle.ema_sub - curCandle.last;
-                                    }
-                                    double cmp_rate = ema_last / ema_rsv;
-                                    double rsv_last = m_position.reserved_price - curCandle.last;
-                                    if ((rsv_last > fomo_limit) && !isCrossedSub && ((isCrossing || isCrossingSub) && isFibShort))
-                                    {
-                                        needEntry = true;
-                                        postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub));
-                                    }
-                                }
-                            }
-
-                            if (needEntry)
+                            if (isShort)
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -3766,19 +3298,21 @@ namespace CryptoBoxer
                                 // 注文成功
 
 								m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
-                                
-								postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-								                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));                        
 
-
+                                //postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                                //                        , curCandle.timestamp, retObj.child_order_acceptance_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort));
+                                postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isFib({2})={3}"
+                                                        , curCandle.timestamp, retObj.child_order_acceptance_id, fib_short_index, isFibShort));
                             }
                         }
                         else
                         {
                             // SHORT予約キャンセル
                             m_position.cancelReserveOrder();
-                            postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} isEma={4}"
-							                        , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossedSub));
+                            //postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} isEma={4}"
+                            //   , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossedSub));
+                            postSlack(string.Format("{0} Cancel Short Reserved. isShort={1}"
+                               , curCandle.timestamp, isShort));
                         }
                     }
                 }
@@ -3830,7 +3364,6 @@ namespace CryptoBoxer
 
         }
 
-
         private int tryEntryOrderTest
         (
             ref int long_entry_cnt, 
@@ -3857,12 +3390,34 @@ namespace CryptoBoxer
                     return result;
                 }
 
+                bool isLong = false;
+                bool isShort = false;
+                bool isLongReserve = false;
+                bool isShortReserve = false;
+                bool isFibLong = false;
+                bool isFibShort = false;
+                int fib_long_index = -1;
+                int fib_short_index = -1;
+                if (
+                    calcConditionEntry
+                    (
+                        out isLong,
+                        out isShort,
+                        out isLongReserve,
+                        out isShortReserve,
+                        out isFibLong,
+                        out isFibShort,
+                        out fib_long_index,
+                        out fib_short_index,
+                        next_open
+                     )!=0
+                )
+                {
+                    result = -1;
+                    return result;
+                }
 
-
-                bool isLong =  isConditionLongEntryFL(next_open);
-                bool isShort = isConditionShortEntryFL(next_open);
-
-                if (isLong || isShort)
+                if (isLong || isShort || isLongReserve || isShortReserve)
                 {
                     if (isMaintenanceBitflyer(curCandle.timestamp))
                     {
@@ -3870,72 +3425,240 @@ namespace CryptoBoxer
                         return result;
                     }
                 }
-                
-				double beg_threshold = 0.5;//0.5;
-				double ema_touch_play = 0.0;//1300.0 - curCandle.vola_ma;//1400.0;
-				if(ema_touch_play<0.0)
-				{
-					ema_touch_play = 0.0;
-				}
-                bool isGolden = false;
-                bool isBeg = false;
-                int back_cnt = 0;
-                double cur_ema_length = 0.0;
-				bool isCrossed = false;
-				bool isCrossedSub = false;
-				double high_max = 0.0;
-                double low_min = 0.0;
-				int high_max_idx = 0;
-				int low_min_idx = 0;
-				if(m_candleBuf.getEMACrossState(
-						out isGolden,
-						out isBeg,
-						out back_cnt,
-						out cur_ema_length,
-						out isCrossed,
-						out isCrossedSub,
-						out high_max,
-					    out high_max_idx,
-						out low_min,
-				    	out low_min_idx,
-						beg_threshold,
-						ema_touch_play)
-				   != 0)
+
+
+                if (m_position.isNone())
+                {
+                    // NONEポジションの場合
+
+                    if (isLong || isLongReserve)
+                    {
+                        if (isLong && !isLongReserve)
+                        {
+                            // 注文成功
+                            string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
+
+                            m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+
+                            //postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                            //                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true);
+                            postSlack(string.Format("{0} Long Entry Order ID = {1} isFib({2})={3}"
+                                                    , curCandle.timestamp, long_id, fib_long_index, isFibLong), true);
+
+
+                            long_entry_cnt++;
+                        }
+                        else if (!isLong && isLongReserve)
+                        {
+                            // LONG予約
+                            m_position.reserveLongOrder(curCandle);
+                            //postSlack(string.Format("{0} Long Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0})={9} hi={10:0} lo={11:0}"
+                            //                        , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_long, isFibLong, high_max, low_min), true);
+                            postSlack(string.Format("{0} Long Reserved. isFib({1})={2}"
+                                                    , curCandle.timestamp, fib_long_index, isFibLong), true);
+
+                        }
+                    }
+                    else if (isShort || isShortReserve)
+                    {
+                        if (isShort && !isShortReserve)
+                        {
+                            // 注文成功
+                            string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
+
+                            m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+
+                            //postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                            //                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
+                            postSlack(string.Format("{0} Short Entry Order ID = {1} isFib({2})={3}"
+                                                    , curCandle.timestamp, short_id, fib_short_index, isFibShort), true);
+
+                            short_entry_cnt++;
+
+                        }
+                        else if (!isShort && isShortReserve)
+                        {
+                            // SHORT予約
+                            m_position.reserveShortOrder(curCandle);
+                            //postSlack(string.Format("{0} Short Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
+                            //                        , curCandle.timestamp, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
+                            postSlack(string.Format("{0} Short Reserved. isFib({1})={2}"
+                                                    , curCandle.timestamp, fib_short_index, isFibShort), true);
+
+                        }
+                    }
+                }
+                else
+                {
+                    if (m_position.isLongReserved())
+                    {
+						if (isLongReserve)
+                        {
+                            if (isLong)
+							{
+                                string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);                        
+								m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+                                // 注文成功
+                                //postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                                //                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true);
+                                postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isFib({2})={3}"
+                                                        , curCandle.timestamp, long_id, fib_long_index, isFibLong), true);
+
+                                long_entry_cnt++;
+							}
+                        }
+                        else
+                        {
+                            // LONG予約キャンセル
+                            m_position.cancelReserveOrder();
+                            //postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                            //                        , curCandle.timestamp, isLong, isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                            postSlack(string.Format("{0} Cancel Long Reserved. isLong={1}"
+                                                    , curCandle.timestamp, isLong), true);
+                        }
+                    }
+                    else if (m_position.isShortReserved())
+                    {
+						if (isShortReserve)
+                        {                     
+                            if (isShort)
+							{
+                                string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);                        
+								m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+                                // 注文成功
+                                //postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
+                                //                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
+                                postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isFib({2})={3}"
+                                                        , curCandle.timestamp, short_id, fib_short_index, isFibShort), true);
+                                short_entry_cnt++;
+							}
+                        }
+                        else
+                        {
+                            // SHORT予約キャンセル
+                            m_position.cancelReserveOrder();
+                            //postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
+                            //                                             , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
+                            postSlack(string.Format("{0} Cancel Short Reserved. isShort={1}"
+                                                                         , curCandle.timestamp, isShort), true);
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+                m_isDotenShort = false;
+                m_isDotenLong = false;
+                m_isDoten = false;
+            }
+            return result;
+        }
+
+        private int calcConditionEntry
+        (
+            out bool isLong,
+            out bool isShort,
+            out bool isLongReserve,
+            out bool isShortReserve,
+            out bool isFibLong,
+            out bool isFibShort,
+            out int fib_long_index,
+            out int fib_short_index,
+            double next_open
+        )
+        {
+            int result = 0;
+
+            isLong = false;
+            isShort = false;
+            isLongReserve = false;
+            isShortReserve = false;
+            isFibLong = false;
+            isFibShort = false;
+            fib_long_index = -1;
+            fib_short_index = -1;
+            try
+            {
+                Candlestick curCandle = m_candleBuf.getLastCandle();
+                if (curCandle == null)
                 {
                     result = -1;
                     return result;
                 }
-                //isBeg = true;
+
+                bool isCondLong = isConditionLongEntryFL(next_open);
+                bool isCondShort = isConditionShortEntryFL(next_open);
+
+                double beg_threshold = 0.5;//0.5;
+                double ema_touch_play = 0.0;//1300.0 - curCandle.vola_ma;//1400.0;
+                if (ema_touch_play < 0.0)
+                {
+                    ema_touch_play = 0.0;
+                }
+                bool isGolden = false;
+                bool isBeg = false;
+                int back_cnt = 0;
+                double cur_ema_length = 0.0;
+                bool isCrossed = false;
+                bool isCrossedSub = false;
+                double high_max = 0.0;
+                double low_min = 0.0;
+                int high_max_idx = 0;
+                int low_min_idx = 0;
+                if (m_candleBuf.getEMACrossState(
+                        out isGolden,
+                        out isBeg,
+                        out back_cnt,
+                        out cur_ema_length,
+                        out isCrossed,
+                        out isCrossedSub,
+                        out high_max,
+                        out high_max_idx,
+                        out low_min,
+                        out low_min_idx,
+                        beg_threshold,
+                        ema_touch_play)
+                   != 0)
+                {
+                    result = -1;
+                    return result;
+                }
 
                 //                      [0]   [1]    [2]  [3]    [4]   [5]  [6]
                 double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-                int fib_index = 1;            
-				double fib_rate = fib_rates[fib_index];
-				double fib_long = high_max - (high_max - low_min) * fib_rate;
-				double fib_short = high_max - (high_max - low_min) * (1.0-fib_rate);
+                int fib_index = 1;
+                double fib_rate = fib_rates[fib_index];
+                double fib_long = high_max - (high_max - low_min) * fib_rate;
+                double fib_short = high_max - (high_max - low_min) * (1.0 - fib_rate);
 
-				int fib_long_index = fib_index;
-				int fib_short_index = fib_index;
+                fib_long_index = fib_index;
+                fib_short_index = fib_index;
 
-				double cmp_long = curCandle.last;
-				if (fib_long > (cmp_long/* + ema_touch_play*/))
+                double cmp_long = curCandle.last;
+                if (fib_long > (cmp_long/* + ema_touch_play*/))
                 {
-					for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
+                    for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
                     {
-						fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
-						if (fib_long <= cmp_long)
+                        fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
+                        if (fib_long <= cmp_long)
                         {
                             break;
                         }
                     }
                 }
 
-				double cmp_short = curCandle.last;
+                double cmp_short = curCandle.last;
                 if (fib_short < (cmp_short/* + ema_touch_play*/))
                 {
-					for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
+                    for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
                     {
-						fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index]);
+                        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index]);
                         if (fib_short >= cmp_short)
                         {
                             break;
@@ -3954,16 +3677,16 @@ namespace CryptoBoxer
                     isBBLowLeak = true;
                 }
 
-                bool isFibLong = curCandle.isCross(fib_long);
-                bool isFibShort = curCandle.isCross(fib_short);
-                
-				bool isCrossing = curCandle.isCrossEMA(0.0);
+                isFibLong = curCandle.isCross(fib_long);
+                isFibShort = curCandle.isCross(fib_short);
+
+                bool isCrossing = curCandle.isCrossEMA(0.0);
                 bool isCrossingSub = curCandle.isCrossEMAsub(ema_touch_play);
-                
-				double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
-                
-				Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
-				Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
+
+                double fomo_limit = 6800.0 + curCandle.vola_ma;//6800 6600.0;//7100.0;//6100.0;
+
+                Candlestick highCandle = m_candleBuf.getCandle(high_max_idx);
+                Candlestick lowCandle = m_candleBuf.getCandle(low_min_idx);
 
 
                 bool isBreakTrendTop = false;
@@ -3993,7 +3716,7 @@ namespace CryptoBoxer
                         //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                         //}
 
-                        if(peakMaxIndexList.Count()>2)
+                        if (peakMaxIndexList.Count() > 2)
                         {
                             Candlestick fromCandle = null;
                             Candlestick toCandle = null;
@@ -4002,12 +3725,12 @@ namespace CryptoBoxer
                                 return result;
                             }
 
-                            if(isBreakBigTrendTop)
+                            if (isBreakBigTrendTop)
                             {
                                 // 上側トレンドラインを割った
                                 // SHORTは要注意
 
-                                if (isShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
+                                if (isCondShort && !isGolden && isBeg && (isFibLong || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -4034,7 +3757,7 @@ namespace CryptoBoxer
                             {
                                 // 下側トレンドラインを割った
                                 // LONGは要注意
-                                if (isLong && isGolden && isBeg && (isFibShort || isCrossingSub))
+                                if (isCondLong && isGolden && isBeg && (isFibShort || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -4194,7 +3917,7 @@ namespace CryptoBoxer
                                 //isBreakSmallTrendBtm = isBreakAB || (isCFork && isBreakZA);
                                 isBreakSmallTrendBtm = isBreakZA || (isCFork && isBreakAB);
 
-                                if (isBreakSmallTrendBtm && isLong && isGolden && isBeg && (isFibLong || isCrossingSub))
+                                if (isBreakSmallTrendBtm && isCondLong && isGolden && isBeg && (isFibLong || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -4211,52 +3934,6 @@ namespace CryptoBoxer
                                     //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, peakMinIdxZ);
                                     //candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
                                 }
-
-                                //bool isTouchedTop = false;
-                                //bool isTouchedBottom = false;
-                                //{
-                                //if (curCandle.timestamp == "2021/01/28 17:00:00")
-                                //{
-                                //    Console.WriteLine("#TrendLine Small");
-                                //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
-                                //}
-
-                                //    int touchedTopIdx = -1;
-                                //    int touchedBtmIdx = -1;
-                                //    for (int i = (candleBuf.getCandleCount() - 1); i >= 0; i--)
-                                //    {
-                                //        Candlestick candle = candleBuf.getCandle(i);
-                                //        if (candle == null)
-                                //        {
-                                //            continue;
-                                //        }
-
-                                //        DateTime time = DateTime.Parse(candle.timestamp);
-                                //        TimeSpan span = time - peakMinTimeA;
-                                //        int elapsed_sec = (int)(span.TotalSeconds);
-
-                                //        if (!isTouchedBottom)
-                                //        {
-                                //            double bottomTrendValue = tiltBottom * elapsed_sec + peakMinValueA;
-                                //            double bottomDiff = candle.low - bottomTrendValue;
-                                //            if (bottomDiff < 0.0)
-                                //            {
-                                //                touchedBtmIdx = i;
-                                //                break;
-                                //            }
-
-                                //        }
-                                //    }
-
-                                //    if (touchedBtmIdx >= 0)
-                                //    {
-                                //        int candle_cnt = (candleBuf.getCandleCount() - 1) - touchedBtmIdx;
-                                //        if (candle_cnt < 10)
-                                //        {
-                                //            isTouchedBottom = true;
-                                //        }
-                                //    }
-                                //}
                             }
 
                             // MAX(TOP)    /////////
@@ -4336,7 +4013,7 @@ namespace CryptoBoxer
                                 //isBreakSmallTrendTop = isBreakAB || (isCFork && isBreakZA);
                                 isBreakSmallTrendTop = isBreakZA || (isCFork && isBreakAB);
 
-                                if (isBreakSmallTrendTop && isShort && !isGolden && isBeg && (isFibShort || isCrossingSub))
+                                if (isBreakSmallTrendTop && isCondShort && !isGolden && isBeg && (isFibShort || isCrossingSub))
                                 {
                                     postSlack
                                     (
@@ -4366,177 +4043,66 @@ namespace CryptoBoxer
                     //isBreakTrendBottom = isBreakBigTrendBtm;
                 }
 
+
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
-                                   
-					if (isLong && isGolden && !isBreakTrendBottom && !isBBHighLeak)
-					{
+
+                    if (isCondLong && isGolden && !isBreakTrendBottom && !isBBHighLeak)
+                    {
                         if (isBeg && ((isCrossingSub && isBreakTrendTop) || isFibLong))
                         //if (isBeg && isBreakTrendTop&& (isCrossingSub || isFibLong) )
                         {
-
-                            // 注文成功
-                            string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
-
-                            m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
-
-                            postSlack(string.Format("{0} Long Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-                                                    , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true);
-
-                            long_entry_cnt++;
+                            // LONG
+                            isLong = true;
                         }
                         else
                         if (isBeg /*&& (isCrossedSub || isCrossed)*/ )
                         {
-							// LONG予約
-							m_position.reserveLongOrder(curCandle);
-							postSlack(string.Format("{0} Long Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0})={9} hi={10:0} lo={11:0}"
-							                        , curCandle.timestamp, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_long, isFibLong, high_max, low_min), true);
-						}
-					}
-					else if (isShort && !isGolden && !isBreakTrendTop && !isBBLowLeak)
-					{
+                            // LONG予約
+                            isLongReserve = true;
+                        }
+                    }
+                    else if (isCondShort && !isGolden && !isBreakTrendTop && !isBBLowLeak)
+                    {
                         if (isBeg && ((isCrossingSub && isBreakTrendBottom) || isFibShort))
                         //if (isBeg && isBreakTrendBottom && (isCrossingSub || isFibShort))
                         {
-                            // 注文成功
-                            string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
-
-                            m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
-
-                            postSlack(string.Format("{0} Short Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-                                                    , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
-
-                            short_entry_cnt++;
+                            // SHORT
+                            isShort = true;
                         }
                         else
                         if (isBeg /*&& (isCrossedSub || isCrossed)*/)
                         {
                             // SHORT予約
-							m_position.reserveShortOrder(curCandle);
-							postSlack(string.Format("{0} Short Reserved. isGold={1} bkCnt={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7} isFib({8:0.00})={9}"
-							                        , curCandle.timestamp, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);
-
+                            isShortReserve = true;
                         }
-					}
+                    }
                 }
                 else
                 {
                     if (m_position.isLongReserved())
                     {
-						if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
+                        if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
                         {
-							bool needEntry = false;
-                            if (isBeg && ( (isCrossingSub && isBreakTrendTop ) || isFibLong )  )
+                            isLongReserve = true;
+                            if (isBeg && ((isCrossingSub && isBreakTrendTop) || isFibLong))
                             //if (isBeg && isBreakTrendTop && (isCrossingSub || isFibLong))
                             {
-								needEntry = true;
+                                isLong = true;
                             }
-							else 
-							{
-								//if (isBeg)
-                                {
-									double ema_rsv = m_position.reserved_price - curCandle.ema;
-									double ema_last = 0.0;
-									if (isCrossedSub)
-									{
-										ema_last = curCandle.last - curCandle.ema;
-									}
-									else
-									{
-										ema_last = curCandle.last - curCandle.ema_sub;
-									}
-									double cmp_rate = ema_last / ema_rsv;
-									double rsv_last = curCandle.last - m_position.reserved_price;
-                                    //if (isBeg)
-                                    {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && ( (isCrossing || isCrossingSub) && isFibLong) )
-                                        {
-                                            needEntry = true;
-                                            postSlack(string.Format("FOMO(LONG). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                      , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
-                                        }
-                                    }
-                                }
-
-                            }
-
-							if(needEntry)
-							{
-                                string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);                        
-								m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));                        
-								// 注文成功
-								postSlack(string.Format("{0} Long(Reserved) Entry Order ID = {1} isGold={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-								                        , curCandle.timestamp, long_id, isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibLong), true); 
-                                                        
-                                long_entry_cnt++;
-							}
-                        }
-                        else
-                        {
-                            // LONG予約キャンセル
-                            m_position.cancelReserveOrder();
-							postSlack(string.Format("{0} Cancel Long Reserved. isLong={1} isGold={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-							                        , curCandle.timestamp, isLong, isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
-
                         }
                     }
                     else if (m_position.isShortReserved())
                     {
-						if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
-                        {                     
-							bool needEntry = false;
-                            if (isBeg && ( (isCrossingSub && isBreakTrendBottom) || isFibShort) )
+                        if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
+                        {
+                            isShortReserve = true;
+                            if (isBeg && ((isCrossingSub && isBreakTrendBottom) || isFibShort))
                             //if (isBeg && isBreakTrendBottom && (isCrossingSub || isFibShort))
                             {
-                                needEntry = true;
+                                isShort = true;
                             }
-                            else
-                            {
-                                //if (isBeg)
-                                {
-                                    double ema_rsv = curCandle.ema - m_position.reserved_price;
-                                    double ema_last = 0.0;
-                                    if (isCrossedSub)
-                                    {
-                                        ema_last = curCandle.ema - curCandle.last;
-                                    }
-                                    else
-                                    {
-                                        ema_last = curCandle.ema_sub - curCandle.last;
-                                    }
-                                    double cmp_rate = ema_last / ema_rsv;
-                                    double rsv_last = m_position.reserved_price - curCandle.last;
-                                    {
-										if ((rsv_last > fomo_limit) && !isCrossedSub && ( (isCrossing || isCrossingSub) && isFibShort) )
-                                        {
-                                            needEntry = true;
-                                            postSlack(string.Format("FOMO(SHORT). rsv_last={0:0} rsv={1:0} last={2:0} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                                    , rsv_last, m_position.reserved_price, curCandle.last, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub),true);
-                                        }
-                                    }
-                                }
-
-                            }
-
-                            if (needEntry)
-							{
-                                string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);                        
-								m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
-								// 注文成功
-								postSlack(string.Format("{0} Short(Reserved) Entry Order ID = {1} isDead={2} bkCnt={3} isBeg={4} edEma={5} edEmaS={6} ingEma={7} ingEmaS={8} isFib({9:0.00})={10}"
-								                        , curCandle.timestamp, short_id, !isGolden, back_cnt, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub, fib_rate, isFibShort), true);                        
-                                short_entry_cnt++;
-							}
-                        }
-                        else
-                        {
-                            // SHORT予約キャンセル
-                            m_position.cancelReserveOrder();
-							postSlack(string.Format("{0} Cancel Short Reserved. isShort={1} isDead={2} isBeg={3} edEma={4} edEmaS={5} ingEma={6} ingEmaS={7}"
-                                                    , curCandle.timestamp, isShort, !isGolden, isBeg, isCrossed, isCrossedSub, isCrossing, isCrossingSub), true);
-
                         }
                     }
                 }
@@ -4548,14 +4114,23 @@ namespace CryptoBoxer
             }
             finally
             {
-                m_isDotenShort = false;
-                m_isDotenLong = false;
-                m_isDoten = false;
+                if (result != 0)
+                {
+                    isLong = false;
+                    isShort = false;
+                    isLongReserve = false;
+                    isShortReserve = false;
+                    isFibLong = false;
+                    isFibShort = false;
+                    fib_long_index = -1;
+                    fib_short_index = -1;
+                }
             }
             return result;
         }
 
-		public bool isConditionLongLosscut()
+
+        public bool isConditionLongLosscut()
         {
             bool result = false;
             try
@@ -4740,9 +4315,7 @@ namespace CryptoBoxer
                 }
                 
 
-                double position = curCandle.last - m_frontlineShort;
-                //double position = next_open - m_frontlineShort;
-
+                double position = m_frontlineShort - curCandle.last;
 
                 //int posArrayNum = m_posArray.Count();
                 //if (posArrayNum >= 2)
@@ -4758,10 +4331,10 @@ namespace CryptoBoxer
                 //        result = false;
                 //        return result;
                 //    }
-                
+
                 //}            
-                
-                double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
+
+                double threshold = curCandle.vola_ma * 1.0;//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
                 //const int past_num = 23;
 
                 //// フロントライン付近でウロウロしてる
@@ -4772,7 +4345,22 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                if (position <= 0)
+                if (position < 0)
+                {
+                    // 現在値がフロントラインより後方
+
+                    //postSlack(string.Format("!! UP-BREAK(Short) !!. pos={0:0} up_cnt={1}", position, m_upBreakCnt), true);    
+                    if (Math.Abs(position) > threshold)
+                    {
+                        // フロントラインを後退させる
+                        m_frontlineShort -= (position * 0.5);
+                        //postSlack(string.Format("** renewal Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), true);
+                    }
+
+                    //result = false;
+                    //return result;
+                }
+                else
                 {
                     // 現在値がフロントラインより下
 
@@ -4785,21 +4373,6 @@ namespace CryptoBoxer
 
                     // ENTRYする
                     //postSlack(string.Format("!! DOWN-BREAK(Short) !!. pos={0:0}", position), onlyConsole);
-                }
-                else
-                {
-                    // 現在値がフロントラインより上
-
-                    //postSlack(string.Format("!! UP-BREAK(Short) !!. pos={0:0} up_cnt={1}", position, m_upBreakCnt), true);    
-                    if (Math.Abs(position) > threshold)
-                    {
-                        m_frontlineShort += (position * 0.5);
-                        //postSlack(string.Format("** renewal Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), true);
-                    }
-
-                    //result = false;
-                    //return result;
-
                 }
 
                 //const double ema_cross_play = 700.0;//1500.0;//1400.0;
@@ -4869,9 +4442,8 @@ namespace CryptoBoxer
 				}
                 
                 double position = curCandle.last - m_frontlineLong;
-                //double position = next_open - m_frontlineLong;
 
-                double threshold = (Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
+                double threshold = curCandle.vola_ma * 3.0; //(Math.Abs(m_config.losscut_value) + curCandle.vola_ma) * 1.1;
                 //const int past_num = 23;
 
                 //// フロントライン付近でウロウロしてる
@@ -4883,13 +4455,14 @@ namespace CryptoBoxer
                 //    return result;
                 //}
 
-                if ( position <= 0)
+                if ( position < 0)
                 {
-                    // 現在値がフロントラインより下
+                    // 現在値がフロントラインより後方
                     //postSlack(string.Format("!! DOWN-BREAK(Long) !!. pos={0:0}", position), true);
 
                     if (Math.Abs(position) > threshold)
                     {
+                        // フロントラインを後退させる
                         m_frontlineLong += (position * 0.5);
                         //postSlack(string.Format("** renewal Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
 
