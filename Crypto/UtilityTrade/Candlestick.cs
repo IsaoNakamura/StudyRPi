@@ -2291,6 +2291,17 @@ namespace UtilityTrade
 
                 if (cur_cross_state != 0)
                 {
+                    if ( max_ema_length < (curCandle.vola_ma * 1.0) )
+                    {
+                        // 収束中
+                        isBeg = false;
+                    }
+                    else
+                    {
+                        // 拡大中
+                        isBeg = true;
+                    }
+
                     //if (cur_ema_length < (max_ema_length * threshold_rate))
                     //{
                     //    // 収束中
@@ -2302,62 +2313,40 @@ namespace UtilityTrade
                     //    isBeg = true;
                     //}
 
-                    List<double> peakValueList = new List<double>();
-                    List<int> peakIndexList = new List<int>();
-                    if (calcPeakListEmaDiff(ref peakValueList, ref peakIndexList, cur_idx, cur_idx - back_cnt, isGolden, 5) != 0)
-                    {
-                        return result;
-                    }
-
-                    //Console.WriteLine("#MinMax ema");
-                    //foreach (double value in peakList)
-                    //for (int i = 0; i < peakValueList.Count(); i++)
+                    //List<double> peakValueList = new List<double>();
+                    //List<int> peakIndexList = new List<int>();
+                    //if (calcPeakListEmaDiff(ref peakValueList, ref peakIndexList, cur_idx, cur_idx - back_cnt, isGolden, 5) != 0)
                     //{
-                    //    double value = peakValueList[i];
-                    //    int index = peakIndexList[i];
-                    //    Console.WriteLine("{0} {1}", index, (value - peakValueList.Min()) / (peakValueList.Max() - peakValueList.Min()));
+                    //    return result;
                     //}
-                    if (peakValueList.Count() > 2)
-                    {
-                        double valueA = peakValueList[peakValueList.Count() - 2];
-                        double valueB = peakValueList[peakValueList.Count() - 1];
-                        double normValA = (valueA - peakValueList.Min()) / (peakValueList.Max() - peakValueList.Min());
-                        double normValB = (valueB - peakValueList.Min()) / (peakValueList.Max() - peakValueList.Min());
 
-                        int indexA = peakIndexList[peakIndexList.Count() - 2];
-                        int indexB = peakIndexList[peakIndexList.Count() - 1];
-                        double normIdxA = (double)(indexA - peakIndexList.Min()) / (double)(peakIndexList.Max() - peakIndexList.Min());
-                        double normIdxB = (double)(indexB - peakIndexList.Min()) / (double)(peakIndexList.Max() - peakIndexList.Min());
+                    //if (peakValueList.Count() > 2)
+                    //{
+                    //    double valueA = peakValueList[peakValueList.Count() - 2];
+                    //    double valueB = peakValueList[peakValueList.Count() - 1];
+                    //    double normValA = (valueA - peakValueList.Min()) / (peakValueList.Max() - peakValueList.Min());
+                    //    double normValB = (valueB - peakValueList.Min()) / (peakValueList.Max() - peakValueList.Min());
 
-                        double tilt = (normValB - normValA) / (normIdxB - normIdxA);
-                        //Console.WriteLine("{0} {1}", tilt, normValB);
+                    //    int indexA = peakIndexList[peakIndexList.Count() - 2];
+                    //    int indexB = peakIndexList[peakIndexList.Count() - 1];
+                    //    double normIdxA = (double)(indexA - peakIndexList.Min()) / (double)(peakIndexList.Max() - peakIndexList.Min());
+                    //    double normIdxB = (double)(indexB - peakIndexList.Min()) / (double)(peakIndexList.Max() - peakIndexList.Min());
 
-                        if (tilt >= -1.5 && normValB >= threshold_rate)
-                        {
-                            // 拡大中
-                            isBeg = true;
-                        }
-                        else
-                        {
-                            // 収束中
-                            isBeg = false;
-                        }
-                    }
+                    //    double tilt = (normValB - normValA) / (normIdxB - normIdxA);
+                    //    //Console.WriteLine("{0} {1}", tilt, normValB);
+
+                    //    if (tilt >= -1.5 && normValB >= threshold_rate)
+                    //    {
+                    //        // 拡大中
+                    //        isBeg = true;
+                    //    }
+                    //    else
+                    //    {
+                    //        // 収束中
+                    //        isBeg = false;
+                    //    }
+                    //}
                 }
-                ////if (curCandle.timestamp == "2021/01/18 23:00:00")//
-                ////if(curCandle.timestamp == "2021/01/18 19:29:00")
-                //if (curCandle.timestamp == "2021/01/19 23:50:00")
-                //{
-                //    List<double> peakValueList = new List<double>();
-                //    List<int> peakIndexList = new List<int>();
-                //    int back_idx = 0;// cur_idx - 201;
-                //    int sample_num = 240;//60;//15;
-                //    if (calcPeakList(ref peakValueList, ref peakIndexList, cur_idx, back_idx, sample_num) != 0)
-                //    {
-                //        return result;
-                //    }
-                //}
-
 
                 result = 0;
             }

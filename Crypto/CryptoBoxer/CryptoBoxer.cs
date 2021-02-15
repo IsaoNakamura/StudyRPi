@@ -515,7 +515,7 @@ namespace CryptoBoxer
                         calcIndicator(curCandleBuf, ref candle);
                         //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
                     }
-                    //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                    Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
                 }
 
             }
@@ -3086,7 +3086,7 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
-                isBeg = true;
+                //isBeg = true;
 
 
                 double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
@@ -3905,7 +3905,7 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
-                isBeg = true;
+                //isBeg = true;
 
                 //                      [0]   [1]    [2]  [3]    [4]   [5]  [6]
                 double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
