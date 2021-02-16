@@ -2291,7 +2291,7 @@ namespace UtilityTrade
 
                 if (cur_cross_state != 0)
                 {
-                    if ( max_ema_length < (curCandle.vola_ma * 1.0) )
+                    if ( max_ema_length < (curCandle.vola_ma * 2.0) )
                     {
                         // 収束中
                         isBeg = false;
