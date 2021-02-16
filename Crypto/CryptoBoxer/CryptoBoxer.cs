@@ -3127,7 +3127,7 @@ namespace CryptoBoxer
                             }
                             // 注文成功
 
-                            m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+                            m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, fib_long_index);
 
                             postSlack(string.Format("Long Entry Order ID = {0}", retObj.child_order_acceptance_id));
                         }
@@ -3135,7 +3135,7 @@ namespace CryptoBoxer
                         if (!isLong && isLongReserve)
                         {
                             // LONG予約
-							m_position.reserveLongOrder(curCandle);
+							m_position.reserveLongOrder(curCandle, (isFibLong ? fib_long_index : -1));
                             //postSlack(string.Format("{0} Long Reserved.", curCandle.timestamp));
                         }
                     }
@@ -3169,7 +3169,7 @@ namespace CryptoBoxer
                             }
                             // 注文成功
 
-                            m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+                            m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, fib_short_index);
                             postSlack(string.Format("Short Entry Order ID = {0}", retObj.child_order_acceptance_id));
 
                         }
@@ -3177,7 +3177,7 @@ namespace CryptoBoxer
                         if (!isShort && isShortReserve)
                         {
                             // SHORT予約
-							m_position.reserveShortOrder(curCandle);
+							m_position.reserveShortOrder(curCandle, (isFibShort ? fib_short_index : -1));
                             //postSlack(string.Format("{0} Short Reserved.", curCandle.timestamp));
                         }
                     }
@@ -3223,7 +3223,7 @@ namespace CryptoBoxer
                                 }
                                 // 注文成功
 
-								m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+								m_position.entryLongOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, fib_long_index);
 
                                 postSlack(string.Format("Long(Reserved) Entry Order ID = {0}", retObj.child_order_acceptance_id));
                             }
@@ -3275,7 +3275,7 @@ namespace CryptoBoxer
                                 }
                                 // 注文成功
 
-								m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+								m_position.entryShortOrder(retObj.child_order_acceptance_id, curCandle.timestamp, m_config.amount, fib_short_index);
 
                                 postSlack(string.Format("Short(Reserved) Entry Order ID = {0}", retObj.child_order_acceptance_id));
                             }
@@ -3413,7 +3413,7 @@ namespace CryptoBoxer
                             // 注文成功
                             string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);
 
-                            m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+                            m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, fib_long_index);
                             postSlack(string.Format("Long Entry Order ID = {0} ", long_id), onlyConsole);
 
                             long_entry_cnt++;
@@ -3421,7 +3421,7 @@ namespace CryptoBoxer
                         else if (!isLong && isLongReserve)
                         {
                             // LONG予約
-                            m_position.reserveLongOrder(curCandle);
+                            m_position.reserveLongOrder(curCandle, fib_long_index);
                             //postSlack(string.Format("{0} Long Reserved.", curCandle.timestamp), onlyConsole);
 
                         }
@@ -3433,7 +3433,7 @@ namespace CryptoBoxer
                             // 注文成功
                             string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);
 
-                            m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+                            m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, fib_short_index);
 
                             postSlack(string.Format("Short Entry Order ID = {0}", short_id), onlyConsole);
 
@@ -3443,7 +3443,7 @@ namespace CryptoBoxer
                         else if (!isShort && isShortReserve)
                         {
                             // SHORT予約
-                            m_position.reserveShortOrder(curCandle);
+                            m_position.reserveShortOrder(curCandle, fib_short_index);
                             //postSlack(string.Format("{0} Short Reserved", curCandle.timestamp), onlyConsole);
                         }
                     }
@@ -3457,7 +3457,7 @@ namespace CryptoBoxer
                             if (isLong)
 							{
                                 string long_id = string.Format("BT_LONG_ENTRY_{0:D8}", long_entry_cnt);                        
-								m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, (isFibLong ? fib_long_index : -1));
+								m_position.entryLongOrder(long_id, curCandle.timestamp, m_config.amount, fib_long_index );
                                 // 注文成功
                                 postSlack(string.Format("Long(Reserved) Entry Order ID = {0} ", long_id), onlyConsole);
 
@@ -3478,7 +3478,7 @@ namespace CryptoBoxer
                             if (isShort)
 							{
                                 string short_id = string.Format("BT_SHORT_ENTRY_{0:D8}", short_entry_cnt);                        
-								m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, (isFibShort ? fib_short_index : -1));
+								m_position.entryShortOrder(short_id, curCandle.timestamp, m_config.amount, fib_short_index);
                                 // 注文成功
                                 postSlack(string.Format("Short(Reserved) Entry Order ID = {0}", short_id), onlyConsole);
                                 short_entry_cnt++;
@@ -3588,28 +3588,42 @@ namespace CryptoBoxer
                 fib_long_index = fib_index;
                 fib_short_index = fib_index;
 
-                double cmp_long = curCandle.last;
-                if (fib_long > (cmp_long/* + ema_touch_play*/))
+                if (m_position.isLong() && m_position.entry_fib_idx!=-1)
                 {
-                    for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
+                    fib_long_index = m_position.entry_fib_idx;
+                }
+                else
+                {
+                    double cmp_long = curCandle.last;
+                    if (fib_long > (cmp_long/* + ema_touch_play*/))
                     {
-                        fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
-                        if (fib_long <= cmp_long)
+                        for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
                         {
-                            break;
+                            fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
+                            if (fib_long <= cmp_long)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
 
-                double cmp_short = curCandle.last;
-                if (fib_short < (cmp_short/* + ema_touch_play*/))
+                if (m_position.isShort() && m_position.entry_fib_idx != -1)
                 {
-                    for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
+                    fib_short_index = m_position.entry_fib_idx;
+                }
+                else
+                {
+                    double cmp_short = curCandle.last;
+                    if (fib_short < (cmp_short/* + ema_touch_play*/))
                     {
-                        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index]);
-                        if (fib_short >= cmp_short)
+                        for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
                         {
-                            break;
+                            fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index]);
+                            if (fib_short >= cmp_short)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -4003,16 +4017,16 @@ namespace CryptoBoxer
                         {
                             // LONG
                             isLong = true;
-                            postSlack(string.Format("{0} Long Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                            postSlack(string.Format("{0} Long Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_long_index, isFibLong), onlyConsole);
                         }
                         else
                         if (isBeg /*&& (isCrossedSub || isCrossed)*/ )
                         {
                             // LONG予約
                             isLongReserve = true;
-                            postSlack(string.Format("{0} Long Reserve Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                            postSlack(string.Format("{0} Long Reserve Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_long_index, isFibLong), onlyConsole);
                         }
                     }
                     else if (isCondShort && !isGolden && !isBreakTrendTop && !isBBLowLeak)
@@ -4022,16 +4036,16 @@ namespace CryptoBoxer
                         {
                             // SHORT
                             isShort = true;
-                            postSlack(string.Format("{0} Short Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
+                            postSlack(string.Format("{0} Short Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_short_index, isFibShort), onlyConsole);
                         }
                         else
                         if (isBeg /*&& (isCrossedSub || isCrossed)*/)
                         {
                             // SHORT予約
                             isShortReserve = true;
-                            postSlack(string.Format("{0} Short Reserve Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
+                            postSlack(string.Format("{0} Short Reserve Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_short_index, isFibShort), onlyConsole);
                         }
                     }
 
@@ -4047,14 +4061,14 @@ namespace CryptoBoxer
                             //if (isBeg && isBreakTrendTop && (isCrossingSub || isFibLong))
                             {
                                 isLong = true;
-                                postSlack(string.Format("{0} Long(Reserved) Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                    , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                                postSlack(string.Format("{0} Long(Reserved) Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                    , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_long_index, isFibLong), onlyConsole);
                             }
                         }
                         else
                         {
-                            postSlack(string.Format("{0} Cancel Long Reserved Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                            postSlack(string.Format("{0} Cancel Long Reserved Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_long_index, isFibLong), onlyConsole);
                         }
                     }
                     else if (m_position.isShortReserved())
@@ -4066,14 +4080,14 @@ namespace CryptoBoxer
                             //if (isBeg && isBreakTrendBottom && (isCrossingSub || isFibShort))
                             {
                                 isShort = true;
-                                postSlack(string.Format("{0} Short(Reserved) Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                    , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
+                                postSlack(string.Format("{0} Short(Reserved) Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                    , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_short_index, isFibShort), onlyConsole);
                             }
                         }
                         else
                         {
-                            postSlack(string.Format("{0} Cancel Short Reserved Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
+                            postSlack(string.Format("{0} Cancel Short Reserved Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_short_index, isFibShort), onlyConsole);
                         }
                     }
                 }

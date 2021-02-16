@@ -346,22 +346,24 @@ namespace UtilityTrade
         }
 
         // LONGエントリー予約
-		public void reserveLongOrder(Candlestick _reserved_candle)
+		public void reserveLongOrder(Candlestick _reserved_candle, int _fib_idx)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.LONG;
 			reserved_price = _reserved_candle.last;
 			reserved_candle = _reserved_candle;
+            entry_fib_idx = _fib_idx;
             return;
         }
 
         // SHORTエントリー予約
-		public void reserveShortOrder(Candlestick _reserved_candle)
+		public void reserveShortOrder(Candlestick _reserved_candle, int _fib_idx)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.SHORT;
 			reserved_price = _reserved_candle.last;
 			reserved_candle = _reserved_candle;
+            entry_fib_idx = _fib_idx;
             return;
         }
 
