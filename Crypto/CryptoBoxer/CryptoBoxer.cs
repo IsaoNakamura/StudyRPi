@@ -4023,7 +4023,7 @@ namespace CryptoBoxer
                             // SHORT
                             isShort = true;
                             postSlack(string.Format("{0} Short Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
                         }
                         else
                         if (isBeg /*&& (isCrossedSub || isCrossed)*/)
@@ -4031,7 +4031,7 @@ namespace CryptoBoxer
                             // SHORT予約
                             isShortReserve = true;
                             postSlack(string.Format("{0} Short Reserve Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
                         }
                     }
 
@@ -4067,13 +4067,13 @@ namespace CryptoBoxer
                             {
                                 isShort = true;
                                 postSlack(string.Format("{0} Short(Reserved) Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                    , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                                    , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
                             }
                         }
                         else
                         {
                             postSlack(string.Format("{0} Cancel Short Reserved Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9:0.000})={10}"
-                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibLong), onlyConsole);
+                                , curCandle.timestamp, isCondShort, !isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_rate, isFibShort), onlyConsole);
                         }
                     }
                 }
