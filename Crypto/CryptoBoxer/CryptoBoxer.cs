@@ -2036,7 +2036,7 @@ namespace CryptoBoxer
                 }
 
                 //System.Threading.Thread.Sleep(3000);
-                postSlack(string.Format("backtst_hour={0}", resize_backtest_hour), true);
+                postSlack(string.Format("backtst_during={0}[h]={1}[day]", resize_backtest_hour, resize_backtest_hour/24), true);
                 postSlack(string.Format("From={0}", testBegCandle.timestamp), true);
                 postSlack(string.Format("To  ={0}", testEndCandle.timestamp), true);
                 postSlack(string.Format("PROFIT_SUM={0}, LONG={1}, SHORT={2}, LONG_LC={3}, SHORT_LC={4}", m_profitSum, long_entry_cnt, short_entry_cnt, long_lc_cnt, short_lc_cnt), true);
