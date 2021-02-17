@@ -4621,14 +4621,15 @@ namespace CryptoBoxer
                 double profit = m_frontlineShort - curCandle.last;
 
                 double forward_rate = 0.25;// 0.5;
-                double forward_rate2 = 0.75;// 0.72;
+                double forward_rate2 = 0.75;// 0.75// 0.72;
                 
                 double bit_forward_rate = 0.1;
 
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = curCandle.vola_ma * 3.2;//3.2;// m_config.frontline_ahead; // / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = curCandle.vola_ma * 2.8;//3.2
+                //double frontline_ahead = m_config.frontline_ahead * 3.2;
                 //double frontline_ahead = (m_config.frontline_ahead*0.5) + ( (m_config.frontline_ahead*0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
@@ -4876,7 +4877,8 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = m_config.frontline_ahead * 3.2;//3.2;// / Math.Pow(2.0, -m_position.frontline_fwd_num);
+                double frontline_ahead = curCandle.vola_ma * 2.8;//3.2;
+                //double frontline_ahead = m_config.frontline_ahead * 3.2;
                 //double frontline_ahead = (m_config.frontline_ahead * 0.5) + ((m_config.frontline_ahead * 0.5) / Math.Pow(2.0, -m_position.frontline_fwd_num));
                 double frontline_ahead2 = frontline_ahead;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
