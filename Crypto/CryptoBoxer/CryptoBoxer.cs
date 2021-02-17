@@ -3559,6 +3559,7 @@ namespace CryptoBoxer
                 double low_min = 0.0;
                 int high_max_idx = 0;
                 int low_min_idx = 0;
+                double ema_cross_rate = 3.0;
                 if (m_candleBuf.getEMACrossState(
                         out isGolden,
                         out isBeg,
@@ -3570,6 +3571,7 @@ namespace CryptoBoxer
                         out high_max_idx,
                         out low_min,
                         out low_min_idx,
+                        ema_cross_rate,
                         beg_threshold,
                         ema_touch_play)
                    != 0)
@@ -3588,7 +3590,7 @@ namespace CryptoBoxer
                 fib_long_index = fib_index;
                 fib_short_index = fib_index;
 
-                if (m_position.isLong() && m_position.entry_fib_idx!=-1)
+                if (m_position.isLong() && m_position.entry_fib_idx != -1)
                 {
                     fib_long_index = m_position.entry_fib_idx;
                 }
@@ -3627,6 +3629,54 @@ namespace CryptoBoxer
                         }
                     }
                 }
+
+                //double cmp_long = curCandle.last;
+                //if (fib_long > (cmp_long/* + ema_touch_play*/))
+                //{
+                //    for (fib_long_index = fib_index + 1; fib_long_index < 7; fib_long_index++)
+                //    {
+                //        fib_long = high_max - (high_max - low_min) * fib_rates[fib_long_index];
+                //        if (fib_long <= cmp_long)
+                //        {
+                //            break;
+                //        }
+                //    }
+                //}
+                //double cmp_short = curCandle.last;
+                //if (fib_short < (cmp_short/* + ema_touch_play*/))
+                //{
+                //    for (fib_short_index = fib_index + 1; fib_short_index < 7; fib_short_index++)
+                //    {
+                //        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index]);
+                //        if (fib_short >= cmp_short)
+                //        {
+                //            break;
+                //        }
+                //    }
+                //}
+                //if (m_position.isLong() && m_position.entry_fib_idx != -1)
+                //{
+                //    if (fib_long_index > m_position.entry_fib_idx)
+                //    {
+                //        m_position.entry_fib_idx = fib_long_index;
+                //    }
+                //    else if (fib_long_index < m_position.entry_fib_idx)
+                //    {
+                //        fib_long_index = m_position.entry_fib_idx;
+                //    }
+                //}
+                //else if (m_position.isShort() && m_position.entry_fib_idx != -1)
+                //{
+                //    if (fib_short_index > m_position.entry_fib_idx)
+                //    {
+                //        m_position.entry_fib_idx = fib_short_index;
+                //    }
+                //    else if (fib_short_index < m_position.entry_fib_idx)
+                //    {
+                //        fib_short_index = m_position.entry_fib_idx;
+                //    }
+                //}
+
 
                 bool isBBHighLeak = false;
                 if (curCandle.boll_high > curCandle.boll_high_top || curCandle.isTouchBollHighTop())
@@ -3672,7 +3722,7 @@ namespace CryptoBoxer
                             return result;
                         }
 
-                        //if(curCandle.timestamp== "2021/02/01 10:55:00")
+                        //if (curCandle.timestamp == "2021/02/16 17:45:00")
                         //{
                         //    Console.WriteLine("# BigTrendPeakList");
                         //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
@@ -3686,6 +3736,11 @@ namespace CryptoBoxer
                             {
                                 return result;
                             }
+
+                            //if (curCandle.timestamp == "2021/02/16 17:45:00")
+                            //{
+                            //    Console.WriteLine("# BigTrendLine(Top) isBrk={0} from={1} to={2}", isBreakBigTrendTop, fromCandle.timestamp, toCandle.timestamp);
+                            //}
 
                             if (isBreakBigTrendTop)
                             {
@@ -3714,6 +3769,10 @@ namespace CryptoBoxer
                                 return result;
                             }
 
+                            //if (curCandle.timestamp == "2021/02/16 17:45:00")
+                            //{
+                            //    Console.WriteLine("# BigTrendLine(Btm) isBrk={0} from={1} to={2}", isBreakBigTrendBtm, fromCandle.timestamp, toCandle.timestamp);
+                            //}
 
                             if (isBreakBigTrendBtm)
                             {
@@ -3751,11 +3810,6 @@ namespace CryptoBoxer
                             return result;
                         }
 
-                        //if (curCandle.timestamp == "2021/02/01 10:55:00")
-                        //{
-                        //    Console.WriteLine("# SmallTrendPeakList");
-                        //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
-                        //}
 
                         if (peakMinIndexList.Count() > 3 && peakMaxIndexList.Count() > 3)
                         {
@@ -3792,7 +3846,14 @@ namespace CryptoBoxer
                             peakMaxIdxA = peakMaxIndexList[peakMaxIndexList.Count() - 2];
                             peakMaxIdxB = peakMaxIndexList[peakMaxIndexList.Count() - 1];
 
+                            //if (curCandle.timestamp == "2021/02/16 17:45:00")
+                            //{
+                            //    Console.WriteLine("# SmallTrendPeakList");
+                            //    candleBuf.printPeakList(peakMinValueList, peakMaxValueList, peakMinIndexList, peakMaxIndexList, cur_idx, 0);
+                            //}
+
                             DateTime curTime = DateTime.Parse(curCandle.timestamp);
+
 
                             // MIN(BOTTOM) /////////
                             if (peakMinIdxA >= 0)
@@ -3878,6 +3939,20 @@ namespace CryptoBoxer
                                 //isBreakSmallTrendBtm = isBreakZA || isBreakAB;
                                 //isBreakSmallTrendBtm = isBreakAB || (isCFork && isBreakZA);
                                 isBreakSmallTrendBtm = isBreakZA || (isCFork && isBreakAB);
+
+                                //if (curCandle.timestamp == "2021/02/16 17:45:00")
+                                //{
+                                //    Console.WriteLine
+                                //    (
+                                //        "# SmallTrendLine(Btm) Z={0} A={1} B={2} CFork={3} isBreakZA={4} isBreakAB={5}"
+                                //        , peakMinCandleZ.timestamp
+                                //        , peakMinCandleA.timestamp
+                                //        , peakMinCandleB.timestamp
+                                //        , isCFork
+                                //        , isBreakZA
+                                //        , isBreakAB
+                                //    );
+                                //}
 
                                 if (isBreakSmallTrendBtm && isCondLong && isGolden && isBeg && (isFibLong || isCrossingSub))
                                 {
@@ -3974,6 +4049,20 @@ namespace CryptoBoxer
                                 //isBreakSmallTrendTop = isBreakZA || isBreakAB;
                                 //isBreakSmallTrendTop = isBreakAB || (isCFork && isBreakZA);
                                 isBreakSmallTrendTop = isBreakZA || (isCFork && isBreakAB);
+
+                                //if (curCandle.timestamp == "2021/02/16 17:45:00")
+                                //{
+                                //    Console.WriteLine
+                                //    (
+                                //        "# SmallTrendLine(Top) Z={0} A={1} B={2} CFork={3} isBreakZA={4} isBreakAB={5}"
+                                //        , peakMaxCandleZ.timestamp
+                                //        , peakMaxCandleA.timestamp
+                                //        , peakMaxCandleB.timestamp
+                                //        , isCFork
+                                //        , isBreakZA
+                                //        , isBreakAB
+                                //    );
+                                //}
 
                                 if (isBreakSmallTrendTop && isCondShort && !isGolden && isBeg && (isFibShort || isCrossingSub))
                                 {
@@ -4636,7 +4725,7 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                     //    result = false;
                     //}
-					else if (isGolden)
+					else if (isGolden && isBeg)
                     {
                         // EXIT
                         postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -4686,7 +4775,7 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
-                    else if (isGolden)
+                    else if (isGolden && isBeg)
                     {
                         // EXIT
                         postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -4883,7 +4972,7 @@ namespace CryptoBoxer
                     //    result = false;
                     //}
                     else
-                    if (!isGolden)
+                    if (!isGolden && isBeg)
                     {
                         // EXIT
                         postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -4935,7 +5024,7 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
-                    else if (!isGolden)
+                    else if (!isGolden && isBeg)
                     {
                         // EXIT
                         postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);

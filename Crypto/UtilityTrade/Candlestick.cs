@@ -2104,6 +2104,7 @@ namespace UtilityTrade
             out int high_max_idx,
             out double low_min,
             out int low_min_idx,
+            double ema_cross_rate = 5.0,
             double threshold_rate = 0.5,
             double ema_touch_play = 0.0,
 			int cross_over_cnt = 65
@@ -2291,7 +2292,7 @@ namespace UtilityTrade
 
                 if (cur_cross_state != 0)
                 {
-                    if ( max_ema_length < (curCandle.vola_ma * 5.0) )
+                    if ( max_ema_length < (curCandle.vola_ma * ema_cross_rate) )
                     {
                         // 収束中
                         isBeg = false;
