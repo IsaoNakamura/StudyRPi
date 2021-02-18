@@ -72,6 +72,9 @@ namespace UtilityTrade
 
 		public int entry_fib_idx { get; set; }
 
+        public double fib_origin_high { get; set; }
+        public double fib_origin_low { get; set; }
+
         public Position()
         {
             init();
@@ -106,6 +109,9 @@ namespace UtilityTrade
 			reserved_candle = null;
 
 			entry_fib_idx = -1;
+
+            fib_origin_high = double.MaxValue;
+            fib_origin_low = double.MinValue;
 
             return;
         }
@@ -274,7 +280,7 @@ namespace UtilityTrade
 
         // LONGエントリー注文
         // 成行注文に使用する
-        public void entryLongOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx)
+        public void entryLongOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx, double _fib_origin_high)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
@@ -282,12 +288,13 @@ namespace UtilityTrade
             entry_date = _entry_date;
             amount = _amount;
 			entry_fib_idx = _fib_idx;
+            fib_origin_high = _fib_origin_high;
             return;
         }
 
         // SHORTエントリー注文
         // 成行注文に使用する
-		public void entryShortOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx)
+		public void entryShortOrder(string _acceptance_id, string _entry_date, double _amount, int _fib_idx, double _fib_origin_low)
         {
             entry_id = _acceptance_id;
             entry_state = OrderState.ACTIVE;
@@ -295,6 +302,7 @@ namespace UtilityTrade
             entry_date = _entry_date;
             amount = _amount;
 			entry_fib_idx = _fib_idx;
+            fib_origin_low = _fib_origin_low;
             return;
         }
 
@@ -346,24 +354,26 @@ namespace UtilityTrade
         }
 
         // LONGエントリー予約
-		public void reserveLongOrder(Candlestick _reserved_candle, int _fib_idx)
+		public void reserveLongOrder(Candlestick _reserved_candle, int _fib_idx, double _fib_origin_high)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.LONG;
 			reserved_price = _reserved_candle.last;
 			reserved_candle = _reserved_candle;
             entry_fib_idx = _fib_idx;
+            fib_origin_high = _fib_origin_high;
             return;
         }
 
         // SHORTエントリー予約
-		public void reserveShortOrder(Candlestick _reserved_candle, int _fib_idx)
+		public void reserveShortOrder(Candlestick _reserved_candle, int _fib_idx, double _fib_origin_low)
         {
             entry_state = OrderState.RESERVED;
             state = PositionState.SHORT;
 			reserved_price = _reserved_candle.last;
 			reserved_candle = _reserved_candle;
             entry_fib_idx = _fib_idx;
+            fib_origin_low = _fib_origin_low;
             return;
         }
 
@@ -373,6 +383,9 @@ namespace UtilityTrade
             state = PositionState.NONE;
 			reserved_price = 0.0;
 			reserved_candle = null;
+            entry_fib_idx = -1;
+            fib_origin_high = double.MaxValue;
+            fib_origin_low = double.MinValue;
             return;
         }
 
