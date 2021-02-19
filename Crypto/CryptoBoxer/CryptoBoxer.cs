@@ -3636,39 +3636,39 @@ namespace CryptoBoxer
                 }
 
                 //
-                //if (m_position.isLongReserved())
-                //{
-                //    m_position.entry_fib_idx = wrk_fib_short_index;
-                //}
-                //else if (m_position.isShortReserved())
-                //{
-                //    m_position.entry_fib_idx = wrk_fib_long_index;
-                //}
+                if (m_position.isLongReserved())
+                {
+                    m_position.entry_fib_idx = wrk_fib_short_index;
+                }
+                else if (m_position.isShortReserved())
+                {
+                    m_position.entry_fib_idx = wrk_fib_long_index;
+                }
 
-                if (m_position.isLongReserved() && m_position.entry_fib_idx != -1)
-                {
-                    if (m_position.entry_fib_idx > wrk_fib_long_index)
-                    {
-                        fib_long = high_max - (high_max - low_min) * fib_rates[m_position.entry_fib_idx];
-                        wrk_fib_long_index = m_position.entry_fib_idx;
-                    }
-                    else
-                    {
-                        m_position.entry_fib_idx = wrk_fib_long_index;
-                    }
-                }
-                else if (m_position.isShortReserved() && m_position.entry_fib_idx != -1)
-                {
-                    if (m_position.entry_fib_idx > wrk_fib_short_index)
-                    {
-                        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[m_position.entry_fib_idx]);
-                        wrk_fib_short_index = m_position.entry_fib_idx;
-                    }
-                    else
-                    {
-                        m_position.entry_fib_idx = wrk_fib_short_index;
-                    }
-                }
+                //if (m_position.isLongReserved() && m_position.entry_fib_idx != -1)
+                //{
+                //    if (m_position.entry_fib_idx > wrk_fib_long_index)
+                //    {
+                //        fib_long = high_max - (high_max - low_min) * fib_rates[m_position.entry_fib_idx];
+                //        wrk_fib_long_index = m_position.entry_fib_idx;
+                //    }
+                //    else
+                //    {
+                //        m_position.entry_fib_idx = wrk_fib_long_index;
+                //    }
+                //}
+                //else if (m_position.isShortReserved() && m_position.entry_fib_idx != -1)
+                //{
+                //    if (m_position.entry_fib_idx > wrk_fib_short_index)
+                //    {
+                //        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[m_position.entry_fib_idx]);
+                //        wrk_fib_short_index = m_position.entry_fib_idx;
+                //    }
+                //    else
+                //    {
+                //        m_position.entry_fib_idx = wrk_fib_short_index;
+                //    }
+                //}
 
                 fib_long_index = wrk_fib_long_index;
                 fib_short_index = wrk_fib_short_index;
