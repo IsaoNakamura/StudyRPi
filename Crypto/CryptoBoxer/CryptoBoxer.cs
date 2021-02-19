@@ -1771,7 +1771,7 @@ namespace CryptoBoxer
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
 
-                bool isLoadFile = true;
+                bool isLoadFile = false;
                 if ( ohlc == null )
                 {
                     // Cryptowatchから過去のデータを取得できなかった場合はファイルから取得する
@@ -3192,17 +3192,16 @@ namespace CryptoBoxer
                     {
                         if (isLongReserve)
                         {
-                            if (curCandle.disparity_rate >= disparity_border)
-                            {
-								// LONG予約キャンセル
-                                m_position.cancelReserveOrder();
-                                postSlack(string.Format("Cancel Long Reserved. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+        //                    if (curCandle.disparity_rate >= disparity_border)
+        //                    {
+								//// LONG予約キャンセル
+        //                        m_position.cancelReserveOrder();
+        //                        postSlack(string.Format("Cancel Long Reserved. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+        //                        result = -1;
+        //                        return result;
+        //                    }
 
-                                result = -1;
-                                return result;
-                            }
-
-                            if (isLong)
+                            if (isLong && (curCandle.disparity_rate < disparity_border))
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -3243,17 +3242,16 @@ namespace CryptoBoxer
                     {
                         if (isShortReserve)
                         {
-							if (curCandle.disparity_rate <= -disparity_border)
-                            {
-                                // SHORT予約キャンセル
-                                m_position.cancelReserveOrder();
-                                postSlack(string.Format("Cancel Short Reserved. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+							//if (curCandle.disparity_rate <= -disparity_border)
+       //                     {
+       //                         // SHORT予約キャンセル
+       //                         m_position.cancelReserveOrder();
+       //                         postSlack(string.Format("Cancel Short Reserved. DispartyRate is Over. rate={0:0.00}.", curCandle.disparity_rate));
+       //                         result = -1;
+       //                         return result;
+       //                     }
 
-                                result = -1;
-                                return result;
-                            }
-
-                            if (isShort)
+                            if (isShort && (curCandle.disparity_rate > -disparity_border))
                             {
                                 SendChildOrderResponse retObj = null;
                                 int retry_cnt = 0;
@@ -4169,7 +4167,9 @@ namespace CryptoBoxer
                 //        }
                 //    }
                 //}
+
                 const int fib_orign_over_limit = 16;
+                //const double fib_orign_over_rate = 3.0;
                 if (m_position.isNone())
                 {
                     // NONEポジションの場合
@@ -4230,6 +4230,13 @@ namespace CryptoBoxer
                                     isBreakFibOrigin = true;
                                     break;
                                 }
+                                //else if((high_max - m_position.fib_origin_high) > curCandle.vola_ma * fib_orign_over_rate)
+                                //{
+                                //    isBreakFibOrigin = true;
+                                //    break;
+                                //}
+
+
                                 Candlestick candle = m_candleBuf.getCandle(i);
                                 if (candle == null)
                                 {
@@ -4280,6 +4287,12 @@ namespace CryptoBoxer
                                     isBreakFibOrigin = true;
                                     break;
                                 }
+                                //else if ((m_position.fib_origin_low - low_min) > curCandle.vola_ma * fib_orign_over_rate)
+                                //{
+                                //    isBreakFibOrigin = true;
+                                //    break;
+                                //}
+
                                 Candlestick candle = m_candleBuf.getCandle(i);
                                 if (candle == null)
                                 {
