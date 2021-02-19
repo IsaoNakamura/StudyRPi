@@ -541,6 +541,54 @@ namespace UtilityTrade
             return result;
         }
 
+        public bool isUnder(double value, double play = 0.0)
+        {
+            if (value >= (low + play))
+            {
+                return true;
+            }
+
+            if (value >= (open + play))
+            {
+                return true;
+            }
+
+            if (value >= (last + play))
+            {
+                return true;
+            }
+
+            if (value >= (high + play))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool isOver(double value, double play = 0.0)
+        {
+            if (value <= (high-play))
+            {
+                return true;
+            }
+
+            if (value <= (last-play))
+            {
+                return true;
+            }
+
+            if (value <= (open-play))
+            {
+                return true;
+            }
+
+            if (value <= (low-play))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public bool isCross(double value, double play = 0.0)
         {
             if (value >= (low - play) && value <= (high + play))
