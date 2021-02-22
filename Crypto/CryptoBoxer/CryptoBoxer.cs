@@ -3673,7 +3673,7 @@ namespace CryptoBoxer
 
                 //isFibLong = curCandle.isCross(fib_long);
                 isFibLong = curCandle.isUnder(fib_long);//*
-                //if (!isFibLong && fib_long_index>1)
+                //if (!isFibLong && fib_long_index > 1)
                 //{
                 //    double fib_long_fl = high_max - (high_max - low_min) * fib_rates[fib_long_index - 1];
                 //    isFibLong = curCandle.isOver(fib_long_fl);//*
@@ -3690,7 +3690,7 @@ namespace CryptoBoxer
 
                 //isFibShort = curCandle.isCross(fib_short);
                 isFibShort = curCandle.isOver(fib_short);//*
-                //if(!isFibShort && fib_short_index>1)
+                //if (!isFibShort && fib_short_index > 1)
                 //{
                 //    double fib_short_fl = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index - 1]);
                 //    isFibShort = curCandle.isUnder(fib_short_fl);//*
@@ -4903,13 +4903,15 @@ namespace CryptoBoxer
                     else if (fib_fwd > curCandle.low)
                     {
                         // 最前線を前進
-                        double forward = Math.Round(profit * bit_forward_rate);
+                        double forward = curCandle.vola_ma * 1.0; //Math.Round(profit * bit_forward_rate);
                         m_frontlineShort = m_frontlineShort - forward;
                         // SHORT継続
                         postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineShort, forward), onlyConsole);
                         result = false;
                     }
-                    else if (isGolden && isBeg)
+                    else
+                    if (isGolden && isBeg)
+                    //if (isGolden)
                     {
                         // EXIT
                         postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -4928,7 +4930,6 @@ namespace CryptoBoxer
                     //{
                     //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
                     //    result = true;
-
                     //    // 最前線を後退
                     //    m_frontlineShort = curCandle.last;
                     //}
@@ -4966,6 +4967,7 @@ namespace CryptoBoxer
                     }
                     else
                     if (isGolden && isBeg)
+                    //if (isGolden)
                     {
                         // EXIT
                         postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -4974,6 +4976,13 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
+                    //else if (!isGolden && !isBeg)
+                    //{
+                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    result = true;
+                    //    // 最前線を後退
+                    //    m_frontlineShort = curCandle.last;
+                    //}
                     else
                     if (fib_exit < curCandle.last)
                     {
@@ -5002,7 +5011,8 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                     //    result = false;
                     //}
-                    else if (profit >= frontline_ahead2 && ( ( m_position.fib_origin_low + curCandle.vola_ma * 0.0) > curCandle.high) )
+                    else if (profit >= frontline_ahead2 && ( m_position.fib_origin_low > curCandle.high) )
+                    //else if (profit >= frontline_ahead2*3.5 || (profit >= frontline_ahead2 && (m_position.fib_origin_low) > curCandle.high))
                     //else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
@@ -5197,7 +5207,7 @@ namespace CryptoBoxer
                     else if (fib_fwd < curCandle.high)
                     {
                         // 最前線を前進
-                        double forward = Math.Round(profit * bit_forward_rate);
+                        double forward = curCandle.vola_ma * 1.0;// Math.Round(profit * bit_forward_rate);
                         m_frontlineLong = m_frontlineLong + forward;
                         // LONG継続
                         postSlack(string.Format("## front-line is bit-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0}", curCandle.last, profit, m_frontlineLong, forward), onlyConsole);
@@ -5205,6 +5215,7 @@ namespace CryptoBoxer
                     }
                     else
                     if (!isGolden && isBeg)
+                    //if (!isGolden)
                     {
                         // EXIT
                         postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -5218,7 +5229,6 @@ namespace CryptoBoxer
                     //    // EXIT
                     //    postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
                     //    result = true;
-
                     //    // 最前線を後退
                     //    m_frontlineLong = curCandle.last;
                     //}
@@ -5263,6 +5273,7 @@ namespace CryptoBoxer
                     }
                     else
                     if (!isGolden && isBeg)
+                    //if (!isGolden)
                     {
                         // EXIT
                         postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
@@ -5271,6 +5282,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
+                    //else if (isGolden && !isBeg)
+                    //{
+                    //    // EXIT
+                    //    postSlack(string.Format("## golden-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    result = true;
+                    //    // 最前線を後退
+                    //    m_frontlineLong = curCandle.last;
+                    //}
                     else
                     if (fib_exit > curCandle.last)
                     {
@@ -5300,7 +5319,8 @@ namespace CryptoBoxer
                     //    postSlack(string.Format("## front-line is force-forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
                     //    result = false;
                     //}
-                    else if (profit >= frontline_ahead2 && ( (m_position.fib_origin_high - curCandle.vola_ma * 0.0) < curCandle.low))
+                    else if (profit >= frontline_ahead2 && (m_position.fib_origin_high < curCandle.low))
+                    //else if (profit >= frontline_ahead2*3.5 || (profit >= frontline_ahead2 && m_position.fib_origin_high < curCandle.low))
                     //else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
