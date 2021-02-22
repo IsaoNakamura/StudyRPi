@@ -4563,7 +4563,7 @@ namespace CryptoBoxer
 
                 //}            
 
-                double threshold = curCandle.vola_ma * 1.0;//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
+                double threshold = curCandle.vola_ma * 3.0;//(Math.Abs(m_config.losscut_value) + curCandle.vola_ma)*1.1;
                 //const int past_num = 23;
 
                 //// フロントライン付近でウロウロしてる
@@ -4579,11 +4579,11 @@ namespace CryptoBoxer
                     // 現在値がフロントラインより後方
 
                     //postSlack(string.Format("!! UP-BREAK(Short) !!. pos={0:0} up_cnt={1}", position, m_upBreakCnt), true);    
-                    if (Math.Abs(position) > threshold)
+                    if (Math.Abs(position) > threshold && !m_position.isShort())
                     {
                         // フロントラインを後退させる
                         m_frontlineShort -= (position * 0.5);
-                        //postSlack(string.Format("** renewal Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), true);
+                        postSlack(string.Format("** renewal Short-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineShort + threshold, m_frontlineShort - threshold), onlyConsole);
                     }
 
                     //result = false;
@@ -4689,11 +4689,11 @@ namespace CryptoBoxer
                     // 現在値がフロントラインより後方
                     //postSlack(string.Format("!! DOWN-BREAK(Long) !!. pos={0:0}", position), true);
 
-                    if (Math.Abs(position) > threshold)
+                    if (Math.Abs(position) > threshold && !m_position.isLong())
                     {
                         // フロントラインを後退させる
                         m_frontlineLong += (position * 0.5);
-                        //postSlack(string.Format("** renewal Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), true);
+                        postSlack(string.Format("** renewal Long-front-line **. pos={0:0} delta={1:0} top={2:0} dwn={3:0}", position, threshold, m_frontlineLong + threshold, m_frontlineLong - threshold), onlyConsole);
 
                     }
 					//Console.WriteLine("isConditionLongEntryFL false4");
@@ -4702,7 +4702,7 @@ namespace CryptoBoxer
                 }
                 else
                 {
-                    // 現在値がフロントラインより上
+                    // 現在値がフロントラインより前方
 
       //              if (Math.Abs(position) <= threshold)
       //              {
