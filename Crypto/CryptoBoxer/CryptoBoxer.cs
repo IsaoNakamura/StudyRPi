@@ -4914,9 +4914,17 @@ namespace CryptoBoxer
                     //if (isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
                         result = true;
 
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
+                    else if ( (m_position.fib_origin_low > m_position.entry_price) && (m_position.fib_origin_low < curCandle.low) )
+                    {
+                        postSlack(string.Format("## fib_origin_low is break ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0}", curCandle.last, profit, m_frontlineShort, m_position.fib_origin_low), onlyConsole);
+
+                        result = true;
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
@@ -4928,7 +4936,7 @@ namespace CryptoBoxer
                     //}
                     //else if (!isGolden && !isBeg)
                     //{
-                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineShort, back_cnt), onlyConsole);
                     //    result = true;
                     //    // 最前線を後退
                     //    m_frontlineShort = curCandle.last;
@@ -4970,7 +4978,7 @@ namespace CryptoBoxer
                     //if (isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
                         result = true;
 
                         // 最前線を後退
@@ -4978,7 +4986,7 @@ namespace CryptoBoxer
                     }
                     //else if (!isGolden && !isBeg)
                     //{
-                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineShort, back_cnt), onlyConsole);
                     //    result = true;
                     //    // 最前線を後退
                     //    m_frontlineShort = curCandle.last;
@@ -4993,9 +5001,17 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
+                    else if ((m_position.fib_origin_low > m_position.entry_price) && (m_position.fib_origin_low < curCandle.low))
+                    {
+                        postSlack(string.Format("## fib_origin_low is break ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0}", curCandle.last, profit, m_frontlineShort, m_position.fib_origin_low), onlyConsole);
+
+                        result = true;
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
                     //else if (!isGolden && !isBeg)
                     //{
-                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineLong, back_cnt), onlyConsole);
+                    //    postSlack(string.Format("## dead-cross is about to end ##. last={0:0} pos={1:0} front={2:0} bkCnt={3}", curCandle.last, profit, m_frontlineShort, back_cnt), onlyConsole);
                     //    result = true;
 
                     //    // 最前線を後退
@@ -5016,11 +5032,20 @@ namespace CryptoBoxer
                     //else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate2);
-                        m_frontlineShort = m_frontlineShort - forward;
+                        //if (m_position.frontline_fwd_num > 1)
+                        {
+                            double forward = Math.Round(profit * forward_rate2);
+                            m_frontlineShort = m_frontlineShort - forward;
+                            postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate2, frontline_ahead2), onlyConsole);
+
+                        }
+                        //else
+                        //{
+                        //    m_frontlineShort = m_position.fib_origin_low + curCandle.vola_ma * 1.0;
+                        //    postSlack(string.Format("## front-line is forward(fib_org) ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, m_position.fib_origin_low, forward_rate2, frontline_ahead2), onlyConsole);
+                        //}
                         m_position.frontline_fwd_num++;
                         // SHORT継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         result = false;
                     }
                     //else if (high_max <= curCandle.high)
@@ -5224,6 +5249,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
+                    else if ((m_position.fib_origin_high < m_position.entry_price) && (m_position.fib_origin_high > curCandle.high))
+                    {
+                        postSlack(string.Format("## fib_origin_high is break ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0}", curCandle.last, profit, m_frontlineLong, m_position.fib_origin_high), onlyConsole);
+
+                        result = true;
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
                     //else if (isGolden && !isBeg)
                     //{
                     //    // EXIT
@@ -5300,6 +5333,14 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
+                    else if ((m_position.fib_origin_high < m_position.entry_price) && (m_position.fib_origin_high > curCandle.high))
+                    {
+                        postSlack(string.Format("## fib_origin_high is break ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0}", curCandle.last, profit, m_frontlineLong, m_position.fib_origin_high), onlyConsole);
+
+                        result = true;
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
                     //else if (isGolden && !isBeg)
                     //{
                     //    // EXIT
@@ -5324,11 +5365,20 @@ namespace CryptoBoxer
                     //else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
-                        double forward = Math.Round(profit * forward_rate2);
-                        m_frontlineLong = m_frontlineLong + forward;
+                        //if (m_position.frontline_fwd_num > 1)
+                        {
+                            double forward = Math.Round(profit * forward_rate2);
+                            m_frontlineLong = m_frontlineLong + forward;
+                            postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate2, frontline_ahead2), onlyConsole);
+                        }
+                        //else
+                        //{
+                        //    m_frontlineLong = m_position.fib_origin_high - curCandle.vola_ma * 1.0;
+                        //    postSlack(string.Format("## front-line is forward(fib_org) ##. last={0:0} pos={1:0} front={2:0} fib_org={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, m_position.fib_origin_high, forward_rate2, frontline_ahead2), onlyConsole);
+                        //}
+
                         m_position.frontline_fwd_num++;
                         // LONG継続
-                        postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         result = false;
                     }
                     //else if (low_min >= curCandle.low)
