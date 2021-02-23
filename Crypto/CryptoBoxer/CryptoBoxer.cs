@@ -4874,18 +4874,17 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    else if (fib_fwd > curCandle.low)
-                    {
-                        // 最前線を前進
-                        //double forward = curCandle.vola_ma * bit_forward_rate; //Math.Round(profit * bit_forward_rate);
-                        //m_frontlineShort = m_frontlineShort - forward;
-                        m_frontlineShort = fib_fwd + curCandle.vola_ma * 1.0;
-                        // SHORT継続
-                        postSlack(string.Format("## front-line is fib-forward ##. last={0:0} pos={1:0} front={2:0} fib_fwd={3:0}", curCandle.last, profit, m_frontlineShort, fib_fwd), onlyConsole);
-                        result = false;
-                    }
-                    //else
-                    //if (fib_exit < curCandle.last)
+                    //else if (fib_fwd > curCandle.low)
+                    //{
+                    //    // 最前線を前進
+                    //    //double forward = curCandle.vola_ma * bit_forward_rate; //Math.Round(profit * bit_forward_rate);
+                    //    //m_frontlineShort = m_frontlineShort - forward;
+                    //    m_frontlineShort = fib_fwd + curCandle.vola_ma * 1.0;
+                    //    // SHORT継続
+                    //    postSlack(string.Format("## front-line is fib-forward ##. last={0:0} pos={1:0} front={2:0} fib_fwd={3:0}", curCandle.last, profit, m_frontlineShort, fib_fwd), onlyConsole);
+                    //    result = false;
+                    //}
+                    //else if (fib_exit < curCandle.last)
                     //{
                     //    // EXIT
                     //    postSlack(string.Format("## over fib-exit ##. last={0:0} pos={1:0} fib_exit={2:0}", curCandle.last, profit, fib_exit), onlyConsole);
@@ -5196,17 +5195,16 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    //else if (profit >= (frontline_ahead * bit_forward_rate))
-                    else if (fib_fwd < curCandle.high)
-                    {
-                        // 最前線を前進
-                        //double forward = curCandle.vola_ma * bit_forward_rate;// Math.Round(profit * bit_forward_rate);
-                        //m_frontlineLong = m_frontlineLong + forward;
-                        m_frontlineLong = fib_fwd - curCandle.vola_ma * 1.0;
-                        // LONG継続
-                        postSlack(string.Format("## front-line is fib-forward ##. last={0:0} pos={1:0} front={2:0} fib_fwd={3:0}", curCandle.last, profit, m_frontlineLong, fib_fwd), onlyConsole);
-                        result = false;
-                    }
+                    //else if (fib_fwd < curCandle.high)
+                    //{
+                    //    // 最前線を前進
+                    //    //double forward = curCandle.vola_ma * bit_forward_rate;// Math.Round(profit * bit_forward_rate);
+                    //    //m_frontlineLong = m_frontlineLong + forward;
+                    //    m_frontlineLong = fib_fwd - curCandle.vola_ma * 1.0;
+                    //    // LONG継続
+                    //    postSlack(string.Format("## front-line is fib-forward ##. last={0:0} pos={1:0} front={2:0} fib_fwd={3:0}", curCandle.last, profit, m_frontlineLong, fib_fwd), onlyConsole);
+                    //    result = false;
+                    //}
                     //else if (fib_exit > curCandle.last)
                     //{
                     //    // EXIT
