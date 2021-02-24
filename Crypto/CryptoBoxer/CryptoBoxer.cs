@@ -1771,7 +1771,7 @@ namespace CryptoBoxer
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
 
-                bool isLoadFile = false;
+                bool isLoadFile = true;
                 if ( ohlc == null )
                 {
                     // Cryptowatchから過去のデータを取得できなかった場合はファイルから取得する
@@ -4930,7 +4930,7 @@ namespace CryptoBoxer
                         m_frontlineShort = curCandle.last;
                     }
                     //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub < curCandle.low )
-                    else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index || fib_entry_index >= fib_limit_index))
+                    else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index || fib_entry_index >= fib_limit_index) && (profit < curCandle.vola_ma * -10.0) )
                     //else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index) )
                     {
                         // EXIT
@@ -5293,7 +5293,7 @@ namespace CryptoBoxer
                         m_frontlineLong = curCandle.last;
                     }
                     //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub > curCandle.high )
-                    else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index || fib_entry_index >= fib_limit_index))
+                    else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index || fib_entry_index >= fib_limit_index) && (profit < curCandle.vola_ma * -10.0))
                     //else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index) )
                     {
                         // EXIT
