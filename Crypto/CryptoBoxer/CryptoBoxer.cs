@@ -3672,7 +3672,7 @@ namespace CryptoBoxer
                 fib_short_index = wrk_fib_short_index;
 
                 //isFibLong = curCandle.isCross(fib_long);
-                isFibLong = curCandle.isUnder(fib_long) && (fib_long_index<=3);//*
+                isFibLong = curCandle.isUnder(fib_long) && (fib_long_index <= 3);//*
                 //if (!isFibLong && fib_long_index > 1)
                 //{
                 //    double fib_long_fl = high_max - (high_max - low_min) * fib_rates[fib_long_index - 1];
@@ -4929,12 +4929,16 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
-                    //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub < curCandle.low )
-                    else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index || fib_entry_index >= fib_limit_index) && (profit < curCandle.vola_ma * -10.0) )
-                    //else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index) )
+                    else if
+                    (
+                        (fib_cur_short_index - fib_entry_index) >= fib_diff_limit
+                        && (fib_cur_short_index >= fib_limit_index)
+                        && (profit < curCandle.vola_ma * -13.0)
+                        && (curCandle.ema_sub < curCandle.low)
+                    )
                     {
                         // EXIT
-                        postSlack(string.Format("## fib-cur break  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineShort, fib_cur_short_index), onlyConsole);
+                        postSlack(string.Format("## fib-cur is break  ##. last={0:0} pos={1:0} fib_entry={2} fib_cur={3}", curCandle.last, profit, fib_entry_index, fib_cur_short_index), onlyConsole);
                         result = true;
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
@@ -5292,9 +5296,13 @@ namespace CryptoBoxer
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
-                    //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub > curCandle.high )
-                    else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index || fib_entry_index >= fib_limit_index) && (profit < curCandle.vola_ma * -10.0))
-                    //else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index) )
+                    else if
+                    (
+                        (fib_cur_long_index - fib_entry_index) >= fib_diff_limit
+                        && (fib_cur_long_index >= fib_limit_index)
+                        && (profit < curCandle.vola_ma * -13.0)
+                        && (curCandle.ema_sub > curCandle.high)
+                    )
                     {
                         // EXIT
                         postSlack(string.Format("## fib-cur is break  ##. last={0:0} pos={1:0} fib_entry={2} fib_cur={3}", curCandle.last, profit, fib_entry_index, fib_cur_long_index), onlyConsole);
