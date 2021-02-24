@@ -1771,7 +1771,7 @@ namespace CryptoBoxer
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
 
-                bool isLoadFile = true;
+                bool isLoadFile = false;
                 if ( ohlc == null )
                 {
                     // Cryptowatchから過去のデータを取得できなかった場合はファイルから取得する
@@ -4780,8 +4780,9 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = curCandle.vola_ma * 2.8;
-                double frontline_ahead2 = curCandle.vola_ma * 2.8;
+                const double frontline_ahead_rate = 3.1;//3.3;
+                double frontline_ahead = curCandle.vola_ma * frontline_ahead_rate*1.0;//3.2;
+                double frontline_ahead2 = curCandle.vola_ma * frontline_ahead_rate*1.0;// * 2.0;
 
                 bool isGolden = false;
                 bool isBeg = false;
@@ -5025,6 +5026,7 @@ namespace CryptoBoxer
                             // fib原点をまだ突破していない
                             double rate = forward_rate;
                             double forward = Math.Round(frontline_ahead2 * rate);
+                            //double forward = Math.Round(profit * rate);
                             m_frontlineShort = m_frontlineShort - forward;
                             postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, rate, frontline_ahead2), onlyConsole);
                         }
@@ -5098,8 +5100,9 @@ namespace CryptoBoxer
                 //double frontline_ahead_force = 9000.0;
                 //double forward_rate_force = 0.7;
 
-                double frontline_ahead = curCandle.vola_ma * 2.8;//3.2;
-                double frontline_ahead2 = curCandle.vola_ma * 2.8;// * 2.0;
+                const double frontline_ahead_rate = 3.3;//3.3;
+                double frontline_ahead = curCandle.vola_ma * frontline_ahead_rate*1.0;//3.2;
+                double frontline_ahead2 = curCandle.vola_ma * frontline_ahead_rate*1.0;// * 2.0;
                 //if (m_position.frontline_fwd_num <= 0)
                 //{
                 //    frontline_ahead2 = frontline_ahead;
@@ -5351,6 +5354,7 @@ namespace CryptoBoxer
                             // fib原点をまだ突破していない
                             double rate = forward_rate;
                             double forward = Math.Round(frontline_ahead2 * rate);
+                            //double forward = Math.Round(profit * rate);
                             m_frontlineLong = m_frontlineLong + forward;
                             postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, rate, frontline_ahead2), onlyConsole);
                         }
