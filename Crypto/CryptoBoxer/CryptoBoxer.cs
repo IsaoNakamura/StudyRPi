@@ -3672,7 +3672,7 @@ namespace CryptoBoxer
                 fib_short_index = wrk_fib_short_index;
 
                 //isFibLong = curCandle.isCross(fib_long);
-                isFibLong = curCandle.isUnder(fib_long);//*
+                isFibLong = curCandle.isUnder(fib_long) && (fib_long_index<=3);//*
                 //if (!isFibLong && fib_long_index > 1)
                 //{
                 //    double fib_long_fl = high_max - (high_max - low_min) * fib_rates[fib_long_index - 1];
@@ -3689,7 +3689,7 @@ namespace CryptoBoxer
                 //}
 
                 //isFibShort = curCandle.isCross(fib_short);
-                isFibShort = curCandle.isOver(fib_short);//*
+                isFibShort = curCandle.isOver(fib_short) && (fib_short_index <= 3);//*
                 //if (!isFibShort && fib_short_index > 1)
                 //{
                 //    double fib_short_fl = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_short_index - 1]);
@@ -4815,21 +4815,48 @@ namespace CryptoBoxer
                 }
                 
 				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
-				double fib_exit = m_position.entry_price + 400.0;
+
+                //
+                int fib_entry_index = 1;
+                double fib_rate = fib_rates[fib_entry_index];
+                double fib_short = high_max - (high_max - low_min) * (1.0 - fib_rate);
+
+                if (m_position.entry_fib_idx >= 0)
+                {
+                    fib_entry_index = m_position.entry_fib_idx;
+                }
+                const int fib_limit_index = 4;
+                const int fib_diff_limit = 2;
+                // 現在値に応じたfib_short_indexとfib_shortを算出
+                int fib_cur_short_index = fib_entry_index;
+                double cmp_short = curCandle.last;
+                if (fib_short < (cmp_short))
+                {
+                    for (fib_cur_short_index = fib_entry_index + 1; fib_cur_short_index < 7; fib_cur_short_index++)
+                    {
+                        fib_short = high_max - (high_max - low_min) * (1.0 - fib_rates[fib_cur_short_index]);
+                        if (fib_short >= cmp_short)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                double fib_exit = m_position.entry_price + 400.0;
                 const int fib_offset = 2;
                 if (m_position.entry_fib_idx >= 0)
 				{
-					int fib_index = m_position.entry_fib_idx;
-					if( (fib_index + fib_offset) <= 6 )
+					int fib_exit_index = m_position.entry_fib_idx;
+					if( (fib_exit_index + fib_offset) <= 6 )
 					{
-						fib_index += fib_offset;
+						fib_exit_index += fib_offset;
 					}
                     else
                     {
-                        fib_index = 6;
+                        fib_exit_index = 6;
                     }
-                    double fib_rate = fib_rates[fib_index];
-                    fib_exit = high_max - (high_max - low_min) * (1.0 - fib_rate) + 400.0;
+                    double fib_exit_rate = fib_rates[fib_exit_index];
+                    fib_exit = high_max - (high_max - low_min) * (1.0 - fib_exit_rate) + 400.0;
 				}
                 double fib_fwd = m_position.entry_price;
                 if (m_position.entry_fib_idx >= 0)
@@ -4894,12 +4921,21 @@ namespace CryptoBoxer
                     //    m_frontlineShort = curCandle.last;
                     //}
                     else if (isGolden && isBeg)
-                    //if (isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineShort, fib_cur_short_index), onlyConsole);
                         result = true;
 
+                        // 最前線を後退
+                        m_frontlineShort = curCandle.last;
+                    }
+                    //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub < curCandle.low )
+                    else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index || fib_entry_index >= fib_limit_index))
+                    //else if ((fib_cur_short_index - fib_entry_index) >= fib_diff_limit && (fib_cur_short_index >= fib_limit_index) )
+                    {
+                        // EXIT
+                        postSlack(string.Format("## fib-cur break  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineShort, fib_cur_short_index), onlyConsole);
+                        result = true;
                         // 最前線を後退
                         m_frontlineShort = curCandle.last;
                     }
@@ -4960,7 +4996,9 @@ namespace CryptoBoxer
                     //if (isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
+                        postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineShort, fib_cur_short_index), onlyConsole);
+
+                        //postSlack(string.Format("## golden-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineShort), onlyConsole);
                         result = true;
 
                         // 最前線を後退
@@ -5138,22 +5176,50 @@ namespace CryptoBoxer
                     return result;
                 }
 
-				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };            
-				double fib_exit = m_position.entry_price - 400.0;
+				double[] fib_rates = { 0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1 };
+
+                int fib_entry_index = 1;
+                double fib_rate = fib_rates[fib_entry_index];
+                double fib_long = high_max - (high_max - low_min) * fib_rate;
+
+                if(m_position.entry_fib_idx>=0)
+                {
+                    fib_entry_index = m_position.entry_fib_idx;
+                }
+                const int fib_limit_index = 4;
+                const int fib_diff_limit = 2;
+                // 現在値に応じたfib_long_indexとfib_longを算出
+                int fib_cur_long_index = fib_entry_index;
+                double cmp_long = curCandle.last;
+                if (fib_long > cmp_long)
+                {
+                    for (fib_cur_long_index = fib_entry_index + 1; fib_cur_long_index < fib_rates.Length; fib_cur_long_index++)
+                    {
+                        fib_long = high_max - (high_max - low_min) * fib_rates[fib_cur_long_index];
+                        if (fib_long <= cmp_long)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                
+
+                double fib_exit = m_position.entry_price;
                 if (m_position.entry_fib_idx >= 0)
                 {
-                    int fib_index = m_position.entry_fib_idx;
-                    const int fib_offset = 2;
-                    if ((fib_index + fib_offset) <= 6)
+                    int fib_exit_index = m_position.entry_fib_idx;
+                    const int fib_exit_offset = 2;
+                    if ((fib_exit_index + fib_exit_offset) < fib_rates.Length)
                     {
-                        fib_index += fib_offset;
+                        fib_exit_index += fib_exit_offset;
                     }
                     else
                     {
-                        fib_index = 6;
+                        fib_exit_index = fib_rates.Length-1;
                     }
-                    double fib_rate = fib_rates[fib_index];
-                    fib_exit = high_max - (high_max - low_min) * fib_rate - 400.0;
+                    double fib_exit_rate = fib_rates[fib_exit_index];
+                    fib_exit = high_max - (high_max - low_min) * fib_exit_rate;
                 }
                 double fib_fwd = m_position.entry_price;
                 if (m_position.entry_fib_idx >= 0)
@@ -5218,12 +5284,21 @@ namespace CryptoBoxer
                     //    m_frontlineLong = curCandle.last;
                     //}
                     else if (!isGolden && isBeg)
-                    //if (!isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineLong, fib_cur_long_index), onlyConsole);
                         result = true;
 
+                        // 最前線を後退
+                        m_frontlineLong = curCandle.last;
+                    }
+                    //else if ( (fib_cur_long_index - fib_entry_index) >= fib_diff_limit || curCandle.ema_sub > curCandle.high )
+                    else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index || fib_entry_index >= fib_limit_index))
+                    //else if ((fib_cur_long_index - fib_entry_index) >= fib_diff_limit && (fib_cur_long_index >= fib_limit_index) )
+                    {
+                        // EXIT
+                        postSlack(string.Format("## fib-cur is break  ##. last={0:0} pos={1:0} fib_entry={2} fib_cur={3}", curCandle.last, profit, fib_entry_index, fib_cur_long_index), onlyConsole);
+                        result = true;
                         // 最前線を後退
                         m_frontlineLong = curCandle.last;
                     }
@@ -5286,7 +5361,8 @@ namespace CryptoBoxer
                     //if (!isGolden)
                     {
                         // EXIT
-                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        //postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0}", curCandle.last, profit, m_frontlineLong), onlyConsole);
+                        postSlack(string.Format("## dead-cross occurred  ##. last={0:0} pos={1:0} front={2:0} fib_cur={3}", curCandle.last, profit, m_frontlineLong, fib_cur_long_index), onlyConsole);
                         result = true;
 
                         // 最前線を後退
