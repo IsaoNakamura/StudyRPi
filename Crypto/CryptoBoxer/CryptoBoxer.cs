@@ -4842,21 +4842,21 @@ namespace CryptoBoxer
                     }
                 }
 
-                double fib_exit = m_position.entry_price + 400.0;
+                double fib_exit = m_position.entry_price;
                 const int fib_offset = 2;
                 if (m_position.entry_fib_idx >= 0)
 				{
 					int fib_exit_index = m_position.entry_fib_idx;
-					if( (fib_exit_index + fib_offset) <= 6 )
+					if( (fib_exit_index + fib_offset) < fib_rates.Length)
 					{
 						fib_exit_index += fib_offset;
 					}
                     else
                     {
-                        fib_exit_index = 6;
+                        fib_exit_index = fib_rates.Length-1;
                     }
                     double fib_exit_rate = fib_rates[fib_exit_index];
-                    fib_exit = high_max - (high_max - low_min) * (1.0 - fib_exit_rate) + 400.0;
+                    fib_exit = high_max - (high_max - low_min) * (1.0 - fib_exit_rate);
 				}
                 double fib_fwd = m_position.entry_price;
                 if (m_position.entry_fib_idx >= 0)
