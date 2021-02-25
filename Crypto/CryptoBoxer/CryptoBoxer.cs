@@ -845,7 +845,8 @@ namespace CryptoBoxer
 
                 for (int i = 0; i < candle_addnum; i++)
                 {
-                    Candlestick candle = pastCandleBuf.addCandle(lastCandle.high, lastCandle.low, lastCandle.open, lastCandle.last, lastCandle.volume, lastCandle.timestamp.ToString(), periods, false);
+                    DateTime add_timestamp = last_timestamp.AddMinutes(i + 1);
+                    Candlestick candle = pastCandleBuf.addCandle(lastCandle.high, lastCandle.low, lastCandle.open, lastCandle.last, lastCandle.volume, add_timestamp.ToString(), periods, false);
                     if (candle == null)
                     {
                         Console.WriteLine("failed to addCandle.");
