@@ -648,7 +648,8 @@ namespace CryptoBoxer
             CandleBuffer testCandleBuf,
             string filePath,
             int periods,
-            bool isCalcIndicator = true)
+            bool isCalcIndicator = true
+        )
         {
             int result = 0;
             try
@@ -757,6 +758,117 @@ namespace CryptoBoxer
             }
             return result;
         }
+
+        private int applyCandlestick
+        (
+            CandleBuffer pastCandleBuf,
+            string filePath,
+            int periods,
+            bool isCalcIndicator = true
+        )
+        {
+            int result = 0;
+            try
+            {
+                if (pastCandleBuf == null)
+                {
+                    result = -1;
+                    return result;
+                }
+
+                IEnumerable<string> strLines = File.ReadLines(filePath);
+                string lastLine = strLines.Last();
+                string[] lastCandleFactor = lastLine.Split(',');
+                DateTime last_timestamp = DateTime.Parse(lastCandleFactor[0]);
+                DateTime now_timestamp = DateTime.Now;
+                TimeSpan span = now_timestamp - last_timestamp;
+                double elapsed_min = span.TotalMinutes;
+                int candle_addnum = (int)elapsed_min;
+
+                foreach (string strLine in strLines)
+                {
+                    //Console.WriteLine(strLine);
+                    // 2020 / 12 / 25 15:58:00, open = 2520182, close = 2520111, high = 2521558, low = 2519825, ema = 0
+                    string[] candleFactor = strLine.Split(',');
+
+                    DateTime timestamp = DateTime.Parse(candleFactor[0]);
+                    double openPrice = double.Parse(candleFactor[1].Split('=')[1]);
+                    double closePrice = double.Parse(candleFactor[2].Split('=')[1]);
+                    double highPrice = double.Parse(candleFactor[3].Split('=')[1]);
+                    double lowPrice = double.Parse(candleFactor[4].Split('=')[1]);
+                    double volume = 0.0;
+
+
+                    if (closePrice <= Double.Epsilon)
+                    {
+                        Candlestick prevCandle = pastCandleBuf.getLastCandle();
+                        if (prevCandle == null)
+                        {
+                            Console.WriteLine("cur's candle-value 0. and prev's candle is null. timestamp=", timestamp);
+                            result = -1;
+                            return result;
+                        }
+                        closePrice = prevCandle.last;
+                        openPrice = prevCandle.open;
+                        highPrice = prevCandle.high;
+                        lowPrice = prevCandle.low;
+                    }
+
+                    // Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
+                    //  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
+                    //  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
+                    // Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
+
+
+                    Candlestick candle = pastCandleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, volume, timestamp.ToString(), periods, false);
+                    if (candle == null)
+                    {
+                        Console.WriteLine("failed to addCandle.");
+                        continue;
+                    }
+                    candle.volume = 0;
+
+                    if (isCalcIndicator)
+                    {
+                        calcIndicator(pastCandleBuf, ref candle);
+                        //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                    }
+                    //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                }
+
+                Candlestick lastCandle = pastCandleBuf.getLastCandle();
+                if (lastCandle == null)
+                {
+                    result = -1;
+                    return result;
+                }
+                for (int i = 0; i < candle_addnum; i++)
+                {
+                    Candlestick candle = pastCandleBuf.addCandle(lastCandle.high, lastCandle.low, lastCandle.open, lastCandle.last, lastCandle.volume, lastCandle.timestamp.ToString(), periods, false);
+                    if (candle == null)
+                    {
+                        Console.WriteLine("failed to addCandle.");
+                        continue;
+                    }
+                    candle.volume = 0;
+
+                    if (isCalcIndicator)
+                    {
+                        calcIndicator(pastCandleBuf, ref candle);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
 
         private int repairCandlestick(CandleBuffer candleBuf, ref BitflyerOhlc ohlc, int periods, int begIdx, int count)
         {
@@ -1256,7 +1368,13 @@ namespace CryptoBoxer
                     {
                         Console.WriteLine("failed to applyCandlestick()");
                         System.Threading.Thread.Sleep(60000);
-                        //return;
+
+                        if (applyCandlestick(m_candleBuf, @"./btcfx_candle_1min_ex.txt", m_config.periods, true) != 0)
+                        {
+                            Console.WriteLine("failed to applyCandlestick(1min_ex)");
+                            return;
+                        }
+                        break;
                     }
                     else
                     {
@@ -1268,8 +1386,13 @@ namespace CryptoBoxer
                 BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
                 if (applyCandlestick(m_candleBufTop, ohlc_top, m_config.periods_top, false) != 0)
                 {
-                    Console.WriteLine("failed to applyCandlestick()");
-                    return;
+                    //Console.WriteLine("failed to applyCandlestick()");
+                    //return;
+                    if (applyCandlestick(m_candleBuf, @"./btcfx_candle_5min_ex.txt", m_config.periods_top, false) != 0)
+                    {
+                        Console.WriteLine("failed to applyCandlestick(5min_ex)");
+                        return;
+                    }
                 }
 
                 // CandleStick更新用
