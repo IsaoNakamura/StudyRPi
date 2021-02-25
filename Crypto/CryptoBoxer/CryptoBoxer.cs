@@ -1771,7 +1771,7 @@ namespace CryptoBoxer
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
 
-                bool isLoadFile = true;
+                bool isLoadFile = false;
                 if ( ohlc == null )
                 {
                     // Cryptowatchから過去のデータを取得できなかった場合はファイルから取得する
@@ -4768,12 +4768,12 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-
+                m_position.updateHighLow(curCandle.high, curCandle.low);
 
                 double profit = m_frontlineShort - curCandle.last;
 
-                double forward_rate = 0.25;// 0.5;
-                double forward_rate2 = 0.75;// 0.75// 0.72;
+                double forward_rate = 0.28;//0.25;
+                double forward_rate2 = 0.7;
                 
                 double bit_forward_rate = 0.1;
 
@@ -4892,10 +4892,11 @@ namespace CryptoBoxer
                     //else if (profit >= frontline_ahead && (m_position.fib_origin_low > curCandle.high))
                     else if (profit >= frontline_ahead)
                     {
-                        // 現在価格がfib原点を突破している場合
                         // 最前線を前進
-                        //double forward = Math.Round(profit * forward_rate);
-                        double forward = Math.Round(frontline_ahead * forward_rate);
+                        double rate = forward_rate;
+                        double frontline = m_position.entry_price - (m_position.entry_price - m_position.low_min) * rate;
+                        double forward = m_frontlineShort - frontline;
+                        //double forward = Math.Round(frontline_ahead * forward_rate);
                         m_frontlineShort = m_frontlineShort - forward;
                         m_position.frontline_fwd_num++;
                         // SHORT継続
@@ -5059,7 +5060,9 @@ namespace CryptoBoxer
                         {
                             // fib原点をすでに突破している
                             double rate = forward_rate2;
-                            double forward = Math.Round(profit * rate);
+                            double frontline = m_position.entry_price - (m_position.entry_price - m_position.low_min) * rate;
+                            double forward = m_frontlineShort - frontline;
+                            //double forward = Math.Round(profit * rate);
                             m_frontlineShort = m_frontlineShort - forward;
                             postSlack(string.Format("## front-line is forward(break fib-origin) ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         }
@@ -5067,8 +5070,9 @@ namespace CryptoBoxer
                         {
                             // fib原点をまだ突破していない
                             double rate = forward_rate;
-                            double forward = Math.Round(frontline_ahead2 * rate);
-                            //double forward = Math.Round(profit * rate);
+                            double frontline = m_position.entry_price - (m_position.entry_price - m_position.low_min) * rate;
+                            double forward = m_frontlineShort - frontline;
+                            //double forward = Math.Round(frontline_ahead2 * rate);
                             m_frontlineShort = m_frontlineShort - forward;
                             postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, rate, frontline_ahead2), onlyConsole);
                         }
@@ -5130,12 +5134,13 @@ namespace CryptoBoxer
                     result = false;
                     return result;
                 }
-                
+                m_position.updateHighLow(curCandle.high, curCandle.low);
+
                 double profit = curCandle.last - m_frontlineLong;
 
 
-                double forward_rate = 0.25;//0.5;
-                double forward_rate2 = 0.75;// 0.72;
+                double forward_rate = 0.28;//0.25;
+                double forward_rate2 = 0.7;
 
                 double bit_forward_rate = 0.1;
 
@@ -5258,10 +5263,11 @@ namespace CryptoBoxer
                     //else if (profit >= frontline_ahead && (m_position.fib_origin_high < curCandle.low))
                     else if (profit >= frontline_ahead)
                     {
-                        // 現在値がfib原点を突破している場合
                         // 最前線を前進
-                        //double forward = Math.Round(profit * forward_rate);
-                        double forward = Math.Round(frontline_ahead * forward_rate);
+                        double rate = forward_rate;
+                        double frontline = m_position.entry_price + (m_position.high_max - m_position.entry_price) * rate;
+                        double forward = frontline - m_frontlineLong;
+                        //double forward = Math.Round(frontline_ahead * forward_rate);
                         m_frontlineLong = m_frontlineLong + forward;
                         m_position.frontline_fwd_num++;
                         // LONG継続
@@ -5424,12 +5430,15 @@ namespace CryptoBoxer
                     else if (profit >= frontline_ahead2)
                     {
                         // 最前線を前進
+                        
                         //if (m_position.frontline_fwd_num > 1)
-                        if(m_position.fib_origin_high < curCandle.low)
+                        if (m_position.fib_origin_high < curCandle.low)
                         {
                             // fib原点をすでに突破している
                             double rate = forward_rate2;
-                            double forward = Math.Round(profit * rate);
+                            double frontline = m_position.entry_price + (m_position.high_max - m_position.entry_price) * rate;
+                            double forward = frontline - m_frontlineLong;
+                            //double forward = Math.Round(profit * rate);
                             m_frontlineLong = m_frontlineLong + forward;
                             postSlack(string.Format("## front-line is forward(break fib-origin) ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate2, frontline_ahead2), onlyConsole);
                         }
@@ -5437,8 +5446,9 @@ namespace CryptoBoxer
                         {
                             // fib原点をまだ突破していない
                             double rate = forward_rate;
-                            double forward = Math.Round(frontline_ahead2 * rate);
-                            //double forward = Math.Round(profit * rate);
+                            double frontline = m_position.entry_price + (m_position.high_max - m_position.entry_price) * rate;
+                            double forward = frontline - m_frontlineLong;
+                            //double forward = Math.Round(frontline_ahead2 * rate);
                             m_frontlineLong = m_frontlineLong + forward;
                             postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, rate, frontline_ahead2), onlyConsole);
                         }

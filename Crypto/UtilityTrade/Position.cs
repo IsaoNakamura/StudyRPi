@@ -75,10 +75,19 @@ namespace UtilityTrade
         public double fib_origin_high { get; set; }
         public double fib_origin_low { get; set; }
 
+        public double high_max { get; set; }
+        public double low_min { get; set; }
+
         public Position()
         {
             init();
             return;
+        }
+
+        public void updateHighLow(double high, double low)
+        {
+            high_max = Math.Max(high_max, high);
+            low_min = Math.Min(low_min, low);
         }
 
         public void init()
@@ -112,6 +121,9 @@ namespace UtilityTrade
 
             fib_origin_high = double.MaxValue;
             fib_origin_low = double.MinValue;
+
+            low_min = double.MaxValue;
+            high_max = double.MinValue;
 
             return;
         }
