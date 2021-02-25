@@ -776,16 +776,9 @@ namespace CryptoBoxer
                     return result;
                 }
 
-                IEnumerable<string> strLines = File.ReadLines(filePath);
-                string lastLine = strLines.Last();
-                string[] lastCandleFactor = lastLine.Split(',');
-                DateTime last_timestamp = DateTime.Parse(lastCandleFactor[0]);
-                DateTime now_timestamp = DateTime.Now;
-                TimeSpan span = now_timestamp - last_timestamp;
-                double elapsed_min = span.TotalMinutes;
-                int candle_addnum = (int)elapsed_min;
-
-                foreach (string strLine in strLines)
+                System.IO.StreamReader stream = new System.IO.StreamReader(filePath);
+                string strLine = "";
+                while ((strLine = stream.ReadLine())!=null)
                 {
                     //Console.WriteLine(strLine);
                     // 2020 / 12 / 25 15:58:00, open = 2520182, close = 2520111, high = 2521558, low = 2519825, ema = 0
@@ -835,6 +828,7 @@ namespace CryptoBoxer
                     }
                     //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
                 }
+                stream.Close();
 
                 Candlestick lastCandle = pastCandleBuf.getLastCandle();
                 if (lastCandle == null)
@@ -842,6 +836,13 @@ namespace CryptoBoxer
                     result = -1;
                     return result;
                 }
+
+                DateTime last_timestamp = DateTime.Parse(lastCandle.timestamp);
+                DateTime now_timestamp = DateTime.Now;
+                TimeSpan span = now_timestamp - last_timestamp;
+                double elapsed_sec = span.TotalSeconds;
+                int candle_addnum = (int)(elapsed_sec / periods);
+
                 for (int i = 0; i < candle_addnum; i++)
                 {
                     Candlestick candle = pastCandleBuf.addCandle(lastCandle.high, lastCandle.low, lastCandle.open, lastCandle.last, lastCandle.volume, lastCandle.timestamp.ToString(), periods, false);
