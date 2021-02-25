@@ -1367,7 +1367,7 @@ namespace CryptoBoxer
                     if (applyCandlestick(m_candleBuf, ohlc, m_config.periods) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick()");
-                        System.Threading.Thread.Sleep(60000);
+                        //System.Threading.Thread.Sleep(60000);
 
                         if (applyCandlestick(m_candleBuf, @"./btcfx_candle_1min_ex.txt", m_config.periods, true) != 0)
                         {
@@ -1386,9 +1386,9 @@ namespace CryptoBoxer
                 BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
                 if (applyCandlestick(m_candleBufTop, ohlc_top, m_config.periods_top, false) != 0)
                 {
-                    //Console.WriteLine("failed to applyCandlestick()");
+                    Console.WriteLine("failed to applyCandlestick()");
                     //return;
-                    if (applyCandlestick(m_candleBuf, @"./btcfx_candle_5min_ex.txt", m_config.periods_top, false) != 0)
+                    if (applyCandlestick(m_candleBufTop, @"./btcfx_candle_5min_ex.txt", m_config.periods_top, false) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick(5min_ex)");
                         return;
