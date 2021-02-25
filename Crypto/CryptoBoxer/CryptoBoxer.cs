@@ -4782,7 +4782,7 @@ namespace CryptoBoxer
 
                 const double frontline_ahead_rate = 3.1;//3.3;
                 double frontline_ahead = curCandle.vola_ma * frontline_ahead_rate*1.0;//3.2;
-                double frontline_ahead2 = curCandle.vola_ma * frontline_ahead_rate*1.0;// * 2.0;
+                double frontline_ahead2 = curCandle.vola_ma * 1.0;
 
                 bool isGolden = false;
                 bool isBeg = false;
@@ -5149,7 +5149,7 @@ namespace CryptoBoxer
 
                 const double frontline_ahead_rate = 3.3;//3.3;
                 double frontline_ahead = curCandle.vola_ma * frontline_ahead_rate*1.0;//3.2;
-                double frontline_ahead2 = curCandle.vola_ma * frontline_ahead_rate*1.0;// * 2.0;
+                double frontline_ahead2 = curCandle.vola_ma * 1.0;
                 //if (m_position.frontline_fwd_num <= 0)
                 //{
                 //    frontline_ahead2 = frontline_ahead;
