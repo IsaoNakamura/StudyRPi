@@ -1960,7 +1960,6 @@ namespace CryptoBoxer
                 }
                 else
                 {
-                    //if (applyCandlestick(m_candleBuf, testCandleBuf, @"./btcfx_candle_1min.txt", m_config.periods, m_config.backtest_hour, false) != 0)
                     if (applyCandlestick(m_candleBuf, testCandleBuf, @"./btcfx_candle_1min.txt", m_config.periods, false) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick()");
@@ -1996,7 +1995,6 @@ namespace CryptoBoxer
 
                 if (!isLoadFile)
                 {
-                    //long after_secounds_top = after_secounds * 6;//(m_config.periods_top / m_config.periods);
                     long after_secounds_top = (m_candleBufTop.m_buffer_num + test_num_top) * m_config.periods_top;
 
                     BitflyerOhlc ohlc_top = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods_top, after_secounds_top);
@@ -4424,7 +4422,7 @@ namespace CryptoBoxer
                         //if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
                         {
                             isLongReserve = true;
-                            if (isBeg && ( (!isBBHighLeak && (isCrossingSub && isBreakTrendTop) || isFibLong) || (!isBBHighLeak && (isCrossing || isCrossingSub|| isFibLong) && isBreakFibOrigin) ) )
+                            if (isBeg && ( (!isBBHighLeak && (isCrossingSub && isBreakTrendTop) || isFibLong) || (!isBBHighLeak && (/*isCrossing ||*/ isCrossingSub|| isFibLong) && isBreakFibOrigin) ) )
                             //if (isBeg && ( (isCrossingSub && isBreakTrendTop) || isFibLong) )
                             {
                                 isLong = true;
@@ -4480,7 +4478,7 @@ namespace CryptoBoxer
                         //if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
                         {
                             isShortReserve = true;
-                            if (isBeg && ( (!isBBLowLeak && ((isCrossingSub && isBreakTrendBottom) || isFibShort) ) || (!isBBLowLeak && (isCrossing || isCrossingSub || isFibShort) && isBreakFibOrigin) ) )
+                            if (isBeg && ( (!isBBLowLeak && ((isCrossingSub && isBreakTrendBottom) || isFibShort) ) || (!isBBLowLeak && (/*isCrossing ||*/ isCrossingSub || isFibShort) && isBreakFibOrigin) ) )
                             //if (isBeg && ( (isCrossingSub && isBreakTrendBottom) || isFibShort ) )
                             {
                                 isShort = true;

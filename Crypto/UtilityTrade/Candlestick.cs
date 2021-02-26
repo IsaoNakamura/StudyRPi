@@ -2361,13 +2361,51 @@ namespace UtilityTrade
 
                 if (cur_cross_state != 0)
                 {
-                    //if ( max_ema_length < (curCandle.vola_ma * ema_cross_rate) )
-                    if (cur_ema_length < (curCandle.vola_ma * ema_cross_rate) && max_ema_length < (curCandle.vola_ma * ema_cross_rate))
+                    //if (cur_cross_state == 1)
+                    //{
+                    //    // GOLDEN
+                    //    if
+                    //    (
+                    //        (cur_ema_length < (curCandle.vola_ma * 2.5) && curCandle.last < curCandle.ema_sub )
+                    //        || max_ema_length < (curCandle.vola_ma * ema_cross_rate)
+                    //    )
+                    //    {
+                    //        // 収束中
+                    //        isBeg = false;
+                    //    }
+                    //    else
+                    //    {
+                    //        // 拡大中
+                    //        isBeg = true;
+                    //    }
+                    //}
+                    //else if (cur_cross_state == -1)
+                    //{
+                    //    // DEAD
+                    //    if
+                    //    (
+                    //        (cur_ema_length < (curCandle.vola_ma * 2.0) && curCandle.last > curCandle.ema_sub)
+                    //        || max_ema_length < (curCandle.vola_ma * ema_cross_rate)
+                    //    )
+                    //    {
+                    //        // 収束中
+                    //        isBeg = false;
+                    //    }
+                    //    else
+                    //    {
+                    //        // 拡大中
+                    //        isBeg = true;
+                    //    }
+                    //}
+
+                    if ( max_ema_length < (curCandle.vola_ma * ema_cross_rate) )
+                    //if (cur_ema_length < (curCandle.vola_ma * ema_cross_rate) || max_ema_length < (curCandle.vola_ma * ema_cross_rate))
+                    //if (cur_ema_length < (curCandle.vola_ma * 2.0) || max_ema_length < (curCandle.vola_ma * ema_cross_rate))
                     {
                         // 収束中
                         isBeg = false;
                     }
-                    else
+                        else
                     {
                         // 拡大中
                         isBeg = true;
