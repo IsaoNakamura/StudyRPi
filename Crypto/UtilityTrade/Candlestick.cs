@@ -2361,7 +2361,8 @@ namespace UtilityTrade
 
                 if (cur_cross_state != 0)
                 {
-                    if ( max_ema_length < (curCandle.vola_ma * ema_cross_rate) )
+                    //if ( max_ema_length < (curCandle.vola_ma * ema_cross_rate) )
+                    if (cur_ema_length < (curCandle.vola_ma * ema_cross_rate) && max_ema_length < (curCandle.vola_ma * ema_cross_rate))
                     {
                         // 収束中
                         isBeg = false;
@@ -5001,6 +5002,33 @@ namespace UtilityTrade
             {
                 Console.WriteLine(ex);
                 result = false;
+            }
+            finally
+            {
+            }
+            return result;
+        }
+
+        public int save(string filePath)
+        {
+            int result = -1;
+            try
+            {
+                // ファイル内容リセット
+                File.WriteAllText(filePath, "");
+                foreach (Candlestick candle in m_candleList)
+                {
+                    if(candle.save(filePath)!=0)
+                    {
+                        return result;
+                    }
+                }
+                result = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                result = -1;
             }
             finally
             {

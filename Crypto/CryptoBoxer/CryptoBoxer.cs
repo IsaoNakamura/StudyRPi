@@ -1375,7 +1375,7 @@ namespace CryptoBoxer
 
                 // Cryptowatchから過去のデータを取得
                 long after_secounds = m_candleBuf.m_buffer_num * m_config.periods;
-                while (true)
+                //while (true)
                 {
                     BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
                     //if (applyCandlestick(m_candleBuf, in ohlc, m_config.periods, 0, m_candleBuf.m_buffer_num) != 0)
@@ -1389,11 +1389,16 @@ namespace CryptoBoxer
                             Console.WriteLine("failed to applyCandlestick(1min_buf)");
                             return;
                         }
-                        break;
+                        //break;
                     }
                     else
                     {
-                        break;
+                        if(m_candleBuf.save(@"./btcfx_candle_1min_buf.txt")!=0)
+                        {
+                            Console.WriteLine("failed to save candleBuf(1min_buf)");
+                            return;
+                        }
+                        //break;
                     }
                 }
 
@@ -1406,6 +1411,14 @@ namespace CryptoBoxer
                     if (applyCandlestick(m_candleBufTop, @"./btcfx_candle_5min_buf.txt", m_config.periods_top, false) != 0)
                     {
                         Console.WriteLine("failed to applyCandlestick(5min_buf)");
+                        return;
+                    }
+                }
+                else
+                {
+                    if (m_candleBufTop.save(@"./btcfx_candle_5min_buf.txt") != 0)
+                    {
+                        Console.WriteLine("failed to save m_candleBufTop(5min_buf)");
                         return;
                     }
                 }
