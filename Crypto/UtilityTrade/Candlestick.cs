@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace UtilityTrade
 {
@@ -770,6 +771,26 @@ namespace UtilityTrade
                 return true;
             }
             return false;
+        }
+
+        public int save(string filePath)
+        {
+            int result = 0;
+            try
+            {
+                // 2021/02/26 0:15:00, open=5680855, close=5684184, high=5686276, low=5680306, ema=0
+                string line = string.Format("{0}, open={1:0}, close={2:0}, high={3:0}, low={4:0}, ema={5:0}", timestamp, open, last, high, low, ema);
+                // Console.WriteLine(line);
+                File.AppendAllText(filePath, line + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+            }
+            return result;
         }
     }
 

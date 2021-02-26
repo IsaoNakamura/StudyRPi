@@ -784,49 +784,61 @@ namespace CryptoBoxer
                     // 2020 / 12 / 25 15:58:00, open = 2520182, close = 2520111, high = 2521558, low = 2519825, ema = 0
                     string[] candleFactor = strLine.Split(',');
 
-                    DateTime timestamp = DateTime.Parse(candleFactor[0]);
+                    DateTime cur_timestamp = DateTime.Parse(candleFactor[0]);
                     double openPrice = double.Parse(candleFactor[1].Split('=')[1]);
                     double closePrice = double.Parse(candleFactor[2].Split('=')[1]);
                     double highPrice = double.Parse(candleFactor[3].Split('=')[1]);
                     double lowPrice = double.Parse(candleFactor[4].Split('=')[1]);
                     double volume = 0.0;
 
-
-                    if (closePrice <= Double.Epsilon)
+                    DateTime prev_timestamp = cur_timestamp.AddSeconds(-1.0 * periods);
+                    int comple_candlenum = 1;
+                    if (pastCandleBuf.getCandleCount()>0)
                     {
                         Candlestick prevCandle = pastCandleBuf.getLastCandle();
                         if (prevCandle == null)
                         {
-                            Console.WriteLine("cur's candle-value 0. and prev's candle is null. timestamp=", timestamp);
+                            Console.WriteLine("cur's candle-value 0. and prev's candle is null. timestamp=", cur_timestamp);
                             result = -1;
                             return result;
                         }
-                        closePrice = prevCandle.last;
-                        openPrice = prevCandle.open;
-                        highPrice = prevCandle.high;
-                        lowPrice = prevCandle.low;
+
+                        prev_timestamp = DateTime.Parse(prevCandle.timestamp);
+                        TimeSpan prev_span = cur_timestamp - prev_timestamp;
+                        double prev_elapsed_sec = prev_span.TotalSeconds;
+                        comple_candlenum = (int)(prev_elapsed_sec / periods);
+
+                        if (closePrice <= Double.Epsilon)
+                        {
+
+                            closePrice = prevCandle.last;
+                            openPrice = prevCandle.open;
+                            highPrice = prevCandle.high;
+                            lowPrice = prevCandle.low;
+                        }
                     }
 
-                    // Cryptowatchでとれるohlcは閉じてないキャンドルの値も取得される。
-                    //  1回目 2018/04/11 10:14:00, open=743093, close=743172, high=743200, low=743093
-                    //  2回目 2018/04/11 10:14:00, open=743093, close=743194, high=743200, low=743020
-                    // Timestampが10:14:00なら、10:13:00～10:13:59のキャンドル
 
-
-                    Candlestick candle = pastCandleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, volume, timestamp.ToString(), periods, false);
-                    if (candle == null)
+                    for(int i=0; i< comple_candlenum; i++)
                     {
-                        Console.WriteLine("failed to addCandle.");
-                        continue;
-                    }
-                    candle.volume = 0;
+                        DateTime comple_timestamp = prev_timestamp.AddSeconds((i+1) * periods);
+                        Candlestick candle = pastCandleBuf.addCandle(highPrice, lowPrice, openPrice, closePrice, volume, comple_timestamp.ToString(), periods, false);
+                        if (candle == null)
+                        {
+                            Console.WriteLine("failed to addCandle.");
+                            continue;
+                        }
+                        candle.volume = 0;
 
-                    if (isCalcIndicator)
-                    {
-                        calcIndicator(pastCandleBuf, ref candle);
-                        //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                        if (isCalcIndicator)
+                        {
+                            calcIndicator(pastCandleBuf, ref candle);
+                            //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+                        }
+                        Console.WriteLine("COMP: {0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", comple_timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+
                     }
-                    //Console.WriteLine("{0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", timestamp.ToString(), openPrice, closePrice, highPrice, lowPrice, candle.ema);
+
                 }
                 stream.Close();
 
@@ -858,6 +870,7 @@ namespace CryptoBoxer
                     {
                         calcIndicator(pastCandleBuf, ref candle);
                     }
+                    Console.WriteLine(" ADD: {0}, open={1}, close={2}, high={3}, low={4}, ema={5:0}", add_timestamp.ToString(), candle.open, candle.last, candle.high, candle.low, candle.ema);
                 }
             }
             catch (Exception ex)
@@ -1371,9 +1384,9 @@ namespace CryptoBoxer
                         Console.WriteLine("failed to applyCandlestick()");
                         //System.Threading.Thread.Sleep(60000);
 
-                        if (applyCandlestick(m_candleBuf, @"./btcfx_candle_1min_ex.txt", m_config.periods, true) != 0)
+                        if (applyCandlestick(m_candleBuf, @"./btcfx_candle_1min_buf.txt", m_config.periods, true) != 0)
                         {
-                            Console.WriteLine("failed to applyCandlestick(1min_ex)");
+                            Console.WriteLine("failed to applyCandlestick(1min_buf)");
                             return;
                         }
                         break;
@@ -1390,9 +1403,9 @@ namespace CryptoBoxer
                 {
                     Console.WriteLine("failed to applyCandlestick()");
                     //return;
-                    if (applyCandlestick(m_candleBufTop, @"./btcfx_candle_5min_ex.txt", m_config.periods_top, false) != 0)
+                    if (applyCandlestick(m_candleBufTop, @"./btcfx_candle_5min_buf.txt", m_config.periods_top, false) != 0)
                     {
-                        Console.WriteLine("failed to applyCandlestick(5min_ex)");
+                        Console.WriteLine("failed to applyCandlestick(5min_buf)");
                         return;
                     }
                 }
@@ -1645,6 +1658,7 @@ namespace CryptoBoxer
                                               , curCandleTop.getVolatility()
                                               , curCandleTop.vola_ma
                             );
+                            curCandleTop.save(@"./btcfx_candle_5min_buf.txt");
                         }
                         // 次の更新時間を更新
                         nextCloseTimeTop = nextCloseTimeTop.AddSeconds(m_config.periods_top);
@@ -1752,6 +1766,7 @@ namespace CryptoBoxer
                                     postSlack(string.Format("DispartyRate is Under. rate={0:0.00}. fx={1:0} btc={2:0}", curCandle.disparity_rate, curCandle.last, spot_last));
                                 }
                             }
+                            curCandle.save(@"./btcfx_candle_1min_buf.txt");
                         }
                         // 次の更新時間を更新
                         nextCloseTime = nextCloseTime.AddSeconds(m_config.periods);
@@ -1890,9 +1905,21 @@ namespace CryptoBoxer
 
                 //System.Threading.Thread.Sleep(3000);
 
+                //if (applyCandlestick(m_candleBufTop, @"./btcfx_candle_5min_ex.txt", m_config.periods_top, false) != 0)
+                //{
+                //    Console.WriteLine("failed to applyCandlestick(5min_ex)");
+                //    return;
+                //}
+
+                //if (applyCandlestick(m_candleBuf, @"./btcfx_candle_1min_ex.txt", m_config.periods, true) != 0)
+                //{
+                //    Console.WriteLine("failed to applyCandlestick(1min_ex)");
+                //    return;
+                //}
+
 
                 // Cryptowatchから過去のデータを取得
-				int test_num = (m_config.backtest_hour * 60 * 60) / m_config.periods;
+                int test_num = (m_config.backtest_hour * 60 * 60) / m_config.periods;
                 long after_secounds = (m_candleBuf.m_buffer_num + test_num) * m_config.periods;
                 BitflyerOhlc ohlc = await BitflyerOhlc.GetOhlcAfterAsync(m_config.product_cryptowatch, m_config.periods, after_secounds);
 
@@ -2052,7 +2079,7 @@ namespace CryptoBoxer
 
 									calcIndicator(m_candleBufTop, ref topCandle);                           
                                      top_index++;
-								}
+                                }
 							}
 						}
                     }
