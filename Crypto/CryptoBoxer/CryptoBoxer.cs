@@ -4337,11 +4337,18 @@ namespace CryptoBoxer
                 {
                     // NONEポジションの場合
 
-                    if (isCondLong && isGolden && !isBreakTrendBottom )
-                    //if (isCondLong && isGolden && !isBreakTrendBottom && !isBBHighLeak)
+                    //if (isCondLong && isGolden && !isBreakTrendBottom )
+                    if (isCondLong && isGolden )
                     {
-                        if (isBeg && !isBBHighLeak && ((isCrossingSub && isBreakTrendTop) || isFibLong ))
-                        //if (isBeg && ((isCrossingSub && isBreakTrendTop) || isFibLong ))
+                        //if (isBeg && !isBBHighLeak /*&& !isBBLowLeak*/ && ((isCrossingSub && isBreakTrendTop) || isFibLong ))
+                        if
+                        (
+                            isBeg && !isBBHighLeak &&
+                            (
+                                    (!isBreakTrendBottom && (isCrossingSub || isFibLong))
+                            //||  (isBreakTrendTop && (isCrossingSub || isFibLong))
+                            )
+                        )
                         {
                             // LONG
                             isLong = true;
@@ -4357,11 +4364,18 @@ namespace CryptoBoxer
                                 , curCandle.timestamp, isCondLong, isGolden, back_cnt, isBeg, isBreakTrendBottom, isBreakTrendTop, isCrossing, isCrossingSub, fib_long_index, isFibLong), onlyConsole);
                         }
                     }
-                    else if (isCondShort && !isGolden && !isBreakTrendTop )
-                    //else if (isCondShort && !isGolden && !isBreakTrendTop && !isBBLowLeak)
+                    //else if (isCondShort && !isGolden && !isBreakTrendTop )
+                    else if (isCondShort && !isGolden)
                     {
-                        if (isBeg && !isBBLowLeak && ((isCrossingSub && isBreakTrendBottom) || isFibShort ))
-                        //if (isBeg && ((isCrossingSub && isBreakTrendBottom) || isFibShort))
+                        //if (isBeg && !isBBLowLeak /*&& !isBBHighLeak*/ && ((isCrossingSub && isBreakTrendBottom) || isFibShort ))
+                        if
+                        (
+                            isBeg && !isBBLowLeak &&
+                            (
+                                  (!isBreakTrendTop && (isCrossingSub || isFibShort))
+                            //|| (isBreakTrendBottom && (isCrossingSub || isFibLong))
+                            )
+                        )
                         {
                             // SHORT
                             isShort = true;
@@ -4418,12 +4432,20 @@ namespace CryptoBoxer
                             }
                         }
 
-                        if (isGolden && !isBreakTrendBottom /*&& !isBBHighLeak*/)
                         //if (isGolden && !isBreakTrendBottom && !isBBHighLeak)
+                        if (isCondLong && isGolden)
                         {
                             isLongReserve = true;
-                            if (isBeg && ( (!isBBHighLeak && (isCrossingSub && isBreakTrendTop) || isFibLong) || (!isBBHighLeak && (/*isCrossing ||*/ isCrossingSub|| isFibLong) && isBreakFibOrigin) ) )
-                            //if (isBeg && ( (isCrossingSub && isBreakTrendTop) || isFibLong) )
+                            //if (isBeg && ( (!isBBHighLeak /*&& !isBBLowLeak*/ && (isCrossingSub && isBreakTrendTop) || isFibLong) || (!isBBHighLeak /*&& !isBBLowLeak*/ && (/*isCrossing ||*/ isCrossingSub|| isFibLong) && isBreakFibOrigin) ) )
+                            if
+                            (
+                                isBeg && !isBBHighLeak &&
+                                (
+                                        (!isBreakTrendBottom && (isCrossingSub || isFibLong))
+                                    //||  (isBreakTrendTop && (isCrossingSub || isFibLong) )
+                                    || (isBreakFibOrigin && (isCrossingSub || isFibLong))
+                                )
+                            )
                             {
                                 isLong = true;
                                 postSlack(string.Format("{0} Long(Reserved) Condition. isCond={1} isGold={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
@@ -4474,12 +4496,20 @@ namespace CryptoBoxer
                         }
 
 
-                        if (!isGolden && !isBreakTrendTop /*&& !isBBLowLeak*/)
-                        //if (!isGolden && !isBreakTrendTop && !isBBLowLeak)
+                        //if (!isGolden && !isBreakTrendTop /*&& !isBBLowLeak*/)
+                        if (isCondShort && !isGolden)
                         {
                             isShortReserve = true;
-                            if (isBeg && ( (!isBBLowLeak && ((isCrossingSub && isBreakTrendBottom) || isFibShort) ) || (!isBBLowLeak && (/*isCrossing ||*/ isCrossingSub || isFibShort) && isBreakFibOrigin) ) )
-                            //if (isBeg && ( (isCrossingSub && isBreakTrendBottom) || isFibShort ) )
+                            //if (isBeg && ( (!isBBLowLeak /*&& !isBBHighLeak*/ && ((isCrossingSub && isBreakTrendBottom) || isFibShort) ) || (!isBBLowLeak /*&& !isBBHighLeak*/ && (/*isCrossing ||*/ isCrossingSub || isFibShort) && isBreakFibOrigin) ) )
+                            if
+                            (
+                                isBeg && !isBBLowLeak &&
+                                (
+                                        (!isBreakTrendTop && (isCrossingSub || isFibShort))
+                                    //||  (isBreakTrendBottom && (isCrossingSub || isFibShort) )
+                                    || (isBreakFibOrigin && (isCrossingSub || isFibShort))
+                                )
+                            )
                             {
                                 isShort = true;
                                 postSlack(string.Format("{0} Short(Reserved) Condition. isCond={1} isDead={2} bkCnt={3} isBeg={4} brkBtm={5} brkTop={6} ingEma={7} ingEmaS={8} isFib({9})={10}"
@@ -5066,7 +5096,7 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineShort, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    //else if (fib_fwd > curCandle.low)
+                    //else if (fib_fwd > curCandle.low )
                     //{
                     //    // 最前線を前進
                     //    //double forward = curCandle.vola_ma * bit_forward_rate; //Math.Round(profit * bit_forward_rate);
@@ -5437,7 +5467,7 @@ namespace CryptoBoxer
                         postSlack(string.Format("## front-line is forward ##. last={0:0} pos={1:0} front={2:0} fwd={3:0} rate={4:0.00} ahead={5:0}", curCandle.last, profit, m_frontlineLong, forward, forward_rate, frontline_ahead), onlyConsole);
                         result = false;
                     }
-                    //else if (fib_fwd < curCandle.high)
+                    //else if (fib_fwd < curCandle.high )
                     //{
                     //    // 最前線を前進
                     //    //double forward = curCandle.vola_ma * bit_forward_rate;// Math.Round(profit * bit_forward_rate);
