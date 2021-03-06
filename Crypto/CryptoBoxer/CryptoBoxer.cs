@@ -3732,7 +3732,7 @@ namespace CryptoBoxer
                 double low_min = 0.0;
                 int high_max_idx = 0;
                 int low_min_idx = 0;
-                double ema_cross_rate = 3.0;
+                double ema_cross_rate = 3.0;//3.0;
                 if (m_candleBuf.getEMACrossState(
                         out isGolden,
                         out isBeg,

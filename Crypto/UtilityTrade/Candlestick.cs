@@ -2173,7 +2173,7 @@ namespace UtilityTrade
             out int high_max_idx,
             out double low_min,
             out int low_min_idx,
-            double ema_cross_rate = 5.0,
+            double ema_cross_rate = 4.0,//4.0
             double threshold_rate = 0.5,
             double ema_touch_play = 0.0,
 			int cross_over_cnt = 65
